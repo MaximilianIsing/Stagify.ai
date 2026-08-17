@@ -38,15 +38,14 @@
   margin: 0 auto;
   max-width: 600px;
 }
-/* Opt-in wider measure for a head whose subtitle reads best on one line. At the
-   16.5px top of the clamp the studio subtitle needs 645px in Inter (every
-   fallback in the stack is narrower), so 700px keeps it unwrapped down to a
-   ~660px viewport and still sits well inside the section's 1044px content box.
-   Scoped as a modifier on purpose: raising the base 600px would rewrap the
-   dozen other .home-section__sub blocks on this page. Longer translations wrap
-   to two lines here exactly as they do today. */
-.home-section__head--wide,
-.home-section__head--wide .home-section__sub {
+/* Opt-in wider measure, 700px against the base 680px. It was added for heads whose
+   SUBTITLE read best on one line; the homepage subtitles are gone, so on the eight
+   heads still carrying it the only thing it widens is the <h2>. Kept rather than
+   stripped because removing it rewraps those headings for no gain. The paired
+   `.home-section__head--wide .home-section__sub` selector was dropped with the
+   subtitles — guides.html is the last .home-section__sub on the site and its head
+   is not --wide. */
+.home-section__head--wide {
   max-width: 700px;
 }
 
@@ -2914,23 +2913,91 @@ body.page-home main {
 }
 /* <h3> since the a11y pass — each pricing card is a distinct offer and should be a
    heading-navigation landmark. margin:0 cancels the UA heading margin. */
+/* min-width:0 so the name wraps instead of shoving the badge past the card edge:
+   a flex item's default min-width is its content, and "Stagify 엔터프라이즈" beside
+   "팀용" is wider than the card at tablet widths. */
 .plus-card__name {
   font-size: 1.3rem;
   font-weight: 800;
   color: var(--brand-deep);
   margin: 0;
+  min-width: 0;
 }
+/* WHO THE CARD IS FOR, not a second button. Both pills used to be the same flat
+   blue tint — which put a blue chip on the navy Enterprise card, fighting its own
+   border and logo shadow, and made the pair read as one component stamped twice.
+   Each pill now carries its card's colourway (blue / navy), so it belongs to the
+   card it sits on and the light-dark pairing described above survives all the way
+   into the header row.
+
+   Everything is driven off the four --badge-* properties, declared here with the
+   blue defaults so the modifiers below only restate what actually differs — and so
+   no var() is ever bare, which would drop the whole declaration.
+
+   The material is the section's, not a generic tint: a white top-gradient over the
+   wash plus a 1px inset highlight, the same trick .plus-card itself uses, so the
+   pill reads as a chip resting on the glass rather than a rectangle painted onto
+   it. That, and the icon, is the whole difference from the flat tag it replaces. */
 .plus-card__badge {
+  --badge-ink: var(--brand-strong);
+  --badge-wash: rgba(37, 99, 235, 0.13);
+  --badge-line: rgba(37, 99, 235, 0.26);
+  --badge-cast: rgba(30, 58, 138, 0.16);
   margin-left: auto;
-  font-size: 11px;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  font-size: 10.5px;
   font-weight: 700;
-  letter-spacing: 0.6px;
+  letter-spacing: 0.72px;
   text-transform: uppercase;
-  color: var(--brand);
-  background: rgba(37, 99, 235, 0.1);
-  border: 1px solid rgba(37, 99, 235, 0.2);
-  padding: 4px 10px;
+  color: var(--badge-ink);
+  /* The gradient is listed before the wash colour so it sits ON it; a single
+     rgba() tint alone is what made this look printed-on. */
+  background-image: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.72),
+    rgba(255, 255, 255, 0.22)
+  );
+  background-color: var(--badge-wash);
+  border: 1px solid var(--badge-line);
+  /* Uppercase + letter-spacing leaves a trailing gap after the last glyph, so the
+     right padding is a pixel over the left to pay it back and land the text
+     optically centred. */
+  padding: 5px 10px 5px 9px;
   border-radius: 999px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 1px 2px var(--badge-cast);
+}
+/* Decoration, so a pseudo-element rather than markup — and deliberately so: the
+   label text is filled from data-lang, which assigns textContent and would wipe
+   any child node on the first translation pass. A ::before is out of reach of that.
+   mask + currentColor rather than a coloured SVG keeps one glyph per audience
+   working in both colourways. */
+.plus-card__badge::before {
+  content: "";
+  width: 13px;
+  height: 13px;
+  flex: none;
+  background-color: currentColor;
+  -webkit-mask: var(--badge-icon) center / contain no-repeat;
+  mask: var(--badge-icon) center / contain no-repeat;
+}
+/* One figure / two figures, drawn as the same object at two counts — same head
+   radius relative to the body, same rounded shoulder mass. An earlier pass gave both
+   glyphs a flat-bottomed slab for a body; at 13px that read as a bar under a dot
+   rather than as a person, and the rounded shoulders are what fixed it. */
+.plus-card--pro .plus-card__badge {
+  --badge-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='7.4' r='4.2'/%3E%3Cpath d='M12 13.2c-4.6 0-8.3 2.7-8.3 6 0 .9.7 1.6 1.6 1.6h13.4c.9 0 1.6-.7 1.6-1.6 0-3.3-3.7-6-8.3-6z'/%3E%3C/svg%3E");
+}
+.plus-card--ent .plus-card__badge {
+  --badge-ink: #232f52;
+  --badge-wash: rgba(18, 26, 48, 0.12);
+  --badge-line: rgba(18, 26, 48, 0.24);
+  --badge-cast: rgba(18, 26, 48, 0.14);
+  --badge-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='8.7' cy='7.8' r='3.8'/%3E%3Ccircle cx='17.4' cy='8.6' r='3'/%3E%3Cpath d='M8.7 13c-4.2 0-7.6 2.5-7.6 5.6 0 .9.7 1.6 1.6 1.6h12c.9 0 1.6-.7 1.6-1.6 0-3.1-3.4-5.6-7.6-5.6z'/%3E%3Cpath d='M17.4 13.4c-.9 0-1.7.1-2.5.4 1.7 1.3 2.8 3.1 2.8 5.1 0 .5-.1.9-.3 1.3h4.2c.8 0 1.4-.6 1.4-1.4 0-2.9-2.5-5.4-5.6-5.4z'/%3E%3C/svg%3E");
 }
 .plus-price {
   display: flex;

@@ -9,7 +9,8 @@ import {
   resolveStagingRootBaseName as _resolveStagingRootBaseName,
 } from './ai-designer/image-history.js';
 import { lang, stampLang } from './ai-designer/i18n.js';
-import { localizedTarget } from './i18n-routing.js';
+import { syncDesignerAccess } from './ai-designer/access.js';
+import { settlePreview } from './preview-access.js';
 import { showToast } from './toast.js';
 import { summariseBugReportHistory } from './bug-report-history.js'; // bridged onto window below
 import { createMaskEditor } from './ai-designer/mask-editor.js';
@@ -119,29 +120,14 @@ import { fetchWelcomeMessage } from './ai-designer/welcome.js';
         return window.StagifyAuth && window.StagifyAuth.user && window.StagifyAuth.user.plan === 'pro';
       }
 
-      async function ensureDesignerProAccess() {
-        // window.StagifyAuth is guaranteed to exist by the time this runs: auth.js
-        // is a non-async module script earlier in ai-designer.html's document order
-        // than this one, module scripts execute in that order, and auth.js assigns
-        // the global synchronously at top level. So a missing global does not mean
-        // "not loaded yet" — it means auth.js failed to load or threw, and no amount
-        // of waiting will fix it. Bounce immediately rather than stalling behind the
-        // hidden page. (This replaced a 50ms poll that never once iterated on the
-        // happy path and cost a 5s stall on the unhappy one.)
-        if (!window.StagifyAuth) {
-          window.location.replace(localizedTarget('index.html#ai-designer-demo'));
-          return false;
-        }
-        await window.StagifyAuth.fetchMe();
-        const u = window.StagifyAuth.user;
-        if (!u || u.plan !== 'pro') {
-          window.location.replace(localizedTarget('index.html#ai-designer-demo'));
-          return false;
-        }
-        // Verified Pro — reveal the page (the head gate hid it until now).
-        document.documentElement.classList.remove('ai-gate-pending');
-        return true;
-      }
+      // Access: a PUBLIC PREVIEW on one URL — the pitch for an anonymous visitor and for a
+      // signed-in free account, the studio for Stagify+. Three `location.replace` calls
+      // used to live here (no StagifyAuth, no user, wrong plan) and every one answered a
+      // curious visitor with the homepage instead of with what the tool does. The viewport
+      // redirect in the head gate is a separate, deliberate thing and it stays. See
+      // scripts/preview-access.js, and note that none of this is a security boundary —
+      // requireProAccount on the chat routes is.
+      const ensureDesignerProAccess = () => settlePreview(syncDesignerAccess);
       
       function defaultWelcomeMessage() {
         const fallback =

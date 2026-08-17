@@ -147,16 +147,23 @@ test('every language switcher in the markup lists exactly the server locale set'
 
 // ── The render-blocking gates' inlined locale-prefix regex ────────────────────
 //
-// ai-designer-gate.js and masking-studio-gate.js run as classic <script src> in
-// <head> with no defer, BEFORE anything paints, so they cannot `import` the
-// generated locale-data.js — an ES module is deferred by definition, and the gate
-// would fire after the page it exists to hide. Each therefore inlines the same
-// prefix regex and its own copy of localeTarget().
+// ai-designer-gate.js runs as a classic <script src> in <head> with no defer,
+// BEFORE anything paints, so it cannot `import` the generated locale-data.js — an
+// ES module is deferred by definition, and the gate would fire after the page it
+// exists to hide. It therefore inlines the prefix regex and its own copy of
+// localeTarget().
 //
-// The copies are defensible; the silence was not. The guard above catches a file
-// naming three or more languages ('spanish', 'french', …) — these hardcode
-// two-letter PREFIXES, which it cannot see. So an eleventh locale would leave both
-// regexes short with nothing failing: a signed-out visitor on /pl/ai-designer.html
+// It used to have a twin: masking-studio-gate.js carried the identical copy until
+// that page became a public preview. A gate that never navigates needs no locale
+// target at all, so the duplicate was DELETED rather than kept in sync. The list
+// below is one entry today and the machinery is unchanged, because the remaining
+// gate has exactly the same failure mode — and because the next preview conversion
+// should shrink this list again rather than work around it.
+//
+// The copy is defensible; the silence was not. The guard above catches a file
+// naming three or more languages ('spanish', 'french', …) — this hardcodes
+// two-letter PREFIXES, which it cannot see. So an eleventh locale would leave the
+// regex short with nothing failing: a signed-out visitor on /pl/ai-designer.html
 // is bounced to the ENGLISH homepage instead of /pl, and a signed-in one whose plan
 // check stalls is thrown out of their language six seconds later. No error, no
 // failed request — just the wrong language.
@@ -164,7 +171,7 @@ test('every language switcher in the markup lists exactly the server locale set'
 // So these assertions are behavioural rather than textual: the real function is
 // pulled out of the source and run against every prefix the server serves.
 
-const GATE_FILES = ['ai-designer-gate.js', 'masking-studio-gate.js'];
+const GATE_FILES = ['ai-designer-gate.js'];
 
 /** Read a gate's source. */
 function gateSource(name) {
@@ -248,17 +255,22 @@ test('DRIFT GUARD: each gate keeps the visitor in their language, for every serv
   }
 });
 
-test('the two gates resolve a target identically, and only for real prefixes', () => {
-  const [ai, ms] = GATE_FILES.map(compileLocaleTarget);
+test('every gate resolves a target the same way, and only for real prefixes', () => {
+  const targets = GATE_FILES.map(compileLocaleTarget);
 
-  // The two copies must not drift from each other either.
-  assert.equal(
-    extractLocaleTarget(gateSource(GATE_FILES[0]), GATE_FILES[0]),
-    extractLocaleTarget(gateSource(GATE_FILES[1]), GATE_FILES[1]),
-    'the two inlined localeTarget() copies have diverged — fix both, or neither is trustworthy',
-  );
+  // When there is more than one copy they must not drift from each other either. Written
+  // as a sweep rather than as `[0] vs [1]`, because the list has been two entries and is
+  // now one — and a pairwise check indexed at [1] does not fail when the second gate goes,
+  // it throws on `undefined`, which is a worse way to find out.
+  for (let i = 1; i < GATE_FILES.length; i += 1) {
+    assert.equal(
+      extractLocaleTarget(gateSource(GATE_FILES[0]), GATE_FILES[0]),
+      extractLocaleTarget(gateSource(GATE_FILES[i]), GATE_FILES[i]),
+      `${GATE_FILES[i]} has diverged from ${GATE_FILES[0]} — fix both, or neither is trustworthy`,
+    );
+  }
 
-  for (const target of [ai, ms]) {
+  for (const target of targets) {
     // A path that merely STARTS with a prefix is not that locale: '/estonia' is not
     // Spanish. The trailing (\/|$) is what makes that true, so pin it.
     assert.equal(target('/estonia/page.html', 'index.html'), 'index.html');
@@ -266,11 +278,12 @@ test('the two gates resolve a target identically, and only for real prefixes', (
     // The bare prefix, with or without a trailing slash, IS the locale root.
     assert.equal(target('/es', 'index.html'), '/es');
     assert.equal(target('/es/', 'index.html'), '/es');
+    // index.html collapses to the locale root rather than /de/index.html, and a hash or
+    // query rides along untouched. Asserted for every gate rather than for the one that
+    // happens to redirect to each: the function is the same function, and pinning the
+    // behaviour per-file is what let a copy drift unnoticed in the first place.
+    assert.equal(target('/de/page.html', 'index.html#x'), '/de#x');
+    assert.equal(target('/ja/page.html', 'stagify-plus.html'), '/ja/stagify-plus.html');
+    assert.equal(target('/nl/page.html', 'stagify-plus.html?x=1'), '/nl/stagify-plus.html?x=1');
   }
-
-  // index.html collapses to the locale root rather than /de/index.html, and a hash
-  // or query rides along untouched.
-  assert.equal(ai('/de/ai-designer.html', 'index.html#ai-designer-demo'), '/de#ai-designer-demo');
-  assert.equal(ms('/ja/masking-studio.html', 'stagify-plus.html'), '/ja/stagify-plus.html');
-  assert.equal(ms('/nl/masking-studio.html', 'stagify-plus.html?x=1'), '/nl/stagify-plus.html?x=1');
 });

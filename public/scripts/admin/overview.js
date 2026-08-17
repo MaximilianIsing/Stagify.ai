@@ -27,10 +27,10 @@ const GRANULARITY_NOUN = { day: 'day', week: 'week', month: 'month' };
  * than invent one.
  */
 const RANGES = [
-  { key: '7', label: '7 days', days: 7 },
-  { key: '30', label: '30 days', days: 30 },
-  { key: '90', label: '90 days', days: 90 },
-  { key: 'all', label: 'All time', days: null },
+  { key: '7', label: '7 days', short: '7d', days: 7 },
+  { key: '30', label: '30 days', short: '30d', days: 30 },
+  { key: '90', label: '90 days', short: '90d', days: 90 },
+  { key: 'all', label: 'All time', short: 'all time', days: null },
 ];
 const DEFAULT_RANGE = '30';
 
@@ -68,10 +68,14 @@ export function createOverview({ ctx, effectivePlan }) {
     const active = currentRange();
     host.innerHTML = '';
     host.appendChild(el('span', { className: 'adm-range-label', textContent: 'Showing' }));
+    // The buttons share one track so the group reads as a single segmented
+    // control rather than four loose pills (styles/admin.css, .adm-range-track).
+    const track = el('div', { className: 'adm-range-track', role: 'group', 'aria-label': 'Date range' });
     RANGES.forEach((r) => {
       const btn = el('button', {
         type: 'button',
         className: 'adm-range-btn' + (r.key === active.key ? ' active' : ''),
+        'aria-pressed': r.key === active.key ? 'true' : 'false',
         textContent: r.label,
       });
       btn.addEventListener('click', () => {
@@ -79,8 +83,9 @@ export function createOverview({ ctx, effectivePlan }) {
         ctx.overviewRange = r.key;
         render();
       });
-      host.appendChild(btn);
+      track.appendChild(btn);
     });
+    host.appendChild(track);
   }
 
   // ── Stat cards ────────────────────────────────────────────────────────────
@@ -113,7 +118,11 @@ export function createOverview({ ctx, effectivePlan }) {
 
   function renderStats(promptRows, chatRows, maskRows) {
     const range = currentRange();
-    const suffix = ' (' + range.label + ')';
+    // A stat-card label is one uppercase line ~26 characters wide and the range
+    // selector sits directly above it, so the scope rides along as a short tag
+    // ('Signups · 30d') rather than a parenthetical that pushed half the labels
+    // into an ellipsis. It stays per-card because only some cards are scoped.
+    const suffix = ' · ' + range.short;
     const sparkDays = range.days || 90;
     const users = ctx.data.users || [];
 

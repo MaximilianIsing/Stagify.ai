@@ -85,6 +85,17 @@ globalThis.sessionStorage = /** @type {any} */ ({
   removeItem: (k) => { delete sessionStore[k]; },
 });
 
+// The console persists its SESSION TOKEN here so a reload does not ask for the key
+// again. It must be installed before the import: admin.js reads it in a boot IIFE to
+// resume a stored session. Left empty, that IIFE finds nothing and does nothing —
+// which is the state every test below starts from.
+const localStore = /** @type {Record<string, string>} */ ({});
+globalThis.localStorage = /** @type {any} */ ({
+  getItem: (k) => (k in localStore ? localStore[k] : null),
+  setItem: (k, v) => { localStore[k] = String(v); },
+  removeItem: (k) => { delete localStore[k]; },
+});
+
 // FormData is only used as an opaque multipart body; record what was appended so the
 // upload test can prove the file (not JSON) was sent.
 globalThis.FormData = /** @type {any} */ (class { constructor() { this.entries = []; } append(k, v) { this.entries.push([k, v]); } });
@@ -117,8 +128,12 @@ const okText = (body) => ({ ok: true, status: 200, json: async () => ({}), text:
 /** Let the handlers' promise chains settle (no real timers are involved). */
 const settle = async (n = 6) => { for (let i = 0; i < n; i++) await new Promise((r) => setImmediate(r)); };
 
+const SESSION_TOKEN = 'sess-' + 'f'.repeat(59);
+const SESSION_EXP = 4_000_000_000_000;
+
 /** The default happy-path server: every endpoint loadAll() touches answers. */
 function serveAll(url) {
+  if (url.startsWith('/api/admin/session')) return okJson({ token: SESSION_TOKEN, expiresAt: SESSION_EXP });
   if (url.startsWith('/api/admin/ping')) return okJson({ ok: true });
   if (url.startsWith('/authstore')) return okJson({ users: [{ id: 'u1', email: 'a@b.com', plan: 'pro' }] });
   if (url.startsWith('/enterprise-domains')) return okJson({ domains: [] });
@@ -147,7 +162,8 @@ test('a correct key signs in, loads every dashboard feed, and reveals the dashbo
   await signIn();
 
   const urls = calls.map((c) => c.url);
-  assert.ok(urls.includes('/api/admin/ping'), 'the key is validated against the no-payload probe');
+  assert.ok(urls.includes('/api/admin/session'), 'the key is spent minting a session, which is also what validates it');
+  assert.ok(!urls.includes('/api/admin/ping'), 'and no separate probe is needed on top of the mint');
   for (const feed of ['/authstore', '/promptlogs', '/chatlogs', '/bugreports', '/masklogs', '/contactlogs', '/email-open-logs', '/enterprise-domains', '/api/hosted-images']) {
     assert.ok(urls.includes(feed), `loadAll() must fetch ${feed}`);
   }
@@ -156,23 +172,43 @@ test('a correct key signs in, loads every dashboard feed, and reveals the dashbo
   assert.match($('adm-last-refresh').textContent, /^Updated /);
 });
 
-test('SECURITY: the access key travels in the header and is never put in a URL', async () => {
+test('SECURITY: the access key travels in a header, is never put in a URL, and is spent exactly once', async () => {
   calls = [];
   await signIn();
 
   for (const c of calls) {
     assert.ok(!c.url.includes(KEY), `key leaked into the URL: ${c.url}`);
-    assert.equal(c.opts.headers['X-Stagify-Endpoint-Key'], KEY, `${c.url} must carry the key header`);
+    assert.ok(!c.url.includes(SESSION_TOKEN), `session token leaked into the URL: ${c.url}`);
+  }
+
+  // The key buys a session and is then gone. Every later request carries the token
+  // instead — which opens the dashboard's routes only, expires, and can be revoked,
+  // none of which is true of the key. A regression that simply kept using the key
+  // would still work, so nothing but this assertion would notice.
+  const withKey = calls.filter((c) => c.opts.headers['X-Stagify-Endpoint-Key'] === KEY);
+  assert.deepEqual(withKey.map((c) => c.url), ['/api/admin/session'],
+    'the master key must reach exactly one endpoint: the one that exchanges it');
+
+  for (const c of calls.filter((x) => x.url !== '/api/admin/session')) {
+    assert.equal(c.opts.headers['X-Stagify-Admin-Session'], SESSION_TOKEN,
+      `${c.url} must authenticate with the session token`);
   }
 });
 
-test('SECURITY: the key is never persisted — sessionStorage holds only the timestamp', async () => {
+test('SECURITY: the key is never persisted — only the token it was exchanged for is', async () => {
   await signIn();
 
-  assert.ok(sessionStore.adm_ts, 'the session timestamp is stored');
-  for (const [k, v] of Object.entries(sessionStore)) {
-    assert.ok(!String(v).includes(KEY), `key persisted under sessionStorage["${k}"]`);
+  // The whole point of the exchange. Persisting `endpoint_key` would put the master
+  // secret — which also unlocks /api/stage-by-endpoint-key and POST /api/getpro, and
+  // which can only be revoked by editing an env var and redeploying — into browser
+  // storage indefinitely. What is stored instead is scoped, expiring and revocable.
+  for (const [store, name] of [[sessionStore, 'sessionStorage'], [localStore, 'localStorage']]) {
+    for (const [k, v] of Object.entries(store)) {
+      assert.ok(!String(v).includes(KEY), `key persisted under ${name}["${k}"]`);
+    }
   }
+  assert.equal(localStore.adm_session, SESSION_TOKEN, 'the session token is what survives a reload');
+  assert.equal(localStore.adm_session_exp, String(SESSION_EXP), 'with its expiry, so a lapsed session is known before a request goes out');
 });
 
 // ===========================================================================
@@ -271,7 +307,7 @@ test('a successful upload posts multipart (not JSON) and renders the public link
   assert.equal(post.opts.method, 'POST');
   assert.equal(post.opts.headers['Content-Type'], undefined,
     'multipart bodies must NOT get an explicit Content-Type — the browser sets the boundary');
-  assert.equal(post.opts.headers['X-Stagify-Endpoint-Key'], KEY);
+  assert.equal(post.opts.headers['X-Stagify-Admin-Session'], SESSION_TOKEN);
   assert.deepEqual(post.opts.body.entries.map(([k]) => k), ['image']);
 
   const box = $('adm-host-result');
@@ -351,24 +387,34 @@ test('a failed uptime reset surfaces the error and restores the button', async (
 // Sign-out
 // ===========================================================================
 
-test('signing out wipes the key, the stored timestamp, and the loaded data', async () => {
+test('signing out revokes the session server-side, then wipes it locally', async () => {
   await signIn();
-  assert.ok(sessionStore.adm_ts, 'precondition: signed in');
+  assert.ok(localStore.adm_session, 'precondition: signed in');
 
+  calls = [];
   $('adm-signout').dispatch('click');
 
-  assert.equal(sessionStore.adm_ts, undefined, 'the session timestamp is cleared');
+  // Clearing storage alone would leave a live token on the server that any copy of
+  // it could keep using, so sign-out has to say so out loud.
+  const revoke = calls.find((c) => c.url === '/api/admin/session');
+  assert.ok(revoke, 'sign-out must tell the server');
+  assert.equal(revoke.opts.method, 'DELETE');
+  assert.equal(revoke.opts.headers['X-Stagify-Admin-Session'], SESSION_TOKEN, 'and name the token it is revoking');
+
+  assert.equal(localStore.adm_session, undefined, 'the stored token is cleared');
+  assert.equal(localStore.adm_session_exp, undefined, 'and its expiry with it');
   assert.ok($('adm-dash').classList.contains('hidden'), 'the dashboard is hidden');
   assert.equal($('adm-login').style.display, '', 'the login form is restored');
   assert.equal($('adm-key').value, '', 'the key input is emptied');
 
-  // The definitive check: a request made after sign-out carries no key.
+  // The definitive check: a request made after sign-out carries no credential at all.
   calls = [];
   handler = serveAll;
   $('adm-refresh').dispatch('click');
   await settle();
   for (const c of calls) {
     assert.notEqual(c.opts.headers['X-Stagify-Endpoint-Key'], KEY, `${c.url} still carried the old key`);
+    assert.notEqual(c.opts.headers['X-Stagify-Admin-Session'], SESSION_TOKEN, `${c.url} still carried the revoked token`);
   }
 });
 
@@ -391,7 +437,7 @@ test('a rejected key does not sign in, and surfaces the error inline', async () 
 
   assert.equal($('adm-login-err').textContent, 'Invalid access key.');
   assert.equal($('adm-login-err').classList.contains('hidden'), false);
-  assert.deepEqual(calls.map((c) => c.url), ['/api/admin/ping'],
+  assert.deepEqual(calls.map((c) => c.url), ['/api/admin/session'],
     'a failed sign-in must not touch a single data endpoint');
 });
 

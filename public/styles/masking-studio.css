@@ -60,7 +60,11 @@
 
       /* --- Studio layout ---------------------------------------------------- */
       .ms-shell { width: 100%; max-width: 1400px; margin: 0 auto; }
-      .ms-intro { text-align: center; margin: 4px auto 18px; max-width: 760px; }
+      /* Wide enough that the subtitle sets on ONE line. Deliberately a max-width and not
+         `nowrap`: the sentence is ~110 characters in English and longer in German, so no
+         phone will ever hold it, and `nowrap` would push a scrollbar across the page
+         instead of wrapping. Matches .ex-intro. */
+      .ms-intro { text-align: center; margin: 4px auto 28px; max-width: 1000px; }
       .ms-intro h1 {
         margin: 0 0 8px;
         font-size: clamp(26px, 3.2vw, 38px);
@@ -69,14 +73,52 @@
         color: var(--brand-deep);
       }
       .ms-intro p { margin: 0; color: var(--accent); font-size: 15px; line-height: 1.55; }
+      .ms-intro p.ms-intro__actions { margin: 18px 0 0; }
+      /* Matched by id, not class, so it outranks any `display` a future rule puts on
+         `.ms-intro p.ms-intro__actions` (0,2,1) — the trap the Exterior Studio hit when its
+         version of this row grew a second child and a class-only `[hidden]` stopped
+         winning, leaving the sales button on screen for a subscriber. Still loses to
+         `html.ms-pro-pending #ms-hero-actions` (1,1,1), which the pre-paint gate needs. */
+      #ms-hero-actions[hidden] { display: none; }
+      .ms-intro__actions a { text-decoration: none; }
+
+      /* --- The pre-paint Pro shape --------------------------------------- */
+      /* The markup ships in the anonymous state — pitch visible, tool hidden — which is
+         right for everyone except the people who already paid, who would otherwise watch
+         the sales pitch paint and vanish a round trip later when /api/auth/me answers.
+         scripts/preview-gate.js runs before the first paint and puts this class on <html>
+         when the plan auth.js cached says Stagify+; masking-studio/access.js takes it off
+         the moment the live plan is known, after which the `hidden` properties are the
+         whole truth. These three rules ARE that pre-paint state — the class does nothing
+         without them.
+
+         Two things they must keep doing, both load-bearing:
+
+          1. `display`, never `visibility`. styles.css's i18n anti-FOUC rule
+             (`body.language-loaded [data-lang] { visibility: visible }`, specificity
+             (0,2,1)) matches every translatable element on this page and would silently
+             un-hide anything suppressed with `visibility`.
+          2. The third selector has to outrank `.ms-grid[hidden] { display: none }` below.
+             An id does that; a class would tie and lose to source order. */
+      html.ms-pro-pending #ms-pitch,
+      html.ms-pro-pending #ms-hero-actions { display: none; }
+      html.ms-pro-pending #ms-tool[hidden] { display: grid; }
 
       /* The site's default buttons shout in uppercase; inside the studio (and
-         its gate) they read as tool controls, so use sentence case. */
+         its dialogs) they read as tool controls, so use sentence case. */
       .ms-shell .btn, .ms-pro-gate .btn {
         text-transform: none;
         letter-spacing: normal;
         font-weight: 600;
         border-radius: 10px;
+        /* The base .btn sets no `display`, so an <a class="btn"> stays INLINE and its
+           vertical padding paints outside the line box instead of growing it — the hero
+           link would sit on top of the paragraph above it. The studio's own buttons are
+           <button> elements, which are inline-block already, so this only shows up once
+           the page grows an anchor styled as a button. */
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
       }
       #ms-generate { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
 
@@ -85,6 +127,73 @@
         grid-template-columns: 380px 1fr;
         gap: 20px;
         align-items: start;
+      }
+      /* [hidden] is a UA rule at lower specificity than the class above, so without this
+         the grid stays laid out for a signed-out visitor. */
+      .ms-grid[hidden] { display: none; }
+
+      /* --- The public half ------------------------------------------------
+         Same shape as the Exterior Studio's pitch, deliberately: one frosted surface with
+         hairline-separated columns and one colour ramp (--brand-deep headings, --accent
+         prose). Two studios that look like two products is a worse outcome than a little
+         repetition between two stylesheets — the reason this file was built on the
+         Exterior Studio's recipe in the first place. */
+      .ms-pitch { display: grid; width: 100%; max-width: 1000px; margin: 0 auto; padding-bottom: 44px; }
+      #ms-pitch[hidden] { display: none; }
+      .ms-features-section { margin: 0; }
+      .ms-section__title {
+        margin: 0 0 16px;
+        text-align: center;
+        font-size: clamp(1.05rem, 1.9vw, 1.3rem);
+        font-weight: 700;
+        letter-spacing: -0.2px;
+        color: var(--brand-deep);
+      }
+      .ms-board { padding: 4px 10px 6px; }
+      .ms-features { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .ms-feature { padding: 22px 22px 24px; }
+      /* A hairline between columns rather than three bordered cards: one line, one weight,
+         and no nested boxes on an already-frosted page. */
+      .ms-feature + .ms-feature { border-left: 1px solid rgba(37, 99, 235, 0.13); }
+      .ms-feature__title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0 0 7px;
+        font-size: 14.5px;
+        font-weight: 700;
+        color: var(--brand-deep);
+      }
+      /* `flex: 0 0 auto` because the SVG is a flex item and would otherwise be squeezed by
+         a long heading rather than wrapping it. The `data-lang` sits on a <span> beside the
+         icon, never on the <h3>: language-loader writes textContent, so a key on the
+         heading would delete the icon on the first language switch. */
+      .ms-feature__icon { flex: 0 0 auto; color: var(--brand); }
+      .ms-feature__body { margin: 0; font-size: 13.5px; line-height: 1.6; color: var(--accent); }
+      .ms-honest {
+        margin: 0;
+        padding: 16px 22px 18px;
+        border-top: 1px solid rgba(37, 99, 235, 0.13);
+        font-size: 13.5px;
+        line-height: 1.6;
+        color: var(--accent);
+      }
+      .ms-honest__title { color: var(--brand-deep); font-weight: 700; }
+      /* The stop between the lead-in and the sentence lives in CSS so neither pack has to
+         carry punctuation that belongs to the layout. A full stop and not a free-standing
+         middot: it attaches to the words before it, so a wrap can never strand it. */
+      .ms-honest__title::after { content: "."; }
+      .ms-honest__body { margin: 0; }
+
+      @media (max-width: 780px) {
+        .ms-features { grid-template-columns: minmax(0, 1fr); }
+        /* The rule turns with the layout — a left border between stacked rows is a stray
+           vertical tick down the side of the panel. */
+        .ms-feature + .ms-feature {
+          border-left: 0;
+          border-top: 1px solid rgba(37, 99, 235, 0.13);
+        }
+        .ms-feature { padding: 18px 20px; }
       }
 
       /* Frosted glass panel recipe used across the site. */

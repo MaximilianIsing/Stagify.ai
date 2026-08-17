@@ -141,6 +141,44 @@ test('every comparison row carries an explanation, and every explanation a row',
   );
 });
 
+test('the ⓘ buttons stay in one vertical column', () => {
+  // The column is a layout the MARKUP has to cooperate with: .sp-row-head is the flex row
+  // that pushes each button to the same x. Leave a label and its button loose in the <th>
+  // and they lay out inline instead, so every ⓘ lands at a different place, which is the
+  // arrangement this replaced. CSS cannot restore the column on its own, and no rendering
+  // happens in `node --test`, so the wrapper is what gets pinned.
+  const headers = [...tableBody().matchAll(/<th scope="row">([\s\S]*?)<\/th>/g)].map((m) => m[1]);
+  const loose = headers.filter((header) => {
+    const head = /<span class="sp-row-head">([\s\S]*?)<\/span>\s*<span class="sp-tip-text"/.exec(header);
+    return !head || !head[1].includes('sp-row-label') || !head[1].includes('sp-tip-btn');
+  });
+  assert.equal(loose.length, 0, `${loose.length} row header(s) do not wrap label + ⓘ in one .sp-row-head`);
+});
+
+test('no explanation uses an em dash, in the markup or in any pack', () => {
+  // A copy rule the author asked for (2026-08-16), and one that only a guard can hold:
+  // the strings live in eleven files, the dash is what a rewrite naturally reaches for,
+  // and nothing about the page breaks when one comes back. The CJK double form is
+  // included because zh/ja reach for —— rather than —.
+  const DASH = /[—–―]/;
+
+  for (const row of rows()) {
+    assert.doesNotMatch(row.tip, DASH, `${PLUS_PAGE}: the "${row.label}" tooltip uses a dash`);
+  }
+
+  const langs = path.join(PUBLIC, 'languages');
+  const files = fs.readdirSync(langs).filter((f) => f.endsWith('.json'));
+  assert.ok(files.length >= 11, `expected 11 language packs, found ${files.length}`);
+  const offenders = [];
+  for (const file of files) {
+    const tips = JSON.parse(fs.readFileSync(path.join(langs, file), 'utf8'))?.stagifyPlus?.compare?.tips ?? {};
+    for (const [key, value] of Object.entries(tips)) {
+      if (DASH.test(String(value))) offenders.push(`${file} → tips.${key}`);
+    }
+  }
+  assert.deepEqual(offenders, [], 'dashes came back in the tooltip copy: ');
+});
+
 test('every Stagify+ tool is PITCHED in its row tooltip', () => {
   // Scoped to the tooltips, not the whole page, and that scoping is the assertion. The
   // row LABELS already name three of the four tools, so a check that searched the row

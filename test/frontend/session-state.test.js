@@ -2,7 +2,8 @@
 //
 // Four lines, and both of the site's pre-paint tricks depend on getting them right:
 //
-//   • exterior-studio-gate.js pre-paints the Pro page shape from the cached plan;
+//   • preview-gate.js pre-paints the Pro page shape on all four preview pages, from the
+//     cached plan (ai-designer-gate.js carries the same body inline);
 //   • session-class.js pre-paints the nav's Gallery tab from the stored token.
 //
 // Each is a GUESS made before /api/auth/me can answer, and each is undone by a writer that

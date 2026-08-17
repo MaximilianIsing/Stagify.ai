@@ -324,7 +324,7 @@ test('home.showcase is complete in all eleven packs', () => {
   const packs = fs.readdirSync(dir).filter((f) => f.endsWith('.json'));
   assert.equal(packs.length, 11, 'eleven language packs');
 
-  const LEAVES = ['title', 'subtitle', 'tablistAria', 'prevAria', 'nextAria'];
+  const LEAVES = ['title', 'tablistAria', 'prevAria', 'nextAria'];
   const TABS = ['staging', 'designer', 'masking', 'exterior', 'gallery'];
 
   for (const file of packs) {

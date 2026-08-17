@@ -262,16 +262,22 @@
         color: var(--brand-deep);
       }
 
+      /* Unlike .ent-legal this block sits OUTSIDE the white card, straight on the page
+         background, where --slate was 2.75:1 and --brand links 2.99:1. Both fail AA and
+         both looked washed out. --accent is 5.95:1 there and --brand-deep 5.97:1 — the
+         same pair the shared site footer falls back to on that background. Not gated to
+         a breakpoint the way the footer's is: this text is on the body at every width,
+         the >769px case only hides it from axe behind the background video. */
       .ent-footnote {
         margin: 1.5rem 0 0;
         font-size: 0.8125rem;
         line-height: 1.5;
-        color: var(--slate);
+        color: var(--accent);
         text-align: center;
       }
       .ent-footnote a {
-        color: var(--brand);
-        font-weight: 500;
+        color: var(--brand-deep);
+        font-weight: 600;
         text-decoration: none;
       }
       .ent-footnote a:hover { text-decoration: underline; }
@@ -309,30 +315,41 @@
         text-align: center;
       }
 
+      /* Fine print under the submit button, not a panel. The white card this used to
+         carry gave one sentence of boilerplate the same visual weight as the pricing
+         stats and the feature list, so the eye read it as a section of the page. It is
+         a caption on a button. Set apart from .ent-footnote by SIZE, not by going paler:
+         this is a consent line, and it is 12px, so the colour has the least room to give.
+         --slate-deep is 7.3:1 on the card; --slate was 4.6:1, which passed and still read
+         washed out. */
       .ent-legal {
-        margin-top: 1.75rem;
-        padding: 1rem 1.15rem;
-        background: rgba(255, 255, 255, 0.88);
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        font-size: 0.8125rem;
-        line-height: 1.55;
-        color: var(--slate);
+        margin: 0.85rem 0 0;
+        font-size: 0.75rem;
+        line-height: 1.5;
+        color: var(--slate-deep);
         text-align: center;
       }
       .ent-legal a {
         color: var(--brand);
-        font-weight: 600;
+        font-weight: 500;
         text-decoration: none;
       }
       .ent-legal a:hover { text-decoration: underline; }
 
+      /* These five declarations MUST equal the inline style the other five pages carry
+         (`text-align:center;padding:20px 16px 28px;font-size:13px;color:#374151` with
+         `color:#2563eb` links) — see test/frontend/site-footer-parity.test.js for why
+         this page gets a class instead. The class exists to keep the mobile override
+         below free of !important, NOT to restyle the footer, and it had quietly drifted
+         into doing both: --muted (#6b7280) instead of #374151 read visibly lighter than
+         the same footer one page over, and a -apple-system font-family stack opted this
+         one page out of Inter, which renders narrower at the same 13px and made the
+         footer look smaller as well as greyer. */
       .ent-site-footer {
         text-align: center;
         padding: 20px 16px 28px;
         font-size: 13px;
-        color: var(--muted);
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        color: var(--accent);
       }
       .ent-site-footer a {
         color: var(--brand);
@@ -341,13 +358,13 @@
       .ent-site-footer a:hover { text-decoration: underline; }
 
       /* This page sits on the same #b2c4f6 body as every other one — enterprise.css never
-         overrides it — so the two colours above land at 2.79:1 and 2.99:1 and fail the
-         colour-contrast audit. Mobile-only, matching the `min-width: 769px` gate above:
+         overrides it — so #2563eb lands at 2.99:1 and fails the colour-contrast audit;
+         --brand-deep is 5.98:1. Mobile-only, matching the `min-width: 769px` gate above:
          below that breakpoint #background-video is display:none and axe can resolve the
          background down to <body>, which is when the failure is actually reported. No
          !important needed here — unlike the other five pages, these links are not
-         inline-styled. */
+         inline-styled, which is the whole reason this footer has a class.
+         The TEXT colour no longer needs an override: #374151 is 5.95:1 on that body. */
       @media (max-width: 768px) {
-        .ent-site-footer { color: var(--accent); }
         .ent-site-footer a { color: var(--brand-deep); }
       }

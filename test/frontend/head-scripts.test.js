@@ -25,15 +25,23 @@ const publicDir = path.join(root, 'public');
  * root-relative / relative / `../` path variants across pages all resolve to one entry.
  */
 const BLOCKING_ALLOWED = {
-  'ai-designer-gate.js': 'redirects signed-out visitors before the studio paints',
-  'masking-studio-gate.js': 'same gate for the Masking Studio',
+  // Its VIEWPORT redirect is what still blocks: the studio is a desktop layout, and the
+  // check reads the layout viewport so it has to run before the body paints. It no longer
+  // redirects on the visitor — that page is a preview now — but it cannot simply mount the
+  // shared preview-gate.js either, because that file never navigates by design and the width
+  // check must come first. So it carries the shared gate's body inline, and
+  // ai-designer-gate-mobile.test.js pins both halves.
+  'ai-designer-gate.js': 'redirects a phone-sized viewport, then applies the cached-Pro shape, both before paint',
   'gallery-gate.js': 'PC-only feature — redirects a phone-sized viewport before the grid paints',
   'faq-redirect.js': 'meta-refresh stub — must redirect before anything renders',
-  // The odd one out: it redirects nobody. The Exterior Studio ships in its anonymous
-  // shape, so a Stagify+ visitor used to watch the sales pitch paint and vanish once
-  // /api/auth/me answered — a full round trip later. This reads the plan auth.js cached
-  // and applies the Pro shape in CSS, which is worth nothing at all after first paint.
-  'exterior-studio-gate.js': 'applies the cached-Pro page shape before the first paint, so a subscriber never sees the pitch',
+  // The one that redirects NOBODY, and the reason this list is shrinking rather than
+  // growing. A preview page ships in its anonymous shape, so a Stagify+ visitor used to
+  // watch the sales pitch paint and vanish once /api/auth/me answered — a full round trip
+  // later. This reads the plan auth.js cached and applies the Pro shape in CSS, which is
+  // worth nothing at all after first paint. `masking-studio-gate.js` and
+  // `exterior-studio-gate.js` both used to sit here; the first was deleted when that page
+  // became a preview, the second when its page was folded onto this shared file.
+  'preview-gate.js': 'applies the cached-Pro page shape before first paint on all four preview pages, so a subscriber never sees the pitch',
   // The only one on EVERY nav-bearing page, so it is also the only one whose cost is paid
   // site-wide. It is deliberately last in <head>: first paint is already blocked on the
   // stylesheets above it, so a small same-origin file fetched alongside them is free,

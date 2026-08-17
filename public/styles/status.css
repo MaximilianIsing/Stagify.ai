@@ -23,9 +23,8 @@
       .st-head { text-align: center; margin-bottom: 22px; }
       .st-head h1 {
         font-size: clamp(30px, 5vw, 42px); font-weight: 800; letter-spacing: -.022em;
-        color: var(--ink); margin: 0 0 8px;
+        color: var(--brand-deep); margin: 0;
       }
-      .st-head p { color: var(--slate-deep); font-size: 15px; margin: 0; }
 
       /* ---- Status banner ---------------------------------------------------- */
       .st-banner {
@@ -104,6 +103,18 @@
       .st-incident { display: flex; gap: 14px; align-items: flex-start; padding: 14px 0; border-top: 1px solid var(--line); }
       .st-incident:first-child { border-top: none; }
       .st-incident__sev { width: 10px; height: 10px; border-radius: 50%; background: var(--red); margin-top: 5px; flex: 0 0 auto; box-shadow: 0 0 0 4px rgba(239, 68, 68, .12); }
+      /* An unresolved incident is the one line on this page that is NEWS rather than
+         history, so it pulses. The animation is the only difference — the "Ongoing"
+         in the meta line carries the same meaning for anyone who cannot see it, and
+         for anyone who has asked not to be animated at. */
+      .st-incident__sev.is-ongoing { animation: st-pulse 1.8s ease-in-out infinite; }
+      @keyframes st-pulse {
+        0%, 100% { box-shadow: 0 0 0 4px rgba(239, 68, 68, .12); }
+        50% { box-shadow: 0 0 0 8px rgba(239, 68, 68, .04); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .st-incident__sev.is-ongoing { animation: none; }
+      }
       .st-incident__main { flex: 1 1 auto; min-width: 0; }
       .st-incident__title { font-weight: 650; color: var(--ink); font-size: 14px; }
       .st-incident__meta { color: var(--muted); font-size: 12.5px; margin-top: 3px; }

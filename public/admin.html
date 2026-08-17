@@ -8,66 +8,135 @@
   <meta name="robots" content="noindex, nofollow">
   <meta http-equiv="Cache-Control" content="no-store">
   <meta http-equiv="Pragma" content="no-cache">
+  <!-- styles.css is loaded for the Inter @font-face set, the reset and the shared
+       colour tokens only. The console does NOT wear the marketing chrome: no site
+       header, no background video (see styles/admin.css for why). -->
   <link rel="stylesheet" href="styles/styles.css">
   <link rel="stylesheet" href="styles/toast.css">
   <link rel="stylesheet" href="styles/admin.css">
 </head>
 <body class="page-admin">
-  <video id="background-video" autoplay muted loop playsinline webkit-playsinline preload="metadata" poster="media-webp/background-poster.webp">
-    <source src="background.mp4" type="video/mp4" media="(min-width: 769px)">
-  </video>
-
-  <header class="site-header">
-    <nav class="nav">
-      <a href="index.html" class="brand">
-        <img src="media-webp/logo/Logo64x64.webp" data-lang-attr="navigation.logoAlt|alt" alt="Stagify.ai logo — go to homepage" class="brand-logo" fetchpriority="high">
-        <span class="brand-strong">Stagify</span><span class="brand-light">.ai</span>
-      </a>
-      <div class="nav-center"></div>
-      <div class="nav-trailing"></div>
-    </nav>
-  </header>
-
   <main class="adm">
     <!-- LOGIN -->
     <div class="adm-login" id="adm-login">
       <div class="adm-login-card">
         <img src="media-webp/logo/Logo64x64.webp" class="adm-login-logo" alt="" aria-hidden="true">
-        <h1>Admin Dashboard</h1>
-        <p>Enter your access key to continue</p>
+        <h1>Admin console</h1>
+        <p>Enter your access key to continue.</p>
         <form id="adm-login-form" autocomplete="off">
           <input type="password" class="adm-key-input" id="adm-key" placeholder="Access key" autocomplete="off" spellcheck="false" required>
           <button type="submit" class="adm-login-btn" id="adm-login-btn">Sign in</button>
           <div class="adm-login-err hidden" id="adm-login-err"></div>
         </form>
       </div>
+      <p class="adm-login-foot">The key is held in memory for this tab only — a reload always asks again.</p>
     </div>
 
     <!-- DASHBOARD -->
     <div class="adm-dash hidden" id="adm-dash">
-      <div class="adm-topbar">
-        <h1>Stagify Admin</h1>
-        <div class="adm-topbar-right">
-          <a class="adm-topbar-link" href="https://stagify-agent-emailer.onrender.com/" target="_blank" rel="noopener noreferrer">Email Admin</a>
-          <span class="adm-meta" id="adm-last-refresh"></span>
-          <button class="adm-refresh" id="adm-refresh" title="Reload all data">Refresh</button>
-          <button class="adm-signout" id="adm-signout">Sign out</button>
+      <!-- Fixed rail. The 11 sections wrapped onto three rows as pill tabs; a rail
+           gives each one a stable position and room for a label, an icon and a count. -->
+      <aside class="adm-side">
+        <div class="adm-side-brand">
+          <img src="media-webp/logo/Logo64x64.webp" class="adm-side-logo" alt="" aria-hidden="true">
+          <span class="adm-side-brand-txt">Stagify<span class="adm-side-brand-sub">Console</span></span>
         </div>
-      </div>
 
-      <div class="adm-tabs" id="adm-tabs" role="tablist">
-        <button class="adm-tab active" data-tab="overview">Overview</button>
-        <button class="adm-tab" data-tab="insights">Insights</button>
-        <button class="adm-tab" data-tab="users">Users <span class="adm-tab-count" id="tc-users">0</span></button>
-        <button class="adm-tab" data-tab="enterprise">Enterprise <span class="adm-tab-count" id="tc-ent">0</span></button>
-        <button class="adm-tab" data-tab="contacts">Contacts <span class="adm-tab-count" id="tc-contacts">0</span></button>
-        <button class="adm-tab" data-tab="email-opens">Email Opens <span class="adm-tab-count" id="tc-email-opens">0</span></button>
-        <button class="adm-tab" data-tab="emails">Emails</button>
-        <button class="adm-tab" data-tab="referrals">Referrals</button>
-        <button class="adm-tab" data-tab="bugs">Bugs <span class="adm-tab-count" id="tc-bugs">0</span></button>
-        <button class="adm-tab" data-tab="hosting">Image Hosting <span class="adm-tab-count" id="tc-hosting">0</span></button>
-        <button class="adm-tab" data-tab="downloads">Downloads</button>
-      </div>
+        <nav class="adm-nav" id="adm-tabs" role="tablist" aria-label="Dashboard sections">
+          <p class="adm-nav-group">Analytics</p>
+          <button class="adm-tab active" data-tab="overview" data-title="Overview" data-sub="Headline numbers and generation volume." role="tab" aria-selected="true">
+            <svg class="adm-tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+            <span class="adm-tab-lbl">Overview</span>
+          </button>
+          <button class="adm-tab" data-tab="insights" data-title="Insights" data-sub="Reliability, lifecycle, growth and composition." role="tab" aria-selected="false">
+            <svg class="adm-tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v16.5A1.5 1.5 0 0 0 4.5 21H21"/><path d="M7 15l4-4 3 2.5L20 7"/></svg>
+            <span class="adm-tab-lbl">Insights</span>
+          </button>
+
+          <p class="adm-nav-group">Accounts</p>
+          <button class="adm-tab" data-tab="users" data-title="Users" data-sub="Every account, with its plan and activity." role="tab" aria-selected="false">
+            <svg class="adm-tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 20v-1.5a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4V20"/><circle cx="9" cy="7" r="3.5"/><path d="M22 20v-1.5a4 4 0 0 0-3-3.85"/><path d="M16 4.15a4 4 0 0 1 0 7.7"/></svg>
+            <span class="adm-tab-lbl">Users</span>
+            <span class="adm-tab-count" id="tc-users">0</span>
+          </button>
+          <button class="adm-tab" data-tab="enterprise" data-title="Enterprise" data-sub="Domains on an enterprise subscription." role="tab" aria-selected="false">
+            <svg class="adm-tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21V6.5L10 3v18"/><path d="M10 9h8a1.5 1.5 0 0 1 1.5 1.5V21"/><path d="M2 21h20"/><path d="M6 9h1M6 13h1M6 17h1M14 13h2M14 17h2"/></svg>
+            <span class="adm-tab-lbl">Enterprise</span>
+            <span class="adm-tab-count" id="tc-ent">0</span>
+          </button>
+
+          <p class="adm-nav-group">Inbox</p>
+          <button class="adm-tab" data-tab="contacts" data-title="Contacts" data-sub="Submissions from the contact form." role="tab" aria-selected="false">
+            <svg class="adm-tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="4.5" width="19" height="15" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+            <span class="adm-tab-lbl">Contacts</span>
+            <span class="adm-tab-count" id="tc-contacts">0</span>
+          </button>
+          <button class="adm-tab" data-tab="bugs" data-title="Bug reports" data-sub="What users hit, in their words." role="tab" aria-selected="false">
+            <svg class="adm-tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="6" width="8" height="14" rx="4"/><path d="M8 12H4M20 12h-4M8.5 7.5 6 5M15.5 7.5 18 5M8.5 17.5 6 20M15.5 17.5 18 20"/><path d="M9.5 5.5a2.5 2.5 0 0 1 5 0"/></svg>
+            <span class="adm-tab-lbl">Bugs</span>
+            <span class="adm-tab-count" id="tc-bugs">0</span>
+          </button>
+
+          <p class="adm-nav-group">Outreach</p>
+          <button class="adm-tab" data-tab="email-opens" data-title="Email opens" data-sub="Which broker outreach actually got opened." role="tab" aria-selected="false">
+            <svg class="adm-tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 10.5 12 4l9.5 6.5V19a2 2 0 0 1-2 2h-15a2 2 0 0 1-2-2z"/><path d="m2.5 10.5 9.5 6.5 9.5-6.5"/></svg>
+            <span class="adm-tab-lbl">Email opens</span>
+            <span class="adm-tab-count" id="tc-email-opens">0</span>
+          </button>
+          <button class="adm-tab" data-tab="emails" data-title="Email templates" data-sub="Every email a user can receive, rendered live." role="tab" aria-selected="false">
+            <svg class="adm-tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 13h6M8 16.5h4"/></svg>
+            <span class="adm-tab-lbl">Templates</span>
+          </button>
+          <button class="adm-tab" data-tab="referrals" data-title="Referral links" data-sub="Campaign short-URLs and where the clicks come from." role="tab" aria-selected="false">
+            <svg class="adm-tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13.5a4 4 0 0 0 5.7.4l3-3a4 4 0 0 0-5.7-5.7l-1.7 1.7"/><path d="M14 10.5a4 4 0 0 0-5.7-.4l-3 3a4 4 0 0 0 5.7 5.7l1.7-1.7"/></svg>
+            <span class="adm-tab-lbl">Referrals</span>
+          </button>
+
+          <p class="adm-nav-group">System</p>
+          <button class="adm-tab" data-tab="status" data-title="Server status" data-sub="Uptime, incidents, and what the public status page is saying." role="tab" aria-selected="false">
+            <svg class="adm-tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l2.5-6 4 12 2.5-6h5"/></svg>
+            <span class="adm-tab-lbl">Server status</span>
+            <span class="adm-tab-dot" id="tc-status" hidden></span>
+          </button>
+          <button class="adm-tab" data-tab="hosting" data-title="Image hosting" data-sub="Publicly hosted images and their permanent links." role="tab" aria-selected="false">
+            <svg class="adm-tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="m4 17 5-5 4 4 3-2.5 4 3.5"/></svg>
+            <span class="adm-tab-lbl">Image hosting</span>
+            <span class="adm-tab-count" id="tc-hosting">0</span>
+          </button>
+          <button class="adm-tab" data-tab="downloads" data-title="Data &amp; maintenance" data-sub="Raw exports and destructive operations." role="tab" aria-selected="false">
+            <svg class="adm-tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v11"/><path d="m8 10.5 4 4 4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+            <span class="adm-tab-lbl">Data</span>
+          </button>
+        </nav>
+
+        <div class="adm-side-foot">
+          <a class="adm-topbar-link" href="https://stagify-agent-emailer.onrender.com/" target="_blank" rel="noopener noreferrer">
+            Email admin
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M9 7h8v8"/></svg>
+          </a>
+          <button class="adm-signout" id="adm-signout" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 17v1.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-13a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2V7"/><path d="M10 12h11"/><path d="m18 9 3 3-3 3"/></svg>
+            Sign out
+          </button>
+        </div>
+      </aside>
+
+      <div class="adm-main">
+        <header class="adm-topbar">
+          <div class="adm-topbar-titles">
+            <h1 id="adm-page-title">Overview</h1>
+            <p class="adm-topbar-sub" id="adm-page-sub">Headline numbers and generation volume.</p>
+          </div>
+          <div class="adm-topbar-right">
+            <span class="adm-meta" id="adm-last-refresh"></span>
+            <button class="adm-refresh" id="adm-refresh" type="button" title="Reload all data">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-.6 4"/><path d="M20 4v7h-7"/></svg>
+              Refresh
+            </button>
+          </div>
+        </header>
+
+        <div class="adm-content">
 
       <div class="adm-panel active" id="panel-overview">
         <!-- Range selector, built by scripts/admin/overview.js. Scopes the stat
@@ -79,11 +148,17 @@
         <div class="adm-chart-stack" id="adm-charts"></div>
         <div class="adm-top-grid">
           <div class="adm-card">
-            <h2>Top users <span class="adm-card-tag" id="adm-top-users-range">30 days</span></h2>
+            <div class="adm-card-head">
+              <h2>Top users</h2>
+              <span class="adm-card-tag" id="adm-top-users-range">30 days</span>
+            </div>
             <div class="adm-table-wrap adm-table-wrap--short" id="adm-top-users"></div>
           </div>
           <div class="adm-card">
-            <h2>Recent signups <span class="adm-card-tag" id="adm-recent-signups-range">30 days</span></h2>
+            <div class="adm-card-head">
+              <h2>Recent signups</h2>
+              <span class="adm-card-tag" id="adm-recent-signups-range">30 days</span>
+            </div>
             <div class="adm-table-wrap adm-table-wrap--short" id="adm-recent-signups"></div>
           </div>
         </div>
@@ -96,58 +171,83 @@
       </div>
 
       <div class="adm-panel" id="panel-users">
-        <div class="adm-toolbar">
-          <input type="text" class="adm-search" id="adm-user-search" placeholder="Search by email...">
-          <button class="adm-filter" id="adm-filter-all" data-filter="all">All</button>
-          <button class="adm-filter" id="adm-filter-pro" data-filter="pro">Pro only</button>
-          <button class="adm-filter" id="adm-filter-free" data-filter="free">Free only</button>
-          <button class="adm-filter" data-filter="dormant" title="Last seen 30+ days ago">Dormant</button>
-          <button class="adm-filter" data-filter="never" title="Never seen in any log">Never active</button>
-          <span class="adm-result-count" id="adm-user-count"></span>
-        </div>
         <div class="adm-card">
+          <div class="adm-card-head">
+            <h2>Accounts</h2>
+            <span class="adm-result-count" id="adm-user-count"></span>
+          </div>
+          <div class="adm-toolbar">
+            <label class="adm-search-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+              <input type="text" class="adm-search" id="adm-user-search" placeholder="Search by email…">
+            </label>
+            <div class="adm-seg">
+              <button class="adm-filter" id="adm-filter-all" data-filter="all" type="button">All</button>
+              <button class="adm-filter" id="adm-filter-pro" data-filter="pro" type="button">Pro</button>
+              <button class="adm-filter" id="adm-filter-free" data-filter="free" type="button">Free</button>
+              <button class="adm-filter" data-filter="dormant" type="button" title="Last seen 30+ days ago">Dormant</button>
+              <button class="adm-filter" data-filter="never" type="button" title="Never seen in any log">Never active</button>
+            </div>
+          </div>
           <div class="adm-table-wrap" id="adm-users-table"></div>
         </div>
       </div>
 
       <div class="adm-panel" id="panel-enterprise">
         <div class="adm-card">
-          <h2>Enterprise domains</h2>
+          <div class="adm-card-head">
+            <h2>Enterprise domains</h2>
+          </div>
           <p class="adm-card-sub">Domains with active enterprise subscriptions. All users with matching email domains receive Stagify+ features.</p>
           <div class="adm-table-wrap" id="adm-ent-table"></div>
         </div>
       </div>
 
       <div class="adm-panel" id="panel-contacts">
-        <div class="adm-toolbar">
-          <input type="text" class="adm-search" id="adm-contact-search" placeholder="Search contacts...">
-          <span class="adm-result-count" id="adm-contact-count"></span>
-        </div>
         <div class="adm-card">
-          <h2>Contact submissions</h2>
+          <div class="adm-card-head">
+            <h2>Contact submissions</h2>
+            <span class="adm-result-count" id="adm-contact-count"></span>
+          </div>
+          <div class="adm-toolbar">
+            <label class="adm-search-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+              <input type="text" class="adm-search" id="adm-contact-search" placeholder="Search contacts…">
+            </label>
+          </div>
           <div class="adm-table-wrap" id="adm-contacts-table"></div>
         </div>
       </div>
 
       <div class="adm-panel" id="panel-email-opens">
-        <div class="adm-toolbar">
-          <input type="text" class="adm-search" id="adm-email-open-search" placeholder="Search by email...">
-          <span class="adm-result-count" id="adm-email-open-count"></span>
-        </div>
         <div class="adm-card">
-          <h2>Broker email opens</h2>
+          <div class="adm-card-head">
+            <h2>Broker email opens</h2>
+            <span class="adm-result-count" id="adm-email-open-count"></span>
+          </div>
           <p class="adm-card-sub">Binary open tracking: each email is either opened or not. Only Gmail/Outlook/Yahoo image-proxy requests count — generic browser or bot hits are ignored. Use <code class="adm-code">https://stagify.ai/email/logo.png?email=broker@example.com</code> in outreach emails.</p>
           <div id="adm-email-open-summary" class="adm-summary"></div>
+          <div class="adm-toolbar">
+            <label class="adm-search-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+              <input type="text" class="adm-search" id="adm-email-open-search" placeholder="Search by email…">
+            </label>
+          </div>
           <div class="adm-table-wrap" id="adm-email-opens-table"></div>
         </div>
       </div>
 
       <div class="adm-panel" id="panel-emails">
         <div class="adm-card">
-          <h2>Email preview</h2>
+          <div class="adm-card-head">
+            <h2>Email preview</h2>
+          </div>
           <p class="adm-card-sub">Every email a user can receive, rendered exactly as it arrives. Enter your address, then hit &ldquo;Send test&rdquo; on any template to get a live copy (its subject is prefixed with <code class="adm-code">[Test]</code>). Test sends go to the address you type here &mdash; never to real users.</p>
           <div class="adm-email-test">
-            <input type="email" id="adm-email-test-to" class="adm-search adm-email-test-input" placeholder="you@example.com" autocomplete="off" spellcheck="false">
+            <label class="adm-search-wrap adm-email-test-input">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 7.5 8.5 6 8.5-6"/></svg>
+              <input type="email" id="adm-email-test-to" class="adm-search" placeholder="you@example.com" autocomplete="off" spellcheck="false">
+            </label>
             <span id="adm-email-test-hint" class="adm-email-test-hint">Enter your email above to enable test sends.</span>
           </div>
           <div id="adm-email-gallery" class="adm-email-gallery"></div>
@@ -156,7 +256,9 @@
 
       <div class="adm-panel" id="panel-referrals">
         <div class="adm-card">
-          <h2>New referral link</h2>
+          <div class="adm-card-head">
+            <h2>New referral link</h2>
+          </div>
           <p class="adm-card-sub">Campaign short-URLs that redirect to the home page while counting who arrives through them &mdash; hand one out per channel to see which is working. A new link works the moment you create it; no deploy needed. Automated traffic (Slack, iMessage and WhatsApp link previews, search crawlers) is detected and kept out of the click counts.</p>
           <form class="adm-ref-form" id="adm-ref-form" autocomplete="off">
             <label class="adm-ref-field">
@@ -180,7 +282,10 @@
           <p class="adm-inline-msg" id="adm-ref-form-msg"></p>
         </div>
         <div class="adm-card">
-          <h2>Links <span class="adm-count-chip" id="adm-ref-count">0</span></h2>
+          <div class="adm-card-head">
+            <h2>Links</h2>
+            <span class="adm-count-chip" id="adm-ref-count">0</span>
+          </div>
           <!-- The list; retiring keeps a link’s history, deleting erases it. Built
                by scripts/admin/referrals.js, which also fills #adm-ref-detail. -->
           <div class="adm-table-wrap" id="adm-referrals"></div>
@@ -189,46 +294,114 @@
       </div>
 
       <div class="adm-panel" id="panel-bugs">
-        <div class="adm-toolbar">
-          <input type="text" class="adm-search" id="adm-bug-search" placeholder="Search bug reports...">
-          <span class="adm-result-count" id="adm-bug-count"></span>
-        </div>
         <div class="adm-card">
-          <h2>Bug reports</h2>
+          <div class="adm-card-head">
+            <h2>Bug reports</h2>
+            <span class="adm-result-count" id="adm-bug-count"></span>
+          </div>
+          <div class="adm-toolbar">
+            <label class="adm-search-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+              <input type="text" class="adm-search" id="adm-bug-search" placeholder="Search bug reports…">
+            </label>
+          </div>
           <div class="adm-table-wrap" id="adm-bugs-table"></div>
         </div>
       </div>
 
       <div class="adm-panel" id="panel-hosting">
         <div class="adm-card">
-          <h2>Host a new image</h2>
+          <div class="adm-card-head">
+            <h2>Host a new image</h2>
+          </div>
           <p class="adm-card-sub">Upload an image to host it publicly. You’ll get a permanent link with a random URL that anyone can open or embed externally. Max 25&nbsp;MB &middot; PNG, JPG, WebP, GIF.</p>
           <div class="adm-host-upload">
             <input type="file" id="adm-host-file" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
             <button class="adm-host-pick" id="adm-host-pick" type="button">Choose image&hellip;</button>
             <span class="adm-host-fname" id="adm-host-fname">No file selected</span>
-            <button class="adm-host-upload-btn" id="adm-host-upload-btn" type="button" disabled>Upload &amp; Host</button>
+            <button class="adm-host-upload-btn" id="adm-host-upload-btn" type="button" disabled>Upload &amp; host</button>
           </div>
           <div class="adm-host-result hidden" id="adm-host-result"></div>
         </div>
         <div class="adm-card">
-          <h2>Hosted images <span class="adm-count-chip" id="adm-host-count">0</span></h2>
+          <div class="adm-card-head">
+            <h2>Hosted images</h2>
+            <span class="adm-count-chip" id="adm-host-count">0</span>
+          </div>
           <p class="adm-card-sub">Every image currently hosted. Deleting unhosts it immediately &mdash; the link stops working right away.</p>
           <div id="adm-hosting-list"></div>
         </div>
       </div>
 
+      <!-- Server status. Everything inside #adm-status-body and the incident list is
+           built by scripts/admin/status-panel.js, which lazy-loads on first open and
+           polls while the tab is visible. -->
+      <div class="adm-panel" id="panel-status">
+        <div id="adm-status-body"></div>
+
+        <div class="adm-card">
+          <div class="adm-card-head">
+            <h2>Post an incident</h2>
+            <span class="adm-card-tag">Public</span>
+          </div>
+          <p class="adm-card-sub">Anything you write here appears in <strong>Recent incidents</strong> on the public <a href="/status" target="_blank" rel="noopener">status page</a>, in the words you type — the auto-detected entries are the only ones that get translated. The heartbeat only notices the process dying, so this is the way to record an outage the server itself survived: a dead upstream, a bad deploy, an expired key.</p>
+          <form class="adm-inc-form" id="adm-inc-form" autocomplete="off">
+            <label class="adm-inc-field adm-inc-field--wide">
+              <span class="adm-ref-field-lbl">What happened</span>
+              <input type="text" id="adm-inc-title" class="adm-search" placeholder="Staging renders failing — upstream model outage" maxlength="200" required>
+            </label>
+            <label class="adm-inc-field">
+              <span class="adm-ref-field-lbl">Started</span>
+              <input type="datetime-local" id="adm-inc-start" class="adm-search">
+            </label>
+            <label class="adm-inc-field">
+              <span class="adm-ref-field-lbl">Ended <span class="adm-ref-optional">(blank = ongoing)</span></span>
+              <input type="datetime-local" id="adm-inc-end" class="adm-search">
+            </label>
+            <label class="adm-inc-check">
+              <input type="checkbox" id="adm-inc-affects" checked>
+              <span>
+                <span class="adm-inc-check-lbl">Counts as downtime</span>
+                <span class="adm-inc-check-hint">Subtracts from the 24h / 7d / 30d figures. Leave off for a notice like scheduled maintenance.</span>
+              </span>
+            </label>
+            <button type="submit" class="adm-ref-create-btn" id="adm-inc-post">Post incident</button>
+          </form>
+          <p class="adm-inline-msg" id="adm-inc-msg"></p>
+        </div>
+
+        <div class="adm-card">
+          <div class="adm-card-head">
+            <h2>Incident log</h2>
+            <span class="adm-result-count" id="adm-inc-count"></span>
+          </div>
+          <p class="adm-card-sub">Both feeds: the gaps the heartbeat detected, and what you posted. Only your own entries can be resolved or deleted.</p>
+          <div class="adm-table-wrap" id="adm-inc-table"></div>
+        </div>
+
+        <div class="adm-card adm-card--danger">
+          <div class="adm-card-head">
+            <h2>Reset status history</h2>
+            <span class="adm-card-tag adm-card-tag--danger">Irreversible</span>
+          </div>
+          <p class="adm-card-sub">Wipe every recorded uptime percentage, detected outage <strong>and posted incident</strong>, then restart monitoring from now. This changes the public <a href="/status" target="_blank" rel="noopener">status page</a> and cannot be undone.</p>
+          <div class="adm-danger-row">
+            <button id="adm-reset-status" class="adm-danger-btn" type="button">Reset server status data</button>
+            <span id="adm-reset-status-msg" class="adm-inline-msg"></span>
+          </div>
+        </div>
+      </div>
+
       <div class="adm-panel" id="panel-downloads">
         <div class="adm-card">
-          <h2>Export data</h2>
+          <div class="adm-card-head">
+            <h2>Export data</h2>
+          </div>
           <p class="adm-card-sub">Download raw data files. Files are fetched securely via JavaScript — the access key is never exposed in URLs or browser history.</p>
           <div class="adm-dl-grid" id="adm-dl-grid"></div>
         </div>
-        <div class="adm-card">
-          <h2>Server status</h2>
-          <p class="adm-card-sub">Wipe all recorded uptime history and incidents and restart monitoring from now. This changes the public <a href="/status" target="_blank" rel="noopener">status page</a> and cannot be undone.</p>
-          <button id="adm-reset-status" class="adm-danger-btn" type="button">Reset server status data</button>
-          <span id="adm-reset-status-msg" class="adm-inline-msg"></span>
+      </div>
+
         </div>
       </div>
     </div>

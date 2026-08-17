@@ -115,6 +115,29 @@ export function publicPages() {
 }
 
 /**
+ * Every `.html` under `public/`, recursively, CRLF normalized — the top-level pages plus the
+ * ones in subfolders (`blog/`, `legal/`) whose footers are their own shapes.
+ *
+ * `publicPages()` stops at the top level on purpose (the header/footer parity guards
+ * compare the shared chrome, which only exists there). Use this one for checks that must
+ * cover every served page, since a copied-from blog article is a likely drift source.
+ * @returns {{ name: string, html: string }[]}
+ */
+export function allHtmlPages() {
+  /** @param {string} dir @returns {string[]} */
+  const walk = (dir) =>
+    fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+      const p = path.join(dir, e.name);
+      if (e.isDirectory()) return walk(p);
+      return e.name.endsWith('.html') ? [p] : [];
+    });
+  return walk(PUBLIC).map((file) => ({
+    name: path.relative(PUBLIC, file).replace(/\\/g, '/'),
+    html: fs.readFileSync(file, 'utf8').replace(/\r\n/g, '\n'),
+  }));
+}
+
+/**
  * Every `public/*.html` that actually carries nav links.
  * @returns {{ name: string, html: string }[]}
  */

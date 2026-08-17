@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
+    <!-- Google tag (gtag.js) — Google Ads. Config + async loader in scripts/gtag.js. -->
+    <script src="scripts/gtag.js" defer></script>
+
+
+    <!-- NO REDIRECTING gate, and this page never had one: it is a pitch, not a tool.
+         Basic Mask itself lives in the staging modal on the home page, so the Stagify+
+         view here is a way IN rather than the studio embedded. The gate below only
+         RESHAPES — it reads the plan auth.js cached last visit and pre-applies the Pro
+         shape before the first paint, so a subscriber is shown "Open Basic Mask" rather
+         than a sales button they have already paid past. It never navigates.
+         Render-blocking on purpose: deferring it would put it after the paint it exists
+         to beat. -->
+    <script src="scripts/preview-gate.js" data-pending-class="bm-pro-pending"></script>
+
+    <link rel="icon" type="image/webp" sizes="32x32" href="media-webp/logo/Logo32x32.webp">
+    <link rel="icon" type="image/webp" sizes="64x64" href="media-webp/logo/Logo64x64.webp">
+    <link rel="apple-touch-icon" sizes="180x180" href="media-webp/logo/Logo180x180.webp">
+    <link rel="manifest" href="manifest.json">
+    <title data-lang="pageMeta.basicMask.title">Basic Mask | Stagify.ai - Paint One Area and Restage Just That</title>
+    <meta name="description" data-lang-attr="pageMeta.basicMask.description|content" content="Paint over one part of a room photo, say what should change there, and get back the same photograph with only that area redone. Everything outside your brush stroke is untouched.">
+
+    <!-- SEO Meta Tags -->
+    <meta name="author" content="Stagify.ai">
+    <meta name="publisher" content="Stagify.ai">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Stagify.ai Basic Mask">
+
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Basic Mask | Stagify.ai - Paint One Area and Restage Just That">
+    <meta property="og:description" content="Paint over one part of a room photo, say what should change there, and get back the same photograph with only that area redone.">
+    <meta property="og:url" content="https://stagify.ai/basic-mask.html">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:locale:alternate" content="es_ES">
+    <meta property="og:locale:alternate" content="fr_FR">
+    <meta property="og:locale:alternate" content="de_DE">
+    <meta property="og:locale:alternate" content="zh_CN">
+    <meta property="og:locale:alternate" content="ko_KR">
+    <meta property="og:locale:alternate" content="pt_BR">
+    <meta property="og:locale:alternate" content="ru_RU">
+    <meta property="og:locale:alternate" content="it_IT">
+    <meta property="og:locale:alternate" content="ja_JP">
+    <meta property="og:locale:alternate" content="nl_NL">
+    <meta property="og:site_name" content="Stagify.ai">
+    <meta property="og:image" content="https://stagify.ai/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:alt" content="Stagify.ai — before and after AI virtual staging">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Basic Mask | Stagify.ai - Paint One Area and Restage Just That">
+    <meta name="twitter:description" content="Paint over one part of a room photo, say what should change there, and get back the same photograph with only that area redone.">
+    <meta name="twitter:image" content="https://stagify.ai/og-image.png">
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://stagify.ai/basic-mask.html">
+    <link rel="alternate" hreflang="en" href="https://stagify.ai/basic-mask.html">
+    <link rel="alternate" hreflang="es" href="https://stagify.ai/es/basic-mask.html">
+    <link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/basic-mask.html">
+    <link rel="alternate" hreflang="de" href="https://stagify.ai/de/basic-mask.html">
+    <link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/basic-mask.html">
+    <link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/basic-mask.html">
+    <link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/basic-mask.html">
+    <link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/basic-mask.html">
+    <link rel="alternate" hreflang="it" href="https://stagify.ai/it/basic-mask.html">
+    <link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/basic-mask.html">
+    <link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/basic-mask.html">
+    <link rel="alternate" hreflang="x-default" href="https://stagify.ai/basic-mask.html">
+    <!-- One URL serves all languages (switched client-side), so only x-default. -->
+    <!-- Structured Data. data-lang-keywords names the translation key for the "keywords"
+         property below -- see the note on index.html’s block. -->
+    <script type="application/ld+json" data-lang-jsonld data-lang-keywords="pageMeta.basicMask.keywords">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Basic Mask - Stagify.ai",
+      "description": "Paint a mask over one area of a room photo and describe the change you want there. Only the painted area is regenerated; the rest of the photograph is returned byte-for-byte as uploaded.",
+      "url": "https://stagify.ai/basic-mask.html",
+      "applicationCategory": "DesignApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "creator": {
+        "@type": "Organization",
+        "name": "Stagify.ai"
+      },
+      "featureList": [
+        "Multi-area color-coded masking",
+        "One-click AI object and area selection",
+        "Brush and rectangle highlight tools with undo and redo",
+        "Object removal and decluttering mode",
+        "One furniture photo per highlighted area",
+        "Parallel AI staging of every area at once",
+        "Multiple generated versions per area",
+        "Pixel-perfect preservation outside highlights",
+        "Zoom, pan, and pinch-to-zoom for precision masking",
+        "Before and after compare slider",
+        "Side-by-side before and after export",
+        "Automatic session restore",
+        "Works on desktop, tablet, and phone"
+      ],
+      "keywords": "masking studio, virtual staging mask, precision virtual staging, multi area staging, AI furniture placement, AI object selection, object removal, declutter photo, before after comparison, virtual staging editor"
+    }
+    </script>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://stagify.ai/" },
+        { "@type": "ListItem", "position": 2, "name": "Basic Mask", "item": "https://stagify.ai/basic-mask.html" }
+      ]
+    }
+    </script>
+
+    <!-- Only the two weights used above the fold (400 body, 700 headings), and only
+         the LATIN subset of each — the same minimal set index.html preloads, for the
+         same reason: as="font" fetches at Chrome’s Highest priority, above the LCP
+         image, so anything added here competes with it. Every other weight and
+         subset still resolves on demand from the unicode-range @font-face rules in
+         styles.css. Do not "helpfully" preload more. -->
+    <link rel="preload" href="fonts/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="fonts/inter-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="styles/styles.css">
+    <link rel="stylesheet" href="styles/toast.css">
+    <!-- auth.css styles the sign-in modal only, which nothing on this page opens
+         until a user clicks. Shipped as print (non-render-blocking) and promoted to
+         all by lazy-css.js once fetched — the same pattern index.html uses. The swap
+         is JS, not an inline onload= handler, so it passes the CSP’s
+         script-src-attr 'none'. -->
+    <link rel="stylesheet" href="styles/auth.css" media="print" data-lazy-css>
+    <script type="module" src="scripts/lazy-css.js"></script>
+    <noscript>
+      <!-- The promotion above is the only thing that ever loads this sheet, so
+           without this the modal is unstyled with JS off. -->
+      <link rel="stylesheet" href="styles/auth.css">
+    </noscript>
+    <link rel="preload" href="languages/english.json" as="fetch" crossorigin>
+    <script type="module" src="scripts/language-detect.js"></script>
+    <script type="module" src="scripts/language-loader.js"></script>
+    <script type="module" src="scripts/language-switcher.js"></script>
+    <script type="module" src="scripts/nav-pill.js"></script>
+    <link rel="stylesheet" href="styles/basic-mask.css">
+    <script type="module" src="scripts/auth.js"></script>
+    <script type="module" src="scripts/profile-menu.js"></script>
+    <!-- Sets html.has-session from the stored token BEFORE first paint, so the nav’s
+         Gallery tab does not pop in a round trip late. Render-blocking on purpose, and
+         last in <head> so it never delays discovery of the CSS above it. -->
+    <script src="scripts/session-class.js"></script>
+  </head>
+  <body>
+    <!-- Background Video -->
+    <video id="background-video" autoplay muted loop playsinline webkit-playsinline preload="metadata" poster="media-webp/background-poster.webp">
+      <source src="background.mp4" type="video/mp4" media="(min-width: 769px)">
+    </video>
+
+    <header class="site-header">
+      <nav class="nav">
+        <a href="index.html" class="brand"><img src="media-webp/logo/Logo64x64.webp" data-lang-attr="navigation.logoAlt|alt" alt="Stagify.ai logo — go to homepage" class="brand-logo" fetchpriority="high"><span class="brand-strong" data-lang="navigation.brand">Stagify</span><span class="brand-light" data-lang="navigation.brandSuffix">.ai</span></a>
+        <div class="nav-center">
+          <a href="index.html" class="nav-link" data-lang="navigation.home">Home</a>
+          <div class="staging-menu" data-staging-menu data-nav-group>
+            <button type="button" class="nav-link staging-menu__trigger" aria-haspopup="true" aria-expanded="false"><span data-lang="navigation.staging">Staging</span><svg class="staging-menu__chevron" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+            <div class="staging-menu__panel" role="menu">
+              <a class="staging-menu__item" href="index.html#stage" role="menuitem" aria-describedby="staging-menu-tip-stage" data-staging-open="stage"><span class="staging-menu__label" data-lang="navigation.imageStaging">Image Staging</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-stage" aria-hidden="true" data-lang="navigation.tips.imageStaging">Stages a whole room from one photo: pick a room type and a furniture style and the AI furnishes it. Best for empty or nearly empty rooms when you want a fast, complete result.</span></a>
+              <a class="staging-menu__item is-locked" href="index.html#basic-mask" role="menuitem" aria-describedby="staging-menu-tip-basic-mask" data-staging-open="basic-mask" data-staging-pro data-staging-preview data-staging-preview-page="basic-mask.html"><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" data-lang-attr="navigation.plusBadge|aria-label" aria-label="Stagify+"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang="navigation.basicMask">Basic Mask</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-basic-mask" aria-hidden="true" data-lang="navigation.tips.basicMask">Paint over one part of a photo, then describe the change you want. Best for small fixes (swap a sofa, clear a countertop) when the rest of the shot is already right.</span></a>
+              <a class="staging-menu__item is-locked desktop-only" href="ai-designer.html" role="menuitem" aria-describedby="staging-menu-tip-designer" data-staging-pro data-staging-preview><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" data-lang-attr="navigation.plusBadge|aria-label" aria-label="Stagify+"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang-html="navigation.pdfTo3d">AI Designer</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-designer" aria-hidden="true" data-lang="navigation.tips.pdfTo3d">Chat with an AI designer that stages, redesigns and keeps iterating on a room with you. Best when you are exploring looks rather than finishing one photo. Desktop only.</span></a>
+              <a class="staging-menu__item is-locked" href="masking-studio.html" role="menuitem" aria-describedby="staging-menu-tip-masking" data-staging-pro data-staging-preview><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" data-lang-attr="navigation.plusBadge|aria-label" aria-label="Stagify+"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang="navigation.maskingStudio">Masking Studio</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-masking" aria-hidden="true" data-lang="navigation.tips.maskingStudio">Highlight several areas in different colors and give each its own furniture photo or prompt, then stage them all at once. Best when you need exact control, since everything outside your highlights stays pixel-perfect.</span></a>
+              <a class="staging-menu__item is-locked" href="exterior-studio.html" role="menuitem" aria-describedby="staging-menu-tip-exterior" data-staging-pro data-staging-preview><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" data-lang-attr="navigation.plusBadge|aria-label" aria-label="Stagify+"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang="navigation.exteriorStudio">Exterior Studio</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-exterior" aria-hidden="true" data-lang="navigation.tips.exteriorStudio">Cleans up an exterior photo of a property: change the time of day, clear the sky, and remove parked cars and clutter. Best for the front elevation, yard and street shots, the ones the staging tools deliberately never touch.</span></a>
+            </div>
+          </div>
+          <a href="gallery.html" class="nav-link desktop-only hidden" data-nav-gallery data-lang="navigation.gallery">Gallery</a>
+          <a href="guides.html" class="nav-link" data-lang="navigation.guides">Guides</a>
+          <a href="contact.html" class="nav-link" data-lang="navigation.contactUs">Contact</a>
+          <div class="profile-menu-wrap">
+            <button type="button" id="profile-menu-btn" class="profile-menu-btn" aria-expanded="false" aria-haspopup="true" data-lang-attr="auth.accountMenu|aria-label" aria-label="Account menu">
+              <svg class="profile-menu-btn__icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </button>
+            <div id="profile-menu-dropdown" class="profile-menu-dropdown hidden" role="menu" aria-hidden="true"></div>
+          </div>
+        </div>
+        <div class="nav-trailing">
+          <div class="mobile-test-text" data-hover-glow>
+            <div data-lang="hero.title.upload">Upload.</div>
+            <div data-lang="hero.title.stage">Stage.</div>
+            <div data-lang="hero.title.imagine">Imagine.</div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <h1 class="sr-only" data-lang="basicMask.title">Basic Mask</h1>
+      <div class="language-picker-container">
+        <div class="language-selector">
+          <label for="language-select" class="sr-only" data-lang="common.selectLanguage">Select language</label>
+          <select id="language-select" class="language-dropdown lang-native-select" tabindex="-1" aria-hidden="true">
+            <option value="english" selected>EN</option>
+            <option value="german">DE</option>
+            <option value="dutch">NL</option>
+            <option value="spanish">ES</option>
+            <option value="french">FR</option>
+            <option value="italian">IT</option>
+            <option value="portuguese">PT</option>
+            <option value="russian">RU</option>
+            <option value="chinese">中文</option>
+            <option value="japanese">日本語</option>
+            <option value="korean">한국어</option>
+          </select>
+          <div class="lang-switch" data-lang-switch>
+            <button type="button" class="lang-switch__trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="Select language" data-lang-attr="common.selectLanguage|aria-label">
+              <img class="lang-switch__flag" src="media-webp/flags/US.svg" alt="" width="20" height="14" />
+              <span class="lang-switch__label">English</span>
+              <svg class="lang-switch__chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <ul class="lang-switch__menu" role="listbox" aria-label="Select language" data-lang-attr="common.selectLanguage|aria-label">
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="english"><img loading="lazy" decoding="async" src="media-webp/flags/US.svg" alt="" width="20" height="14" /><span>English</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="german"><img loading="lazy" decoding="async" src="media-webp/flags/Germany.svg" alt="" width="20" height="14" /><span>Deutsch</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="dutch"><img loading="lazy" decoding="async" src="media-webp/flags/Netherlands.svg" alt="" width="20" height="14" /><span>Nederlands</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="spanish"><img loading="lazy" decoding="async" src="media-webp/flags/Spain.svg" alt="" width="20" height="14" /><span>Español</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="french"><img loading="lazy" decoding="async" src="media-webp/flags/France.svg" alt="" width="20" height="14" /><span>Français</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="italian"><img loading="lazy" decoding="async" src="media-webp/flags/Italy.svg" alt="" width="20" height="14" /><span>Italiano</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="portuguese"><img loading="lazy" decoding="async" src="media-webp/flags/Brazil.svg" alt="" width="20" height="14" /><span>Português</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="russian"><img loading="lazy" decoding="async" src="media-webp/flags/Russia.svg" alt="" width="20" height="14" /><span>Русский</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="chinese"><img loading="lazy" decoding="async" src="media-webp/flags/China.svg" alt="" width="20" height="14" /><span>中文</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="japanese"><img loading="lazy" decoding="async" src="media-webp/flags/Japan.svg" alt="" width="20" height="14" /><span>日本語</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="korean"><img loading="lazy" decoding="async" src="media-webp/flags/Korea.svg" alt="" width="20" height="14" /><span>한국어</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <section class="hero" style="grid-template-columns: 1fr; padding: 20px; width: 100%; max-width: 100%; box-sizing: border-box;">
+        <div class="bm-shell">
+          <div class="bm-intro">
+            <p class="bm-intro__title" data-lang="basicMask.title">Basic Mask</p>
+            <p class="bm-intro__sub" data-lang="basicMask.subtitle">Paint over one part of the photo, say what should change there, and get the same picture back with only that bit redone.</p>
+
+            <!-- Two calls to action, and exactly one is ever on screen. This page is a
+                 PITCH, not a tool: Basic Mask itself opens as a panel in the staging flow
+                 on the home page, so the Stagify+ view is a way IN rather than the studio
+                 embedded here. preview-access.js drives both, which is why the "open it"
+                 button carries the id the writer treats as the tool. -->
+            <p class="bm-intro__actions" id="bm-hero-actions">
+              <a class="btn btn-primary btn-lg" id="bm-cta" href="stagify-plus.html"><strong data-lang="basicMask.ctaUpgrade">Get Stagify+ to use it</strong></a>
+            </p>
+            <p class="bm-intro__actions" id="bm-tool" hidden>
+              <a class="btn btn-primary btn-lg" id="bm-open" href="index.html#basic-mask"><strong data-lang="basicMask.ctaOpen">Open Basic Mask</strong></a>
+            </p>
+          </div>
+
+          <section class="bm-features-section" aria-labelledby="bm-features-title">
+            <h2 class="bm-section__title" id="bm-features-title" data-lang="basicMask.features.title">What it does</h2>
+            <div class="bm-board bm-panel">
+              <div class="bm-features">
+                <article class="bm-feature">
+                  <h3 class="bm-feature__title"><svg class="bm-feature__icon" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.5 3.5a2.1 2.1 0 0 1 3 3L8 17l-4 1 1-4z"/><path d="M14 5l3 3"/></svg><span data-lang="basicMask.features.paint.title">Paint, then ask</span></h3>
+                  <p class="bm-feature__body" data-lang="basicMask.features.paint.body">Brush over the sofa, the worktop, the blank wall. Then describe what should be there instead.</p>
+                </article>
+                <article class="bm-feature">
+                  <h3 class="bm-feature__title"><svg class="bm-feature__icon" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3h18v18H3z"/><path d="M9 9h6v6H9z"/></svg><span data-lang="basicMask.features.small.title">For small fixes</span></h3>
+                  <p class="bm-feature__body" data-lang="basicMask.features.small.body">When the shot is already right apart from one thing, this is faster than staging the room again.</p>
+                </article>
+                <article class="bm-feature">
+                  <h3 class="bm-feature__title"><svg class="bm-feature__icon" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7.5V5.5A2.5 2.5 0 0 1 5.5 3h2"/><path d="M16.5 3h2A2.5 2.5 0 0 1 21 5.5v2"/><path d="M21 16.5v2a2.5 2.5 0 0 1-2.5 2.5h-2"/><path d="M7.5 21h-2A2.5 2.5 0 0 1 3 18.5v-2"/><circle cx="12" cy="12" r="3"/></svg><span data-lang="basicMask.features.upgrade.title">One area at a time</span></h3>
+                  <p class="bm-feature__body" data-lang="basicMask.features.upgrade.body">One mask, one instruction. For several areas at once, each with its own furniture, use the Masking Studio.</p>
+                </article>
+              </div>
+
+              <p class="bm-honest">
+                <strong class="bm-honest__title" data-lang="basicMask.features.honest.title">Everything outside the stroke comes back untouched</strong>
+                <span class="bm-honest__body" data-lang="basicMask.features.honest.body">Not re-rendered, not nudged, not re-lit.</span>
+              </p>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <div id="toast-host" aria-live="polite" aria-atomic="false"></div>
+
+    <script type="module" src="scripts/basic-mask-page.js"></script>
+    <script type="module" src="scripts/aurora-scrollbar.js"></script>
+  </body>
+</html>

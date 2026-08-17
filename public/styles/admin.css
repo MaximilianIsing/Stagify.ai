@@ -1,216 +1,366 @@
-/* Admin dashboard (public/admin.html).
-   Page-scoped, loaded after styles.css. The dashboard sits on the site's
-   background video, so every surface is a translucent white card with a blur —
-   opaque panels would fight the backdrop and flat white would look pasted on.
+/* Admin dashboard (public/admin.html) — the operator console.
+   Page-scoped, loaded after styles.css.
 
-   Local tokens below, not the site-wide ones: this page has its own denser type
-   scale and a slate/blue data palette that the marketing pages don't use. Keep
-   new rules going through the tokens so a spacing or radius change is one edit.
-   The chart shapes these classes style are built in scripts/admin/charts.js —
-   see docs/guides/admin-dashboard.md. */
+   IT DOES NOT WEAR THE MARKETING SKIN. The page used to sit on the site's
+   background video with every surface a translucent blurred card, under the site
+   header. That reads as a landing page with tables on it: the tinted backdrop
+   fights every value in a data table, and the blur softens exactly the edges a
+   dense UI needs to stay legible. So admin.html ships no <video> and no
+   <header class="site-header">, and this sheet paints its own opaque canvas.
+   styles.css is still loaded — for the Inter @font-face set, the reset and the
+   shared colour tokens — which is why every colour below either IS a shared token
+   or is a value the shared palette does not have (test/frontend/css-tokens.test.js
+   fails the build on a hard-coded duplicate).
+
+   Structure: a fixed rail (.adm-side) + a scrolling column (.adm-main) whose
+   sticky .adm-topbar names the section. Everything else is a card on the canvas.
+
+   The local token block is the whole design system — a spacing, radius, type or
+   colour change is one edit here, never a per-component tweak. The chart shapes
+   these classes style are built in scripts/admin/charts.js; its PALETTE is the
+   colour half of the same system, so keep the two in step (see
+   docs/guides/admin-dashboard.md). */
 
 .page-admin {
-  /* The three shared brand values come from styles.css :root (admin.html loads it)
-     so the palette is defined once; the rest below are admin-only surface colours
-     with no site-wide counterpart. */
-  --adm-ink: #0f172a;
-  --adm-ink-2: #334155;
-  --adm-muted: var(--slate);
-  --adm-faint: #94a3b8;
+  /* Surfaces. Opaque, three steps: canvas → card → sunken well. */
+  --adm-canvas: #f4f5f7;
+  --adm-surface: var(--bg-elevated);
+  --adm-sunken: #fafbfc;
+  --adm-line: #e7e9ee;
+  --adm-line-soft: #f0f2f5;
+  --adm-line-strong: #d7dbe3;
+
+  /* Ink. Four steps, and only four — a fifth grey is how hierarchy goes soft. */
+  --adm-ink: #14161c;
+  --adm-ink-2: #3d424d;
+  --adm-muted: #6a7080;
+  --adm-faint: #9aa0af;
+
   --adm-accent: var(--brand);
   --adm-accent-deep: var(--brand-deep);
-  --adm-line: #e4e9f0;
-  --adm-line-soft: #f1f5f9;
-  --adm-surface: rgba(255, 255, 255, .93);
-  --adm-surface-2: rgba(255, 255, 255, .72);
+  --adm-accent-tint: var(--brand-tint);
+  --adm-accent-wash: var(--brand-wash);
+
+  /* Status. Each is a triple (ink / wash / hairline) so badges, pills and inline
+     messages all tint the same way instead of inventing a green per component. */
+  --adm-pos: #16653f;
+  --adm-pos-wash: #e9f6ef;
+  --adm-pos-line: #c7e6d5;
+  --adm-warn: #8a5512;
+  --adm-warn-wash: #fdf4e6;
+  --adm-warn-line: #f3ddb6;
+  --adm-neg: #a32020;
+  --adm-neg-wash: #fdefee;
+  --adm-neg-line: #f5d2cf;
+
+  /* Series tones. Same eight hues as charts.js PALETTE, plus a wash each. */
+  --adm-t-blue: #3b62d9;
+  --adm-t-violet: #8557d9;
+  --adm-t-teal: #0e9b8e;
+  --adm-t-amber: #cf8a25;
+  --adm-t-rose: #d1467a;
+  --adm-t-cyan: #2b8fb3;
+  --adm-t-blue-w: #ebefff;
+  --adm-t-violet-w: #f3ecfd;
+  --adm-t-teal-w: #e4f5f2;
+  --adm-t-amber-w: #fbf2e2;
+  --adm-t-rose-w: #fdecf2;
+  --adm-t-cyan-w: #e8f3f8;
+
+  --adm-r-xs: 6px;
   --adm-r-sm: 8px;
-  --adm-r-md: 12px;
-  --adm-r-lg: 16px;
-  --adm-shadow: 0 1px 2px rgba(15, 23, 42, .04), 0 8px 24px -12px rgba(15, 23, 42, .18);
-  --adm-shadow-lift: 0 2px 4px rgba(15, 23, 42, .05), 0 16px 36px -16px rgba(30, 58, 138, .28);
+  --adm-r-md: 10px;
+  --adm-r-lg: 14px;
+  --adm-shadow: 0 1px 2px rgba(20, 22, 28, .04);
+  --adm-shadow-md: 0 1px 2px rgba(20, 22, 28, .05), 0 8px 24px -12px rgba(20, 22, 28, .18);
+  --adm-shadow-lift: 0 2px 4px rgba(20, 22, 28, .05), 0 18px 40px -18px rgba(20, 22, 28, .26);
+  --adm-focus: 0 0 0 3px rgba(37, 99, 235, .16);
+
+  --adm-rail: 246px;
+
+  background: var(--adm-canvas);
+  color: var(--adm-ink-2);
 }
 
-body.page-admin main { flex: 0 0 auto; overflow-x: hidden; overflow-y: visible; width: 100% }
-.adm { max-width: 1360px; margin: 0 auto; padding: 1.5rem clamp(1rem, 3vw, 2rem) 4rem; box-sizing: border-box }
+/* styles.css makes <main> a flex child that grows; here the shell owns its own
+   height so the fixed rail and the sticky topbar have a stable frame.
+   `overflow: visible` is load-bearing, not tidying: this <main> used to clip on
+   the x axis, and ANY non-visible overflow on an ancestor makes that ancestor the
+   sticky element's scrollport. The topbar then "stuck" to a box that never scrolls
+   — i.e. it scrolled away with the content. Horizontal runaway is already handled
+   twice over: html carries overflow-x:clip, and every wide thing here (tables, the
+   cohort grid) scrolls inside its own wrapper. */
+body.page-admin main { flex: 0 0 auto; overflow: visible; width: 100% }
+.adm { box-sizing: border-box }
+.page-admin ::selection { background: var(--adm-accent-tint); color: var(--adm-accent-deep) }
 
 /* ── Login ─────────────────────────────────────────────────────────────── */
 
-.adm-login { max-width: 390px; margin: 8vh auto 0; text-align: center }
+.adm-login {
+  min-height: 100vh; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 1.1rem;
+  padding: 2rem 1.25rem; box-sizing: border-box;
+}
 .adm-login-card {
-  background: var(--adm-surface); border: 1px solid var(--adm-line); border-radius: 20px;
-  padding: 2.25rem 1.85rem; box-shadow: var(--adm-shadow-lift); backdrop-filter: blur(14px);
+  width: 100%; max-width: 372px; box-sizing: border-box; text-align: center;
+  background: var(--adm-surface); border: 1px solid var(--adm-line);
+  border-radius: var(--adm-r-lg); padding: 2.4rem 2rem 2.1rem; box-shadow: var(--adm-shadow-md);
 }
-.adm-login-logo { width: 56px; height: 56px; display: block; margin: 0 auto .85rem; opacity: .9 }
-.adm-login-card h1 { margin: 0 0 .3rem; font-size: 1.5rem; font-weight: 800; color: var(--adm-accent-deep); letter-spacing: -.02em }
-.adm-login-card p { margin: 0 0 1.35rem; font-size: .875rem; color: var(--adm-muted) }
+.adm-login-logo { width: 40px; height: 40px; display: block; margin: 0 auto 1.1rem; border-radius: var(--adm-r-md) }
+.adm-login-card h1 { margin: 0 0 .35rem; font-size: 1.1875rem; font-weight: 650; color: var(--adm-ink); letter-spacing: -.015em }
+.adm-login-card p { margin: 0 0 1.5rem; font-size: .8125rem; line-height: 1.5; color: var(--adm-muted) }
+.adm-login-foot { margin: 0; font-size: .75rem; color: var(--adm-faint); text-align: center; max-width: 372px }
 .adm-key-input {
-  display: block; width: 100%; padding: .7rem .9rem; font-size: .9375rem; font-family: inherit;
-  color: var(--adm-ink); background: var(--bg-elevated); border: 1px solid #cbd5e1; border-radius: 11px; box-sizing: border-box;
-  transition: border-color .18s, box-shadow .18s;
+  display: block; width: 100%; padding: .6rem .75rem; font-size: .875rem; font-family: inherit;
+  color: var(--adm-ink); background: var(--adm-surface); border: 1px solid var(--adm-line-strong);
+  border-radius: var(--adm-r-sm); box-sizing: border-box; transition: border-color .16s, box-shadow .16s;
 }
-.adm-key-input:focus { outline: none; border-color: var(--adm-accent); box-shadow: 0 0 0 3px rgba(37, 99, 235, .14) }
+.adm-key-input::placeholder { color: var(--adm-faint) }
+.adm-key-input:focus { outline: none; border-color: var(--adm-accent); box-shadow: var(--adm-focus) }
 .adm-login-btn {
-  display: block; width: 100%; margin-top: 1rem; padding: .72rem; font-size: 1rem; font-weight: 700;
-  color: var(--bg-elevated); background: var(--adm-accent); border: none; border-radius: 12px; cursor: pointer;
-  transition: background .18s, transform .12s; font-family: inherit;
+  display: block; width: 100%; margin-top: .6rem; padding: .625rem; font-size: .875rem; font-weight: 600;
+  color: var(--bg-elevated); background: var(--adm-ink); border: 1px solid var(--adm-ink);
+  border-radius: var(--adm-r-sm); cursor: pointer; font-family: inherit; transition: background .16s, border-color .16s;
 }
-.adm-login-btn:hover { background: var(--brand-strong) }
-.adm-login-btn:active { transform: translateY(1px) }
-.adm-login-btn:disabled { opacity: .6; cursor: wait }
-.adm-login-err { margin: .75rem 0 0; padding: .55rem .8rem; font-size: .85rem; color: #991b1b; background: #fef2f2; border: 1px solid #fecaca; border-radius: var(--adm-r-sm) }
+.adm-login-btn:hover:not(:disabled) { background: var(--adm-ink-2); border-color: var(--adm-ink-2) }
+.adm-login-btn:disabled { opacity: .55; cursor: wait }
+.adm-login-err {
+  margin: .8rem 0 0; padding: .55rem .7rem; font-size: .8125rem; text-align: left;
+  color: var(--adm-neg); background: var(--adm-neg-wash); border: 1px solid var(--adm-neg-line);
+  border-radius: var(--adm-r-xs);
+}
 .adm-login-err.hidden { display: none }
 
-/* ── Dashboard chrome ──────────────────────────────────────────────────── */
+/* ── Shell: fixed rail + scrolling column ──────────────────────────────── */
 
 .adm-dash.hidden { display: none }
 
-.adm-topbar { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.15rem; flex-wrap: wrap }
-.adm-topbar h1 { margin: 0; font-size: 1.4rem; font-weight: 800; color: var(--adm-accent-deep); letter-spacing: -.025em }
-.adm-topbar-right { display: flex; align-items: center; gap: .45rem; margin-left: auto }
-
-/* One chip shape for every topbar control; the sign-out variant only re-tints. */
-.adm-refresh, .adm-topbar-link, .adm-signout {
-  padding: 6px 13px; font-size: .75rem; font-weight: 600; font-family: inherit;
-  color: var(--adm-accent); background: var(--adm-surface-2); border: 1px solid var(--brand-tint);
-  border-radius: 9px; cursor: pointer; transition: background .18s, border-color .18s, color .18s;
-  text-decoration: none; white-space: nowrap;
+.adm-side {
+  position: fixed; inset: 0 auto 0 0; width: var(--adm-rail); z-index: 30;
+  display: flex; flex-direction: column; box-sizing: border-box;
+  background: var(--adm-surface); border-right: 1px solid var(--adm-line);
 }
-.adm-refresh:hover, .adm-topbar-link:hover { background: var(--brand-wash); border-color: var(--brand-pale) }
-.adm-refresh:disabled { opacity: .5; cursor: wait }
-.adm-signout { color: var(--adm-muted); border-color: var(--adm-line) }
-.adm-signout:hover { color: #ef4444; border-color: #fecaca; background: #fef2f2 }
-.adm-meta { font-size: .7rem; color: var(--adm-faint); white-space: nowrap }
-
-/* Tabs stay reachable while a long panel scrolls. */
-.adm-tabs {
-  display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 1.35rem;
-  position: sticky; top: 0; z-index: 20; padding: .45rem 0;
-  background: linear-gradient(rgba(248, 250, 252, .92), rgba(248, 250, 252, .72));
-  backdrop-filter: blur(10px); border-radius: var(--adm-r-md);
+.adm-side-brand { display: flex; align-items: center; gap: .6rem; padding: 1.15rem 1.15rem 1rem }
+.adm-side-logo { width: 28px; height: 28px; border-radius: 7px; flex-shrink: 0 }
+.adm-side-brand-txt {
+  display: flex; flex-direction: column; line-height: 1.15;
+  font-size: .9375rem; font-weight: 650; color: var(--adm-ink); letter-spacing: -.01em;
 }
+.adm-side-brand-sub { font-size: .6875rem; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; color: var(--adm-faint) }
+
+.adm-nav { flex: 1; overflow-y: auto; padding: .25rem .6rem 1rem; display: flex; flex-direction: column; gap: 1px }
+.adm-nav-group {
+  margin: 1rem 0 .3rem; padding: 0 .55rem; font-size: .625rem; font-weight: 650;
+  letter-spacing: .09em; text-transform: uppercase; color: var(--adm-faint);
+}
+.adm-nav-group:first-child { margin-top: .35rem }
+
 .adm-tab {
-  padding: 8px 15px; font-size: .8125rem; font-weight: 600; font-family: inherit;
-  color: var(--slate-deep); background: var(--adm-surface-2); border: 1px solid var(--adm-line);
-  border-radius: 10px; cursor: pointer; transition: .16s; display: inline-flex; align-items: center; gap: 6px;
+  display: flex; align-items: center; gap: .6rem; width: 100%; box-sizing: border-box;
+  padding: .5rem .55rem; font-size: .8125rem; font-weight: 500; font-family: inherit; text-align: left;
+  color: var(--adm-ink-2); background: none; border: 0; border-radius: var(--adm-r-sm);
+  cursor: pointer; transition: background .14s, color .14s;
 }
-.adm-tab:hover { background: var(--bg-elevated); border-color: var(--brand-pale); color: var(--adm-accent) }
-.adm-tab.active { background: var(--adm-accent); color: var(--bg-elevated); border-color: var(--adm-accent); box-shadow: 0 4px 12px -4px rgba(37, 99, 235, .55) }
-.adm-tab-count { font-size: .65rem; font-weight: 700; background: rgba(15, 23, 42, .08); padding: 1px 6px; border-radius: 6px; min-width: 16px; text-align: center }
-.adm-tab.active .adm-tab-count { background: rgba(255, 255, 255, .25) }
+.adm-tab-ico { width: 17px; height: 17px; flex-shrink: 0; color: var(--adm-faint); transition: color .14s }
+.adm-tab-lbl { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.adm-tab:hover { background: var(--adm-line-soft); color: var(--adm-ink) }
+.adm-tab:hover .adm-tab-ico { color: var(--adm-muted) }
+.adm-tab.active { background: var(--adm-accent-wash); color: var(--adm-accent-deep); font-weight: 600 }
+.adm-tab.active .adm-tab-ico { color: var(--adm-accent) }
+.adm-tab:focus-visible { outline: none; box-shadow: var(--adm-focus) }
+
+.adm-tab-count {
+  font-size: .6875rem; font-weight: 600; font-variant-numeric: tabular-nums;
+  color: var(--adm-muted); background: var(--adm-line-soft); border-radius: 999px;
+  padding: 1px 7px; min-width: 14px; text-align: center;
+}
+.adm-tab.active .adm-tab-count { color: var(--adm-accent-deep); background: var(--adm-accent-tint) }
+/* A zero is worth showing (it means "checked, nothing there") but not worth
+   weighting the same as a real count — renderers.js toggles this. */
+.adm-tab-count--zero { background: none; color: var(--adm-faint); font-weight: 500 }
+
+.adm-side-foot { padding: .7rem .6rem .9rem; border-top: 1px solid var(--adm-line); display: flex; flex-direction: column; gap: 1px }
+.adm-topbar-link, .adm-signout {
+  display: flex; align-items: center; gap: .55rem; width: 100%; box-sizing: border-box;
+  padding: .45rem .55rem; font-size: .78125rem; font-weight: 500; font-family: inherit; text-align: left;
+  color: var(--adm-muted); background: none; border: 0; border-radius: var(--adm-r-sm);
+  cursor: pointer; text-decoration: none; transition: background .14s, color .14s;
+}
+.adm-topbar-link svg, .adm-signout svg { width: 15px; height: 15px; flex-shrink: 0; color: var(--adm-faint) }
+.adm-topbar-link:hover { background: var(--adm-line-soft); color: var(--adm-ink) }
+.adm-signout:hover { background: var(--adm-neg-wash); color: var(--adm-neg) }
+.adm-signout:hover svg { color: var(--adm-neg) }
+.adm-topbar-link svg { margin-left: auto }
+
+.adm-main { margin-left: var(--adm-rail); min-height: 100vh; display: flex; flex-direction: column }
+
+.adm-topbar {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+  padding: 1.15rem clamp(1.1rem, 2.4vw, 2rem);
+  /* Opaque, not frosted: a translucent bar let the section heading sit on top of
+     whatever text was passing under it, which is the exact effect this redesign
+     removed everywhere else. The hairline is the "content continues" cue. */
+  background: var(--adm-canvas); border-bottom: 1px solid var(--adm-line);
+}
+.adm-topbar-titles { min-width: 0 }
+.adm-topbar h1 { margin: 0; font-size: 1.0625rem; font-weight: 650; color: var(--adm-ink); letter-spacing: -.018em; line-height: 1.3 }
+.adm-topbar-sub { margin: .15rem 0 0; font-size: .8125rem; color: var(--adm-muted); line-height: 1.4 }
+.adm-topbar-right { display: flex; align-items: center; gap: .7rem; margin-left: auto }
+.adm-meta { font-size: .75rem; color: var(--adm-faint); white-space: nowrap; font-variant-numeric: tabular-nums }
+
+.adm-refresh {
+  display: inline-flex; align-items: center; gap: .4rem;
+  padding: .4rem .75rem; font-size: .78125rem; font-weight: 550; font-family: inherit;
+  color: var(--adm-ink-2); background: var(--adm-surface); border: 1px solid var(--adm-line-strong);
+  border-radius: var(--adm-r-sm); cursor: pointer; white-space: nowrap;
+  transition: background .14s, border-color .14s, color .14s;
+}
+.adm-refresh svg { width: 14px; height: 14px; color: var(--adm-muted) }
+.adm-refresh:hover:not(:disabled) { background: var(--adm-sunken); border-color: var(--adm-faint); color: var(--adm-ink) }
+.adm-refresh:disabled { opacity: .55; cursor: wait }
+
+.adm-content { flex: 1; padding: 1.5rem clamp(1.1rem, 2.4vw, 2rem) 4rem; max-width: 1420px; width: 100%; box-sizing: border-box }
 
 .adm-panel { display: none }
-.adm-panel.active { display: block; animation: adm-fade .22s ease-out }
-@keyframes adm-fade { from { opacity: 0; transform: translateY(4px) } to { opacity: 1; transform: none } }
+.adm-panel.active { display: block; animation: adm-fade .2s ease-out }
+@keyframes adm-fade { from { opacity: 0; transform: translateY(3px) } to { opacity: 1; transform: none } }
 
 /* ── Cards ─────────────────────────────────────────────────────────────── */
 
 .adm-card {
   background: var(--adm-surface); border: 1px solid var(--adm-line); border-radius: var(--adm-r-lg);
-  padding: 1.35rem 1.4rem; box-shadow: var(--adm-shadow); margin-bottom: 1rem; backdrop-filter: blur(12px);
+  padding: 1.15rem 1.25rem 1.25rem; box-shadow: var(--adm-shadow); margin-bottom: 1rem;
 }
+.adm-card-head { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; margin-bottom: .9rem }
+.adm-card-head > .adm-result-count, .adm-card-head > .adm-card-tag { margin-left: auto }
 .adm-card h2 {
-  margin: 0 0 .8rem; font-size: 1rem; font-weight: 700; color: var(--adm-accent-deep);
-  letter-spacing: -.015em; display: flex; align-items: center; gap: .5rem;
+  margin: 0; font-size: .9375rem; font-weight: 620; color: var(--adm-ink);
+  letter-spacing: -.011em; display: flex; align-items: center; gap: .5rem; line-height: 1.35;
 }
-.adm-card-sub { margin: -.55rem 0 .9rem; font-size: .8rem; line-height: 1.5; color: var(--adm-muted) }
+.adm-card-head + .adm-card-sub { margin-top: -.55rem }
+.adm-card-sub { margin: 0 0 1rem; font-size: .8125rem; line-height: 1.55; color: var(--adm-muted); max-width: 78ch }
+.adm-card-sub a { color: var(--adm-accent); text-decoration: none; border-bottom: 1px solid var(--adm-accent-tint) }
+.adm-card-sub a:hover { border-bottom-color: var(--adm-accent) }
+.adm-card--danger { border-color: var(--adm-neg-line) }
+
 .adm-card-tag {
-  font-size: .62rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  font-size: .625rem; font-weight: 650; letter-spacing: .06em; text-transform: uppercase;
   color: var(--adm-muted); background: var(--adm-line-soft); border-radius: 999px; padding: 3px 9px;
 }
-.adm-count-chip { font-size: .65rem; font-weight: 700; background: var(--brand-tint); color: var(--primary); padding: 2px 8px; border-radius: 999px }
-.adm-code { font-size: .78rem; background: var(--adm-line-soft); padding: 2px 6px; border-radius: 5px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace }
+.adm-card-tag--danger { color: var(--adm-neg); background: var(--adm-neg-wash) }
+.adm-count-chip {
+  font-size: .6875rem; font-weight: 620; font-variant-numeric: tabular-nums;
+  color: var(--adm-muted); background: var(--adm-line-soft); padding: 2px 8px; border-radius: 999px;
+}
+.adm-code {
+  font-size: .75rem; color: var(--adm-ink-2); background: var(--adm-line-soft);
+  padding: 2px 6px; border-radius: 5px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
 
-.adm-empty { color: var(--adm-faint); font-size: .85rem; padding: .5rem .25rem; margin: 0 }
-.adm-more { font-size: .72rem; color: var(--adm-faint); margin: 0 0 .5rem }
+.adm-empty { color: var(--adm-faint); font-size: .8125rem; padding: 1.5rem .25rem; margin: 0; text-align: center }
+.adm-more { font-size: .75rem; color: var(--adm-faint); margin: 0 0 .5rem }
 
 /* Summary pills (enterprise totals, email-open count). */
-.adm-summary { display: flex; gap: .6rem; flex-wrap: wrap; margin-bottom: 1rem }
+.adm-summary { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1rem }
 .adm-summary:empty { margin: 0 }
-.adm-pill { background: var(--adm-surface-2); border: 1px solid var(--adm-line); border-radius: 10px; padding: .5rem 1rem; font-size: .85rem; font-weight: 700; color: var(--adm-ink-2) }
-.adm-pill--blue { color: var(--adm-accent-deep); border-color: var(--brand-tint); background: rgba(239, 246, 255, .85) }
-.adm-pill--green { color: #065f46; border-color: #bbf7d0; background: rgba(240, 253, 244, .85) }
-
-/* ── Range selector ────────────────────────────────────────────────────── */
-
-.adm-range { display: flex; align-items: center; gap: .35rem; flex-wrap: wrap; margin-bottom: 1rem }
-.adm-range-label { font-size: .7rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--adm-faint); margin-right: .3rem }
-.adm-range-btn {
-  padding: 5px 12px; font-size: .75rem; font-weight: 600; font-family: inherit; color: var(--slate-deep);
-  background: var(--adm-surface-2); border: 1px solid var(--adm-line); border-radius: 8px;
-  cursor: pointer; transition: .16s;
+.adm-pill {
+  background: var(--adm-sunken); border: 1px solid var(--adm-line); border-radius: var(--adm-r-sm);
+  padding: .45rem .8rem; font-size: .8125rem; font-weight: 550; color: var(--adm-ink-2);
+  font-variant-numeric: tabular-nums;
 }
-.adm-range-btn:hover { border-color: var(--brand-pale); color: var(--adm-accent) }
-.adm-range-btn.active { background: var(--adm-accent); color: var(--bg-elevated); border-color: var(--adm-accent) }
+.adm-pill--blue { color: var(--adm-accent-deep); border-color: var(--adm-accent-tint); background: var(--adm-accent-wash) }
+.adm-pill--green { color: var(--adm-pos); border-color: var(--adm-pos-line); background: var(--adm-pos-wash) }
 
-/* ── Last-active staleness pills ───────────────────────────────────────── */
+/* ── Controls: segmented groups, buttons, fields ───────────────────────── */
 
-.adm-stale { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: .68rem; font-weight: 700; white-space: nowrap }
-.adm-stale--fresh { background: #dcfce7; color: #166534 }
-.adm-stale--warm { background: #fef9c3; color: #854d0e }
-.adm-stale--cold { background: #ffedd5; color: #9a3412 }
-.adm-stale--never { background: var(--adm-line-soft); color: var(--adm-faint) }
+/* One track, one white thumb. The range selector and the user filters are the
+   same control, so they share the shape rather than each being a row of pills. */
+.adm-range { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; margin-bottom: 1.15rem }
+.adm-range-label { font-size: .6875rem; font-weight: 650; letter-spacing: .07em; text-transform: uppercase; color: var(--adm-faint) }
+.adm-seg, .adm-range-track {
+  display: inline-flex; align-items: center; gap: 2px; padding: 3px;
+  background: var(--adm-line-soft); border: 1px solid var(--adm-line); border-radius: var(--adm-r-md);
+}
+.adm-range-btn, .adm-filter {
+  padding: .3rem .7rem; font-size: .78125rem; font-weight: 550; font-family: inherit;
+  color: var(--adm-muted); background: none; border: 0; border-radius: var(--adm-r-xs);
+  cursor: pointer; white-space: nowrap; transition: background .14s, color .14s, box-shadow .14s;
+}
+.adm-range-btn:hover, .adm-filter:hover { color: var(--adm-ink) }
+.adm-range-btn.active, .adm-filter.active {
+  color: var(--adm-ink); background: var(--adm-surface); box-shadow: var(--adm-shadow); font-weight: 600;
+}
+.adm-range-btn:focus-visible, .adm-filter:focus-visible { outline: none; box-shadow: var(--adm-focus) }
 
-/* ── Funnel ────────────────────────────────────────────────────────────── */
-
-.adm-funnel { display: flex; flex-direction: column; gap: .85rem }
-.adm-funnel-head { display: flex; align-items: baseline; gap: .5rem; margin-bottom: .3rem }
-.adm-funnel-label { font-size: .8rem; font-weight: 600; color: var(--adm-ink-2) }
-.adm-funnel-val { margin-left: auto; font-size: .9rem; font-weight: 800; color: var(--adm-ink); font-variant-numeric: tabular-nums }
-.adm-funnel-track { height: 12px; background: var(--adm-line-soft); border-radius: 999px; overflow: hidden }
-.adm-funnel-fill { height: 100%; border-radius: 999px; transition: width .35s cubic-bezier(.4, 0, .2, 1) }
-.adm-funnel-foot { margin-top: .3rem; font-size: .7rem; color: var(--adm-faint) }
-
-/* ── Cohort grid ───────────────────────────────────────────────────────── */
-
-.adm-cohort-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch }
-.adm-cohort { border-collapse: separate; border-spacing: 3px; font-size: .72rem; font-variant-numeric: tabular-nums }
-.adm-cohort-head { font-size: .64rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--adm-faint); text-align: center; padding: 2px 4px; white-space: nowrap }
-.adm-cohort-name { font-weight: 700; color: var(--adm-ink-2); white-space: nowrap; padding-right: .4rem }
-.adm-cohort-size { color: var(--adm-faint); text-align: right; padding-right: .5rem }
-.adm-cohort-cell { min-width: 40px; text-align: center; padding: 6px 4px; border-radius: 6px; color: var(--adm-ink-2); font-weight: 600 }
-/* A month that hasn't elapsed yet — deliberately blank, not a 0% cell. */
-.adm-cohort-cell--future { background: repeating-linear-gradient(45deg, #f8fafc, #f8fafc 4px, #f1f5f9 4px, #f1f5f9 8px) }
+.adm-toolbar { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; margin-bottom: .9rem }
+.adm-search-wrap {
+  position: relative; display: flex; align-items: center; flex: 0 1 320px; min-width: 200px;
+}
+.adm-search-wrap svg {
+  position: absolute; left: .6rem; width: 15px; height: 15px; color: var(--adm-faint); pointer-events: none;
+}
+.adm-search {
+  display: block; width: 100%; padding: .45rem .7rem .45rem 2rem; font-size: .8125rem; font-family: inherit;
+  color: var(--adm-ink); background: var(--adm-surface); border: 1px solid var(--adm-line-strong);
+  border-radius: var(--adm-r-sm); box-sizing: border-box; transition: border-color .16s, box-shadow .16s;
+}
+/* A bare .adm-search (the referral form fields) has no icon to clear. */
+.adm-ref-field .adm-search, .adm-ref-slug-input .adm-search { padding-left: .7rem }
+.adm-search::placeholder { color: var(--adm-faint) }
+.adm-search:focus { outline: none; border-color: var(--adm-accent); box-shadow: var(--adm-focus) }
+.adm-result-count { font-size: .75rem; color: var(--adm-faint); white-space: nowrap; font-variant-numeric: tabular-nums }
 
 /* ── Stat cards ────────────────────────────────────────────────────────── */
 
-.adm-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: .85rem; margin-bottom: 1.35rem }
+/* Four across once there is room: the overview ships eight cards, so a fixed
+   four-column grid lands them as 2×4 instead of "six then two orphans", which is
+   what auto-fill gives at most laptop widths. */
+.adm-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(212px, 1fr)); gap: .75rem; margin-bottom: 1.15rem }
+@media (min-width: 1120px) { .adm-stats { grid-template-columns: repeat(4, minmax(0, 1fr)) } }
 .adm-stat {
-  position: relative; overflow: hidden; background: var(--adm-surface); border: 1px solid var(--adm-line);
-  border-radius: var(--adm-r-md); padding: .95rem 1.05rem 0; display: flex; flex-direction: column;
-  box-shadow: var(--adm-shadow); backdrop-filter: blur(12px); transition: transform .16s, box-shadow .16s;
+  position: relative; overflow: hidden; display: flex; flex-direction: column;
+  background: var(--adm-surface); border: 1px solid var(--adm-line); border-radius: var(--adm-r-lg);
+  padding: .9rem 1rem 0; box-shadow: var(--adm-shadow); transition: border-color .16s, box-shadow .16s;
 }
-.adm-stat:hover { transform: translateY(-2px); box-shadow: var(--adm-shadow-lift) }
-/* Tone strip down the left edge — the card's only color commitment besides the icon. */
-.adm-stat::before { content: ''; position: absolute; inset: 0 auto 0 0; width: 3px; background: var(--adm-tone, var(--adm-accent)) }
-.adm-stat--blue { --adm-tone: var(--brand) }
-.adm-stat--green { --adm-tone: #16a34a }
-.adm-stat--purple { --adm-tone: #7c3aed }
-.adm-stat--amber { --adm-tone: #d97706 }
-.adm-stat--cyan { --adm-tone: #0891b2 }
-.adm-stat--pink { --adm-tone: #db2777 }
+.adm-stat:hover { border-color: var(--adm-line-strong); box-shadow: var(--adm-shadow-md) }
+/* Tone lives in the icon and the sparkline only. A coloured strip down every card
+   turned eight cards into eight competing accents and told the reader nothing. */
+.adm-stat--blue { --adm-tone: var(--adm-t-blue) }
+.adm-stat--green { --adm-tone: var(--adm-t-teal) }
+.adm-stat--purple { --adm-tone: var(--adm-t-violet) }
+.adm-stat--amber { --adm-tone: var(--adm-t-amber) }
+.adm-stat--cyan { --adm-tone: var(--adm-t-cyan) }
+.adm-stat--pink { --adm-tone: var(--adm-t-rose) }
 
-.adm-stat-head { display: flex; align-items: center; gap: .5rem; margin-bottom: .3rem }
-.adm-stat-icon { width: 26px; height: 26px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0 }
-.adm-stat-icon svg { width: 14px; height: 14px }
-.adm-stat-icon--blue { background: var(--brand-tint); color: var(--brand) }
-.adm-stat-icon--green { background: #dcfce7; color: #16a34a }
-.adm-stat-icon--purple { background: #ede9fe; color: #7c3aed }
-.adm-stat-icon--amber { background: #fef3c7; color: #d97706 }
-.adm-stat-icon--cyan { background: #cffafe; color: #0891b2 }
-.adm-stat-icon--pink { background: #fce7f3; color: #db2777 }
+.adm-stat-head { display: flex; align-items: center; gap: .5rem; margin-bottom: .55rem }
+.adm-stat-icon { width: 24px; height: 24px; border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0 }
+.adm-stat-icon svg { width: 13px; height: 13px }
+.adm-stat-icon--blue { background: var(--adm-t-blue-w); color: var(--adm-t-blue) }
+.adm-stat-icon--green { background: var(--adm-t-teal-w); color: var(--adm-t-teal) }
+.adm-stat-icon--purple { background: var(--adm-t-violet-w); color: var(--adm-t-violet) }
+.adm-stat-icon--amber { background: var(--adm-t-amber-w); color: var(--adm-t-amber) }
+.adm-stat-icon--cyan { background: var(--adm-t-cyan-w); color: var(--adm-t-cyan) }
+.adm-stat-icon--pink { background: var(--adm-t-rose-w); color: var(--adm-t-rose) }
 .adm-stat-lbl {
-  font-size: .68rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+  font-size: .6875rem; font-weight: 600; letter-spacing: .045em; text-transform: uppercase;
   color: var(--adm-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.adm-stat-delta { margin-left: auto; font-size: .66rem; font-weight: 800; padding: 2px 6px; border-radius: 999px; white-space: nowrap }
-.adm-stat-delta--up { color: #15803d; background: #dcfce7 }
-.adm-stat-delta--down { color: var(--danger); background: #fee2e2 }
-.adm-stat-val { font-size: 1.65rem; font-weight: 800; color: var(--adm-ink); letter-spacing: -.03em; line-height: 1.1; font-variant-numeric: tabular-nums }
-.adm-stat-hint { font-size: .7rem; color: var(--adm-faint); margin-top: .25rem; line-height: 1.4 }
+.adm-stat-delta {
+  margin-left: auto; font-size: .6875rem; font-weight: 620; padding: 1px 6px;
+  border-radius: 999px; white-space: nowrap; font-variant-numeric: tabular-nums;
+}
+.adm-stat-delta--up { color: var(--adm-pos); background: var(--adm-pos-wash) }
+.adm-stat-delta--down { color: var(--adm-neg); background: var(--adm-neg-wash) }
+.adm-stat-val {
+  font-size: 1.75rem; font-weight: 620; color: var(--adm-ink); letter-spacing: -.03em;
+  line-height: 1.05; font-variant-numeric: tabular-nums;
+}
+.adm-stat-hint { font-size: .75rem; color: var(--adm-faint); margin-top: .35rem; line-height: 1.45 }
 /* The sparkline bleeds to the card edges, so it reads as a base rather than a chart. */
-.adm-stat-spark { margin: .55rem -1.05rem 0 }
-.adm-spark { display: block; width: 100%; height: 30px }
-.adm-stat-hint + .adm-stat-spark { margin-top: .4rem }
+.adm-stat-spark { margin: .7rem -1rem 0 }
+.adm-spark { display: block; width: 100%; height: 28px }
+.adm-stat-hint + .adm-stat-spark { margin-top: .5rem }
 .adm-stat > .adm-stat-val:last-child, .adm-stat > .adm-stat-hint:last-child { margin-bottom: 1rem }
 
 /* ── Chart cards ───────────────────────────────────────────────────────── */
@@ -220,11 +370,11 @@ body.page-admin main { flex: 0 0 auto; overflow-x: hidden; overflow-y: visible; 
 /* Insights groups. Each group is its own grid, so a row is only ever sized by
    cards of the same kind — one shared grid let an empty-state card sit beside a
    full chart and left large dead areas. */
-.adm-insights { display: flex; flex-direction: column; gap: 1.75rem }
+.adm-insights { display: flex; flex-direction: column; gap: 1.9rem }
 .adm-section-title {
-  margin: 0 0 .7rem; font-size: .72rem; font-weight: 700; letter-spacing: .09em;
+  margin: 0 0 .8rem; font-size: .6875rem; font-weight: 650; letter-spacing: .1em;
   text-transform: uppercase; color: var(--adm-muted);
-  display: flex; align-items: center; gap: .7rem;
+  display: flex; align-items: center; gap: .8rem;
 }
 /* Hairline running to the right of each heading, so the groups read as bands. */
 .adm-section-title::after { content: ''; flex: 1; height: 1px; background: var(--adm-line) }
@@ -242,307 +392,473 @@ body.page-admin main { flex: 0 0 auto; overflow-x: hidden; overflow-y: visible; 
 /* Column layout so the note chips can pin to the bottom of a stretched card,
    which lines them up across the row. */
 .adm-chart-card { display: flex; flex-direction: column }
-.adm-chart-head { margin-bottom: .9rem }
+.adm-chart-head { margin-bottom: 1rem }
 .adm-chart-head h2 { margin: 0 }
-.adm-chart-sub { margin: .3rem 0 0; font-size: .78rem; line-height: 1.5; color: var(--adm-muted) }
+.adm-chart-sub { margin: .25rem 0 0; font-size: .78125rem; line-height: 1.5; color: var(--adm-muted) }
 /* Centres an empty state in the space a stretched card gives it, instead of
    leaving the message stranded at the top. */
 .adm-chart-body { min-height: 60px; display: flex; flex-direction: column; justify-content: center }
 .adm-chart-body > * { width: 100% }
 .adm-chart-svg { display: block; width: 100%; height: auto; overflow: visible }
-.adm-chart-empty { margin: 1.5rem 0; text-align: center; font-size: .82rem; color: var(--adm-faint) }
+.adm-chart-empty { margin: 1.5rem 0; text-align: center; font-size: .8125rem; color: var(--adm-faint) }
 
 /* `margin-top: auto` pins the notes to the bottom of a stretched card, so a row
    of cards shares one baseline. With no free space it collapses to 0, and the
    padding below supplies the gap. */
 .adm-chart-notes {
-  display: flex; flex-wrap: wrap; gap: .4rem .5rem; margin-top: auto;
+  display: flex; flex-wrap: wrap; gap: .4rem .45rem; margin-top: auto;
   padding-top: 1rem; border-top: 1px solid var(--adm-line-soft);
 }
 .adm-chart-notes span {
-  font-size: .7rem; font-weight: 600; color: var(--adm-ink-2);
-  background: var(--adm-line-soft); border-radius: 999px; padding: 3px 9px;
+  font-size: .71875rem; font-weight: 500; color: var(--adm-muted);
+  background: var(--adm-sunken); border: 1px solid var(--adm-line); border-radius: 999px; padding: 3px 9px;
 }
 
 /* SVG internals (attributes are set in charts.js; all styling lives here). */
-.adm-grid-line { stroke: #e8edf4; stroke-width: 1; shape-rendering: crispEdges }
+.adm-grid-line { stroke: #edeff3; stroke-width: 1; shape-rendering: crispEdges }
 .adm-axis-text { font-size: 11px; fill: var(--adm-faint); font-family: inherit }
 .adm-chart-bar { transition: opacity .15s }
 .adm-chart-bar:hover { opacity: .78 }
 /* Invisible hover column: gives every bucket a tooltip target, even at zero. */
 .adm-chart-hit { fill: transparent }
-.adm-chart-hit:hover { fill: rgba(37, 99, 235, .07) }
+.adm-chart-hit:hover { fill: rgba(20, 22, 28, .045) }
 .adm-donut-arc { transition: opacity .15s }
 .adm-donut-arc:hover { opacity: .8 }
-.adm-donut-total { font-size: 24px; font-weight: 800; fill: var(--adm-ink); font-family: inherit }
+.adm-donut-total { font-size: 24px; font-weight: 620; fill: var(--adm-ink); font-family: inherit }
 .adm-donut-sub { font-size: 10px; font-weight: 600; fill: var(--adm-faint); font-family: inherit; text-transform: uppercase; letter-spacing: .08em }
 
-.adm-donut { display: flex; align-items: center; gap: 1.1rem; flex-wrap: wrap }
-.adm-donut-svg { width: 178px; height: 178px; flex-shrink: 0 }
-.adm-legend { display: flex; flex-direction: column; gap: .4rem; flex: 1; min-width: 150px }
-.adm-legend-row { display: flex; align-items: center; gap: .5rem; font-size: .78rem }
-.adm-legend-dot { width: 9px; height: 9px; border-radius: 3px; flex-shrink: 0 }
+.adm-donut { display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap }
+.adm-donut-svg { width: 176px; height: 176px; flex-shrink: 0 }
+.adm-legend { display: flex; flex-direction: column; gap: .45rem; flex: 1; min-width: 150px }
+.adm-legend-row { display: flex; align-items: center; gap: .55rem; font-size: .78125rem }
+.adm-legend-dot { width: 8px; height: 8px; border-radius: 3px; flex-shrink: 0 }
 .adm-legend-label { color: var(--adm-ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
-.adm-legend-val { margin-left: auto; font-weight: 700; color: var(--adm-ink); font-variant-numeric: tabular-nums; white-space: nowrap }
+.adm-legend-val { margin-left: auto; font-weight: 600; color: var(--adm-ink); font-variant-numeric: tabular-nums; white-space: nowrap }
 
 /* Ranked horizontal bars (room types, styles, referral sources). */
-.adm-ranked { display: flex; flex-direction: column; gap: .5rem }
-.adm-ranked-row { display: grid; grid-template-columns: minmax(72px, 34%) 1fr auto; align-items: center; gap: .65rem; font-size: .78rem }
+.adm-ranked { display: flex; flex-direction: column; gap: .55rem }
+.adm-ranked-row { display: grid; grid-template-columns: minmax(72px, 34%) 1fr auto; align-items: center; gap: .7rem; font-size: .78125rem }
 /* Wraps rather than truncating. These labels routinely share a long prefix
    (gemini-2.5-flash-image vs. gemini-2.5-flash-image-preview), and an ellipsis
    cuts exactly the part that tells them apart — two different models then render
    as two identical-looking rows. */
-.adm-ranked-label { color: var(--adm-ink-2); line-height: 1.3; overflow-wrap: anywhere }
-.adm-ranked-track { display: block; height: 9px; background: var(--adm-line-soft); border-radius: 999px; overflow: hidden }
+.adm-ranked-label { color: var(--adm-ink-2); line-height: 1.35; overflow-wrap: anywhere }
+.adm-ranked-track { display: block; height: 8px; background: var(--adm-line-soft); border-radius: 999px; overflow: hidden }
 .adm-ranked-fill { display: block; height: 100%; border-radius: 999px; transition: width .35s cubic-bezier(.4, 0, .2, 1) }
-.adm-ranked-val { font-weight: 700; color: var(--adm-ink); font-variant-numeric: tabular-nums }
+.adm-ranked-val { font-weight: 600; color: var(--adm-ink); font-variant-numeric: tabular-nums }
+
+/* ── Funnel ────────────────────────────────────────────────────────────── */
+
+.adm-funnel { display: flex; flex-direction: column; gap: .9rem }
+.adm-funnel-head { display: flex; align-items: baseline; gap: .5rem; margin-bottom: .35rem }
+.adm-funnel-label { font-size: .8125rem; font-weight: 550; color: var(--adm-ink-2) }
+.adm-funnel-val { margin-left: auto; font-size: .875rem; font-weight: 620; color: var(--adm-ink); font-variant-numeric: tabular-nums }
+.adm-funnel-track { height: 10px; background: var(--adm-line-soft); border-radius: 999px; overflow: hidden }
+.adm-funnel-fill { height: 100%; border-radius: 999px; transition: width .35s cubic-bezier(.4, 0, .2, 1) }
+.adm-funnel-foot { margin-top: .35rem; font-size: .71875rem; color: var(--adm-faint) }
+
+/* ── Cohort grid ───────────────────────────────────────────────────────── */
+
+.adm-cohort-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch }
+.adm-cohort { border-collapse: separate; border-spacing: 3px; font-size: .71875rem; font-variant-numeric: tabular-nums }
+.adm-cohort-head { font-size: .625rem; font-weight: 650; letter-spacing: .05em; text-transform: uppercase; color: var(--adm-faint); text-align: center; padding: 2px 4px; white-space: nowrap }
+.adm-cohort-name { font-weight: 600; color: var(--adm-ink-2); white-space: nowrap; padding-right: .4rem }
+.adm-cohort-size { color: var(--adm-faint); text-align: right; padding-right: .5rem }
+.adm-cohort-cell { min-width: 40px; text-align: center; padding: 6px 4px; border-radius: var(--adm-r-xs); color: var(--adm-ink-2); font-weight: 550 }
+/* A month that hasn't elapsed yet — deliberately blank, not a 0% cell. */
+.adm-cohort-cell--future { background: repeating-linear-gradient(45deg, var(--adm-sunken), var(--adm-sunken) 4px, var(--adm-line-soft) 4px, var(--adm-line-soft) 8px) }
 
 /* ── Tables ────────────────────────────────────────────────────────────── */
 
-.adm-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; max-height: 70vh; overflow-y: auto }
-.adm-table-wrap--short { max-height: 360px }
+/* Tables bleed to the card edge: a data grid inset inside card padding reads as a
+   second box floating in the first. The negative margin pulls it flush, and the
+   first/last cell padding puts the text back on the card's text column. */
+.adm-table-wrap {
+  overflow-x: auto; -webkit-overflow-scrolling: touch; max-height: 70vh; overflow-y: auto;
+  margin: 0 -1.25rem -1.25rem; padding: 0;
+}
+/* Only the last child may eat the card's bottom padding. The referrals card puts
+   a hint under its table, and the pulled-up margin had it touching the border. */
+.adm-table-wrap:not(:last-child) { margin-bottom: 1rem }
+.adm-table-wrap--short { max-height: 340px }
 .adm-table { width: 100%; border-collapse: collapse; font-size: .8125rem; line-height: 1.45 }
 .adm-table th {
-  text-align: left; padding: .6rem .55rem; font-size: .68rem; font-weight: 700; letter-spacing: .05em;
-  text-transform: uppercase; color: var(--adm-muted); background: rgba(248, 250, 252, .98);
-  border-bottom: 1px solid var(--adm-line); white-space: nowrap; position: sticky; top: 0; z-index: 1;
-  cursor: default; user-select: none;
+  text-align: left; padding: .55rem .6rem; font-size: .6875rem; font-weight: 620; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--adm-muted); background: var(--adm-surface);
+  border-top: 1px solid var(--adm-line); border-bottom: 1px solid var(--adm-line);
+  white-space: nowrap; position: sticky; top: 0; z-index: 1; cursor: default; user-select: none;
 }
-.adm-table th.adm-sortable { cursor: pointer; transition: color .15s }
-.adm-table th.adm-sortable:hover { color: var(--adm-accent) }
-.adm-table th .adm-sort-arrow { font-size: .6rem; margin-left: 3px; opacity: .4 }
+.adm-table th:first-child, .adm-table td:first-child { padding-left: 1.25rem }
+.adm-table th:last-child, .adm-table td:last-child { padding-right: 1.25rem }
+.adm-table th.adm-sortable { cursor: pointer; transition: color .14s }
+.adm-table th.adm-sortable:hover { color: var(--adm-ink) }
+.adm-table th .adm-sort-arrow { font-size: .6rem; margin-left: 3px; opacity: .45 }
 .adm-table th.adm-sorted { color: var(--adm-accent) }
 .adm-table th.adm-sorted .adm-sort-arrow { opacity: 1 }
-.adm-table td { padding: .58rem .55rem; border-bottom: 1px solid var(--adm-line-soft); color: var(--adm-ink-2); vertical-align: top; max-width: 320px; overflow: hidden; text-overflow: ellipsis }
+.adm-table td {
+  padding: .55rem .6rem; border-bottom: 1px solid var(--adm-line-soft); color: var(--adm-ink-2);
+  vertical-align: top; max-width: 320px; overflow: hidden; text-overflow: ellipsis;
+}
 .adm-table tbody tr { transition: background .12s }
-.adm-table tbody tr:hover { background: rgba(37, 99, 235, .045) }
+.adm-table tbody tr:hover { background: var(--adm-sunken) }
+.adm-table tbody tr:last-child td { border-bottom: 0 }
 .adm-table tbody tr.adm-row-click { cursor: pointer }
-.adm-table tbody tr.adm-row-expanded { background: rgba(37, 99, 235, .07) }
-.adm-num { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--adm-ink) }
+.adm-table tbody tr.adm-row-expanded { background: var(--adm-accent-wash) }
+.adm-num { font-variant-numeric: tabular-nums; font-weight: 550; color: var(--adm-ink) }
 .adm-num--blue { color: var(--adm-accent-deep) }
-.adm-num--green { color: #065f46 }
+.adm-num--green { color: var(--adm-pos) }
 
 /* Inline share bar in the top-users table. */
-.adm-mini-track { display: block; width: 100%; min-width: 54px; height: 6px; background: var(--adm-line-soft); border-radius: 999px; overflow: hidden; margin-top: .35rem }
-.adm-mini-fill { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--brand-soft), var(--brand)) }
+.adm-mini-track { display: block; width: 100%; min-width: 54px; height: 5px; background: var(--adm-line-soft); border-radius: 999px; overflow: hidden; margin-top: .35rem }
+.adm-mini-fill { display: block; height: 100%; border-radius: 999px; background: var(--adm-accent) }
 
-/* ── Badges ────────────────────────────────────────────────────────────── */
+/* ── Badges & staleness pills ──────────────────────────────────────────── */
 
-.adm-badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em }
-.adm-badge-pro { background: var(--brand-tint); color: var(--primary) }
-.adm-badge-enterprise { background: #fef3c7; color: #92400e }
-.adm-badge-free { background: var(--adm-line-soft); color: var(--adm-muted) }
-.adm-badge-active { background: #dcfce7; color: #166534 }
-.adm-badge-cancelled { background: #fef2f2; color: #991b1b }
-.adm-badge-trialing { background: #fef9c3; color: #854d0e }
-.adm-badge-google { background: #fce7f3; color: #be185d }
-.adm-badge-email { background: #f0fdf4; color: #15803d }
-
-/* ── Toolbars ──────────────────────────────────────────────────────────── */
-
-.adm-toolbar { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; margin-bottom: .85rem }
-.adm-search {
-  display: block; width: 100%; max-width: 340px; padding: .55rem .8rem; font-size: .85rem; font-family: inherit;
-  border: 1px solid #cbd5e1; border-radius: 9px; box-sizing: border-box; background: var(--adm-surface);
-  transition: border-color .18s, box-shadow .18s;
+/* One shape for every badge: a tinted wash, a matching ink, a hairline. The old
+   set mixed six saturations and shouted in uppercase — "GOOGLE" in hot pink next
+   to a plan carried the same visual weight as a cancelled subscription. */
+.adm-badge {
+  display: inline-block; padding: 1px 7px; border-radius: var(--adm-r-xs);
+  font-size: .6875rem; font-weight: 550; letter-spacing: 0; text-transform: capitalize;
+  color: var(--adm-ink-2); background: var(--adm-line-soft); border: 1px solid transparent;
 }
-.adm-search:focus { outline: none; border-color: var(--adm-accent); box-shadow: 0 0 0 3px rgba(37, 99, 235, .14) }
-.adm-filter {
-  padding: 6px 13px; font-size: .75rem; font-weight: 600; border: 1px solid var(--adm-line); border-radius: 9px;
-  cursor: pointer; font-family: inherit; transition: .16s; background: var(--adm-surface-2); color: var(--slate-deep);
+.adm-badge-pro { color: var(--adm-accent-deep); background: var(--adm-accent-wash); border-color: var(--adm-accent-tint) }
+.adm-badge-enterprise { color: var(--adm-warn); background: var(--adm-warn-wash); border-color: var(--adm-warn-line) }
+.adm-badge-free { color: var(--adm-muted); background: var(--adm-line-soft) }
+.adm-badge-active { color: var(--adm-pos); background: var(--adm-pos-wash); border-color: var(--adm-pos-line) }
+.adm-badge-cancelled { color: var(--adm-neg); background: var(--adm-neg-wash); border-color: var(--adm-neg-line) }
+.adm-badge-trialing { color: var(--adm-warn); background: var(--adm-warn-wash); border-color: var(--adm-warn-line) }
+.adm-badge-google, .adm-badge-email { color: var(--adm-muted); background: var(--adm-line-soft) }
+
+.adm-stale {
+  display: inline-block; padding: 1px 7px; border-radius: var(--adm-r-xs);
+  font-size: .6875rem; font-weight: 550; white-space: nowrap;
 }
-.adm-filter:hover { border-color: var(--brand-pale); color: var(--adm-accent) }
-.adm-filter.active { background: var(--adm-accent); color: var(--bg-elevated); border-color: var(--adm-accent) }
-.adm-result-count { font-size: .75rem; color: var(--adm-faint); margin-left: auto; white-space: nowrap }
+.adm-stale--fresh { color: var(--adm-pos); background: var(--adm-pos-wash) }
+.adm-stale--warm { color: var(--adm-warn); background: var(--adm-warn-wash) }
+.adm-stale--cold { color: var(--adm-neg); background: var(--adm-neg-wash) }
+.adm-stale--never { color: var(--adm-faint); background: var(--adm-line-soft) }
 
 /* ── User detail drawer ────────────────────────────────────────────────── */
 
-.adm-detail { margin-top: .5rem; padding: 1.2rem; background: rgba(248, 250, 252, .75); border-radius: var(--adm-r-md); border: 1px solid var(--adm-line) }
-.adm-detail h3 { margin: 0 0 .5rem; font-size: .8rem; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; color: var(--adm-accent-deep); display: flex; align-items: center; gap: 6px }
-.adm-detail-section { margin-bottom: 1.25rem }
+.adm-detail {
+  margin: .35rem 0; padding: 1.2rem 1.25rem; background: var(--adm-sunken);
+  border: 1px solid var(--adm-line); border-radius: var(--adm-r-md);
+}
+.adm-detail h3 {
+  margin: 0 0 .6rem; font-size: .6875rem; font-weight: 650; letter-spacing: .07em; text-transform: uppercase;
+  color: var(--adm-muted); display: flex; align-items: center; gap: 6px;
+}
+.adm-detail-section { margin-bottom: 1.35rem }
 .adm-detail-section:last-child { margin-bottom: 0 }
-.adm-detail-empty { font-size: .8rem; color: var(--adm-faint); font-style: italic }
-.adm-detail-info-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: .5rem }
-.adm-detail-kv { font-size: .78rem; color: var(--slate-deep); overflow-wrap: anywhere }
-.adm-detail-kv strong { color: var(--adm-accent-deep); font-weight: 600 }
+.adm-detail-empty { font-size: .8125rem; color: var(--adm-faint) }
+.adm-detail-info-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: .5rem .9rem }
+.adm-detail-kv { font-size: .78125rem; color: var(--adm-ink-2); overflow-wrap: anywhere }
+.adm-detail-kv strong { color: var(--adm-muted); font-weight: 550 }
+/* The drawer is a full-width cell inside the table, so it must not inherit the
+   cell's clipping or its 320px ceiling. */
+.adm-table td.adm-detail-cell, .adm-detail-row td { max-width: none; overflow: visible; white-space: normal; padding: 0 1.25rem }
+/* The nested history table sits on the drawer's sunken surface, so its sticky
+   header has to match it — the default white header banded across the drawer. */
+.adm-detail .adm-table th { background: var(--adm-sunken); border-top: 0 }
+.adm-detail .adm-table th:first-child, .adm-detail .adm-table td:first-child { padding-left: .6rem }
+.adm-detail .adm-table th:last-child, .adm-detail .adm-table td:last-child { padding-right: .6rem }
 
 /* Comp Stagify+ grant control (inside the user detail drawer). */
-.adm-grant-btn { padding: .5rem 1rem; font-size: .8rem; font-weight: 700; color: var(--bg-elevated); background: #7c3aed; border: none; border-radius: 9px; cursor: pointer; font-family: inherit; transition: .18s }
-.adm-grant-btn:hover:not(:disabled) { background: #6d28d9 }
+/* Primary weight, not a colour: the grant is a real action but it is one row deep
+   in a drawer, and a saturated purple button was the loudest thing on the page. */
+.adm-grant-btn {
+  padding: .45rem .9rem; font-size: .78125rem; font-weight: 600; font-family: inherit;
+  color: var(--bg-elevated); background: var(--adm-ink); border: 1px solid var(--adm-ink);
+  border-radius: var(--adm-r-sm); cursor: pointer; transition: background .16s, border-color .16s;
+}
+.adm-grant-btn:hover:not(:disabled) { background: var(--adm-ink-2); border-color: var(--adm-ink-2) }
 .adm-grant-btn:disabled { opacity: .5; cursor: wait }
-.adm-grant-btn--danger { background: #dc2626 }
-.adm-grant-btn--danger:hover:not(:disabled) { background: var(--danger) }
-.adm-grant-status { margin: 0 0 .5rem; font-size: .8rem; font-weight: 600; color: #6d28d9 }
-.adm-grant-msg { margin: .5rem 0 0; font-size: .78rem; color: var(--adm-muted); min-height: 1em }
+.adm-grant-btn--danger { color: var(--adm-neg); background: var(--adm-neg-wash); border-color: var(--adm-neg-line) }
+.adm-grant-btn--danger:hover:not(:disabled) { background: var(--bg-elevated); border-color: var(--adm-neg) }
+.adm-grant-status { margin: 0 0 .5rem; font-size: .8125rem; font-weight: 550; color: var(--adm-ink-2) }
+.adm-grant-msg { margin: .5rem 0 0; font-size: .78125rem; color: var(--adm-muted); min-height: 1em }
 
 /* ── Downloads & destructive actions ───────────────────────────────────── */
 
-.adm-dl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: .75rem }
+.adm-dl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: .6rem }
 .adm-dl-btn {
-  display: flex; align-items: center; gap: .55rem; padding: .85rem 1rem; background: var(--bg-elevated);
+  display: flex; align-items: center; gap: .6rem; padding: .75rem .9rem; background: var(--adm-surface);
   border: 1px solid var(--adm-line); border-radius: var(--adm-r-md); cursor: pointer; font-family: inherit;
-  font-size: .85rem; font-weight: 600; color: var(--adm-ink-2); transition: .16s; text-decoration: none;
+  font-size: .8125rem; font-weight: 550; color: var(--adm-ink-2); transition: border-color .14s, background .14s, color .14s;
+  text-decoration: none; text-align: left;
 }
-.adm-dl-btn:hover { border-color: var(--brand-pale); background: var(--brand-wash); color: var(--adm-accent); transform: translateY(-1px) }
-.adm-dl-btn svg { flex-shrink: 0 }
-.adm-dl-btn--downloading { opacity: .6; pointer-events: none }
+.adm-dl-btn:hover { border-color: var(--adm-line-strong); background: var(--adm-sunken); color: var(--adm-ink) }
+.adm-dl-btn svg { flex-shrink: 0; color: var(--adm-faint) }
+.adm-dl-btn:hover svg { color: var(--adm-accent) }
+.adm-dl-btn--downloading { opacity: .55; pointer-events: none }
 
-.adm-danger-btn { background: #dc2626; color: var(--bg-elevated); border: none; border-radius: 9px; padding: .6rem 1.1rem; font-weight: 700; cursor: pointer; font-size: .875rem; font-family: inherit; transition: background .18s }
-.adm-danger-btn:hover:not(:disabled) { background: var(--danger) }
-.adm-danger-btn:disabled { opacity: .6; cursor: wait }
-.adm-inline-msg { margin-left: .75rem; font-size: .85rem; color: var(--adm-muted) }
+.adm-danger-row { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap }
+.adm-danger-btn {
+  padding: .5rem 1rem; font-size: .8125rem; font-weight: 600; font-family: inherit;
+  color: var(--adm-neg); background: var(--adm-neg-wash); border: 1px solid var(--adm-neg-line);
+  border-radius: var(--adm-r-sm); cursor: pointer; transition: background .16s, border-color .16s;
+}
+.adm-danger-btn:hover:not(:disabled) { background: var(--bg-elevated); border-color: var(--adm-neg) }
+.adm-danger-btn:disabled { opacity: .55; cursor: wait }
+.adm-inline-msg { margin: 0; font-size: .8125rem; color: var(--adm-muted) }
+.adm-inline-msg--ok { color: var(--adm-pos) }
+.adm-inline-msg--err { color: var(--adm-neg) }
 
 /* ── Overview split ────────────────────────────────────────────────────── */
 
 .adm-top-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem }
-@media (max-width: 860px) { .adm-top-grid { grid-template-columns: 1fr } }
+@media (max-width: 940px) { .adm-top-grid { grid-template-columns: 1fr } }
 
 /* ── Loading ───────────────────────────────────────────────────────────── */
 
-.adm-loading { text-align: center; padding: 3rem 1rem; color: var(--adm-muted); font-size: .9rem }
-.adm-spinner { display: inline-block; width: 20px; height: 20px; border: 2.5px solid var(--adm-line); border-top-color: var(--adm-accent); border-radius: 50%; animation: adm-spin .6s linear infinite; vertical-align: middle; margin-right: 8px }
+.adm-loading { display: flex; align-items: center; justify-content: center; gap: .55rem; padding: 3rem 1rem; color: var(--adm-faint); font-size: .8125rem }
+.adm-spinner {
+  display: inline-block; width: 15px; height: 15px; border: 2px solid var(--adm-line);
+  border-top-color: var(--adm-accent); border-radius: 50%; animation: adm-spin .6s linear infinite;
+}
 @keyframes adm-spin { to { transform: rotate(360deg) } }
 
 /* ── Image hosting ─────────────────────────────────────────────────────── */
 
 .adm-host-upload { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap }
-.adm-host-pick { padding: .55rem 1rem; font-size: .85rem; font-weight: 600; color: var(--adm-accent); background: var(--brand-wash); border: 1px solid #bfdbfe; border-radius: 10px; cursor: pointer; font-family: inherit; transition: .18s }
-.adm-host-pick:hover { background: var(--brand-tint); border-color: var(--brand-pale) }
-.adm-host-fname { font-size: .8rem; color: var(--adm-muted); flex: 1; min-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
-.adm-host-upload-btn { padding: .55rem 1.1rem; font-size: .85rem; font-weight: 700; color: var(--bg-elevated); background: var(--adm-accent); border: none; border-radius: 10px; cursor: pointer; font-family: inherit; transition: .18s }
-.adm-host-upload-btn:hover:not(:disabled) { background: var(--brand-strong) }
-.adm-host-upload-btn:disabled { opacity: .5; cursor: not-allowed }
-.adm-host-result { margin-top: 1rem; padding: 1rem; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--adm-r-md) }
+.adm-host-pick {
+  padding: .45rem .9rem; font-size: .8125rem; font-weight: 550; font-family: inherit;
+  color: var(--adm-ink-2); background: var(--adm-surface); border: 1px solid var(--adm-line-strong);
+  border-radius: var(--adm-r-sm); cursor: pointer; transition: background .14s, border-color .14s;
+}
+.adm-host-pick:hover { background: var(--adm-sunken); border-color: var(--adm-faint) }
+/* Not flex:1 — growing it pushed the upload button to the far edge of the card,
+   away from the picker it belongs with. */
+.adm-host-fname { font-size: .8125rem; color: var(--adm-faint); flex: 0 1 auto; max-width: 340px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.adm-host-upload-btn {
+  padding: .45rem 1rem; font-size: .8125rem; font-weight: 600; font-family: inherit;
+  color: var(--bg-elevated); background: var(--adm-ink); border: 1px solid var(--adm-ink);
+  border-radius: var(--adm-r-sm); cursor: pointer; transition: background .16s, border-color .16s;
+}
+.adm-host-upload-btn:hover:not(:disabled) { background: var(--adm-ink-2); border-color: var(--adm-ink-2) }
+.adm-host-upload-btn:disabled { opacity: .45; cursor: not-allowed }
+.adm-host-result {
+  margin-top: 1rem; padding: .9rem 1rem; background: var(--adm-pos-wash);
+  border: 1px solid var(--adm-pos-line); border-radius: var(--adm-r-md); font-size: .8125rem;
+}
 .adm-host-result.hidden { display: none }
-.adm-host-result.adm-host-err { background: #fef2f2; border-color: #fecaca; color: #991b1b; font-size: .85rem; font-weight: 600 }
-.adm-host-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem }
-.adm-host-item { border: 1px solid var(--adm-line); border-radius: var(--adm-r-md); overflow: hidden; background: var(--bg-elevated); display: flex; flex-direction: column; transition: box-shadow .16s, transform .16s }
-.adm-host-item:hover { box-shadow: var(--adm-shadow-lift); transform: translateY(-2px) }
-.adm-host-thumb { width: 100%; height: 150px; object-fit: cover; background: var(--adm-line-soft); display: block; border-bottom: 1px solid var(--adm-line-soft) }
+.adm-host-result.adm-host-err { background: var(--adm-neg-wash); border-color: var(--adm-neg-line); color: var(--adm-neg); font-weight: 550 }
+.adm-host-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: .85rem }
+.adm-host-item {
+  border: 1px solid var(--adm-line); border-radius: var(--adm-r-md); overflow: hidden;
+  background: var(--adm-surface); display: flex; flex-direction: column; transition: border-color .16s, box-shadow .16s;
+}
+.adm-host-item:hover { border-color: var(--adm-line-strong); box-shadow: var(--adm-shadow-md) }
+.adm-host-thumb { width: 100%; height: 144px; object-fit: cover; background: var(--adm-line-soft); display: block; border-bottom: 1px solid var(--adm-line) }
 .adm-host-body { padding: .7rem; display: flex; flex-direction: column; gap: .5rem; flex: 1 }
 .adm-host-url-row { display: flex; gap: .4rem }
-.adm-host-url { flex: 1; min-width: 0; font-size: .72rem; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--adm-ink-2); background: #f8fafc; border: 1px solid var(--adm-line); border-radius: 7px; padding: .4rem .5rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
-.adm-host-copy { padding: .4rem .65rem; font-size: .72rem; font-weight: 700; color: var(--adm-accent); background: var(--brand-wash); border: 1px solid #bfdbfe; border-radius: 7px; cursor: pointer; font-family: inherit; white-space: nowrap; text-decoration: none; display: inline-flex; align-items: center }
-.adm-host-copy:hover { background: var(--brand-tint) }
-.adm-host-meta { font-size: .7rem; color: var(--adm-faint); word-break: break-word }
+.adm-host-url {
+  flex: 1; min-width: 0; font-size: .71875rem; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--adm-ink-2); background: var(--adm-sunken); border: 1px solid var(--adm-line);
+  border-radius: var(--adm-r-xs); padding: .35rem .5rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.adm-host-copy {
+  padding: .35rem .65rem; font-size: .71875rem; font-weight: 600; font-family: inherit;
+  color: var(--adm-ink-2); background: var(--adm-surface); border: 1px solid var(--adm-line-strong);
+  border-radius: var(--adm-r-xs); cursor: pointer; white-space: nowrap; text-decoration: none;
+  display: inline-flex; align-items: center; transition: background .14s;
+}
+.adm-host-copy:hover { background: var(--adm-sunken) }
+.adm-host-meta { font-size: .71875rem; color: var(--adm-faint); word-break: break-word }
 .adm-host-actions { display: flex; gap: .4rem; align-items: center; justify-content: space-between; margin-top: auto }
-.adm-host-del { padding: .45rem .7rem; font-size: .72rem; font-weight: 700; color: #dc2626; background: #fef2f2; border: 1px solid #fecaca; border-radius: 7px; cursor: pointer; font-family: inherit; transition: .18s }
-.adm-host-del:hover:not(:disabled) { background: #fee2e2; border-color: #fca5a5 }
+.adm-host-del {
+  padding: .35rem .65rem; font-size: .71875rem; font-weight: 600; font-family: inherit;
+  color: var(--adm-neg); background: var(--adm-neg-wash); border: 1px solid var(--adm-neg-line);
+  border-radius: var(--adm-r-xs); cursor: pointer; transition: background .14s;
+}
+.adm-host-del:hover:not(:disabled) { background: var(--bg-elevated) }
 .adm-host-del:disabled { opacity: .5; cursor: wait }
 
-/* ── Narrow screens ────────────────────────────────────────────────────── */
+/* ── Server status tab ─────────────────────────────────────────────────── */
 
-@media (max-width: 640px) {
-  .adm-stats { grid-template-columns: 1fr 1fr }
-  .adm-chart-grid { grid-template-columns: 1fr }
-  .adm-dl-grid { grid-template-columns: 1fr }
-  .adm-host-grid { grid-template-columns: 1fr }
-  .adm-topbar-right { margin-left: 0; width: 100% }
-  .adm-card { padding: 1.1rem 1rem }
-  .adm-donut { justify-content: center }
-  .adm-ranked-row { grid-template-columns: minmax(64px, 40%) 1fr auto }
+.adm-live-head { display: flex; align-items: center; gap: .7rem; flex-wrap: wrap; margin-bottom: 1rem }
+.adm-live-pill {
+  display: inline-flex; align-items: center; gap: .45rem;
+  padding: .3rem .7rem; border-radius: 999px; font-size: .8125rem; font-weight: 600;
+}
+/* The dot is the status; the word is the caption. Both, because colour alone is not
+   a status indicator for anyone who cannot see it. */
+.adm-live-pill::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor }
+.adm-live-pill--up { color: var(--adm-pos); background: var(--adm-pos-wash); border: 1px solid var(--adm-pos-line) }
+.adm-live-pill--down { color: var(--adm-neg); background: var(--adm-neg-wash); border: 1px solid var(--adm-neg-line) }
+.adm-live-beat { font-size: .78125rem; color: var(--adm-muted); font-variant-numeric: tabular-nums }
+.adm-live-link { margin-left: auto; font-size: .78125rem; font-weight: 550; color: var(--adm-accent); text-decoration: none }
+.adm-live-link:hover { text-decoration: underline }
+.adm-live-facts { margin-bottom: .9rem }
+.adm-live-note {
+  margin: 0; padding: .7rem .85rem; font-size: .75rem; line-height: 1.5; color: var(--adm-muted);
+  background: var(--adm-sunken); border: 1px solid var(--adm-line); border-radius: var(--adm-r-sm);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .adm-panel.active { animation: none }
-  .adm-stat, .adm-dl-btn, .adm-host-item, .adm-ranked-fill { transition: none }
-  .adm-stat:hover, .adm-dl-btn:hover, .adm-host-item:hover { transform: none }
-}
+/* Three windows, so they get their own row rather than the 4-up stat grid. */
+@media (min-width: 1120px) { .adm-status-stats { grid-template-columns: repeat(3, minmax(0, 1fr)) } }
+.adm-status-stats .adm-stat-val { margin-bottom: .1rem }
+.adm-status-stats .adm-stat > .adm-stat-hint:last-child { margin-bottom: 1rem }
+.adm-stat-hint--warn { color: var(--adm-warn) }
 
-/* ── Emails tab: preview gallery + per-template test send ────────────────── */
-.adm-email-test { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; margin: 0 0 1.1rem }
-.adm-email-test-input { max-width: 320px }
-.adm-email-test-hint { font-size: .78rem; color: var(--adm-muted) }
-.adm-email-gallery {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1.1rem;
-}
+/* Uptime bar strip. Flex rather than a grid: the bar count differs per window
+   (48 / 56 / 60) and each strip should fill its card either way. */
+.adm-upbars { display: flex; align-items: stretch; gap: 2px; height: 42px; margin-bottom: .5rem }
+.adm-upbar { flex: 1 1 0; min-width: 2px; border-radius: 2px; background: var(--adm-line) }
+.adm-upbar--up { background: var(--adm-pos) }
+.adm-upbar--partial { background: var(--adm-warn) }
+.adm-upbar--down { background: var(--adm-neg) }
+.adm-upbar--nodata { background: var(--adm-line) }
+.adm-upbars-axis { display: flex; justify-content: space-between; font-size: .71875rem; color: var(--adm-faint) }
+.adm-upbars-legend { display: flex; gap: 1rem; flex-wrap: wrap; font-size: .75rem; color: var(--adm-muted); margin: .25rem 0 1rem }
+.adm-upbars-legend > span { display: inline-flex; align-items: center; gap: .4rem }
+/* The legend reuses .adm-upbar as a swatch, so it needs a fixed size here. */
+.adm-upbars-legend .adm-upbar { flex: 0 0 auto; width: 10px; height: 10px; border-radius: 3px }
+
+/* Incident composer. The title takes a whole row — it is a sentence, not a field. */
+.adm-inc-form { display: flex; align-items: flex-end; gap: .7rem; flex-wrap: wrap; margin: 0 0 .5rem }
+.adm-inc-field { display: flex; flex-direction: column; gap: .3rem; flex: 1 1 190px; min-width: 0 }
+.adm-inc-field--wide { flex: 1 1 100% }
+.adm-inc-field .adm-search { padding-left: .7rem }
+.adm-inc-check { display: flex; align-items: flex-start; gap: .5rem; flex: 1 1 260px; padding-bottom: .1rem }
+.adm-inc-check input { margin-top: .2rem; accent-color: var(--adm-accent); flex-shrink: 0 }
+.adm-inc-check-lbl { display: block; font-size: .8125rem; font-weight: 550; color: var(--adm-ink-2) }
+.adm-inc-check-hint { display: block; font-size: .71875rem; line-height: 1.45; color: var(--adm-faint) }
+#adm-inc-msg { margin: .4rem 0 0 }
+
+.adm-inc-title { font-weight: 550; color: var(--adm-ink); margin-bottom: .2rem }
+.adm-inc-end { font-size: .71875rem; color: var(--adm-faint); margin-top: .15rem }
+
+/* A live incident is worth seeing from any tab, so the rail carries a dot. */
+.adm-tab-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--adm-neg); flex-shrink: 0 }
+.adm-tab-dot[hidden] { display: none }
+
+/* ── Emails tab: preview gallery + per-template test send ──────────────── */
+
+.adm-email-test { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; margin: 0 0 1.2rem }
+.adm-email-test-input { flex: 0 1 300px }
+.adm-email-test-hint { font-size: .78125rem; color: var(--adm-muted) }
+/* `start`, unlike every other grid here: each preview is sized to the email it
+   shows, so stretching them to a shared row height would hang the Send button in
+   dead space under the short ones. */
+.adm-email-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem; align-items: start }
 .adm-email-card {
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--adm-line);
-  border-radius: var(--adm-r-md);
-  background: var(--adm-surface-2);
-  overflow: hidden;
+  display: flex; flex-direction: column; overflow: hidden;
+  border: 1px solid var(--adm-line); border-radius: var(--adm-r-md); background: var(--adm-surface);
 }
-.adm-email-card__head { padding: .9rem 1rem .75rem }
+.adm-email-card__head { padding: .9rem 1rem .8rem }
 .adm-email-cat {
-  display: inline-block; margin-bottom: .4rem; padding: 2px 8px; border-radius: 6px;
-  font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
-  background: var(--brand-tint); color: var(--primary);
+  display: inline-block; margin-bottom: .45rem; padding: 1px 7px; border-radius: var(--adm-r-xs);
+  font-size: .625rem; font-weight: 650; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--adm-muted); background: var(--adm-line-soft);
 }
-.adm-email-card__title { margin: 0 0 .25rem; font-size: .95rem; font-weight: 700; color: var(--adm-ink) }
-.adm-email-card__desc { margin: 0 0 .45rem; font-size: .76rem; line-height: 1.45; color: var(--adm-muted) }
-.adm-email-card__subject {
-  margin: 0; font-size: .74rem; color: var(--adm-ink-2);
-  word-break: break-word;
-}
+.adm-email-card__title { margin: 0 0 .25rem; font-size: .875rem; font-weight: 620; color: var(--adm-ink) }
+.adm-email-card__desc { margin: 0 0 .45rem; font-size: .75rem; line-height: 1.5; color: var(--adm-muted) }
+.adm-email-card__subject { margin: 0; font-size: .71875rem; color: var(--adm-faint); word-break: break-word }
 .adm-email-frame {
   width: 100%; height: 300px; border: 0; border-top: 1px solid var(--adm-line);
-  border-bottom: 1px solid var(--adm-line); background: var(--bg-elevated); display: block;
+  border-bottom: 1px solid var(--adm-line); background: var(--adm-sunken); display: block;
 }
-.adm-email-card__foot {
-  display: flex; align-items: center; gap: .7rem; flex-wrap: wrap; padding: .8rem 1rem;
-}
+.adm-email-card__foot { display: flex; align-items: center; gap: .7rem; flex-wrap: wrap; padding: .8rem 1rem }
 .adm-email-send-btn {
-  padding: .45rem .9rem; font-size: .78rem; font-weight: 700; color: var(--bg-elevated);
-  background: var(--adm-accent); border: none; border-radius: 8px; cursor: pointer;
-  font-family: inherit; transition: .18s;
+  padding: .4rem .85rem; font-size: .78125rem; font-weight: 600; font-family: inherit;
+  color: var(--adm-ink-2); background: var(--adm-surface); border: 1px solid var(--adm-line-strong);
+  border-radius: var(--adm-r-sm); cursor: pointer; transition: background .14s, border-color .14s;
 }
-.adm-email-send-btn:hover:not(:disabled) { background: var(--adm-accent-deep) }
+.adm-email-send-btn:hover:not(:disabled) { background: var(--adm-sunken); border-color: var(--adm-faint) }
 .adm-email-send-btn:disabled { opacity: .5; cursor: not-allowed }
-.adm-email-send-msg { font-size: .76rem; color: var(--adm-muted) }
-.adm-email-send-msg--ok { color: #166534 }
-.adm-email-send-msg--err { color: #dc2626 }
+.adm-email-send-msg { font-size: .75rem; color: var(--adm-muted) }
+.adm-email-send-msg--ok { color: var(--adm-pos) }
+.adm-email-send-msg--err { color: var(--adm-neg) }
 
-/* ── Referrals tab: create form, link list, per-link detail ──────────────── */
+/* ── Referrals tab: create form, link list, per-link detail ────────────── */
 
 /* Create form. The fields wrap onto their own rows on a narrow screen rather than
    shrinking below a usable width. */
-.adm-ref-form { display: flex; align-items: flex-end; gap: .75rem; flex-wrap: wrap; margin: 1rem 0 .35rem }
+.adm-ref-form { display: flex; align-items: flex-end; gap: .7rem; flex-wrap: wrap; margin: 0 0 .5rem }
 .adm-ref-field { display: flex; flex-direction: column; gap: .3rem; flex: 1 1 190px; min-width: 0 }
-.adm-ref-field-lbl { font-size: .7rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--adm-faint) }
-.adm-ref-optional { font-weight: 600; text-transform: none; letter-spacing: 0; color: var(--adm-faint) }
+.adm-ref-field-lbl { font-size: .6875rem; font-weight: 620; letter-spacing: .05em; text-transform: uppercase; color: var(--adm-faint) }
+.adm-ref-optional { font-weight: 500; text-transform: none; letter-spacing: 0 }
 .adm-ref-slug-input { display: flex; align-items: center; gap: .3rem }
-.adm-ref-origin { font-size: .85rem; font-weight: 700; color: var(--adm-faint); font-family: ui-monospace, SFMono-Regular, Menlo, monospace }
+.adm-ref-origin { font-size: .875rem; font-weight: 600; color: var(--adm-faint); font-family: ui-monospace, SFMono-Regular, Menlo, monospace }
 .adm-ref-slug-input .adm-search { flex: 1; min-width: 0 }
 .adm-ref-create-btn {
-  padding: .5rem 1.1rem; font-size: .82rem; font-weight: 700; color: var(--bg-elevated);
-  background: var(--adm-accent); border: none; border-radius: 8px; cursor: pointer;
-  font-family: inherit; transition: .18s; white-space: nowrap;
+  padding: .45rem 1rem; font-size: .8125rem; font-weight: 600; font-family: inherit;
+  color: var(--bg-elevated); background: var(--adm-ink); border: 1px solid var(--adm-ink);
+  border-radius: var(--adm-r-sm); cursor: pointer; white-space: nowrap; transition: background .16s, border-color .16s;
 }
-.adm-ref-create-btn:hover:not(:disabled) { background: var(--adm-accent-deep) }
+.adm-ref-create-btn:hover:not(:disabled) { background: var(--adm-ink-2); border-color: var(--adm-ink-2) }
 .adm-ref-create-btn:disabled { opacity: .5; cursor: not-allowed }
-.adm-ref-preview { margin: 0; font-size: .76rem; color: var(--adm-faint); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; min-height: 1.1em }
-.adm-inline-msg--ok { color: #166534 }
-.adm-inline-msg--err { color: var(--danger) }
+.adm-ref-preview { margin: 0; font-size: .75rem; color: var(--adm-faint); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; min-height: 1.1em }
 #adm-ref-form-msg { margin: .4rem 0 0 }
 
 /* Link list. Rows are clickable — they open the detail card below the table. */
 .adm-ref-row { cursor: pointer }
-.adm-ref-row--on { background: var(--brand-wash) }
-.adm-ref-slug { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 700; color: var(--adm-accent-deep); margin-right: .4rem }
+.adm-ref-row--on { background: var(--adm-accent-wash) }
+.adm-ref-slug { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 600; color: var(--adm-accent-deep); margin-right: .4rem }
 .adm-ref-actions { display: flex; gap: .35rem; flex-wrap: wrap; justify-content: flex-end }
 .adm-ref-action {
-  padding: .25rem .55rem; font-size: .7rem; font-weight: 700; font-family: inherit;
-  border-radius: 6px; cursor: pointer; white-space: nowrap; border: 1px solid var(--adm-line);
-  background: var(--adm-surface-2); color: var(--adm-ink-2); transition: .16s;
+  padding: .2rem .55rem; font-size: .71875rem; font-weight: 550; font-family: inherit;
+  border-radius: var(--adm-r-xs); cursor: pointer; white-space: nowrap;
+  border: 1px solid var(--adm-line-strong); background: var(--adm-surface); color: var(--adm-ink-2);
+  transition: background .14s, border-color .14s, color .14s;
 }
-.adm-ref-action--quiet:hover { background: var(--brand-tint); color: var(--adm-accent-deep); border-color: #bfdbfe }
-.adm-ref-action--warn { color: #92400e; border-color: #fde68a; background: #fffbeb }
-.adm-ref-action--warn:hover { background: #fef3c7 }
-.adm-ref-action--danger { color: #991b1b; border-color: #fecaca; background: #fef2f2 }
-.adm-ref-action--danger:hover { background: #fee2e2 }
+.adm-ref-action--quiet:hover { background: var(--adm-sunken); border-color: var(--adm-faint) }
+.adm-ref-action--warn { color: var(--adm-warn); border-color: var(--adm-warn-line); background: var(--adm-warn-wash) }
+.adm-ref-action--warn:hover { background: var(--bg-elevated) }
+.adm-ref-action--danger { color: var(--adm-neg); border-color: var(--adm-neg-line); background: var(--adm-neg-wash) }
+.adm-ref-action--danger:hover { background: var(--bg-elevated) }
 
 /* Per-link detail. The chart card nested inside brings its own surface and border,
    so it sits flush rather than looking like a second panel floating in this one. */
-.adm-ref-card { margin-top: 1.1rem }
-.adm-ref-card .adm-chart-card { margin: 1rem 0 0; box-shadow: none }
+.adm-ref-card { margin-top: 1rem }
+.adm-ref-card .adm-chart-card { margin: 1rem 0 0; box-shadow: none; background: var(--adm-sunken) }
 .adm-ref-card .adm-host-url-row { margin-bottom: 1rem }
 .adm-ref-card > h2 { display: flex; align-items: center; gap: .55rem; flex-wrap: wrap }
 .adm-ref-sources { margin-top: 1.1rem }
-.adm-ref-sources-title {
-  margin: 0 0 .6rem; font-size: .78rem; font-weight: 700; letter-spacing: .04em;
-  text-transform: uppercase; color: var(--adm-faint);
+.adm-ref-sources-title { margin: 0 0 .6rem; font-size: .6875rem; font-weight: 650; letter-spacing: .07em; text-transform: uppercase; color: var(--adm-faint) }
+
+/* ── Narrow screens ────────────────────────────────────────────────────── */
+
+/* Under ~1040px the rail unpins and becomes a scrolling strip across the top:
+   the console stays usable on a laptop in a split view, without a hamburger
+   nothing else on the page needs. */
+@media (max-width: 1040px) {
+  .adm-side {
+    position: sticky; inset: 0 0 auto 0; top: 0; width: auto; flex-direction: row;
+    align-items: center; gap: .5rem; padding: 0 .75rem;
+    border-right: 0; border-bottom: 1px solid var(--adm-line);
+  }
+  .adm-side-brand { padding: .7rem .25rem .7rem 0 }
+  .adm-side-brand-txt { display: none }
+  .adm-nav { flex-direction: row; overflow-x: auto; overflow-y: hidden; padding: .5rem 0; gap: 3px; scrollbar-width: none }
+  .adm-nav::-webkit-scrollbar { display: none }
+  .adm-nav-group { display: none }
+  .adm-tab { width: auto; white-space: nowrap; padding: .4rem .6rem }
+  .adm-tab-ico { display: none }
+  .adm-side-foot { flex-direction: row; border-top: 0; padding: 0; margin-left: auto; gap: .25rem }
+  .adm-topbar-link, .adm-signout { width: auto; white-space: nowrap }
+  .adm-topbar-link svg { margin-left: 0 }
+  .adm-main { margin-left: 0 }
+  .adm-topbar { top: 57px }
+}
+
+@media (max-width: 720px) {
+  .adm-stats { grid-template-columns: 1fr 1fr }
+  .adm-chart-grid { grid-template-columns: 1fr }
+  .adm-dl-grid, .adm-host-grid, .adm-email-gallery { grid-template-columns: 1fr }
+  .adm-card { padding: 1rem }
+  .adm-table-wrap { margin: 0 -1rem -1rem }
+  .adm-table th:first-child, .adm-table td:first-child { padding-left: 1rem }
+  .adm-table th:last-child, .adm-table td:last-child { padding-right: 1rem }
+  .adm-detail-row td, .adm-table td.adm-detail-cell { padding: 0 1rem }
+  .adm-donut { justify-content: center }
+  .adm-ranked-row { grid-template-columns: minmax(64px, 40%) 1fr auto }
+  .adm-topbar-right { margin-left: 0 }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .adm-panel.active { animation: none }
+  .adm-stat, .adm-dl-btn, .adm-host-item, .adm-ranked-fill, .adm-funnel-fill { transition: none }
 }

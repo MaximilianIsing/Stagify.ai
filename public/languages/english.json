@@ -85,7 +85,6 @@
     },
     "restage": {
       "title": "Click to see what staging does",
-      "subtitle": "The same empty room, staged again and again. No movers, no rentals, no waiting.",
       "kicker": "Total design control",
       "panelTitle": "Every run furnishes it fresh",
       "panelBody": "Traditional staging gives you one arrangement and a rental agreement. Run it again and the room comes back furnished a different way: different layout, different palette, different materials.",
@@ -102,7 +101,6 @@
     },
     "showcase": {
       "title": "See it for yourself",
-      "subtitle": "Live demos. Have a look around.",
       "tablistAria": "Studios",
       "prevAria": "Previous studio",
       "nextAria": "Next studio",
@@ -219,7 +217,6 @@
     "info": {
       "eyebrow": "The short version",
       "title": "What virtual staging is, and why it sells",
-      "subtitle": "A quick, honest rundown of how it works and who it’s for.",
       "rows": {
         "why": {
           "eyebrow": "Why it works",
@@ -262,7 +259,6 @@
     "compare": {
       "eyebrow": "Virtual vs. traditional",
       "title": "How it compares to traditional staging",
-      "subtitle": "Traditional staging works. It’s just slow and expensive.",
       "colTraditional": "Traditional staging",
       "colStagify": "Stagify.ai",
       "calc": {
@@ -305,7 +301,6 @@
     },
     "nar": {
       "title": "Don’t fall behind",
-      "subtitle": "Agents are adopting AI fast, and clients approve. Staging is the easiest place to start.",
       "usageLabel": "How often agents use AI tools",
       "legend": {
         "daily": "Daily",
@@ -322,7 +317,6 @@
     },
     "plus": {
       "title": "Go further with Stagify+",
-      "subtitle": "Two ways to upgrade: a flat monthly plan, or usage-based billing for your team.",
       "pro": {
         "name": "Stagify+",
         "tag": "For individuals",
@@ -349,7 +343,6 @@
     },
     "instagram": {
       "title": "See it in action on Instagram",
-      "subtitle": "Real staging transformations, quick tips, and behind-the-scenes from the Stagify team.",
       "follow": "Follow @stagify.ai"
     },
     "finalCta": {
@@ -358,12 +351,8 @@
       "button": "Upload a photo",
       "note": "Recognized by Compass, Centennial, and more."
     },
-    "whyus": {
-      "subtitle": "Four other ways to stage a listing, side by side with ours."
-    },
     "testimonials": {
       "title": "What agents are saying",
-      "subtitle": "Straight from brokers who made the switch.",
       "items": {
         "justin": {
           "quote": "When I tried Stagify for the first time, I was honestly blown away. I realized I could just use my phone, skip the expensive photographer, and still have stunning results. It’s a game-changer for my listings, and the price is amazing!",
@@ -414,12 +403,8 @@
         "next": "Next testimonial"
       }
     },
-    "faq": {
-      "subtitle": "The questions we hear most. Stuck? Visit <a href=\"guides.html\">Guides</a> or get in touch."
-    },
     "blog": {
       "title": "From the Stagify blog",
-      "subtitle": "Guides and tips on virtual staging, MLS disclosure, and marketing your listings faster.",
       "viewAll": "Visit the Stagify blog →"
     },
     "contactCta": {
@@ -882,6 +867,27 @@
     }
   },
   "pdf": {
+    "pitch": {
+      "subtitle": "Describe the room you want in plain language, and keep talking until it looks right.",
+      "ctaUpgrade": "Get Stagify+ to use it",
+      "featuresTitle": "What it does",
+      "chat": {
+        "title": "Say it, do not set it",
+        "body": "No room type, no style dropdown. Ask for what you want and adjust it in the next message."
+      },
+      "iterate": {
+        "title": "It remembers the room",
+        "body": "Every reply builds on the last one, so “warmer, and lose the rug” means what you think it means."
+      },
+      "plans": {
+        "title": "Floor plans, furnished",
+        "body": "Drop in a plan and get it furnished from above, or step inside one room for a photo of it."
+      },
+      "honest": {
+        "title": "Nothing is final until you say so",
+        "body": "Every version stays in the conversation, so you can go back to the one you liked."
+      }
+    },
     "meta": {
       "title": "AI Interior Design Assistant — Redesign Any Room | Stagify.ai",
       "description": "Chat with an AI interior design assistant to redesign any room. Upload a photo, describe your style, and get instant, photorealistic interior design ideas.",
@@ -1165,6 +1171,11 @@
     "troubleshootingTitle": "Troubleshooting & common issues"
   },
   "pageMeta": {
+    "basicMask": {
+      "title": "Basic Mask | Stagify.ai - Paint One Area and Restage Just That",
+      "description": "Paint over one part of a room photo, say what should change there, and get back the same photograph with only that area redone. Everything outside your brush stroke is untouched.",
+      "keywords": "basic mask, masked staging, paint to edit photo, spot edit room photo, replace sofa in photo, AI photo touch up, real estate photo editing, partial restage, Stagify"
+    },
     "guides": {
       "title": "Guides & Walkthroughs | Stagify.ai",
       "description": "Step-by-step walkthroughs for Stagify.ai — your first free staging, staging with Stagify+, and fixes for common issues."
@@ -1192,14 +1203,55 @@
       "keywords": "curb appeal, exterior photo editing, real estate photo enhancement, sky replacement, remove cars from photo, twilight photo real estate, golden hour listing photo, AI photo editor, property exterior, Stagify"
     }
   },
+  "basicMask": {
+    "title": "Basic Mask",
+    "subtitle": "Paint over one part of the photo, say what should change there, and get the same picture back with only that bit redone.",
+    "ctaUpgrade": "Get Stagify+ to use it",
+    "ctaOpen": "Open Basic Mask",
+    "features": {
+      "title": "What it does",
+      "paint": {
+        "title": "Paint, then ask",
+        "body": "Brush over the sofa, the worktop, the blank wall. Then describe what should be there instead."
+      },
+      "small": {
+        "title": "For small fixes",
+        "body": "When the shot is already right apart from one thing, this is faster than staging the room again."
+      },
+      "upgrade": {
+        "title": "One area at a time",
+        "body": "One mask, one instruction. For several areas at once, each with its own furniture, use the Masking Studio."
+      },
+      "honest": {
+        "title": "Everything outside the stroke comes back untouched",
+        "body": "Not re-rendered, not nudged, not re-lit."
+      }
+    }
+  },
   "maskingStudio": {
+    "ctaUpgrade": "Get Stagify+ to use it",
+    "features": {
+      "title": "What it does",
+      "areas": {
+        "title": "Several areas at once",
+        "body": "Mark the sofa wall, the empty corner and the bare floor in three colours, and stage all of them in one pass."
+      },
+      "own": {
+        "title": "Your own furniture",
+        "body": "Give any area a product photo instead of a prompt, and that exact piece is what gets placed."
+      },
+      "exact": {
+        "title": "Pixel-exact edges",
+        "body": "Paint the mask by hand, drag a rectangle, or let the Magic tool trace an object in one click."
+      },
+      "honest": {
+        "title": "Everything outside the mask comes back untouched",
+        "body": "Not re-rendered, not nudged, not re-lit."
+      }
+    },
     "title": "Masking Studio",
-    "subtitle": "Highlight areas of your room in different colors, give each one its own furniture, and stage them all at once. Only the highlighted areas can change, so the rest of your photo stays pixel-perfect.",
+    "subtitle": "Highlight areas of your room in different colors, give each one its own furniture, and stage them all at once.",
     "exteriorTitle": "That’s one for the Exterior Studio",
-    "gateTitle": "Masking Studio is a Stagify+ feature",
-    "gateBody": "Sign in with a Stagify+ account to highlight multiple areas of a photo, give each one its own furniture, and stage them all at once, with pixel-perfect masking that can’t touch the rest of your photo.",
-    "gateCta": "View Stagify+",
-    "gateBack": "Back to Home",
     "stepPhoto": "Room photo",
     "stepPhotoHint": "Upload a photo of your room in the workspace on the right.",
     "replacePhoto": "Replace photo",
@@ -1337,7 +1389,8 @@
       "noneText": "The service has had no detected downtime in the monitored period.",
       "defaultCause": "Downtime",
       "causeMissedHeartbeats": "Downtime detected on restart (missed heartbeats)",
-      "loadError": "Could not reach the status API. Retrying…"
+      "loadError": "Could not reach the status API. Retrying…",
+      "ongoing": "Ongoing"
     },
     "monitoring": {
       "since": "Monitoring since {date} · last check {ago}",
@@ -1407,8 +1460,7 @@
   },
   "stagifyPlus": {
     "hero": {
-      "title": "Everything in Stagify, <span class=\"sp-grad\">unlocked</span>.",
-      "subtitle": "Furniture removal, the AI Designer, the Masking Studio, and higher-quality models: every professional tool, for less than the cost of one traditional staging."
+      "title": "Everything in Stagify, <span class=\"sp-grad\">unlocked</span>."
     },
     "plan": {
       "hintAccountFirst": "Create a free account first. That’s how your subscription gets linked to you.",
@@ -1448,25 +1500,29 @@
         "exterior": "Exterior Studio (curb appeal)"
       },
       "tips": {
-        "gallery": "Saved renders stay in your account — reopen them, download them again, or send a client a share link. A free gallery holds only your most recent rooms and drops the oldest as new ones arrive; on Stagify+ nothing is ever evicted.",
+        "gallery": "Saved renders stay in your account, so you can reopen them, download them again, or send a client a share link. A free gallery holds only your most recent rooms and drops the oldest as new ones arrive. On Stagify+ nothing is ever evicted.",
         "customizable": "Choose the room type and the furniture style before you generate, so a nursery doesn’t come back as a home office and a coastal brief doesn’t come back mid-century. The full set of rooms and styles is on both plans.",
         "fastModel": "The default generator, tuned for turnaround. It comes back in seconds, which is what you want while you are still trying room types and styles against each other. Available on every plan.",
-        "unlimited": "Stage as many photos as you like. There are no credits to buy and no per-render charge on either plan — Stagify+ changes what a generation can do, not how many of them you get.",
+        "unlimited": "Stage as many photos as you like. There are no credits to buy and no per-render charge on either plan. Stagify+ changes what a generation can do, not how many of them you get.",
         "hqModel": "A slower, more careful generator for the frame that actually goes on the listing. It holds straight lines, window light and reflections together far better, so the furniture sits in the room instead of on top of it.",
-        "remove": "Tick one box and the room is emptied first — sofas, clutter, wall art, all of it — then restaged from a clean slate. This is the one you need for an occupied listing, where staging on top of the seller’s furniture never looks right.",
-        "designer": "A chat window with your photo in it. Ask for what you want in plain language, then keep refining the same image over several turns — warmer wood, lose the rug, try it as a nursery — instead of starting a fresh render each time.",
+        "remove": "Tick one box and the room is emptied first: sofas, clutter, wall art, all of it. Then it is restaged from a clean slate. This is the one you need for an occupied listing, where staging on top of the seller’s furniture never looks right.",
+        "designer": "A chat window with your photo in it. Ask for what you want in plain language, then keep refining the same image over several turns. Warmer wood, lose the rug, try it as a nursery. No need to start a fresh render each time.",
         "masking": "Paint over part of a result and change only that. Everything outside the brush stays untouched, pixel for pixel, so you can swap a single chair or repaint one wall without re-rolling the whole room.",
-        "studio": "The full version of masking. Mark several areas in different colors, give each one its own brief or its own furniture photo, and stage them all in a single pass — then generate a few options per area and keep the best of each.",
+        "studio": "The full version of masking. Mark several areas in different colors, give each one its own brief or its own furniture photo, and stage them all in a single pass. Then generate a few options per area and keep the best of each.",
         "exterior": "For the shot every listing opens with. Change the time of day, clear a flat grey sky and take out parked cars and bins, while the property itself stays exactly as photographed.",
         "variations": "Ask for several takes on the same brief in one go. They differ in layout and furniture choice rather than being the same render twice, so you have something to choose between instead of re-rolling until one lands.",
-        "references": "Upload a product photo — an actual sofa, bed or dining set — and the room is staged with that piece rather than something generically similar. Useful when a client, a builder or a stager has already chosen the furniture."
+        "references": "Upload a product photo of an actual sofa, bed or dining set, and the room is staged with that piece rather than something generically similar. Useful when a client, a builder or a stager has already chosen the furniture."
       }
     },
-    "enterpriseRow": "For teams or enterprises, <a href=\"enterprise.html\">explore our enterprise plan</a> or contact <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> for personalized subscription options.",
+    "enterprise": {
+      "title": "Staging for a whole team?",
+      "body": "Everyone at your company gets Stagify+ automatically, and you pay for the generations your team actually uses instead of buying a seat each.",
+      "cta": "See Stagify Enterprise",
+      "contact": "Invoicing or custom terms? Email <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a>."
+    },
     "footLinks": {
       "backToFree": "Back to free staging",
-      "questions": "Questions before you buy?",
-      "footnote": "Teams, invoicing, or custom terms: <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a>"
+      "questions": "Questions before you buy?"
     }
   },
   "gallery": {
@@ -1585,14 +1641,14 @@
     "subtitle": "The one shot you cannot retake once the weather turns. Fix the light, the sky and the clutter, and leave the house alone.",
     "ctaUpgrade": "Get Stagify+ to use it",
     "features": {
-      "title": "What it changes",
+      "title": "What it does",
       "light": {
         "title": "Time of day",
         "body": "Shoot at noon, publish at golden hour, with shadows and window light to match."
       },
       "sky": {
         "title": "Sky and weather",
-        "body": "Flat grey becomes clear blue, light cloud or something more dramatic, with clean edges along the roofline."
+        "body": "Flat grey becomes clear blue, light cloud or something more dramatic."
       },
       "clutter": {
         "title": "Cars, clutter, and snow",

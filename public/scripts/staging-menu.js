@@ -243,6 +243,21 @@ function wireMenu(root) {
       return;
     }
 
+    // A locked preview row whose OWN href is the tool names its pitch separately. Basic
+    // Mask is the only one: the other three preview pages ARE their tool's URL, so falling
+    // through to the href is exactly right for them — but this row opens a panel in the
+    // staging flow on the home page (`data-staging-open="basic-mask"`, handled below), and
+    // falling through would hand a non-Pro visitor the tool itself rather than the page
+    // that explains it. Reading the destination off the row rather than hardcoding it
+    // keeps the mapping in the markup, next to the href it overrides.
+    const previewHref = item.getAttribute('data-staging-preview-page');
+    if (previewHref && item.classList.contains('is-locked')) {
+      e.preventDefault();
+      close();
+      window.location.href = localizedTarget(previewHref);
+      return;
+    }
+
     // Already on the home page: open the screen in place rather than navigating
     // to our own URL and re-parsing it. Off the home page these hooks don't
     // exist and the row's href does the work.

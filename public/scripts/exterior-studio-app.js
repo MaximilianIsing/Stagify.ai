@@ -4,11 +4,13 @@
 // views this visitor gets, then wires the photo → opt-in options → enhance → compare flow
 // for the one view that has a tool in it.
 //
-// There is NO render-blocking head gate on this page, unlike every other Stagify+ page.
-// See exterior-studio/access.js for why, and for the reminder that none of this is a
-// security boundary — requireProAccount on POST /api/enhance-exterior is.
+// The head gate on this page RESHAPES and never redirects, unlike gallery-gate.js. See
+// exterior-studio/access.js and scripts/preview-access.js for why, and for the reminder
+// that none of this is a security boundary — requireProAccount on POST
+// /api/enhance-exterior is.
 
 import { syncExteriorAccess } from './exterior-studio/access.js';
+import { settlePreview } from './preview-access.js';
 import { createControls } from './exterior-studio/controls.js';
 import { createCompare } from './exterior-studio/compare.js';
 import { createBusyOverlay } from './exterior-studio/busy-overlay.js';
@@ -54,12 +56,13 @@ function init() {
   // Paint from whatever auth state already exists, then again once /api/auth/me answers.
   // auth.js's applyUserToUI() calls syncExteriorAccess() on every later change, so
   // signing in or out from this page re-shapes it without a reload.
-  syncExteriorAccess();
-  if (window.StagifyAuth && typeof window.StagifyAuth.fetchMe === 'function') {
-    // A failure here is not fatal: the page is already showing the public view, which is
-    // the correct thing to show someone whose plan we could not confirm.
-    Promise.resolve(window.StagifyAuth.fetchMe()).catch(() => {});
-  }
+  //
+  // The second paint is not decoration: it is what hands the page from the pre-paint gate's
+  // cached guess to the real plan, and therefore what takes `ex-pro-pending` off. This used
+  // to fire fetchMe() and never look at the answer, leaving that handover to whichever of
+  // profile-menu.js's listeners happened to run — which worked, and was one deleted line
+  // away from not working.
+  settlePreview(syncExteriorAccess);
 
   const els = {
     form: /** @type {HTMLFormElement | null} */ ($('ex-form')),

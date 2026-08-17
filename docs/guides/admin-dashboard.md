@@ -6,9 +6,48 @@ hosting, data exports, and the analytics charts. It is a single static page gate
 [export endpoints](../reference/endpoints.md) already serve and does every aggregation in
 the browser.
 
-> **Access.** `endpoint_key` is sent in the `X-Stagify-Endpoint-Key` header, never in a
-> URL. It lives in a closure for the session only — it is never persisted, so a reload
-> always asks again. See [`security.md`](security.md).
+> **Access.** Signing in sends `endpoint_key` in the `X-Stagify-Endpoint-Key` header —
+> never in a URL — to `POST /api/admin/session`, which returns a **session token**. The
+> key is a local inside that one request and is never persisted or even kept in memory;
+> the token is what survives a reload, and it is scoped to these routes, expires in 30
+> days, and can be revoked. Every later request carries it in `X-Stagify-Admin-Session`.
+> See [`security.md`](security.md#the-console-holds-a-session-token-never-the-key) and
+> [`lib/data/admin-sessions.js`](../../lib/data/admin-sessions.js).
+
+## The shell
+
+The console does **not** wear the marketing chrome. `admin.html` ships no
+`<header class="site-header">` and no `<video id="background-video">`: a tinted, blurred
+backdrop behind dense tables and charts fights every value on the page, and the blur
+softens exactly the edges a data UI needs. `styles.css` is still linked — for the Inter
+`@font-face` set, the reset and the shared colour tokens — and `.page-admin` paints its
+own opaque canvas over it. Two guards pin that: the styles.css-pages-without-a-video list
+in [`test/frontend/background-video-mobile.test.js`](../../test/frontend/background-video-mobile.test.js),
+which also asserts `.page-admin` supplies a background of its own, and the token rules in
+[`test/frontend/css-tokens.test.js`](../../test/frontend/css-tokens.test.js), which fail
+the build if a colour in `admin.css` duplicates a shared one.
+
+The layout is a **fixed rail + a scrolling column**:
+
+- `.adm-side` — the rail. One `.adm-tab` per section, grouped under `.adm-nav-group`
+  headings, each with an icon and (where it has one) a count chip. Under 1040px it
+  unpins into a horizontally-scrolling strip across the top; there is no hamburger.
+- `.adm-main` > `.adm-topbar` — sticky, and the **only** place a section is named. The
+  labels ride on the button as `data-title` / `data-sub`, so the markup stays the single
+  source of truth and `admin.js#setPageHeading` just copies them across.
+- `.adm-content` — the panels, unchanged: `.adm-panel` + `.active`, one per `data-tab`.
+
+Adding a section therefore means: a `.adm-tab` with `data-tab`/`data-title`/`data-sub`, a
+`#panel-<data-tab>`, and (if it counts something) a `#tc-*` chip written from
+`renderers.js#setTabCount`. All three are pinned against each other by
+[`test/frontend/admin/admin-shell-markup.test.js`](../../test/frontend/admin/admin-shell-markup.test.js)
+— every one of those mismatches is otherwise silent at runtime.
+
+**Styling goes through the token block at the top of `admin.css`.** Surfaces, the four
+inks, the status triples (`--adm-pos` / `-wash` / `-line`) and the eight series tones are
+declared once on `.page-admin`; components compose them and never introduce a colour. The
+tones are the same eight hues as `charts.js#PALETTE` — the DOM half and the SVG half of one
+palette, so change them together.
 
 ## Module map
 
@@ -17,7 +56,7 @@ owns auth/fetch/wiring, each island owns one cohesive concern.
 
 | File | Role |
 |---|---|
-| [`scripts/admin.js`](../../public/scripts/admin.js) | **Entry.** Login + lockout, the in-closure key, `apiFetchQ` / `apiSend` / `secureBlobDownload`, `loadAll()`, tab switching, upload wiring, sign-out. |
+| [`scripts/admin.js`](../../public/scripts/admin.js) | **Entry.** Login + lockout, the in-closure key, `apiFetchQ` / `apiSend` / `secureBlobDownload`, `loadAll()`, tab switching (and the topbar heading that follows it), upload wiring, sign-out. |
 | [`scripts/admin/renderers.js`](../../public/scripts/admin/renderers.js) | The table tabs (users + detail drawer, enterprise, contacts, email opens, bugs, hosting, downloads) and `effectivePlan`, which both chart islands take as a dependency. |
 | [`scripts/admin/overview.js`](../../public/scripts/admin/overview.js) | The **Overview** tab: the range selector, stat cards, the two generation charts, top users, recent signups. |
 | [`scripts/admin/insights.js`](../../public/scripts/admin/insights.js) | The **Insights** tab: the chart grid. |
@@ -26,9 +65,10 @@ owns auth/fetch/wiring, each island owns one cohesive concern.
 | [`scripts/admin/charts.js`](../../public/scripts/admin/charts.js) | **SVG chart primitives** — area, bar, ranked bars, donut, funnel, cohort grid, sparkline, card chrome. |
 | [`scripts/admin/grant.js`](../../public/scripts/admin/grant.js) | The comp-Stagify+ control inside the user detail drawer. |
 | [`scripts/admin/emails.js`](../../public/scripts/admin/emails.js) | The **Emails** tab: the preview gallery + per-template test send. Lazy-loaded on first open. |
+| [`scripts/admin/status-panel.js`](../../public/scripts/admin/status-panel.js) | The **Server status** tab: the live monitor view and the incident composer. Lazy-loaded on first open, then polls while its tab is visible. |
 | [`scripts/admin/referrals.js`](../../public/scripts/admin/referrals.js) | The **Referrals** tab: one card per campaign short-URL. Lazy-loaded on first open; `Refresh` invalidates it. |
 | [`scripts/admin/helpers.js`](../../public/scripts/admin/helpers.js) | DOM/format helpers + the icon set. `esc` is re-exported from the shared [`scripts/escape-html.js`](../../public/scripts/escape-html.js). |
-| [`styles/admin.css`](../../public/styles/admin.css) | Page styles, including everything the SVG charts are painted with. |
+| [`styles/admin.css`](../../public/styles/admin.css) | Page styles: the token block, the shell, and everything the SVG charts are painted with. |
 
 State is one shared mutable `ctx` object created in the entry and handed to the islands by
 reference; `ctx.data` is swapped wholesale on sign-out, so islands read through `ctx`
@@ -291,10 +331,72 @@ surfaces as a clean error rather than a 500.
 the dashboard and lets the island auto-size the frame to its content, while still guaranteeing
 no script in the markup can run.
 
+Two details make that auto-size actually fit. It measures **`body.scrollHeight`, not
+`documentElement`'s**: `documentElement.scrollHeight` is floored at the iframe's own height,
+so measuring it lets a frame grow but never shrink and every short email sits in the CSS
+default with dead space under it. And the frame document sets `display: flow-root` on
+`<body>`, so a first child with a top margin cannot collapse it through the body and measure
+short. A single measurement on `load` is not enough either — logos and webfont metrics land
+after it — so a `ResizeObserver` (plus per-image `load`) re-fits as the document settles.
+
 **Adding an email to the gallery:** write (or reuse) a pure `render…Email()` that returns
 `{ subject, html, text }`, then add one entry to the `defs` array in `email-catalog.js` with
 an `id`, `label`, `category`, `description`, and a `render()` thunk supplying sample data.
 `test/services/email-catalog.test.js` pins the roster, so update its `EXPECTED_IDS` too.
+
+## Server status tab
+
+The operator's view of the same monitor that feeds the public
+[`/status`](../../public/status.html) page — plus the one thing that page cannot have:
+a way to **post an incident by hand**.
+
+**Why posting exists at all.** [`uptime-monitor.js`](../../lib/data/uptime-monitor.js)
+infers downtime from *missed heartbeats*, so it only ever learns that the **process**
+died. An outage the process survived — a dead upstream model, a bad deploy, an expired
+key — is invisible to it, and the page cheerfully reports 100% through the whole thing.
+A posted incident is the only way that reaches a reader.
+
+**What each posted entry carries:** a title (what the public page shows, verbatim), a
+start, an end (**blank = ongoing**), and `affectsUptime`. That last flag is the reason a
+scheduled-maintenance notice and a real outage can share one form: only an entry flagged
+as downtime moves the 24h/7d/30d figures.
+
+Three rules the implementation depends on:
+
+- **Manual entries never go through `mergeIncidents`.** That function coalesces anything
+  within two heartbeats and keeps a single `cause` — correct for a burst of missed beats,
+  fatal for a sentence someone typed. They live in `state.manual`, their own array.
+- **The percentages come from the union.** `downtimeIntervals()` merges the auto gaps with
+  the manual entries flagged as downtime, so an operator logging an outage the heartbeat
+  also caught is not counted twice.
+- **`cause` carries the title.** `status.js` already renders `cause` for auto entries, so
+  reusing the field is what lets a posted incident appear on the public page. The only
+  client change it needed was rendering `ongoing` instead of a null end date
+  (`status.incidents.ongoing`, in all 11 packs).
+
+An **ongoing** entry flagged as downtime flips `currentState` to `down`, so the public
+banner reads "Service disruption detected" until it is resolved — and the rail carries a
+dot while one is open.
+
+**What makes the admin view deeper than `/status`**, concretely: per-window **coverage**
+(a 100% figure means nothing if only four of the last 24 hours were observed), a **30-day
+graph** the public page does not draw, the monitor's own configuration (cadence, the gap
+that counts as an outage, retention, where the state lives), and the two feeds separated —
+detected vs posted — with the actions on the second.
+
+| Route | Purpose |
+|---|---|
+| `GET /api/admin/status` | The richer snapshot. Separate from `/api/status`, which every visitor polls. |
+| `POST /api/admin/incidents` | `{ title, start?, end?, affectsUptime }` → `201`. A `400` carries a message written for the operator; the panel shows it verbatim. |
+| `POST /api/admin/incidents/:id/resolve` | Close an ongoing entry at now. |
+| `DELETE /api/admin/incidents/:id` | Remove it — from the public page too, immediately. |
+
+**Backdating before monitoring began does not move the figure.** A percentage is only ever
+computed over the stretch actually watched, so a fresh monitor cannot be talked into
+claiming knowledge of the week before it existed. The entry still publishes; `coverage` is
+what explains the gap. Same rule the auto side follows.
+
+**Reset wipes posted entries too.** The confirm dialog says it wipes everything, so it does.
 
 ## Referrals tab
 

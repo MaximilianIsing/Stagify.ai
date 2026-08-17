@@ -244,7 +244,7 @@ test('no clipping layer also carries backdrop-filter', () => {
 /* --------------------------------------------------------- 4. the i18n keys */
 
 const SECTION_KEYS = [
-  'home.restage.title', 'home.restage.subtitle', 'home.restage.kicker',
+  'home.restage.title', 'home.restage.kicker',
   'home.restage.panelTitle', 'home.restage.panelBody', 'home.restage.button',
   'home.restage.buttonAgain', 'home.restage.seeOriginal',
   'home.restage.emptyAlt', 'home.restage.stagedAlt', 'home.restage.loadFailed',
@@ -480,7 +480,7 @@ test('"See original" appears only while something is staged', () => {
 
 test('the copy on the right carries no em-dash', () => {
   const english = JSON.parse(read('public', 'languages', 'english.json'));
-  for (const key of ['panelBody', 'panelTitle', 'kicker', 'subtitle', 'title']) {
+  for (const key of ['panelBody', 'panelTitle', 'kicker', 'title']) {
     assert.doesNotMatch(english.home.restage[key], /—/, `home.restage.${key} still has an em-dash`);
   }
   const aside = INDEX.match(/<aside class="rs__side[\s\S]*?<\/aside>/);

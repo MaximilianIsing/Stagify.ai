@@ -7,13 +7,7 @@
     <!-- Google tag (gtag.js) — Google Ads. Config + async loader in scripts/gtag.js. -->
     <script src="scripts/gtag.js" defer></script>
 
-    <!-- Masking Studio is Stagify+ only. Gate access before anything renders:
-         anonymous visitors bounce to the Stagify+ page (which explains the
-         feature), and signed-in users see a hidden page until their plan is
-         verified (ensureStudioProAccess reveals it for Pro, or shows the
-         upgrade dialog for signed-in free users). -->
-    <script src="scripts/masking-studio-gate.js"></script>
-    <style>html.ms-gate-pending body{visibility:hidden!important}</style>
+    <script src="scripts/preview-gate.js" data-pending-class="ms-pro-pending"></script>
 
     <link rel="icon" type="image/webp" sizes="32x32" href="media-webp/logo/Logo32x32.webp">
     <link rel="icon" type="image/webp" sizes="64x64" href="media-webp/logo/Logo64x64.webp">
@@ -177,9 +171,9 @@
             <button type="button" class="nav-link staging-menu__trigger" aria-haspopup="true" aria-expanded="false"><span data-lang="navigation.staging">Staging</span><svg class="staging-menu__chevron" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
             <div class="staging-menu__panel" role="menu">
               <a class="staging-menu__item" href="index.html#stage" role="menuitem" aria-describedby="staging-menu-tip-stage" data-staging-open="stage"><span class="staging-menu__label" data-lang="navigation.imageStaging">Image Staging</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-stage" aria-hidden="true" data-lang="navigation.tips.imageStaging">Stages a whole room from one photo: pick a room type and a furniture style and the AI furnishes it. Best for empty or nearly empty rooms when you want a fast, complete result.</span></a>
-              <a class="staging-menu__item is-locked" href="index.html#basic-mask" role="menuitem" aria-describedby="staging-menu-tip-basic-mask" data-staging-open="basic-mask" data-staging-pro><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" data-lang-attr="navigation.plusBadge|aria-label" aria-label="Stagify+"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang="navigation.basicMask">Basic Mask</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-basic-mask" aria-hidden="true" data-lang="navigation.tips.basicMask">Paint over one part of a photo, then describe the change you want. Best for small fixes (swap a sofa, clear a countertop) when the rest of the shot is already right.</span></a>
-              <a class="staging-menu__item is-locked desktop-only" href="ai-designer.html" role="menuitem" aria-describedby="staging-menu-tip-designer" data-staging-pro><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" data-lang-attr="navigation.plusBadge|aria-label" aria-label="Stagify+"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang-html="navigation.pdfTo3d">AI Designer</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-designer" aria-hidden="true" data-lang="navigation.tips.pdfTo3d">Chat with an AI designer that stages, redesigns and keeps iterating on a room with you. Best when you are exploring looks rather than finishing one photo. Desktop only.</span></a>
-              <a class="staging-menu__item is-locked" href="masking-studio.html" role="menuitem" aria-describedby="staging-menu-tip-masking" data-staging-pro><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" data-lang-attr="navigation.plusBadge|aria-label" aria-label="Stagify+"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang="navigation.maskingStudio">Masking Studio</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-masking" aria-hidden="true" data-lang="navigation.tips.maskingStudio">Highlight several areas in different colors and give each its own furniture photo or prompt, then stage them all at once. Best when you need exact control, since everything outside your highlights stays pixel-perfect.</span></a>
+              <a class="staging-menu__item is-locked" href="index.html#basic-mask" role="menuitem" aria-describedby="staging-menu-tip-basic-mask" data-staging-open="basic-mask" data-staging-pro data-staging-preview data-staging-preview-page="basic-mask.html"><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" data-lang-attr="navigation.plusBadge|aria-label" aria-label="Stagify+"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang="navigation.basicMask">Basic Mask</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-basic-mask" aria-hidden="true" data-lang="navigation.tips.basicMask">Paint over one part of a photo, then describe the change you want. Best for small fixes (swap a sofa, clear a countertop) when the rest of the shot is already right.</span></a>
+              <a class="staging-menu__item is-locked desktop-only" href="ai-designer.html" role="menuitem" aria-describedby="staging-menu-tip-designer" data-staging-pro data-staging-preview><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" data-lang-attr="navigation.plusBadge|aria-label" aria-label="Stagify+"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang-html="navigation.pdfTo3d">AI Designer</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-designer" aria-hidden="true" data-lang="navigation.tips.pdfTo3d">Chat with an AI designer that stages, redesigns and keeps iterating on a room with you. Best when you are exploring looks rather than finishing one photo. Desktop only.</span></a>
+              <a class="staging-menu__item is-locked" href="masking-studio.html" role="menuitem" aria-describedby="staging-menu-tip-masking" data-staging-pro data-staging-preview><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" data-lang-attr="navigation.plusBadge|aria-label" aria-label="Stagify+"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang="navigation.maskingStudio">Masking Studio</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-masking" aria-hidden="true" data-lang="navigation.tips.maskingStudio">Highlight several areas in different colors and give each its own furniture photo or prompt, then stage them all at once. Best when you need exact control, since everything outside your highlights stays pixel-perfect.</span></a>
               <a class="staging-menu__item is-locked" href="exterior-studio.html" role="menuitem" aria-describedby="staging-menu-tip-exterior" data-staging-pro data-staging-preview><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" data-lang-attr="navigation.plusBadge|aria-label" aria-label="Stagify+"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang="navigation.exteriorStudio">Exterior Studio</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-exterior" aria-hidden="true" data-lang="navigation.tips.exteriorStudio">Cleans up an exterior photo of a property: change the time of day, clear the sky, and remove parked cars and clutter. Best for the front elevation, yard and street shots, the ones the staging tools deliberately never touch.</span></a>
             </div>
           </div>
@@ -277,17 +271,16 @@
       </div>
     </div>
 
-    <!-- Shown to signed-in free users instead of the tool. -->
-    <div id="ms-pro-gate" class="ms-pro-gate" role="dialog" aria-modal="true" aria-labelledby="ms-pro-gate-title">
-      <div class="ms-pro-gate__card">
-        <h2 id="ms-pro-gate-title" data-lang="maskingStudio.gateTitle">Masking Studio is a Stagify+ feature</h2>
-        <p data-lang="maskingStudio.gateBody">Sign in with a Stagify+ account to highlight multiple areas of a photo, give each one its own furniture, and stage them all at once, with pixel-perfect masking that can’t touch the rest of your photo.</p>
-        <div class="ms-pro-gate__actions">
-          <a href="stagify-plus.html" class="btn btn-primary btn-lg"><strong data-lang="maskingStudio.gateCta">View Stagify+</strong></a>
-          <a href="index.html" class="btn btn-ghost btn-lg"><strong data-lang="maskingStudio.gateBack">Back to Home</strong></a>
-        </div>
-      </div>
-    </div>
+    <!-- There is deliberately NO upgrade dialog here any more. A signed-in free account
+         used to get a full-screen, undismissable "Masking Studio is a Stagify+ feature"
+         card the moment the page loaded — so for anyone who had just made an account it
+         was the first thing the product ever said to them, and it covered a page that was
+         nothing but the tool they could not use. The hero’s "Get Stagify+ to use it"
+         button and the pitch below it are the whole ask now. Do not re-add an overlay
+         here; requireProAccount on the render routes is the real gate, and this page’s
+         job is to be readable by everyone including Googlebot. Its three copy keys were
+         deleted from all eleven packs with it, so restoring the markup alone would render
+         raw English. -->
 
     <main>
       <div class="language-picker-container">
@@ -333,10 +326,50 @@
         <div class="ms-shell">
           <div class="ms-intro">
             <h1 data-lang="maskingStudio.title">Masking Studio</h1>
-            <p data-lang="maskingStudio.subtitle">Highlight areas of your room in different colors, give each one its own furniture, and stage them all at once. Only the highlighted areas can change, so the rest of your photo stays pixel-perfect.</p>
+            <p data-lang="maskingStudio.subtitle">Highlight areas of your room in different colors, give each one its own furniture, and stage them all at once.</p>
+            <p class="ms-intro__actions" id="ms-hero-actions">
+              <a class="btn btn-primary btn-lg" id="ms-cta" href="stagify-plus.html"><strong data-lang="maskingStudio.ctaUpgrade">Get Stagify+ to use it</strong></a>
+            </p>
           </div>
 
-          <div class="ms-grid">
+          <!-- The public half. Visible by default so an anonymous visitor and a crawler
+               both get a real page; preview-access.js hides it once a Stagify+ account is
+               confirmed, because someone who has already bought it wants the tool, not the
+               pitch. ONE container, and it keeps the id the writer looks up: a section
+               outside it survives into the Pro view, which looks completely fine to anyone
+               checking while signed out. -->
+          <div class="ms-pitch" id="ms-pitch">
+            <section class="ms-features-section" aria-labelledby="ms-features-title">
+              <h2 class="ms-section__title" id="ms-features-title" data-lang="maskingStudio.features.title">What it does</h2>
+              <div class="ms-board ms-panel">
+                <div class="ms-features">
+                  <article class="ms-feature">
+                    <h3 class="ms-feature__title"><svg class="ms-feature__icon" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19a7 7 0 1 0 0-14 7 7 0 0 0 0 14Z"/><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/></svg><span data-lang="maskingStudio.features.areas.title">Several areas at once</span></h3>
+                    <p class="ms-feature__body" data-lang="maskingStudio.features.areas.body">Mark the sofa wall, the empty corner and the bare floor in three colours, and stage all of them in one pass.</p>
+                  </article>
+                  <article class="ms-feature">
+                    <h3 class="ms-feature__title"><svg class="ms-feature__icon" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-4.6-4.6L6 21"/></svg><span data-lang="maskingStudio.features.own.title">Your own furniture</span></h3>
+                    <p class="ms-feature__body" data-lang="maskingStudio.features.own.body">Give any area a product photo instead of a prompt, and that exact piece is what gets placed.</p>
+                  </article>
+                  <article class="ms-feature">
+                    <h3 class="ms-feature__title"><svg class="ms-feature__icon" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3h18v18H3z"/><path d="M3 9h18"/><path d="M9 21V9"/></svg><span data-lang="maskingStudio.features.exact.title">Pixel-exact edges</span></h3>
+                    <p class="ms-feature__body" data-lang="maskingStudio.features.exact.body">Paint the mask by hand, drag a rectangle, or let the Magic tool trace an object in one click.</p>
+                  </article>
+                </div>
+
+                <!-- The promise, on the same surface but under a rule: it is the constraint
+                     that makes the three above worth using, not a fourth feature. -->
+                <p class="ms-honest">
+                  <strong class="ms-honest__title" data-lang="maskingStudio.features.honest.title">Everything outside the mask comes back untouched</strong>
+                  <span class="ms-honest__body" data-lang="maskingStudio.features.honest.body">Not re-rendered, not nudged, not re-lit.</span>
+                </p>
+              </div>
+            </section>
+          </div>
+
+          <!-- The tool. Ships hidden and is revealed for a Stagify+ account; the real gate
+               is requireProAccount on the render routes. -->
+          <div class="ms-grid" id="ms-tool" hidden>
             <aside class="ms-toolbar ms-panel" aria-label="Masking Studio controls">
               <button type="button" id="ms-help-btn" class="ms-help-btn" data-lang-attr="maskingStudio.helpTitle|aria-label" aria-label="How the Masking Studio works">?</button>
               <!-- Step 1: room photo -->

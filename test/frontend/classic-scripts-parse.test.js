@@ -59,9 +59,12 @@ test('there are classic scripts to guard, and the render-blocking ones stay cove
   // <script> — they must run before the body paints, which a deferred type="module"
   // can't do — so they never reach the ESM linter. The parse net is their only guard.
   assert.ok(names.has('ai-designer-gate.js'), 'ai-designer-gate.js must stay in the parse net');
-  assert.ok(names.has('masking-studio-gate.js'), 'masking-studio-gate.js must stay in the parse net');
   assert.ok(names.has('gallery-gate.js'), 'gallery-gate.js must stay in the parse net');
   assert.ok(names.has('faq-redirect.js'), 'faq-redirect.js must stay in the parse net');
+  // The reshaping gate every public-preview page mounts. `masking-studio-gate.js` used to
+  // be named here and is DELETED, not renamed: that page became a preview, so the gate
+  // that redirected everyone without a token had nothing left to do.
+  assert.ok(names.has('preview-gate.js'), 'preview-gate.js must stay in the parse net');
 });
 
 for (const file of classicScripts) {

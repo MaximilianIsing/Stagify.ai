@@ -157,7 +157,9 @@
             row.className = 'st-incident';
 
             var sev = document.createElement('span');
-            sev.className = 'st-incident__sev';
+            // An unresolved incident is the live news on this page, so it is the one
+            // row that gets its own marker rather than reading like history.
+            sev.className = 'st-incident__sev' + (inc.ongoing ? ' is-ongoing' : '');
 
             var main = document.createElement('div');
             main.className = 'st-incident__main';
@@ -166,7 +168,10 @@
             title.textContent = translateCause(inc.cause);
             var meta = document.createElement('div');
             meta.className = 'st-incident__meta';
-            meta.textContent = fmtDate(inc.start) + ' → ' + fmtDate(inc.end);
+            // An operator-posted incident may have no end yet. `fmtDate(null)` would
+            // print "Invalid Date" against the one entry a reader most wants to trust.
+            meta.textContent = fmtDate(inc.start) + ' → '
+              + (inc.ongoing ? t('status.incidents.ongoing', 'Ongoing') : fmtDate(inc.end));
             main.appendChild(title);
             main.appendChild(meta);
 
@@ -233,7 +238,41 @@
             t('status.foot', 'Auto-refreshes every 60 seconds · Restarts logged: {count} · Availability is measured from the server’s own heartbeat. For an independent check, <a href="/health">/health</a> returns live status JSON.'),
             { count: (data.bootCount || 0) }
           );
+          fitFoot();
         }
+
+        // ---- Footnote fitting --------------------------------------------------
+        // The footnote reads as one horizontal row. Its length swings widely by
+        // language (Russian runs ~40% wider than English), so shrink the type
+        // until the line fits the content column; if even the floor size is too
+        // wide, drop back to the normal wrapping note rather than going illegible.
+        var FOOT_MAX_PX = 12.5;
+        var FOOT_MIN_PX = 10;
+        function fitFoot() {
+          var foot = $('[data-foot]');
+          if (!foot) return;
+          foot.style.whiteSpace = 'nowrap';
+          foot.style.fontSize = FOOT_MAX_PX + 'px';
+          var avail = foot.clientWidth;
+          // The line is centred, so it overflows both edges — scrollWidth only
+          // sees the right-hand half. Measure the text itself with a Range.
+          var range = document.createRange();
+          range.selectNodeContents(foot);
+          var needed = range.getBoundingClientRect().width;
+          if (!avail || !needed || needed <= avail) return;
+          var size = Math.floor(FOOT_MAX_PX * (avail / needed) * 10) / 10;
+          if (size < FOOT_MIN_PX) {
+            foot.style.whiteSpace = '';
+            foot.style.fontSize = '';
+            return;
+          }
+          foot.style.fontSize = size + 'px';
+        }
+        var footFitTimer = 0;
+        window.addEventListener('resize', function () {
+          clearTimeout(footFitTimer);
+          footFitTimer = setTimeout(fitFoot, 120);
+        });
 
         function showError() {
           loadFailed = true;

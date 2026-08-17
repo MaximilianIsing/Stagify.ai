@@ -64,6 +64,7 @@ import { createLifecycleEmails } from './lib/services/lifecycle-emails.js';
 import { createTrialLifecycle } from './lib/services/trial-lifecycle.js';
 import { createEmailCatalog } from './lib/services/email-catalog.js';
 import { createReferralLinks } from './lib/data/referral-links.js';
+import { createAdminSessions } from './lib/data/admin-sessions.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -79,6 +80,10 @@ const stripeEvents = createStripeEventLog(__dirname);
 // lib/data/referral-links.js for the registry that drives both the routes and the
 // dashboard panel.
 const referralLinks = createReferralLinks(__dirname);
+// Admin-console sessions: the operator trades the master key for a scoped,
+// expiring, revocable token once, instead of retyping the key on every page load.
+// See lib/data/admin-sessions.js for why the key itself is never persisted.
+const adminSessions = createAdminSessions(__dirname);
 // Where the gallery's BYTES live — R2 in production, the local disk in dev/CI, and
 // deliberately DISABLED on Render when R2 is not configured rather than falling back
 // to the app volume (see lib/data/object-store.js for why that branch exists).
@@ -292,7 +297,7 @@ const { roomIsAlreadyEmpty, eraseFurniture } = createErase({ genAI, openai });
 // worth keeping, and `maxAttempts: 1` would have thrown it away with the rest.
 const { blueprintTo3D } = createCadHandling({ genAI });
 const { getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest } = createHostedImages({ getDataLogDir });
-const { healthHandler, protectLogs, stagingEndpointKeyGuard } = createHttpGuards({ genAI, LOGS_ACCESS_KEY, endpointKeyMatches });
+const { healthHandler, protectLogs, requireEndpointKey, stagingEndpointKeyGuard } = createHttpGuards({ genAI, LOGS_ACCESS_KEY, endpointKeyMatches, adminSessions });
 
 // ---------------------------------------------------------------------------
 // Self-check quality gate
@@ -393,7 +398,7 @@ const MAX_SEGMENT_QUERY_LENGTH = 200;
 app.use(createAuthRouter({ authStore, googleOAuthClient, resend, LOGS_ACCESS_KEY, authLimiter, emailLimiter, RESEND_FROM_EMAIL, EMAIL_DEBUG_MODE, DEBUG_EMAIL, IS_STAGING, SHOW_STAGING_BANNER, endpointKeyMatches, setSensitiveHeaders, getAuthUserFromRequest, toPublicAuthUser, sendRegistrationVerificationEmail, sendAccountExistsNotice, __dirname, googleClientId }));
 
 // admin routes (routes/admin.js)
-app.use(createAdminRouter({ authStore, uptimeMonitor, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, deleteUser, getDataLogDir, getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest, protectLogs , __dirname, HOSTED_IMAGE_MIME_EXT, emailCatalog, sendTestEmail, referralLinks }));
+app.use(createAdminRouter({ authStore, uptimeMonitor, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, deleteUser, getDataLogDir, getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest, protectLogs, requireEndpointKey, adminSessions, __dirname, HOSTED_IMAGE_MIME_EXT, emailCatalog, sendTestEmail, referralLinks }));
 
 // staging routes (routes/staging.js)
 app.use(createStagingRouter({ genAI, genLimiter, stagingProcessUpload, DEBUG_MODE, MAX_MASK_PROMPT_LENGTH, MAX_SEGMENT_QUERY_LENGTH, QUALITY_MAX_ATTEMPTS, setSensitiveHeaders, getAuthUserFromRequest, enterpriseDomainForUser, reportEnterpriseUsage, recordStagingActivity, requireProAccount, logMaskEditToFile, logRejectionToFile, downscaleImage, padBufferToAspectRatio, buildMarkedRoomImage, normalizeMaskOutputToRoom, reviewMaskEdit, compositeForReview, generateWithQualityRetry, maskReferencePromptSuffix, validateStageableImage, handleVirtualStagingMultipart, handleExteriorMultipart, handleMaskingSave, stagingEndpointKeyGuard }));

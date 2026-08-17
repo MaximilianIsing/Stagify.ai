@@ -75,7 +75,6 @@ const UNTESTED = [
   'home-reveal.js',
   'home-text-animate.js',
   'hover-glow.js',
-  'index-inline.js',
   'language-detect.js',
   'language-switcher.js',
   'lazy-css.js',
@@ -121,6 +120,12 @@ const E2E_COVERED = [
   // staging-nav.spec.js, among others.
   { module: 'app.js', page: 'index.html' },
   { module: 'app/stage-mask-editor.js', page: 'index.html' },
+  // The Basic Mask preview page's entry point: four lines with no exports, which settle the
+  // plan through the shared writer and stop. Both halves it depends on ARE unit-tested
+  // (preview-access.test.js covers the writer and this page's binding of it), so what is
+  // left here is the side effect of running at module load, which only a browser has.
+  // Driven by basic-mask-preview.spec.js.
+  { module: 'basic-mask-page.js', page: 'basic-mask.html' },
   // The homepage carousel. It runs at PARSE time rather than on DOMContentLoaded
   // because the <img> it injects is the page's LCP element, so there is not even a
   // mount function to call. Asserted in index.spec.js, basic-mask.spec.js and
@@ -151,15 +156,16 @@ const BLOCKED_CLASSIC = [
   'ai-designer-model-selector.js',
   'demo-data.js',
   'demo-player.js',
-  // Behaviourally covered by test/frontend/exterior-studio/gate.test.js, which runs the
-  // shipped source through `new Function` with document/localStorage/setTimeout injected —
-  // the same harness ai-designer-gate.js has. It still belongs here rather than delisted:
-  // this list tracks what node can `import`, and an IIFE with no exports is not that.
-  'exterior-studio-gate.js',
   'faq-redirect.js',
   'gallery-gate.js',
   'gtag.js',
-  'masking-studio-gate.js',
+  // The shared reshaping gate, behaviourally covered by test/frontend/preview-gate.test.js
+  // on the same `new Function` harness. Two entries used to sit beside it and are DELETED,
+  // not delisted for coverage: `masking-studio-gate.js`, because that page became a public
+  // preview and the gate that redirected everyone without a token had nothing left to do,
+  // and `exterior-studio-gate.js`, which was a copy of this file for the one page that had
+  // not been folded onto it yet.
+  'preview-gate.js',
   // Same story as the two gates above: behaviourally covered by
   // test/frontend/gallery/session-class.test.js through `new Function`, but an IIFE with
   // no exports is not something node can import, which is what this list tracks.

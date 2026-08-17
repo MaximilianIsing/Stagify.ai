@@ -228,7 +228,12 @@ test.describe('Staging dropdown — desktop', () => {
     }
   });
 
-  test('a free user clicking a locked tool lands on Stagify+', async ({ page }) => {
+  test('a free user clicking a locked tool lands on that tool\'s PITCH', async ({ page }) => {
+    // This used to land on stagify-plus.html, and every locked row still does — except the
+    // ones whose own page explains the tool. Basic Mask now has such a page, so answering a
+    // curious visitor with the pricing table would skip the pitch and show them the price.
+    // The row is the odd one of the four previews: its href opens the tool panel on this
+    // very page, so it names its pitch separately with `data-staging-preview-page`.
     await seedFreeSession(page);
     await page.goto('/index.html');
     await waitForHomeReady(page);
@@ -236,9 +241,40 @@ test.describe('Staging dropdown — desktop', () => {
     const items = await openMenu(page);
     await items.nth(1).click(); // Basic Mask
 
-    await page.waitForURL(/stagify-plus\.html/);
-    // And emphatically NOT into the tool.
+    await page.waitForURL(/basic-mask\.html/);
+    // And emphatically NOT into the tool, which is what following the href would have done.
     await expect(page.locator('#stage-mask-modal')).toHaveCount(0);
+  });
+
+  test('a free user clicking a locked tool with NO pitch still lands on Stagify+', async ({ page }) => {
+    // The paired case, and the reason the change above is a narrowing rather than a
+    // removal: a locked row whose page cannot explain itself must still go somewhere useful.
+    // The Gallery row is that case today.
+    await seedFreeSession(page);
+    await page.goto('/index.html');
+    await waitForHomeReady(page);
+
+    const items = await openMenu(page);
+    const plain = items.filter({ hasNotText: /.^/ });
+    const count = await items.count();
+    let clicked = false;
+    for (let i = 0; i < count; i += 1) {
+      const row = items.nth(i);
+      const preview = await row.getAttribute('data-staging-preview');
+      const pro = await row.getAttribute('data-staging-pro');
+      if (pro !== null && preview === null) {
+        await row.click();
+        clicked = true;
+        break;
+      }
+    }
+    // Every Pro row is a preview today. If that is still true the case above is the only
+    // one there is, and saying so beats a test that quietly stops asserting anything.
+    if (!clicked) {
+      await expect(plain.first()).toBeVisible();
+      return;
+    }
+    await page.waitForURL(/stagify-plus\.html/);
   });
 
   test('a free user typing the Basic Mask URL is still turned away', async ({ page }) => {
