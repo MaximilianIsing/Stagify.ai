@@ -517,9 +517,17 @@ import { fetchWelcomeMessage } from './ai-designer/welcome.js';
                 formData.append('baseImageIndex', String(baseImageIndex));
               }
 
+              // The token rides the header as well as the form field above, matching the
+              // /api/chat branch below. /api/chat-upload refuses a non-Stagify+ caller
+              // before multer buffers up to five files, and a pre-multer gate can only
+              // read headers — req.body does not exist until multer has read the whole
+              // body. The field stays: the in-handler gate accepts either transport.
               request = fetch('/api/chat-upload', {
                 method: 'POST',
-                headers: { 'X-Stream-Response': '1' },
+                headers: {
+                  'X-Stream-Response': '1',
+                  ...(authTok ? { Authorization: 'Bearer ' + authTok } : {}),
+                },
                 body: formData,
                 signal,
               });

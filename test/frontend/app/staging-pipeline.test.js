@@ -108,6 +108,7 @@ afterEach(() => {
  *   validationResult?: { valid: boolean, code?: string, reason?: string } | null,
  *   validationPromise?: Promise<any> | null,
  *   hasProcessedImage?: boolean,
+ *   authToken?: string | null,
  *   stagingTimeoutMs?: number,
  * }} opts
  */
@@ -128,6 +129,10 @@ function harness(opts = {}) {
     validationResult = null,
     validationPromise = null,
     hasProcessedImage = false,
+    // What StagifyAuth.getToken() hands back. `null` models a signed-out browser,
+    // which is the only way to see the request the server now refuses before it
+    // buffers the photo.
+    authToken = 'tok-123',
     // Default well above the shim's squash threshold so it never fires unless a
     // test is deliberately exercising it.
     stagingTimeoutMs = 180000,
@@ -255,7 +260,7 @@ function harness(opts = {}) {
     getItem: (k) => ({ userRole: 'agent', userReferralSource: 'google', userEmail: 'a@b.co', selectedLanguage })[k] ?? null,
   };
   globalThis.window = {
-    StagifyAuth: { getToken: () => 'tok-123', user: null, applyUserToUI() { this.appliedToUI = true; } },
+    StagifyAuth: { getToken: () => authToken, user: null, applyUserToUI() { this.appliedToUI = true; } },
     LanguageSystem: null,
     getComputedStyle: (node) => ({ display: node.style.display || 'block', visibility: node.style.visibility || 'visible' }),
   };
@@ -447,6 +452,30 @@ timed('the multipart body carries the room, style, prompt and identity fields', 
   assert.equal(fd.get('authToken'), 'tok-123');
   assert.equal(fd.get('userRole'), 'agent');
   assert.equal(/** @type {File} */ (fd.get('image')).name, 'room.jpg');
+});
+
+// The token goes in BOTH transports and the pair is load-bearing, so assert both.
+// /api/process-image refuses an anonymous upload ahead of multer, and that gate can only
+// read the header — req.body does not exist until multer has read the whole 25MB body,
+// which is the cost it exists to avoid. Drop the header and every signed-in user is told
+// to sign in; drop the field and the in-handler check (the actual authority, and the one
+// documented for non-browser callers) loses its input. Neither loss is visible here
+// unless both are pinned.
+timed('the session token rides the Authorization header as well as the form field', async () => {
+  const h = harness();
+  await run(h, response({ body: OK_BODY }));
+  assert.equal(h.calls.fetch[0].init.headers.Authorization, 'Bearer tok-123');
+  assert.equal(h.form().get('authToken'), 'tok-123');
+});
+
+timed('a signed-out browser sends no Authorization header at all', async () => {
+  // Not "Bearer null" or "Bearer undefined" — the server reads any Bearer value as a
+  // token to look up, so a placeholder would be an anonymous request wearing a
+  // credential, and the 401 it earns would name the wrong reason.
+  const h = harness({ authToken: null });
+  await run(h, response({ body: OK_BODY }));
+  assert.equal(h.calls.fetch[0].init.headers.Authorization, undefined);
+  assert.equal(h.form().get('authToken'), null);
 });
 
 timed('keepFurniture is only sent when "remove existing furniture" is actually on', async () => {
