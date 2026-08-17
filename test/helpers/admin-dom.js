@@ -47,6 +47,11 @@ export function makeEl(tag) {
     parent: /** @type {any} */ (null),
     setAttribute(k, v) { this.attrs[k] = String(v); if (k === 'id') this.id = String(v); },
     getAttribute(k) { return k in this.attrs ? this.attrs[k] : null; },
+    // Its absence was not neutral: a missing method throws inside a render, and an
+    // island that renders inside a promise chain turns that into a swallowed
+    // rejection — the element simply never updates, with nothing in the output.
+    removeAttribute(k) { delete this.attrs[k]; if (k === 'id') this.id = ''; },
+    hasAttribute(k) { return k in this.attrs; },
     appendChild(c) { c.parent = this; this.children.push(c); return c; },
     removeChild(c) { this.children = this.children.filter((x) => x !== c); return c; },
     remove() { if (this.parent) this.parent.removeChild(this); this.parent = null; },

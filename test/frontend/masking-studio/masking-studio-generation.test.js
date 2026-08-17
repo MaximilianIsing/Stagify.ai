@@ -68,11 +68,19 @@ test('buildAreaContext: furniture-only neighbor (blank prompt) describes the ref
   assert.match(ctx, /furniture from a reference photo is being added/);
 });
 
-test('requestError: 401/403 fires the gate callback and returns the gate title', () => {
+test('requestError: 401/403 fires the gate callback and returns the upgrade ask', () => {
+  // The CALLBACK is the assertion that matters, and what it does changed with the preview
+  // rewrite: it used to raise a full-screen upgrade dialog over the studio, and it now
+  // re-runs the page's view writer, which takes the tool away and puts the public pitch
+  // back. Same contract from here — fire once per gated status — and the page decides.
+  //
+  // The message moved to `maskingStudio.ctaUpgrade` because the three keys that used to
+  // phrase it went with the dialog. Asserted as the resolved string rather than the key so
+  // this still fails if the key is deleted and `tx` falls through to a stale fallback.
   let gated = 0;
   const onGate = () => { gated++; };
-  assert.equal(requestError(401, null, tx, onGate), 'Masking Studio is a Stagify+ feature');
-  assert.equal(requestError(403, null, tx, onGate), 'Masking Studio is a Stagify+ feature');
+  assert.equal(requestError(401, null, tx, onGate), 'Get Stagify+ to use it');
+  assert.equal(requestError(403, null, tx, onGate), 'Get Stagify+ to use it');
   assert.equal(gated, 2);
 });
 

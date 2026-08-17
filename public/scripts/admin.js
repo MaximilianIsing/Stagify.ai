@@ -1,18 +1,42 @@
 import { createRenderers } from './admin/renderers.js';
 import { createEmailsPanel } from './admin/emails.js';
 import { createReferralsPanel } from './admin/referrals.js';
+import { createStatusPanel } from './admin/status-panel.js';
 import { qs, qsa, el, parseCSV, copyToClipboard } from './admin/helpers.js';
 import { showErrorToast } from './toast.js';
 
 (function () {
   'use strict';
 
-  // ── Security: key stored in closure, cleared on sign-out ──
-  var _key = '';
-  var SESSION_TIMEOUT_MS = 60 * 60 * 1000; // 1 hour
-  var _sessionStart = 0;
+  // ── Security: the master key is never persisted, and barely even held ──
+  //
+  // Signing in EXCHANGES endpoint_key for a scoped session token
+  // (POST /api/admin/session — see lib/data/admin-sessions.js). The key exists only
+  // as a local inside that one request and is never stored anywhere, not even in
+  // this closure; the token is what persists across reloads, and it is strictly
+  // weaker: dashboard routes only, 30 days, revocable server-side.
+  //
+  // localStorage rather than sessionStorage on purpose — sessionStorage is per-tab
+  // and dies with the tab, which is the exact annoyance this replaces.
+  var _session = '';
+  var _sessionExp = 0;
+  var SESSION_KEY = 'adm_session';
+  var SESSION_EXP_KEY = 'adm_session_exp';
   var _loginAttempts = 0;
   var _lockoutUntil = 0;
+
+  // Storage can throw (Safari private mode, disabled cookies/storage). It failing is
+  // not a reason to break the console — it just means this browser re-authenticates
+  // on every load, which is where we started.
+  function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
+  function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){/* memory-only session */}}
+  function lsDel(k){try{localStorage.removeItem(k)}catch(e){/* nothing to clear */}}
+
+  // Whichever credential we hold. After sign-in this is always the token: the key
+  // is deliberately not kept, so there is nothing here that could leak it.
+  function authHeaders(){
+    return _session ? {'X-Stagify-Admin-Session':_session} : {};
+  }
 
   // Shared, mutable app state handed to the renderers island by reference so both
   // sides see the same data / filter / sort. signOut swaps ctx.data wholesale.
@@ -28,22 +52,26 @@ import { showErrorToast } from './toast.js';
   emailsPanel.init();
   var referralsPanel = createReferralsPanel({ apiSend: apiSend });
   referralsPanel.init();
+  var statusPanel = createStatusPanel({ apiSend: apiSend });
+  statusPanel.init();
 
-  // ── Secure fetch: key sent in header, not URL ──
+  // ── Secure fetch: credential sent in a header, never the URL ──
 
-  // Header auth for the log/data endpoints so the key never appears in the URL
-  // (no leak via logs/history/Referer).
+  // Header auth for the log/data endpoints so the credential never appears in the
+  // URL (no leak via logs/history/Referer). Header-only is also what keeps the admin
+  // routes CSRF-proof by construction: nothing a browser sends automatically can
+  // reach them, which is precisely why this is a token in storage and not a cookie.
   function apiFetchQ(url){
-    checkSessionTimeout();
-    return fetch(url,{headers:{'X-Stagify-Endpoint-Key':_key}})
+    checkSessionExpiry();
+    return fetch(url,{headers:authHeaders()})
       .then(function(r){if(!r.ok)throw new Error(String(r.status));return r});
   }
 
   // Mutating requests (POST/DELETE). For FormData bodies, the browser sets the
   // multipart Content-Type+boundary, so we must not set it ourselves.
   function apiSend(url,method,body,isForm){
-    checkSessionTimeout();
-    var opts={method:method,headers:{'X-Stagify-Endpoint-Key':_key}};
+    checkSessionExpiry();
+    var opts={method:method,headers:authHeaders()};
     if(body!==undefined&&body!==null){
       if(isForm){opts.body=body}
       else{opts.headers['Content-Type']='application/json';opts.body=JSON.stringify(body)}
@@ -56,12 +84,17 @@ import { showErrorToast } from './toast.js';
     });
   }
 
-  function checkSessionTimeout(){
-    if(_sessionStart && Date.now()-_sessionStart > SESSION_TIMEOUT_MS){
+  // The server is the authority on expiry (and slides it on use); this is the local
+  // half, so a session that lapsed while the tab sat open lands on the login screen
+  // instead of firing a burst of 403s. There is deliberately no idle timeout on top:
+  // a 30-day session that logged you out after an hour of the tab being open would
+  // reintroduce the very thing it exists to remove.
+  function checkSessionExpiry(){
+    if(_sessionExp && Date.now() > _sessionExp){
       signOut();
       // signOut() re-shows the login form in place — it does not navigate or
       // reload — so the non-blocking toast outlives it and stays readable. Nothing
-      // here depended on alert() halting the caller: _sessionStart is cleared above,
+      // here depended on alert() halting the caller: _sessionExp is cleared above,
       // so the sibling requests in a single loadAll() burst re-enter this and no-op.
       showErrorToast('Session expired. Please sign in again.');
     }
@@ -114,6 +147,8 @@ import { showErrorToast } from './toast.js';
       referralsPanel.reset();
       var refPanel=qs('#panel-referrals');
       if(refPanel&&refPanel.classList.contains('active'))referralsPanel.ensureLoaded();
+      var statusPanelEl=qs('#panel-status');
+      if(statusPanelEl&&statusPanelEl.classList.contains('active'))statusPanel.ensureLoaded();
     }).catch(function(err){
       console.error('Load failed',err);
       if(String(err).indexOf('403')!==-1){signOut();return}
@@ -128,19 +163,45 @@ import { showErrorToast } from './toast.js';
 
   // ── Tabs ──
 
+  // Mirror the active rail item into the sticky topbar. Tolerates a button with
+  // no data-* (the DOM-stubbed suite builds bare ones) by falling back to its text.
+  function setPageHeading(btn){
+    var t=qs('#adm-page-title');
+    var sub=qs('#adm-page-sub');
+    var title=(btn.dataset&&btn.dataset.title)||btn.textContent||'';
+    if(t)t.textContent=title.trim();
+    if(sub)sub.textContent=(btn.dataset&&btn.dataset.sub)||'';
+  }
+
   qs('#adm-tabs').addEventListener('click',function(e){
     var btn=e.target.closest('.adm-tab');if(!btn)return;
     qsa('.adm-tab').forEach(function(t){t.classList.remove('active');t.setAttribute('aria-selected','false')});
     btn.classList.add('active');btn.setAttribute('aria-selected','true');
     qsa('.adm-panel').forEach(function(p){p.classList.remove('active')});
     var p=qs('#panel-'+btn.dataset.tab);if(p)p.classList.add('active');
+    // The rail is the only place a section is named, so the topbar has to follow
+    // it — otherwise every panel is titled "Overview". The labels live on the
+    // button (data-title/data-sub) so markup stays the single source of truth.
+    setPageHeading(btn);
     // The Emails gallery and the Referrals panel aren't part of the loadAll() burst
     // — lazy-load each the first time its tab opens.
     if(btn.dataset.tab==='emails')emailsPanel.ensureLoaded();
     if(btn.dataset.tab==='referrals')referralsPanel.ensureLoaded();
+    // Status is live data, so opening the tab always refetches rather than showing
+    // whatever was true when it was last looked at.
+    if(btn.dataset.tab==='status')statusPanel.ensureLoaded();
     // Panels are display:none while inactive, so a tab that was hidden during the
     // last render starts scrolled wherever the previous one was.
+    //
+    // Both, deliberately: the scrollport on this page is <body>, not the viewport
+    // — styles.css sets html{overflow-x:clip}, and a non-visible overflow on <html>
+    // stops <body>'s own overflow-y propagating up to the viewport. So
+    // window.scrollTo silently does nothing here, and did before this was noticed.
     window.scrollTo({top:0,behavior:'smooth'});
+    // Instant for the body, not smooth: Chrome ignores behavior:'smooth' when
+    // <body> is the scroller (scrollTo(0,0) and .scrollTop both work), so asking
+    // for smooth here is a second silent no-op on top of the first.
+    if(document.body&&document.body.scrollTo)document.body.scrollTo(0,0);
   });
 
   // ── User filters ──
@@ -241,19 +302,23 @@ import { showErrorToast } from './toast.js';
     errEl.classList.add('hidden');
     btn.disabled=true;btn.textContent='Verifying\u2026';
 
-    // Probe a no-payload endpoint, not a data one — validating the key should not
-    // pull down the user table (this used to hit /authstore).
-    fetch('/api/admin/ping',{headers:{'X-Stagify-Endpoint-Key':k}}).then(function(r){
+    // The mint IS the key check — it is behind the key-only guard and 403s on a bad
+    // key — so there is no separate probe, and no data endpoint is touched to find
+    // out whether the key is right. `k` is a local: it goes out of scope when this
+    // handler returns and is never assigned to anything that outlives it.
+    fetch('/api/admin/session',{method:'POST',headers:{'X-Stagify-Endpoint-Key':k}}).then(function(r){
       if(r.ok){
-        _key=k;_sessionStart=Date.now();_loginAttempts=0;
-        sessionStorage.setItem('adm_ts',String(_sessionStart));
-        loadAll();
-      } else {
-        _loginAttempts++;
-        if(_loginAttempts>=5){_lockoutUntil=Date.now()+30000;errEl.textContent='Too many failed attempts. Locked for 30 seconds.'}
-        else{errEl.textContent='Invalid access key.'}
-        errEl.classList.remove('hidden');
+        return r.json().then(function(j){
+          _loginAttempts=0;
+          adoptSession(j.token,j.expiresAt);
+          loadAll();
+        });
       }
+      _loginAttempts++;
+      if(_loginAttempts>=5){_lockoutUntil=Date.now()+30000;errEl.textContent='Too many failed attempts. Locked for 30 seconds.'}
+      else{errEl.textContent='Invalid access key.'}
+      errEl.classList.remove('hidden');
+      return null;
     }).catch(function(){
       errEl.textContent='Network error. Please try again.';errEl.classList.remove('hidden');
     }).finally(function(){
@@ -261,13 +326,36 @@ import { showErrorToast } from './toast.js';
     });
   });
 
-  // ── Sign out: wipe key from memory ──
+  // Hold a freshly minted session, in memory and in storage. Storage failing is
+  // survivable — the tab stays signed in, it just won't outlive a reload.
+  function adoptSession(token,expiresAt){
+    _session=String(token||'');
+    _sessionExp=Number(expiresAt)||0;
+    if(!_session)return;
+    lsSet(SESSION_KEY,_session);
+    lsSet(SESSION_EXP_KEY,String(_sessionExp));
+  }
+
+  function clearStoredSession(){
+    _session='';_sessionExp=0;
+    lsDel(SESSION_KEY);lsDel(SESSION_EXP_KEY);
+  }
+
+  // ── Sign out: revoke server-side, then wipe locally ──
 
   function signOut(){
-    _key='';_sessionStart=0;
-    sessionStorage.removeItem('adm_ts');
+    // Fire-and-forget REVOKE, before the local wipe takes the credential away.
+    // Clearing storage alone would leave a live token on the server that anything
+    // holding a copy could keep using — "sign out" has to mean it.
+    if(_session){
+      try{
+        fetch('/api/admin/session',{method:'DELETE',headers:authHeaders()}).catch(function(){});
+      }catch(e){/* offline: the token still expires on its own */}
+    }
+    clearStoredSession();
     emailsPanel.reset();
     referralsPanel.reset();
+    statusPanel.reset();
     ctx.data={users:[],promptRows:[],chatRows:[],bugRows:[],maskRows:[],contactRows:[],emailOpenRows:[],enterprise:[],hostedImages:[]};
     qs('#adm-dash').classList.add('hidden');
     qs('#adm-login').style.display='';
@@ -276,9 +364,31 @@ import { showErrorToast } from './toast.js';
 
   qs('#adm-signout').addEventListener('click',signOut);
 
-  // ── No auto-login from sessionStorage (key is never persisted) ──
-  // On page load the user must always re-enter the key.
-  // sessionStorage only stores the timestamp for timeout tracking.
+  // ── Resume a stored session ──
+  //
+  // The KEY is still never persisted and never auto-filled; what is restored is the
+  // scoped token. It is verified against /api/admin/ping BEFORE the dashboard is
+  // revealed, so a token that was revoked, expired, or outlived a key rotation lands
+  // on the login screen instead of flashing a dashboard that then 403s nine times.
+  (function restoreSession(){
+    var token=lsGet(SESSION_KEY);
+    if(!token)return;
+    var exp=Number(lsGet(SESSION_EXP_KEY))||0;
+    if(exp&&Date.now()>exp){clearStoredSession();return}
+
+    _session=token;_sessionExp=exp;
+    fetch('/api/admin/ping',{headers:authHeaders()}).then(function(r){
+      if(r.ok)return loadAll();
+      // Rejected: the token is dead for good, so drop it rather than leaving a
+      // credential in storage that can only ever produce 403s.
+      clearStoredSession();
+      return null;
+    }).catch(function(){
+      // Offline or the server is down. Keep the token — it is probably still valid —
+      // and leave the login screen up; the next load will try again.
+      _session='';
+    });
+  })();
 
 
 })();

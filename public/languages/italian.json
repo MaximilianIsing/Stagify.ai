@@ -85,7 +85,6 @@
     },
     "restage": {
       "title": "Fai clic per vedere cosa fa l’home staging",
-      "subtitle": "La stessa stanza vuota, arredata ancora e ancora. Nessun trasloco, nessun noleggio, nessuna attesa.",
       "kicker": "Controllo totale del design",
       "panelTitle": "Ogni esecuzione la arreda da capo",
       "panelBody": "L’home staging tradizionale ti dà una sola disposizione e un contratto di noleggio. Rilancialo e la stanza torna arredata in un altro modo: altra disposizione, altra palette, altri materiali.",
@@ -102,7 +101,6 @@
     },
     "showcase": {
       "title": "Guarda con i tuoi occhi",
-      "subtitle": "Demo dal vivo. Dai un’occhiata.",
       "tablistAria": "Studi",
       "prevAria": "Studio precedente",
       "nextAria": "Studio successivo",
@@ -219,7 +217,6 @@
     "info": {
       "eyebrow": "In breve",
       "title": "Cos’è il home staging virtuale e perché fa vendere",
-      "subtitle": "Una panoramica rapida e onesta su come funziona e a chi è rivolto.",
       "rows": {
         "why": {
           "eyebrow": "Perché funziona",
@@ -262,7 +259,6 @@
     "compare": {
       "eyebrow": "Virtuale vs. tradizionale",
       "title": "Come si confronta con lo staging tradizionale",
-      "subtitle": "Lo staging tradizionale funziona. È solo lento e costoso.",
       "colTraditional": "Staging tradizionale",
       "colStagify": "Stagify.ai",
       "calc": {
@@ -305,7 +301,6 @@
     },
     "nar": {
       "title": "Non restare indietro",
-      "subtitle": "Gli agenti adottano l’IA in fretta e i clienti approvano. Lo staging è l’inizio più semplice.",
       "usageLabel": "Con quale frequenza gli agenti usano strumenti di IA",
       "legend": {
         "daily": "Ogni giorno",
@@ -322,7 +317,6 @@
     },
     "plus": {
       "title": "Vai oltre con Stagify+",
-      "subtitle": "Due modi per l’upgrade: piano mensile fisso o fatturazione a consumo per il tuo team.",
       "pro": {
         "name": "Stagify+",
         "tag": "Per privati",
@@ -349,7 +343,6 @@
     },
     "instagram": {
       "title": "Guardalo in azione su Instagram",
-      "subtitle": "Vere trasformazioni di staging, consigli rapidi e dietro le quinte dal team Stagify.",
       "follow": "Segui @stagify.ai"
     },
     "finalCta": {
@@ -358,12 +351,8 @@
       "button": "Carica una foto",
       "note": "Riconosciuto da Compass, Centennial e altri."
     },
-    "whyus": {
-      "subtitle": "Altri quattro modi di allestire un immobile, affiancati al nostro."
-    },
     "testimonials": {
       "title": "Cosa dicono gli agenti",
-      "subtitle": "Direttamente dagli agenti che hanno fatto il salto.",
       "items": {
         "justin": {
           "quote": "La prima volta che ho provato Stagify sono rimasto sinceramente sbalordito. Ho capito che potevo semplicemente usare il telefono, evitare il fotografo costoso e ottenere comunque risultati straordinari. È una svolta per i miei annunci, e il prezzo è fantastico!",
@@ -414,12 +403,8 @@
         "next": "Testimonianza successiva"
       }
     },
-    "faq": {
-      "subtitle": "Le domande che ci fanno più spesso. Serve altro? Vai alle <a href=\"guides.html\">Guide</a> o scrivici."
-    },
     "blog": {
       "title": "Dal blog di Stagify",
-      "subtitle": "Guide e consigli su staging virtuale, divulgazione MLS e marketing più veloce.",
       "viewAll": "Visita il blog di Stagify →"
     },
     "contactCta": {
@@ -882,6 +867,27 @@
     }
   },
   "pdf": {
+    "pitch": {
+      "subtitle": "Descrivi la stanza che vuoi con parole tue e continua a parlare finché non torna.",
+      "ctaUpgrade": "Passa a Stagify+ per usarlo",
+      "featuresTitle": "Che cosa fa",
+      "chat": {
+        "title": "Si dice, non si imposta",
+        "body": "Niente tipo di stanza, niente menù di stili. Chiedi quello che vuoi e correggilo nel messaggio dopo."
+      },
+      "iterate": {
+        "title": "Si ricorda la stanza",
+        "body": "Ogni risposta parte dalla precedente, quindi “più caldo, e togli il tappeto” vuol dire proprio quello."
+      },
+      "plans": {
+        "title": "Planimetrie, arredate",
+        "body": "Carica una pianta e ottienila arredata dall’alto, oppure entra in una stanza e prendine una foto."
+      },
+      "honest": {
+        "title": "Niente è definitivo finché non lo dici tu",
+        "body": "Ogni versione resta nella conversazione, così puoi tornare a quella che ti piaceva."
+      }
+    },
     "meta": {
       "title": "Designer IA | Stagify.ai – Assistente di design basato sull’IA",
       "description": "Chatta con il Designer IA per ricevere aiuto su domande di design, caricare file da analizzare e ottenere consigli di design professionali all’istante.",
@@ -1165,6 +1171,11 @@
     "troubleshootingTitle": "Risoluzione dei problemi e problemi comuni"
   },
   "pageMeta": {
+    "basicMask": {
+      "title": "Maschera base | Stagify.ai - Dipingi un’area e rifai solo quella",
+      "description": "Dipingi su una parte della foto di una stanza, di’ che cosa deve cambiare lì e riavrai la stessa foto con solo quell’area rifatta. Tutto il resto resta intatto.",
+      "keywords": "maschera base, home staging mascherato, modificare parte di una foto, sostituire il divano in foto, ritocco AI, foto immobiliari, restyling parziale, Stagify"
+    },
     "guides": {
       "title": "Guide e tutorial | Stagify.ai",
       "description": "Tutorial passo passo per Stagify.ai: il tuo primo staging gratuito, lo staging con Stagify+ e soluzioni ai problemi comuni."
@@ -1192,14 +1203,55 @@
       "keywords": "appeal esterno, editing foto esterni, miglioramento foto immobiliari, sostituzione cielo, rimuovere auto dalle foto, foto al crepuscolo immobiliare, ora dorata, editor foto IA, facciata, Stagify"
     }
   },
+  "basicMask": {
+    "title": "Maschera base",
+    "subtitle": "Dipingi su una parte della foto, di’ che cosa deve cambiare lì e riavrai la stessa immagine con solo quel pezzo rifatto.",
+    "ctaUpgrade": "Passa a Stagify+ per usarlo",
+    "ctaOpen": "Apri la maschera base",
+    "features": {
+      "title": "Che cosa fa",
+      "paint": {
+        "title": "Prima dipingi, poi chiedi",
+        "body": "Passa il pennello sul divano, sul piano cucina, sulla parete vuota. Poi descrivi che cosa dovrebbe esserci."
+      },
+      "small": {
+        "title": "Per le piccole correzioni",
+        "body": "Quando lo scatto è già giusto tranne una cosa, questo è più rapido che riarredare la stanza."
+      },
+      "upgrade": {
+        "title": "Un’area alla volta",
+        "body": "Una maschera, un’istruzione. Per più aree insieme, ognuna con i suoi mobili, usa il Masking Studio."
+      },
+      "honest": {
+        "title": "Tutto ciò che sta fuori dal tratto torna intatto",
+        "body": "Non rigenerato, non spostato, non riesposto."
+      }
+    }
+  },
   "maskingStudio": {
+    "ctaUpgrade": "Passa a Stagify+ per usarlo",
+    "features": {
+      "title": "Che cosa fa",
+      "areas": {
+        "title": "Più aree in una volta",
+        "body": "Segna la parete del divano, l’angolo vuoto e il pavimento spoglio in tre colori e arredali in un solo passaggio."
+      },
+      "own": {
+        "title": "I tuoi mobili",
+        "body": "Dai a un’area la foto di un prodotto invece di un testo, e viene inserito esattamente quel pezzo."
+      },
+      "exact": {
+        "title": "Bordi esatti al pixel",
+        "body": "Disegna la maschera a mano, trascina un rettangolo o lascia che lo strumento Magico ritagli un oggetto in un clic."
+      },
+      "honest": {
+        "title": "Tutto ciò che sta fuori dalla maschera torna intatto",
+        "body": "Non rigenerato, non spostato, non riesposto."
+      }
+    },
     "title": "Studio Maschere",
-    "subtitle": "Evidenzia le aree della tua stanza con colori diversi, assegna a ciascuna il proprio mobile e arredale tutte in una volta. Solo le aree evidenziate possono cambiare, quindi il resto della foto resta perfettamente intatto.",
+    "subtitle": "Evidenzia aree della stanza con colori diversi, dai a ognuna i suoi mobili e arredale tutte in una volta.",
     "exteriorTitle": "Questa foto è per lo Studio Esterni",
-    "gateTitle": "Lo Studio Maschere è una funzione Stagify+",
-    "gateBody": "Accedi con un account Stagify+ per evidenziare più aree di una foto, assegnare a ciascuna i suoi mobili e arredarle tutte in una volta, con una mascheratura precisa al pixel che non può toccare il resto della tua foto.",
-    "gateCta": "Vedi Stagify+",
-    "gateBack": "Torna alla home",
     "stepPhoto": "Foto della stanza",
     "stepPhotoHint": "Carica una foto della tua stanza nell’area di lavoro a destra.",
     "replacePhoto": "Sostituisci foto",
@@ -1337,7 +1389,8 @@
       "noneText": "Il servizio non ha avuto interruzioni rilevate nel periodo monitorato.",
       "defaultCause": "Inattività",
       "causeMissedHeartbeats": "Inattività rilevata al riavvio (segnali di attività mancati)",
-      "loadError": "Impossibile raggiungere l’API di stato. Nuovo tentativo…"
+      "loadError": "Impossibile raggiungere l’API di stato. Nuovo tentativo…",
+      "ongoing": "In corso"
     },
     "monitoring": {
       "since": "Monitoraggio da {date} · ultimo controllo {ago}",
@@ -1407,8 +1460,7 @@
   },
   "stagifyPlus": {
     "hero": {
-      "title": "Tutto in Stagify, <span class=\"sp-grad\">sbloccato</span>.",
-      "subtitle": "Rimozione dei mobili, l’AI Designer, il Masking Studio e modelli di qualità superiore: tutti gli strumenti professionali per meno del costo di un singolo home staging tradizionale."
+      "title": "Tutto in Stagify, <span class=\"sp-grad\">sbloccato</span>."
     },
     "plan": {
       "hintAccountFirst": "Crea prima un account gratuito: è così che il tuo abbonamento viene collegato a te.",
@@ -1448,25 +1500,29 @@
         "exterior": "Studio Esterni (facciata)"
       },
       "tips": {
-        "gallery": "I render salvati restano nel tuo account: puoi riaprirli, scaricarli di nuovo o mandare a un cliente un link di condivisione. Una galleria gratuita conserva solo gli ambienti più recenti e scarta i più vecchi man mano che ne arrivano di nuovi; con Stagify+ non viene mai scartato niente.",
+        "gallery": "I render salvati restano nel tuo account: puoi riaprirli, scaricarli di nuovo o mandare a un cliente un link di condivisione. Una galleria gratuita conserva solo gli ambienti più recenti e scarta i più vecchi man mano che ne arrivano di nuovi. Con Stagify+ non viene mai scartato niente.",
         "customizable": "Scegli il tipo di ambiente e lo stile d’arredo prima di generare, così una cameretta non torna indietro come studio e un brief costiero non torna in chiave mid-century. Il set completo di ambienti e stili è in entrambi i piani.",
         "fastModel": "Il generatore predefinito, tarato sulla velocità. Risponde in pochi secondi, che è quello che serve finché stai ancora confrontando tipi di ambiente e stili. Disponibile in ogni piano.",
         "unlimited": "Arreda quante foto vuoi. In nessuno dei due piani ci sono crediti da comprare o costi per singolo render: Stagify+ cambia che cosa può fare una generazione, non quante te ne spettano.",
         "hqModel": "Un generatore più lento e più attento, per l’immagine che finisce davvero sull’annuncio. Tiene insieme molto meglio linee rette, luce delle finestre e riflessi, così i mobili stanno dentro la stanza invece che sopra.",
-        "remove": "Basta una spunta e la stanza viene prima svuotata — divani, disordine, quadri, tutto — e poi riarredata da zero. È quello che serve per un immobile abitato, dove arredare sopra i mobili del venditore non viene mai bene.",
-        "designer": "Una finestra di chat con dentro la tua foto. Chiedi in linguaggio normale quello che vuoi e continua a rifinire la stessa immagine per più passaggi — legni più caldi, via il tappeto, provala come cameretta — invece di lanciare un render nuovo ogni volta.",
+        "remove": "Basta una spunta e la stanza viene prima svuotata: divani, disordine, quadri, tutto. Poi viene riarredata da zero. È quello che serve per un immobile abitato, dove arredare sopra i mobili del venditore non viene mai bene.",
+        "designer": "Una finestra di chat con dentro la tua foto. Chiedi in linguaggio normale quello che vuoi e continua a rifinire la stessa immagine per più passaggi: legni più caldi, via il tappeto, provala come cameretta. Non serve lanciare un render nuovo ogni volta.",
         "masking": "Dipingi su una parte del risultato e cambia solo quella. Tutto ciò che resta fuori dal pennello rimane intatto, pixel per pixel, così puoi sostituire una sola sedia o ridipingere una parete senza rigenerare l’intera stanza.",
-        "studio": "La versione completa del mascheramento. Segna più aree con colori diversi, dai a ciascuna il suo brief o la sua foto d’arredo e arredale tutte in un solo passaggio — poi genera qualche opzione per area e tieni la migliore di ognuna.",
+        "studio": "La versione completa del mascheramento. Segna più aree con colori diversi, dai a ciascuna il suo brief o la sua foto d’arredo e arredale tutte in un solo passaggio. Poi genera qualche opzione per area e tieni la migliore di ognuna.",
         "exterior": "Per lo scatto con cui si apre ogni annuncio. Cambia l’ora del giorno, ripulisci un cielo grigio e piatto e togli auto parcheggiate e bidoni, mentre l’immobile resta esattamente com’è stato fotografato.",
         "variations": "Chiedi più versioni dello stesso brief in una volta sola. Cambiano per disposizione e scelta dei mobili invece di essere due volte lo stesso render, così hai davvero tra cosa scegliere e non devi rilanciare finché non ne esce una buona.",
-        "references": "Carica la foto di un prodotto — un divano, un letto o un tavolo da pranzo precisi — e la stanza viene arredata con quel pezzo invece che con qualcosa di genericamente simile. Utile quando un cliente, un costruttore o un home stager ha già scelto i mobili."
+        "references": "Carica la foto di un prodotto preciso, un divano, un letto o un tavolo da pranzo, e la stanza viene arredata con quel pezzo invece che con qualcosa di genericamente simile. Utile quando un cliente, un costruttore o un home stager ha già scelto i mobili."
       }
     },
-    "enterpriseRow": "Per team o aziende, <a href=\"enterprise.html\">scopri il nostro piano enterprise</a> oppure contatta <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> per opzioni di abbonamento personalizzate.",
+    "enterprise": {
+      "title": "Arredi per un intero team?",
+      "body": "Chiunque nella vostra azienda ottiene Stagify+ in automatico, e pagate le generazioni che il team usa davvero invece di una postazione a testa.",
+      "cta": "Scopri Stagify Enterprise",
+      "contact": "Fatturazione o condizioni su misura? Scrivi a <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a>."
+    },
     "footLinks": {
       "backToFree": "Torna allo staging gratuito",
-      "questions": "Domande prima di acquistare?",
-      "footnote": "Team, fatturazione o condizioni su misura: <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a>"
+      "questions": "Domande prima di acquistare?"
     }
   },
   "gallery": {
@@ -1585,14 +1641,14 @@
     "subtitle": "L’unico scatto che non puoi rifare quando cambia il tempo. Sistema la luce, il cielo e il disordine, e lascia stare la casa.",
     "ctaUpgrade": "Passa a Stagify+ per usarlo",
     "features": {
-      "title": "Che cosa cambia",
+      "title": "Che cosa fa",
       "light": {
         "title": "Ora del giorno",
         "body": "Scatta a mezzogiorno, pubblica all’ora d’oro, con ombre e luce alle finestre coerenti."
       },
       "sky": {
         "title": "Cielo e meteo",
-        "body": "Il grigio piatto diventa azzurro, nuvole leggere o qualcosa di più drammatico, con bordi puliti sul tetto."
+        "body": "Il grigio piatto diventa azzurro, nuvole leggere o qualcosa di più drammatico."
       },
       "clutter": {
         "title": "Auto, ingombri e neve",

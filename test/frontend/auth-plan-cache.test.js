@@ -1,8 +1,9 @@
 // Tier: frontend island logic — the plan cache in public/scripts/auth.js.
 //
-// `stagifyPlan` exists for exactly one reader: scripts/exterior-studio-gate.js, a
-// render-blocking script that has to choose a page shape BEFORE the first paint, while the
-// only authority on the plan (/api/auth/me) is still a round trip away. Everything worth
+// `stagifyPlan` exists for the render-blocking scripts that have to choose a page shape
+// BEFORE the first paint — scripts/preview-gate.js on all four preview pages, and the copy
+// of its body inside ai-designer-gate.js — while the only authority on the plan
+// (/api/auth/me) is still a round trip away. Everything worth
 // testing here is about the cache staying honest, because a stale one is invisible: the
 // page simply paints the wrong shape for a moment and then corrects itself.
 //

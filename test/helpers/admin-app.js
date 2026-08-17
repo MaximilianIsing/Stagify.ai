@@ -16,6 +16,8 @@ import { createHttpGuards } from '../../lib/http/http-guards.js';
 import { setSensitiveHeaders } from '../../lib/http/http-helpers.js';
 import { createEmailCatalog } from '../../lib/services/email-catalog.js';
 import { createReferralLinks } from '../../lib/data/referral-links.js';
+import { createAdminSessions } from '../../lib/data/admin-sessions.js';
+import { createUptimeMonitor } from '../../lib/data/uptime-monitor.js';
 // The PRODUCTION multer instance, for `realUpload: true` — the point is to exercise
 // the real fileFilter and size limit, so this must not be rebuilt here.
 import {
@@ -50,6 +52,11 @@ function makeSpy(impl) {
  *   - `deleteUserResult` → what the faked GDPR-erasure helper returns,
  *   - `withReferrals` (default true) → mount a REAL referral store on a temp data
  *     dir; `false` omits the dep entirely to hit the "not configured" 500 branch,
+ *   - `withAdminSessions` (default true) → mount a REAL admin-session store on a temp
+ *     data dir; `false` omits it, which hits the 503 branch on the session endpoints
+ *     and makes protectLogs key-only,
+ *   - `realUptime` (default false) → mount the REAL uptime monitor on a temp data dir
+ *     instead of the `reset`-only stub, for the server-status and incident endpoints,
  *   - `realKeyLimiter` (default false) → wire the SHARED endpoint-key limiter, i.e.
  *     production; by default a pass-through is injected so unrelated 403 cases in one
  *     file don't share a bucket. `endpointKeyLimiter` injects a specific one.
@@ -58,7 +65,8 @@ function makeSpy(impl) {
 export async function mountAdmin(options = {}) {
   const {
     logsAccessKey = ADMIN_KEY, uploadFile, uploadError, dataLogFiles = {},
-    withReferrals = true, realKeyLimiter = false, endpointKeyLimiter, realUpload = false,
+    withReferrals = true, withAdminSessions = true, realUptime = false,
+    realKeyLimiter = false, endpointKeyLimiter, realUpload = false,
     grantResult = { ok: true, userId: 'u_1', email: 'granted@example.com', expiresAt: '2026-08-22T00:00:00.000Z' },
     revokeResult = { ok: true, userId: 'u_1', email: 'granted@example.com' },
     testSendResult = { ok: true },
@@ -95,7 +103,16 @@ export async function mountAdmin(options = {}) {
   const exportAllMemories = makeSpy(() => ({ 'user-1': [{ id: 'm1', text: 'remember me' }] }));
   const resetAllMemories = makeSpy(() => {});
   const deleteUser = makeSpy(() => deleteUserResult);
-  const uptimeMonitor = { reset: makeSpy(() => ({ up: true, since: 'now' })) };
+  // Default: a stub with just `reset`, which is all the older suites need and keeps
+  // their snapshot assertion a fixed literal. `realUptime: true` mounts the REAL
+  // monitor on a throwaway dir instead — the incident endpoints are CRUD over
+  // persisted state, and a stub would agree with whatever the route did.
+  const uptimeDir = realUptime ? fs.mkdtempSync(path.join(os.tmpdir(), 'stagify-adm-uptime-')) : null;
+  const realMonitor = uptimeDir ? createUptimeMonitor(uptimeDir) : null;
+  if (realMonitor) realMonitor.start();
+  const uptimeMonitor = realMonitor
+    ? { ...realMonitor, reset: makeSpy((...a) => realMonitor.reset(...a)) }
+    : { reset: makeSpy(() => ({ up: true, since: 'now' })) };
   const authStore = {
     // exportStore (the credential-bearing backup shape) is deliberately NOT wired
     // to any route — if a future edit points /authstore back at it, the spy stays
@@ -123,11 +140,21 @@ export async function mountAdmin(options = {}) {
   // but the SHARED limiter is a module-level singleton, so the real one would carry
   // one bucket across every 403 case in a file and they would start 429ing each other.
   // `realKeyLimiter: true` (or an injected `endpointKeyLimiter`) opts a test back in.
-  const { protectLogs } = createHttpGuards({
+  // REAL admin-session store on a throwaway data dir, for the same reason the
+  // referral store is real: these endpoints are CRUD over SQLite, and a fake would
+  // assert nothing about what actually persists — least of all the key-fingerprint
+  // check, which is the part most likely to break. `withAdminSessions: false` leaves
+  // the dep off the bag, which is how the 503 branch is reached and, separately, how
+  // protectLogs falls back to being key-only.
+  const adminSessionDir = withAdminSessions ? fs.mkdtempSync(path.join(os.tmpdir(), 'stagify-adm-sess-')) : null;
+  const adminSessions = adminSessionDir ? createAdminSessions(adminSessionDir) : undefined;
+
+  const { protectLogs, requireEndpointKey } = createHttpGuards({
     genAI: null,
     LOGS_ACCESS_KEY: logsAccessKey,
     endpointKeyMatches,
     endpointKeyLimiter: realKeyLimiter ? null : (endpointKeyLimiter ?? ((req, res, next) => next())),
+    adminSessions,
   });
 
   const deps = {
@@ -145,6 +172,8 @@ export async function mountAdmin(options = {}) {
     readHostedImagesManifest,
     writeHostedImagesManifest,
     protectLogs,
+    requireEndpointKey,
+    adminSessions,
     __dirname: path.resolve('.'),
     // The REAL map, not a two-entry stand-in. server.js injects lib/http/uploads.js's
     // export; the trimmed copy that used to sit here disagreed with the filter beside
@@ -170,6 +199,7 @@ export async function mountAdmin(options = {}) {
     getManifest: () => manifest,
     hostedImagesDir,
     referrals: referralLinks,
+    uptime: realMonitor,
     close: () =>
       new Promise((r) =>
         server.close(() => {
@@ -179,6 +209,16 @@ export async function mountAdmin(options = {}) {
             // Close the shared connection first so Windows can unlink the .db files.
             closeDb(referralDir);
             fs.rmSync(referralDir, { recursive: true, force: true });
+          }
+          if (adminSessionDir) {
+            closeDb(adminSessionDir);
+            fs.rmSync(adminSessionDir, { recursive: true, force: true });
+          }
+          if (uptimeDir) {
+            // close() stops the heartbeat timer as well as the connection — left
+            // running it would keep the test runner alive after the suite finished.
+            realMonitor.close();
+            fs.rmSync(uptimeDir, { recursive: true, force: true });
           }
           r();
         }),

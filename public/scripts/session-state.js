@@ -4,8 +4,10 @@
 // authority on the visitor (`GET /api/auth/me`) is a network round trip away and the
 // browser paints long before it answers:
 //
-//   • scripts/exterior-studio-gate.js  — the Pro page shape, from the cached plan
-//   • scripts/session-class.js         — the Gallery tab, from the mere presence of a token
+//   • scripts/preview-gate.js   — the Pro page shape on all four preview pages, from the
+//                                 cached plan (ai-designer-gate.js carries the same body
+//                                 inline, because its viewport redirect has to run first)
+//   • scripts/session-class.js  — the nav's Gallery tab, from the mere presence of a token
 //
 // Both are GUESSES, and a guess has to be given up the moment the real answer lands — but
 // not one moment earlier, or the flash they exist to prevent comes straight back. That

@@ -7,15 +7,32 @@
     <!-- Google tag (gtag.js) — Google Ads. Config + async loader in scripts/gtag.js. -->
     <script src="scripts/gtag.js" defer></script>
 
-    <!-- AI Designer is Stagify+ only, and PC only. Gate access before anything
-         renders: a phone-sized viewport goes to the home page, anonymous
-         visitors bounce to the homepage demo row, and signed-in users see a
-         hidden page until their plan is verified (ensureDesignerProAccess
-         reveals it for Pro or redirects otherwise).
-         MUST stay below the viewport <meta> above: the mobile check reads the
-         layout viewport, and above that tag a phone reports ~980px. -->
+    <!-- AI Designer is Stagify+ only, and PC only. The gate below still redirects a
+         phone-sized viewport to the home page — the studio is a desktop layout and the
+         nav row is `.desktop-only`, so the two agree and there is no width at which the
+         row is hidden but a bookmark still lands on a layout the tool cannot use. MUST
+         stay below the viewport <meta> above: that check reads the LAYOUT viewport, and
+         above that tag a phone reports the ~980px fallback and nobody would ever redirect.
+
+         It no longer redirects on the VISITOR. It used to bounce anyone without a token
+         to index.html#ai-designer-demo and hide the whole page behind
+         `html.ai-gate-pending body{visibility:hidden}` until the plan check answered,
+         with a second redirect if it never did. This page now has a PUBLIC view on the
+         same URL: an anonymous desktop visitor gets the pitch and a Stagify+ call to
+         action, a signed-in free account gets the same page, and only a Stagify+ account
+         is shown the studio. The security boundary is requireProAccount on the chat
+         routes; revealing the studio is an affordance, not a gate.
+
+         KNOWN AND ACCEPTED: because the viewport redirect stays, a phone never reaches
+         this pitch. That is a deliberate call — the tool is desktop-only, so a mobile
+         landing page would sell something the visitor cannot then use — and it does mean
+         the preview earns nothing from mobile search. Revisit together with the
+         desktop-only decision, not on its own.
+
+         What is left is the reshaping half: it reads the plan auth.js cached last visit
+         and pre-applies the Pro shape before the first paint, so the pitch is never
+         flashed at somebody who already bought it. -->
     <script src="scripts/ai-designer-gate.js"></script>
-    <style>html.ai-gate-pending body{visibility:hidden!important}</style>
 
     <link rel="icon" type="image/webp" sizes="32x32" href="media-webp/logo/Logo32x32.webp">
     <link rel="icon" type="image/webp" sizes="64x64" href="media-webp/logo/Logo64x64.webp">
@@ -179,9 +196,9 @@
             <button type="button" class="nav-link staging-menu__trigger" aria-haspopup="true" aria-expanded="false"><span data-lang="navigation.staging">Staging</span><svg class="staging-menu__chevron" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
             <div class="staging-menu__panel" role="menu">
               <a class="staging-menu__item" href="index.html#stage" role="menuitem" aria-describedby="staging-menu-tip-stage" data-staging-open="stage"><span class="staging-menu__label" data-lang="navigation.imageStaging">Image Staging</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-stage" aria-hidden="true" data-lang="navigation.tips.imageStaging">Stages a whole room from one photo: pick a room type and a furniture style and the AI furnishes it. Best for empty or nearly empty rooms when you want a fast, complete result.</span></a>
-              <a class="staging-menu__item is-locked" href="index.html#basic-mask" role="menuitem" aria-describedby="staging-menu-tip-basic-mask" data-staging-open="basic-mask" data-staging-pro><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" data-lang-attr="navigation.plusBadge|aria-label" aria-label="Stagify+"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang="navigation.basicMask">Basic Mask</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-basic-mask" aria-hidden="true" data-lang="navigation.tips.basicMask">Paint over one part of a photo, then describe the change you want. Best for small fixes (swap a sofa, clear a countertop) when the rest of the shot is already right.</span></a>
-              <a class="staging-menu__item is-locked desktop-only" href="ai-designer.html" role="menuitem" aria-describedby="staging-menu-tip-designer" data-staging-pro><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" data-lang-attr="navigation.plusBadge|aria-label" aria-label="Stagify+"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang-html="navigation.pdfTo3d">AI Designer</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-designer" aria-hidden="true" data-lang="navigation.tips.pdfTo3d">Chat with an AI designer that stages, redesigns and keeps iterating on a room with you. Best when you are exploring looks rather than finishing one photo. Desktop only.</span></a>
-              <a class="staging-menu__item is-locked" href="masking-studio.html" role="menuitem" aria-describedby="staging-menu-tip-masking" data-staging-pro><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" data-lang-attr="navigation.plusBadge|aria-label" aria-label="Stagify+"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang="navigation.maskingStudio">Masking Studio</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-masking" aria-hidden="true" data-lang="navigation.tips.maskingStudio">Highlight several areas in different colors and give each its own furniture photo or prompt, then stage them all at once. Best when you need exact control, since everything outside your highlights stays pixel-perfect.</span></a>
+              <a class="staging-menu__item is-locked" href="index.html#basic-mask" role="menuitem" aria-describedby="staging-menu-tip-basic-mask" data-staging-open="basic-mask" data-staging-pro data-staging-preview data-staging-preview-page="basic-mask.html"><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" data-lang-attr="navigation.plusBadge|aria-label" aria-label="Stagify+"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang="navigation.basicMask">Basic Mask</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-basic-mask" aria-hidden="true" data-lang="navigation.tips.basicMask">Paint over one part of a photo, then describe the change you want. Best for small fixes (swap a sofa, clear a countertop) when the rest of the shot is already right.</span></a>
+              <a class="staging-menu__item is-locked desktop-only" href="ai-designer.html" role="menuitem" aria-describedby="staging-menu-tip-designer" data-staging-pro data-staging-preview><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" data-lang-attr="navigation.plusBadge|aria-label" aria-label="Stagify+"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang-html="navigation.pdfTo3d">AI Designer</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-designer" aria-hidden="true" data-lang="navigation.tips.pdfTo3d">Chat with an AI designer that stages, redesigns and keeps iterating on a room with you. Best when you are exploring looks rather than finishing one photo. Desktop only.</span></a>
+              <a class="staging-menu__item is-locked" href="masking-studio.html" role="menuitem" aria-describedby="staging-menu-tip-masking" data-staging-pro data-staging-preview><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" data-lang-attr="navigation.plusBadge|aria-label" aria-label="Stagify+"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang="navigation.maskingStudio">Masking Studio</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-masking" aria-hidden="true" data-lang="navigation.tips.maskingStudio">Highlight several areas in different colors and give each its own furniture photo or prompt, then stage them all at once. Best when you need exact control, since everything outside your highlights stays pixel-perfect.</span></a>
               <a class="staging-menu__item is-locked" href="exterior-studio.html" role="menuitem" aria-describedby="staging-menu-tip-exterior" data-staging-pro data-staging-preview><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" data-lang-attr="navigation.plusBadge|aria-label" aria-label="Stagify+"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang="navigation.exteriorStudio">Exterior Studio</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-exterior" aria-hidden="true" data-lang="navigation.tips.exteriorStudio">Cleans up an exterior photo of a property: change the time of day, clear the sky, and remove parked cars and clutter. Best for the front elevation, yard and street shots, the ones the staging tools deliberately never touch.</span></a>
             </div>
           </div>
@@ -268,7 +285,49 @@
       </div>
 
       <section class="hero" style="grid-template-columns: 1fr; padding: 20px; width: 100%; max-width: 100%; box-sizing: border-box;">
-        <div class="chat-container">
+          <!-- The public half. Visible by default so an anonymous visitor and a crawler
+               both get a real page; ai-designer/access.js hides it once a Stagify+ account
+               is confirmed. ONE container, and it keeps the id the writer looks up.
+
+               Its heading is an h2, not an h1: the page’s single h1 is the sr-only one at
+               the top of <main>, because the studio is a full-height chat app with no
+               title bar to put a visible heading in. Two h1s would break the one-per-page
+               rule test/frontend/page-h1.test.js pins. -->
+          <div class="ai-pitch" id="ai-pitch">
+            <div class="ai-intro">
+              <h2 class="ai-intro__title" data-lang="pdf.title">AI Designer</h2>
+              <p class="ai-intro__sub" data-lang="pdf.pitch.subtitle">Describe the room you want in plain language, and keep talking until it looks right.</p>
+              <p class="ai-intro__actions" id="ai-hero-actions">
+                <a class="btn btn-primary btn-lg" id="ai-cta" href="stagify-plus.html"><strong data-lang="pdf.pitch.ctaUpgrade">Get Stagify+ to use it</strong></a>
+              </p>
+            </div>
+
+            <section class="ai-features-section" aria-labelledby="ai-features-title">
+              <h3 class="ai-section__title" id="ai-features-title" data-lang="pdf.pitch.featuresTitle">What it does</h3>
+              <div class="ai-board">
+                <div class="ai-features">
+                  <article class="ai-feature">
+                    <h4 class="ai-feature__title"><svg class="ai-feature__icon" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span data-lang="pdf.pitch.chat.title">Say it, do not set it</span></h4>
+                    <p class="ai-feature__body" data-lang="pdf.pitch.chat.body">No room type, no style dropdown. Ask for what you want and adjust it in the next message.</p>
+                  </article>
+                  <article class="ai-feature">
+                    <h4 class="ai-feature__title"><svg class="ai-feature__icon" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 2.6-6.4L3 8"/><path d="M3 3v5h5"/><path d="M12 7.5V12l3.5 2"/></svg><span data-lang="pdf.pitch.iterate.title">It remembers the room</span></h4>
+                    <p class="ai-feature__body" data-lang="pdf.pitch.iterate.body">Every reply builds on the last one, so “warmer, and lose the rug” means what you think it means.</p>
+                  </article>
+                  <article class="ai-feature">
+                    <h4 class="ai-feature__title"><svg class="ai-feature__icon" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="1.5"/><path d="M3 13.5h7.5"/><path d="M10.5 3v18"/><path d="M10.5 9h10.5"/></svg><span data-lang="pdf.pitch.plans.title">Floor plans, furnished</span></h4>
+                    <p class="ai-feature__body" data-lang="pdf.pitch.plans.body">Drop in a plan and get it furnished from above, or step inside one room for a photo of it.</p>
+                  </article>
+                </div>
+                <p class="ai-honest">
+                  <strong class="ai-honest__title" data-lang="pdf.pitch.honest.title">Nothing is final until you say so</strong>
+                  <span class="ai-honest__body" data-lang="pdf.pitch.honest.body">Every version stays in the conversation, so you can go back to the one you liked.</span>
+                </p>
+              </div>
+            </section>
+          </div>
+
+        <div class="chat-container" id="ai-tool" hidden>
           <div class="chat-messages" id="chat-messages" role="log" aria-live="polite" aria-atomic="false" aria-label="Conversation">
             <div class="empty-state">
               <h2 data-lang="pdf.title">AI Designer</h2>

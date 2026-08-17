@@ -85,7 +85,6 @@
     },
     "restage": {
       "title": "Klicken und sehen, was Home Staging bewirkt",
-      "subtitle": "Derselbe leere Raum, immer wieder neu eingerichtet. Keine Umzugshelfer, keine Miete, kein Warten.",
       "kicker": "Volle Gestaltungskontrolle",
       "panelTitle": "Jeder Durchlauf möbliert neu",
       "panelBody": "Klassisches Home Staging gibt dir eine einzige Anordnung und einen Mietvertrag. Starte es erneut und der Raum kommt anders möbliert zurück: andere Anordnung, andere Farbpalette, andere Materialien.",
@@ -102,7 +101,6 @@
     },
     "showcase": {
       "title": "Überzeugen Sie sich selbst",
-      "subtitle": "Live-Demos. Sehen Sie sich um.",
       "tablistAria": "Studios",
       "prevAria": "Vorheriges Studio",
       "nextAria": "Nächstes Studio",
@@ -219,7 +217,6 @@
     "info": {
       "eyebrow": "Die Kurzfassung",
       "title": "Was virtuelles Home Staging ist und warum es verkauft",
-      "subtitle": "Ein schneller, ehrlicher Überblick, wie es funktioniert und für wen es gedacht ist.",
       "rows": {
         "why": {
           "eyebrow": "Warum es funktioniert",
@@ -262,7 +259,6 @@
     "compare": {
       "eyebrow": "Virtuell vs. traditionell",
       "title": "Wie es im Vergleich zum traditionellen Staging abschneidet",
-      "subtitle": "Traditionelles Staging funktioniert. Es ist nur langsam und teuer.",
       "colTraditional": "Traditionelles Staging",
       "colStagify": "Stagify.ai",
       "calc": {
@@ -305,7 +301,6 @@
     },
     "nar": {
       "title": "Bleiben Sie nicht zurück",
-      "subtitle": "Makler setzen schnell auf KI, und Kunden mögen es. Staging ist der einfachste Einstieg.",
       "usageLabel": "Wie oft Makler KI-Tools nutzen",
       "legend": {
         "daily": "Täglich",
@@ -322,7 +317,6 @@
     },
     "plus": {
       "title": "Gehen Sie weiter mit Stagify+",
-      "subtitle": "Zwei Wege zum Upgrade: fester Monatstarif oder Abrechnung nach Nutzung fürs Team.",
       "pro": {
         "name": "Stagify+",
         "tag": "Für Einzelpersonen",
@@ -349,7 +343,6 @@
     },
     "instagram": {
       "title": "Sehen Sie es in Aktion auf Instagram",
-      "subtitle": "Echte Staging-Verwandlungen, schnelle Tipps und Einblicke hinter die Kulissen.",
       "follow": "@stagify.ai folgen"
     },
     "finalCta": {
@@ -358,12 +351,8 @@
       "button": "Foto hochladen",
       "note": "Anerkannt von Compass, Centennial und mehr."
     },
-    "whyus": {
-      "subtitle": "Vier weitere Wege, ein Objekt herzurichten, direkt neben unserem."
-    },
     "testimonials": {
       "title": "Was Makler sagen",
-      "subtitle": "Direkt von Maklern, die umgestiegen sind.",
       "items": {
         "justin": {
           "quote": "Als ich Stagify zum ersten Mal ausprobierte, war ich ehrlich gesagt begeistert. Mir wurde klar, dass ich einfach mein Handy nutzen, den teuren Fotografen weglassen und trotzdem beeindruckende Ergebnisse erzielen konnte. Es ist ein Wendepunkt für meine Objekte, und der Preis ist fantastisch!",
@@ -414,12 +403,8 @@
         "next": "Nächster Erfahrungsbericht"
       }
     },
-    "faq": {
-      "subtitle": "Die häufigsten Fragen. Etwas anderes unklar? Zu den <a href=\"guides.html\">Anleitungen</a> oder melden Sie sich."
-    },
     "blog": {
       "title": "Aus dem Stagify-Blog",
-      "subtitle": "Anleitungen und Tipps: virtuelles Staging, MLS-Kennzeichnung, schnellere Vermarktung.",
       "viewAll": "Zum Stagify-Blog →"
     },
     "contactCta": {
@@ -882,6 +867,27 @@
     }
   },
   "pdf": {
+    "pitch": {
+      "subtitle": "Beschreiben Sie den gewünschten Raum in normalen Worten und reden Sie weiter, bis er stimmt.",
+      "ctaUpgrade": "Mit Stagify+ freischalten",
+      "featuresTitle": "Was es kann",
+      "chat": {
+        "title": "Sagen statt einstellen",
+        "body": "Kein Raumtyp, kein Stil-Menü. Sagen Sie, was Sie wollen, und korrigieren Sie es in der nächsten Nachricht."
+      },
+      "iterate": {
+        "title": "Es merkt sich den Raum",
+        "body": "Jede Antwort baut auf der vorigen auf, also bedeutet „wärmer, und der Teppich weg“ genau das."
+      },
+      "plans": {
+        "title": "Möblierte Grundrisse",
+        "body": "Grundriss hochladen und von oben möbliert bekommen — oder in einen Raum hineingehen und ein Foto davon erhalten."
+      },
+      "honest": {
+        "title": "Nichts ist endgültig, bis Sie es sagen",
+        "body": "Jede Version bleibt im Verlauf, Sie können also jederzeit zu der zurück, die Ihnen gefiel."
+      }
+    },
     "meta": {
       "title": "KI-Designer | Stagify.ai – KI-gestützter Design-Assistent",
       "description": "Chatten Sie mit dem KI-Designer, um Hilfe bei Designfragen zu erhalten, Dateien zur Analyse hochzuladen und sofort professionelle Designberatung zu bekommen.",
@@ -1165,6 +1171,11 @@
     "troubleshootingTitle": "Fehlerbehebung & häufige Probleme"
   },
   "pageMeta": {
+    "basicMask": {
+      "title": "Basis-Maske | Stagify.ai – Eine Stelle markieren, nur diese neu gestalten",
+      "description": "Malen Sie über eine Stelle im Raumfoto, sagen Sie, was sich dort ändern soll, und erhalten Sie dasselbe Foto mit nur dieser Stelle neu. Alles außerhalb bleibt unberührt.",
+      "keywords": "Basis-Maske, maskiertes Staging, Foto stellenweise bearbeiten, Sofa im Foto ersetzen, KI-Bildretusche, Immobilienfoto bearbeiten, Teilbereich neu gestalten, Stagify"
+    },
     "guides": {
       "title": "Anleitungen & Walkthroughs | Stagify.ai",
       "description": "Schritt-für-Schritt-Anleitungen für Stagify.ai – Ihr erstes kostenloses Staging, Staging mit Stagify+ und Lösungen für häufige Probleme."
@@ -1192,14 +1203,55 @@
       "keywords": "Außenwirkung, Außenfoto bearbeiten, Immobilienfoto optimieren, Himmel ersetzen, Autos entfernen, Dämmerungsaufnahme Immobilien, goldene Stunde, KI-Bildbearbeitung, Fassade, Stagify"
     }
   },
+  "basicMask": {
+    "title": "Basis-Maske",
+    "subtitle": "Malen Sie über eine Stelle im Foto, sagen Sie, was sich dort ändern soll, und Sie bekommen dasselbe Bild zurück, nur diese Stelle neu.",
+    "ctaUpgrade": "Mit Stagify+ freischalten",
+    "ctaOpen": "Basis-Maske öffnen",
+    "features": {
+      "title": "Was es kann",
+      "paint": {
+        "title": "Erst malen, dann fragen",
+        "body": "Streichen Sie über das Sofa, die Arbeitsplatte, die leere Wand. Dann beschreiben Sie, was dort stattdessen sein soll."
+      },
+      "small": {
+        "title": "Für kleine Korrekturen",
+        "body": "Wenn nur eine Sache am Bild stört, geht das schneller, als den Raum noch einmal komplett einzurichten."
+      },
+      "upgrade": {
+        "title": "Eine Stelle auf einmal",
+        "body": "Eine Maske, eine Anweisung. Für mehrere Stellen gleichzeitig, jede mit eigenen Möbeln, nehmen Sie das Masking Studio."
+      },
+      "honest": {
+        "title": "Alles außerhalb des Strichs kommt unverändert zurück",
+        "body": "Nicht neu gerendert, nicht verschoben, nicht neu beleuchtet."
+      }
+    }
+  },
   "maskingStudio": {
+    "ctaUpgrade": "Mit Stagify+ freischalten",
+    "features": {
+      "title": "Was es kann",
+      "areas": {
+        "title": "Mehrere Bereiche auf einmal",
+        "body": "Markieren Sie Sofawand, leere Ecke und nackten Boden in drei Farben und richten Sie alles in einem Durchgang ein."
+      },
+      "own": {
+        "title": "Ihre eigenen Möbel",
+        "body": "Geben Sie einem Bereich statt eines Prompts ein Produktfoto, und genau dieses Stück wird platziert."
+      },
+      "exact": {
+        "title": "Pixelgenaue Kanten",
+        "body": "Maske von Hand malen, ein Rechteck ziehen oder das Magic-Werkzeug ein Objekt mit einem Klick umfahren lassen."
+      },
+      "honest": {
+        "title": "Alles außerhalb der Maske kommt unverändert zurück",
+        "body": "Nicht neu gerendert, nicht verschoben, nicht neu beleuchtet."
+      }
+    },
     "title": "Masken-Studio",
-    "subtitle": "Markieren Sie Bereiche Ihres Raums in verschiedenen Farben, geben Sie jedem Bereich ein eigenes Möbelstück und richten Sie alle auf einmal ein. Nur die markierten Bereiche können sich ändern, der Rest Ihres Fotos bleibt pixelgenau erhalten.",
+    "subtitle": "Markieren Sie Bereiche Ihres Raums in verschiedenen Farben, geben Sie jedem eigene Möbel und richten Sie alles auf einmal ein.",
     "exteriorTitle": "Das ist ein Fall fürs Außen-Studio",
-    "gateTitle": "Das Masken-Studio ist eine Stagify+-Funktion",
-    "gateBody": "Melden Sie sich mit einem Stagify+-Konto an, um mehrere Bereiche eines Fotos zu markieren, jedem eigene Möbel zu geben und alle auf einmal einzurichten – mit pixelgenauer Maskierung, die den Rest Ihres Fotos nicht antasten kann.",
-    "gateCta": "Stagify+ ansehen",
-    "gateBack": "Zurück zur Startseite",
     "stepPhoto": "Raumfoto",
     "stepPhotoHint": "Laden Sie im Arbeitsbereich rechts ein Foto Ihres Raums hoch.",
     "replacePhoto": "Foto ersetzen",
@@ -1337,7 +1389,8 @@
       "noneText": "Im überwachten Zeitraum wurde keine Ausfallzeit festgestellt.",
       "defaultCause": "Ausfall",
       "causeMissedHeartbeats": "Ausfall beim Neustart erkannt (fehlende Heartbeats)",
-      "loadError": "Status-API nicht erreichbar. Erneuter Versuch…"
+      "loadError": "Status-API nicht erreichbar. Erneuter Versuch…",
+      "ongoing": "Andauernd"
     },
     "monitoring": {
       "since": "Überwacht seit {date} · letzte Prüfung {ago}",
@@ -1407,8 +1460,7 @@
   },
   "stagifyPlus": {
     "hero": {
-      "title": "Alles in Stagify, <span class=\"sp-grad\">freigeschaltet</span>.",
-      "subtitle": "Möbel entfernen, der KI-Designer, das Masking Studio und hochwertigere Modelle – alle Profi-Werkzeuge für weniger als ein einziges klassisches Home Staging."
+      "title": "Alles in Stagify, <span class=\"sp-grad\">freigeschaltet</span>."
     },
     "plan": {
       "hintAccountFirst": "Erstellen Sie zuerst ein kostenloses Konto – so wird Ihr Abo mit Ihnen verknüpft.",
@@ -1448,25 +1500,29 @@
         "exterior": "Außen-Studio (Außenwirkung)"
       },
       "tips": {
-        "gallery": "Gespeicherte Renderings bleiben in Ihrem Konto — Sie können sie erneut öffnen, noch einmal herunterladen oder einem Kunden einen Freigabelink schicken. Eine kostenlose Galerie behält nur Ihre neuesten Räume und verwirft die ältesten, sobald neue hinzukommen; bei Stagify+ wird nie etwas verworfen.",
+        "gallery": "Gespeicherte Renderings bleiben in Ihrem Konto. Sie können sie erneut öffnen, noch einmal herunterladen oder einem Kunden einen Freigabelink schicken. Eine kostenlose Galerie behält nur Ihre neuesten Räume und verwirft die ältesten, sobald neue hinzukommen. Bei Stagify+ wird nie etwas verworfen.",
         "customizable": "Wählen Sie Raumtyp und Möbelstil vor der Generierung, damit aus einem Kinderzimmer kein Homeoffice wird und aus einem maritimen Briefing kein Mid-Century-Look. Der komplette Satz an Räumen und Stilen ist in beiden Tarifen enthalten.",
         "fastModel": "Der Standardgenerator, auf Tempo ausgelegt. Er liefert in Sekunden, und genau das brauchen Sie, solange Sie noch Raumtypen und Stile gegeneinander ausprobieren. In jedem Tarif verfügbar.",
-        "unlimited": "Stagen Sie so viele Fotos, wie Sie möchten. In keinem Tarif gibt es Credits zu kaufen oder Kosten pro Rendering — Stagify+ verändert, was eine Generierung kann, nicht wie viele Sie davon bekommen.",
+        "unlimited": "Stagen Sie so viele Fotos, wie Sie möchten. In keinem Tarif gibt es Credits zu kaufen oder Kosten pro Rendering. Stagify+ verändert, was eine Generierung kann, nicht wie viele Sie davon bekommen.",
         "hqModel": "Ein langsamerer, sorgfältigerer Generator für genau das Bild, das später im Exposé steht. Er hält gerade Linien, Fensterlicht und Spiegelungen deutlich besser zusammen, sodass die Möbel im Raum stehen statt darauf.",
-        "remove": "Ein Häkchen genügt und der Raum wird zuerst geleert — Sofas, Gerümpel, Wandbilder, alles — und dann von Grund auf neu eingerichtet. Genau das brauchen Sie bei einer bewohnten Immobilie, wo Staging über die Möbel des Verkäufers hinweg nie gut aussieht.",
-        "designer": "Ein Chatfenster mit Ihrem Foto darin. Formulieren Sie in normaler Sprache, was Sie möchten, und verfeinern Sie dasselbe Bild über mehrere Runden — wärmere Hölzer, Teppich weg, einmal als Kinderzimmer — statt jedes Mal ein neues Rendering zu starten.",
+        "remove": "Ein Häkchen genügt und der Raum wird zuerst geleert: Sofas, Gerümpel, Wandbilder, alles. Danach wird er von Grund auf neu eingerichtet. Genau das brauchen Sie bei einer bewohnten Immobilie, wo Staging über die Möbel des Verkäufers hinweg nie gut aussieht.",
+        "designer": "Ein Chatfenster mit Ihrem Foto darin. Formulieren Sie in normaler Sprache, was Sie möchten, und verfeinern Sie dasselbe Bild über mehrere Runden. Wärmere Hölzer, Teppich weg, einmal als Kinderzimmer. Sie müssen nicht jedes Mal ein neues Rendering starten.",
         "masking": "Übermalen Sie einen Teil des Ergebnisses und ändern Sie nur diesen. Alles außerhalb des Pinsels bleibt Pixel für Pixel unberührt, sodass Sie einen einzelnen Stuhl tauschen oder eine Wand neu streichen können, ohne den ganzen Raum neu zu würfeln.",
-        "studio": "Die volle Version des Maskierens. Markieren Sie mehrere Bereiche in verschiedenen Farben, geben Sie jedem ein eigenes Briefing oder ein eigenes Möbelfoto und stagen Sie alle in einem Durchgang — und erzeugen Sie dann mehrere Varianten pro Bereich und behalten Sie die beste.",
+        "studio": "Die volle Version des Maskierens. Markieren Sie mehrere Bereiche in verschiedenen Farben, geben Sie jedem ein eigenes Briefing oder ein eigenes Möbelfoto und stagen Sie alle in einem Durchgang. Erzeugen Sie dann mehrere Varianten pro Bereich und behalten Sie die beste.",
         "exterior": "Für die Aufnahme, mit der jedes Exposé beginnt. Ändern Sie die Tageszeit, räumen Sie einen flachen grauen Himmel auf und entfernen Sie parkende Autos und Mülltonnen, während das Gebäude selbst genau so bleibt, wie es fotografiert wurde.",
         "variations": "Fordern Sie mehrere Fassungen desselben Briefings in einem Durchgang an. Sie unterscheiden sich in Grundriss und Möbelwahl, statt zweimal dasselbe Rendering zu sein, sodass Sie wirklich etwas zur Auswahl haben, statt so lange neu zu würfeln, bis es passt.",
-        "references": "Laden Sie ein Produktfoto hoch — ein konkretes Sofa, Bett oder Esszimmerset — und der Raum wird mit genau diesem Stück eingerichtet statt mit etwas allgemein Ähnlichem. Nützlich, wenn ein Kunde, ein Bauträger oder ein Stager die Möbel bereits ausgesucht hat."
+        "references": "Laden Sie ein Produktfoto hoch, ein konkretes Sofa, Bett oder Esszimmerset, und der Raum wird mit genau diesem Stück eingerichtet statt mit etwas allgemein Ähnlichem. Nützlich, wenn ein Kunde, ein Bauträger oder ein Stager die Möbel bereits ausgesucht hat."
       }
     },
-    "enterpriseRow": "Für Teams oder Unternehmen <a href=\"enterprise.html\">entdecken Sie unseren Enterprise-Plan</a> oder kontaktieren Sie <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> für individuelle Abo-Optionen.",
+    "enterprise": {
+      "title": "Staging für ein ganzes Team?",
+      "body": "Alle in Ihrem Unternehmen bekommen Stagify+ automatisch, und Sie zahlen für die Generierungen, die Ihr Team tatsächlich nutzt, statt für einzelne Plätze.",
+      "cta": "Stagify Enterprise ansehen",
+      "contact": "Rechnungsstellung oder individuelle Konditionen? Schreiben Sie an <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a>."
+    },
     "footLinks": {
       "backToFree": "Zurück zum kostenlosen Staging",
-      "questions": "Noch Fragen vor dem Kauf?",
-      "footnote": "Teams, Rechnungsstellung oder individuelle Konditionen: <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a>"
+      "questions": "Noch Fragen vor dem Kauf?"
     }
   },
   "gallery": {
@@ -1585,14 +1641,14 @@
     "subtitle": "Die eine Aufnahme, die sich bei schlechtem Wetter nicht wiederholen lässt. Licht, Himmel und Störendes korrigieren, das Haus unangetastet lassen.",
     "ctaUpgrade": "Mit Stagify+ freischalten",
     "features": {
-      "title": "Was es verändert",
+      "title": "Was es kann",
       "light": {
         "title": "Tageszeit",
         "body": "Mittags fotografieren, zur goldenen Stunde veröffentlichen — mit passenden Schatten und Fensterlicht."
       },
       "sky": {
         "title": "Himmel und Wetter",
-        "body": "Aus flachem Grau wird klares Blau, leichte Bewölkung oder etwas Dramatischeres — mit sauberen Kanten an der Dachlinie."
+        "body": "Aus flachem Grau wird klares Blau, leichte Bewölkung oder etwas Dramatischeres."
       },
       "clutter": {
         "title": "Autos, Gerümpel und Schnee",

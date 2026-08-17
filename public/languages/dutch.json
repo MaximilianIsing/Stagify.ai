@@ -85,7 +85,6 @@
     },
     "restage": {
       "title": "Klik om te zien wat styling doet",
-      "subtitle": "Dezelfde lege kamer, keer op keer opnieuw ingericht. Geen verhuizers, geen huur, geen wachttijd.",
       "kicker": "Volledige ontwerpcontrole",
       "panelTitle": "Elke run meubileert opnieuw",
       "panelBody": "Traditionele styling geeft je één opstelling en een huurcontract. Voer het opnieuw uit en de kamer komt anders gemeubileerd terug: andere opstelling, ander kleurenpalet, andere materialen.",
@@ -102,7 +101,6 @@
     },
     "showcase": {
       "title": "Zie het zelf",
-      "subtitle": "Live demo’s. Kijk gerust rond.",
       "tablistAria": "Studio’s",
       "prevAria": "Vorige studio",
       "nextAria": "Volgende studio",
@@ -219,7 +217,6 @@
     "info": {
       "eyebrow": "De korte versie",
       "title": "Wat virtuele styling is, en waarom het verkoopt",
-      "subtitle": "Een korte, eerlijke uitleg over hoe het werkt en voor wie het is.",
       "rows": {
         "why": {
           "eyebrow": "Waarom het werkt",
@@ -262,7 +259,6 @@
     "compare": {
       "eyebrow": "Virtueel vs. traditioneel",
       "title": "Hoe het zich verhoudt tot traditionele styling",
-      "subtitle": "Traditionele styling werkt. Het is alleen traag en duur.",
       "colTraditional": "Traditionele styling",
       "colStagify": "Stagify.ai",
       "calc": {
@@ -305,7 +301,6 @@
     },
     "nar": {
       "title": "Blijf niet achter",
-      "subtitle": "Makelaars omarmen AI snel en klanten zijn positief. Styling is de makkelijkste start.",
       "usageLabel": "Hoe vaak makelaars AI-tools gebruiken",
       "legend": {
         "daily": "Dagelijks",
@@ -322,7 +317,6 @@
     },
     "plus": {
       "title": "Ga verder met Stagify+",
-      "subtitle": "Twee manieren om te upgraden: vast maandbedrag of betalen naar gebruik voor je team.",
       "pro": {
         "name": "Stagify+",
         "tag": "Voor individuen",
@@ -349,7 +343,6 @@
     },
     "instagram": {
       "title": "Zie het in actie op Instagram",
-      "subtitle": "Echte styling-transformaties, snelle tips en behind-the-scenes van het Stagify-team.",
       "follow": "Volg @stagify.ai"
     },
     "finalCta": {
@@ -358,12 +351,8 @@
       "button": "Upload een foto",
       "note": "Erkend door Compass, Centennial en meer."
     },
-    "whyus": {
-      "subtitle": "Vier andere manieren om een woning te stylen, naast de onze gezet."
-    },
     "testimonials": {
       "title": "Wat makelaars zeggen",
-      "subtitle": "Rechtstreeks van makelaars die de overstap maakten.",
       "items": {
         "justin": {
           "quote": "Toen ik Stagify voor het eerst probeerde, was ik oprecht verbluft. Ik besefte dat ik gewoon mijn telefoon kon gebruiken, de dure fotograaf kon overslaan en toch prachtige resultaten had. Het is een gamechanger voor mijn advertenties, en de prijs is geweldig!",
@@ -414,12 +403,8 @@
         "next": "Volgende ervaring"
       }
     },
-    "faq": {
-      "subtitle": "De vragen die we het vaakst horen. Iets anders? Bekijk de <a href=\"guides.html\">Handleidingen</a> of mail ons."
-    },
     "blog": {
       "title": "Van de Stagify-blog",
-      "subtitle": "Gidsen en tips over virtuele styling, MLS-vermelding en sneller vermarkten.",
       "viewAll": "Bezoek de Stagify-blog →"
     },
     "contactCta": {
@@ -882,6 +867,27 @@
     }
   },
   "pdf": {
+    "pitch": {
+      "subtitle": "Beschrijf de kamer die u wilt in gewone taal en blijf praten tot het klopt.",
+      "ctaUpgrade": "Ontgrendel met Stagify+",
+      "featuresTitle": "Wat het doet",
+      "chat": {
+        "title": "Zeggen in plaats van instellen",
+        "body": "Geen kamertype, geen stijlmenu. Vraag wat u wilt en stuur bij in het volgende bericht."
+      },
+      "iterate": {
+        "title": "Het onthoudt de kamer",
+        "body": "Elk antwoord bouwt voort op het vorige, dus “warmer, en dat kleed weg” betekent precies dat."
+      },
+      "plans": {
+        "title": "Plattegronden, ingericht",
+        "body": "Upload een plattegrond en krijg hem van bovenaf ingericht, of stap één kamer binnen voor een foto."
+      },
+      "honest": {
+        "title": "Niets ligt vast tot u dat zegt",
+        "body": "Elke versie blijft in het gesprek staan, dus u kunt terug naar die ene die u goed vond."
+      }
+    },
     "meta": {
       "title": "AI-Designer | Stagify.ai - AI-aangedreven ontwerpassistent",
       "description": "Chat met AI-Designer voor hulp bij ontwerpvragen, upload bestanden voor analyse en krijg direct professioneel ontwerpadvies.",
@@ -1165,6 +1171,11 @@
     "troubleshootingTitle": "Probleemoplossing & veelvoorkomende problemen"
   },
   "pageMeta": {
+    "basicMask": {
+      "title": "Basismasker | Stagify.ai – Verf één vlak en style alleen dat",
+      "description": "Schilder over één deel van een kamerfoto, zeg wat daar moet veranderen en krijg dezelfde foto terug met alleen dat vlak opnieuw. Alles daarbuiten blijft onaangeroerd.",
+      "keywords": "basismasker, gemaskeerd stylen, foto deels bewerken, bank vervangen op foto, AI fotoretouche, vastgoedfoto bewerken, gedeeltelijk restylen, Stagify"
+    },
     "guides": {
       "title": "Handleidingen & uitleg | Stagify.ai",
       "description": "Stapsgewijze uitleg voor Stagify.ai — je eerste gratis styling, stylen met Stagify+, en oplossingen voor veelvoorkomende problemen."
@@ -1192,14 +1203,55 @@
       "keywords": "uitstraling voorgevel, buitenfoto bewerken, vastgoedfoto verbeteren, lucht vervangen, auto’s uit foto verwijderen, schemerfoto vastgoed, gouden uur, AI-fotobewerking, gevel, Stagify"
     }
   },
+  "basicMask": {
+    "title": "Basismasker",
+    "subtitle": "Schilder over één deel van de foto, zeg wat daar moet veranderen, en krijg dezelfde foto terug met alleen dat stuk opnieuw gedaan.",
+    "ctaUpgrade": "Ontgrendel met Stagify+",
+    "ctaOpen": "Basismasker openen",
+    "features": {
+      "title": "Wat het doet",
+      "paint": {
+        "title": "Eerst verven, dan vragen",
+        "body": "Kwast over de bank, het aanrecht, de lege muur. Beschrijf daarna wat er in plaats daarvan moet komen."
+      },
+      "small": {
+        "title": "Voor kleine correcties",
+        "body": "Als de foto al goed is op één ding na, gaat dit sneller dan de kamer opnieuw inrichten."
+      },
+      "upgrade": {
+        "title": "Eén gebied tegelijk",
+        "body": "Eén masker, één instructie. Voor meerdere gebieden tegelijk, elk met eigen meubels, gebruikt u de Masking Studio."
+      },
+      "honest": {
+        "title": "Alles buiten de streek komt onaangeroerd terug",
+        "body": "Niet opnieuw berekend, niet verschoven, niet anders belicht."
+      }
+    }
+  },
   "maskingStudio": {
+    "ctaUpgrade": "Ontgrendel met Stagify+",
+    "features": {
+      "title": "Wat het doet",
+      "areas": {
+        "title": "Meerdere zones tegelijk",
+        "body": "Markeer de bankwand, de lege hoek en de kale vloer in drie kleuren en style ze in één ronde."
+      },
+      "own": {
+        "title": "Uw eigen meubels",
+        "body": "Geef een zone een productfoto in plaats van een prompt, en precies dat stuk wordt geplaatst."
+      },
+      "exact": {
+        "title": "Pixelscherpe randen",
+        "body": "Teken het masker met de hand, sleep een rechthoek, of laat de Magic-tool een object in één klik omlijnen."
+      },
+      "honest": {
+        "title": "Alles buiten het masker komt onaangeroerd terug",
+        "body": "Niet opnieuw berekend, niet verschoven, niet anders belicht."
+      }
+    },
     "title": "Maskeerstudio",
-    "subtitle": "Markeer gebieden van je kamer in verschillende kleuren, geef elk zijn eigen meubilair en style ze allemaal tegelijk. Alleen de gemarkeerde gebieden kunnen veranderen, dus de rest van je foto blijft pixel-perfect.",
+    "subtitle": "Markeer delen van uw kamer in verschillende kleuren, geef elk zijn eigen meubels en style ze in één keer.",
     "exteriorTitle": "Die foto is er een voor de Buitenstudio",
-    "gateTitle": "Maskeerstudio is een Stagify+-functie",
-    "gateBody": "Meld je aan met een Stagify+-account om meerdere gebieden van een foto te markeren, elk zijn eigen meubilair te geven en ze allemaal tegelijk te stylen, met pixel-perfecte maskering die de rest van je foto niet kan raken.",
-    "gateCta": "Bekijk Stagify+",
-    "gateBack": "Terug naar Home",
     "stepPhoto": "Kamerfoto",
     "stepPhotoHint": "Upload een foto van je kamer in de werkruimte rechts.",
     "replacePhoto": "Foto vervangen",
@@ -1337,7 +1389,8 @@
       "noneText": "De service heeft geen gedetecteerde uitval gehad in de bewaakte periode.",
       "defaultCause": "Uitval",
       "causeMissedHeartbeats": "Uitval gedetecteerd bij herstart (gemiste heartbeats)",
-      "loadError": "Kan de status-API niet bereiken. Opnieuw proberen…"
+      "loadError": "Kan de status-API niet bereiken. Opnieuw proberen…",
+      "ongoing": "Lopend"
     },
     "monitoring": {
       "since": "Bewaakt sinds {date} · laatste controle {ago}",
@@ -1407,8 +1460,7 @@
   },
   "stagifyPlus": {
     "hero": {
-      "title": "Alles in Stagify, <span class=\"sp-grad\">ontgrendeld</span>.",
-      "subtitle": "Meubels verwijderen, de AI Designer, de Masking Studio en modellen van hogere kwaliteit: elk professioneel gereedschap, voor minder dan de kosten van één traditionele styling."
+      "title": "Alles in Stagify, <span class=\"sp-grad\">ontgrendeld</span>."
     },
     "plan": {
       "hintAccountFirst": "Maak eerst een gratis account aan. Zo wordt je abonnement aan jou gekoppeld.",
@@ -1448,25 +1500,29 @@
         "exterior": "Buitenstudio (uitstraling)"
       },
       "tips": {
-        "gallery": "Opgeslagen renders blijven in je account — open ze opnieuw, download ze nog eens of stuur een klant een deellink. Een gratis galerij bewaart alleen je recentste ruimtes en laat de oudste vallen zodra er nieuwe bij komen; bij Stagify+ verdwijnt er nooit iets.",
+        "gallery": "Opgeslagen renders blijven in je account. Open ze opnieuw, download ze nog eens of stuur een klant een deellink. Een gratis galerij bewaart alleen je recentste ruimtes en laat de oudste vallen zodra er nieuwe bij komen. Bij Stagify+ verdwijnt er nooit iets.",
         "customizable": "Kies het ruimtetype en de meubelstijl voordat je genereert, zodat een babykamer niet terugkomt als thuiskantoor en een kustbriefing niet als mid-century. De volledige set ruimtes en stijlen zit in beide abonnementen.",
         "fastModel": "De standaardgenerator, afgestemd op snelheid. Hij komt binnen enkele seconden terug, precies wat je wilt terwijl je nog ruimtetypes en stijlen tegen elkaar uitprobeert. Beschikbaar in elk abonnement.",
-        "unlimited": "Stage zoveel foto’s als je wilt. Er zijn in geen van beide abonnementen credits te kopen en er zijn geen kosten per render — Stagify+ verandert wat een generatie kan, niet hoeveel je er krijgt.",
+        "unlimited": "Stage zoveel foto’s als je wilt. Er zijn in geen van beide abonnementen credits te kopen en er zijn geen kosten per render. Stagify+ verandert wat een generatie kan, niet hoeveel je er krijgt.",
         "hqModel": "Een tragere, zorgvuldigere generator voor precies het beeld dat op de advertentie komt. Hij houdt rechte lijnen, raamlicht en reflecties veel beter bij elkaar, zodat de meubels in de kamer staan en niet erbovenop.",
-        "remove": "Eén vinkje en de kamer wordt eerst leeggehaald — banken, rommel, wandkunst, alles — en daarna vanaf nul opnieuw ingericht. Dit heb je nodig bij een bewoonde woning, waar stagen over de meubels van de verkoper heen er nooit goed uitziet.",
-        "designer": "Een chatvenster met je foto erin. Vraag in gewone taal wat je wilt en blijf hetzelfde beeld over meerdere beurten verfijnen — warmer hout, dat kleed weg, eens als babykamer — in plaats van elke keer een nieuwe render te starten.",
+        "remove": "Eén vinkje en de kamer wordt eerst leeggehaald: banken, rommel, wandkunst, alles. Daarna wordt hij vanaf nul opnieuw ingericht. Dit heb je nodig bij een bewoonde woning, waar stagen over de meubels van de verkoper heen er nooit goed uitziet.",
+        "designer": "Een chatvenster met je foto erin. Vraag in gewone taal wat je wilt en blijf hetzelfde beeld over meerdere beurten verfijnen. Warmer hout, dat kleed weg, eens als babykamer. Je hoeft niet elke keer een nieuwe render te starten.",
         "masking": "Schilder over een deel van het resultaat en verander alleen dat. Alles buiten het penseel blijft pixel voor pixel onaangeroerd, zodat je één stoel kunt vervangen of één muur kunt overschilderen zonder de hele kamer opnieuw te draaien.",
-        "studio": "De volledige versie van maskeren. Markeer meerdere gebieden in verschillende kleuren, geef elk gebied een eigen briefing of een eigen meubelfoto en stage ze allemaal in één keer — genereer daarna een paar opties per gebied en houd de beste.",
+        "studio": "De volledige versie van maskeren. Markeer meerdere gebieden in verschillende kleuren, geef elk gebied een eigen briefing of een eigen meubelfoto en stage ze allemaal in één keer. Genereer daarna een paar opties per gebied en houd de beste.",
         "exterior": "Voor de foto waarmee elke advertentie opent. Verander het tijdstip van de dag, ruim een vlakke grijze lucht op en haal geparkeerde auto’s en containers weg, terwijl het pand zelf precies blijft zoals het gefotografeerd is.",
         "variations": "Vraag in één keer meerdere versies van dezelfde briefing. Ze verschillen in indeling en meubelkeuze in plaats van twee keer dezelfde render te zijn, zodat je echt iets te kiezen hebt in plaats van te blijven draaien tot er één klopt.",
-        "references": "Upload een productfoto — een concrete bank, een bed of een eetkamerset — en de kamer wordt met dat exemplaar ingericht in plaats van met iets vaag vergelijkbaars. Handig als een klant, een bouwer of een stylist de meubels al heeft gekozen."
+        "references": "Upload een productfoto van een concrete bank, een bed of een eetkamerset, en de kamer wordt met dat exemplaar ingericht in plaats van met iets vaag vergelijkbaars. Handig als een klant, een bouwer of een stylist de meubels al heeft gekozen."
       }
     },
-    "enterpriseRow": "Voor teams of ondernemingen <a href=\"enterprise.html\">ontdek je ons enterprise-abonnement</a> of neem contact op met <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> voor persoonlijke abonnementsopties.",
+    "enterprise": {
+      "title": "Staging voor een heel team?",
+      "body": "Iedereen bij jullie bedrijf krijgt Stagify+ automatisch, en je betaalt voor de generaties die je team echt gebruikt in plaats van per werkplek.",
+      "cta": "Bekijk Stagify Enterprise",
+      "contact": "Facturatie of afwijkende voorwaarden? Mail <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a>."
+    },
     "footLinks": {
       "backToFree": "Terug naar gratis staging",
-      "questions": "Vragen voordat je koopt?",
-      "footnote": "Teams, facturering of maatwerkvoorwaarden: <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a>"
+      "questions": "Vragen voordat je koopt?"
     }
   },
   "gallery": {
@@ -1585,14 +1641,14 @@
     "subtitle": "De ene foto die u niet opnieuw kunt maken als het weer omslaat. Corrigeer het licht, de lucht en de rommel, en laat het huis met rust.",
     "ctaUpgrade": "Krijg Stagify+ om het te gebruiken",
     "features": {
-      "title": "Wat het verandert",
+      "title": "Wat het doet",
       "light": {
         "title": "Tijdstip van de dag",
         "body": "Fotografeer om twaalf uur, publiceer op het gouden uur, met schaduwen en raamlicht die kloppen."
       },
       "sky": {
         "title": "Lucht en weer",
-        "body": "Vlak grijs wordt helderblauw, lichte bewolking of iets dramatischers, met schone randen langs de daklijn."
+        "body": "Vlak grijs wordt helderblauw, lichte bewolking of iets dramatischers."
       },
       "clutter": {
         "title": "Auto’s, rommel en sneeuw",

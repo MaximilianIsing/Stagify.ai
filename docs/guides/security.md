@@ -128,6 +128,40 @@ guarded by the **`endpoint_key`** (note the lowercase env name):
   reset connection, a devtools "replay request", a caching proxy) from wiping twice.
   A `GET` on `/resetmemories` answers `405` with `Allow: POST` and touches nothing.
 
+### The console holds a session token, never the key
+
+The `/admin` console used to keep `endpoint_key` in a JS closure and persist nothing,
+so every page load asked for it again. It now **exchanges** the key for a scoped
+session token ([`lib/data/admin-sessions.js`](../../lib/data/admin-sessions.js)):
+`POST /api/admin/session` takes the key, returns a 256-bit token, and the browser keeps
+that in `localStorage`. The key itself is still never persisted — it is a local inside
+the sign-in request and is not even retained in memory afterwards.
+
+The trade is only sound because the token is **strictly weaker than the key**:
+
+| | `endpoint_key` | session token |
+|---|---|---|
+| Opens | every key-gated route, incl. `/api/stage-by-endpoint-key` and `POST /api/getpro` | `protectLogs` routes only — the dashboard's |
+| Expires | never | 30 days, sliding on use |
+| Revoke | edit the env var, redeploy | `DELETE /api/admin/session`, instantly |
+| At rest | — | SHA-256 digest, like every other bearer token |
+
+Two properties are easy to lose in a later edit, and both are tested:
+
+- **Minting costs the key.** `POST /api/admin/session` is behind `requireEndpointKey`,
+  not `protectLogs`. Behind `protectLogs` a stolen token could mint an endless supply
+  of fresh ones and revoking the one you knew about would achieve nothing.
+- **Rotating the key revokes every session.** Each row stores a fingerprint of the key
+  that minted it and validation requires it to match the key in force. Without that,
+  rotating a leaked secret would leave every signed-in browser working.
+
+**Still header-only, and that is the reason it is not a cookie.** A cookie would ride
+along automatically on cross-site requests, which would make the destructive admin
+`POST`s CSRF-reachable and require `SameSite` plus a custom-header check to claw back.
+A token in a header is sent only by our own `fetch`, so no crawler, `<img>`, form post
+or pasted link can reach an admin route at all — the same property the key guard always
+had, preserved.
+
 ### No credentials over HTTP — `exportStore` vs `exportRedacted`
 
 `GET /authstore` serves `authStore.exportRedacted()`: users, minus credentials.
@@ -328,6 +362,12 @@ exports (customer emails, prompt text) and mutating routes like
 it did not fix the admin auth model. `RL_ENDPOINT_KEY` (below) now bounds how fast
 that secret can be *guessed*, which is a different problem from the one above —
 it does nothing about rotation, identity, or audit.
+
+Admin sessions (above) chip at the same corner without closing it: what a browser
+holds day to day is now revocable and scoped, and rotating the key really does log
+everything out. The key behind them is still one static secret shared by whoever has
+it, so **identity and audit remain unsolved** — a session tells you a browser was
+signed in, not who was at it.
 
 ## Client share links — the one anonymous read surface
 

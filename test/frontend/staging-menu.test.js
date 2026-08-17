@@ -318,8 +318,8 @@ test('a `data-staging-preview` row is locked, has a page, and that page has NO r
   //      Googlebot never sees the public view the page was made indexable for.
   //
   //      A render-blocking gate that only RESHAPES the page is fine, and the preview page
-  //      has one (exterior-studio-gate.js pre-applies the Pro layout from a cached plan so
-  //      the pitch is not flashed at a subscriber). So this asserts the property that
+  //      has one (preview-gate.js pre-applies the Pro layout from a cached plan so the
+  //      pitch is not flashed at a subscriber). So this asserts the property that
   //      actually matters — no navigation — rather than the absence of a filename, which
   //      is what it used to do and which a rename would have satisfied without fixing
   //      anything.
@@ -328,34 +328,92 @@ test('a `data-staging-preview` row is locked, has a page, and that page has NO r
   const rows = [...block.matchAll(/<a\b[^>]*>/g)].map((m) => m[0]);
 
   const preview = rows.filter((r) => r.includes('data-staging-preview'));
-  assert.equal(preview.length, 1, 'exactly one preview row today — revisit this guard when a second lands');
+  // Every preview row is checked, not just the first. The count is asserted as a FLOOR
+  // rather than pinned to a number: it was `=== 1` while the Exterior Studio was the only
+  // one, which meant the second preview page failed this guard for being a second preview
+  // page. A floor still catches the case that matters — the attribute disappearing
+  // entirely, which would silently send every non-Pro visitor back to the pricing table.
+  assert.ok(preview.length >= 1, 'no preview rows at all — the pattern has been removed');
 
-  assert.match(preview[0], /\bis-locked\b/, 'a preview row is still a Stagify+ row');
-  assert.match(preview[0], /\bdata-staging-pro\b/, 'and still locks for non-Pro visitors');
-  assert.ok(!/\bdesktop-only\b/.test(preview[0]), 'a page meant to be found must not be hidden on phones');
+  for (const row of preview) {
+    assert.match(row, /\bis-locked\b/, 'a preview row is still a Stagify+ row');
+    assert.match(row, /\bdata-staging-pro\b/, 'and still locks for non-Pro visitors');
 
-  const href = /href="([^"]+)"/.exec(preview[0])[1];
-  const pagePath = path.join(PUBLIC, href);
-  assert.ok(fs.existsSync(pagePath), `${href} must be a real page`);
+    // Where a LOCKED click on this row actually lands, which is not always the row's href.
+    // Three preview rows point straight at their own preview page; Basic Mask's href opens
+    // a panel in the staging flow on the home page, so it names its pitch separately with
+    // `data-staging-preview-page` and staging-menu.js prefers that when the row is locked.
+    // Following the href here instead would have asserted against a URL no non-Pro visitor
+    // is ever sent to — a guard that reads correct and checks nothing.
+    const href = /data-staging-preview-page="([^"]+)"/.exec(row)?.[1]
+      ?? /href="([^"]+)"/.exec(row)[1];
+    const pagePath = path.join(PUBLIC, href);
+    assert.ok(fs.existsSync(pagePath), `${href} must be a real page`);
 
-  const head = fs.readFileSync(pagePath, 'utf8').split('</head>')[0];
-  const gates = [...head.matchAll(/<script(?![^>]*\b(?:defer|async|type="module")\b)[^>]*\bsrc="([^"]*-gate\.js)"/g)]
-    .map((m) => m[1]);
+    const head = fs.readFileSync(pagePath, 'utf8').split('</head>')[0];
+    const gates = [...head.matchAll(/<script(?![^>]*\b(?:defer|async|type="module")\b)[^>]*\bsrc="([^"]*gate\.js)"/g)]
+      .map((m) => m[1]);
 
-  for (const src of gates) {
-    const gatePath = path.join(PUBLIC, src.replace(/^\//, ''));
-    assert.ok(fs.existsSync(gatePath), `${href} loads ${src}, which must be a real file`);
-    // Comments are stripped first: every one of these gates DESCRIBES the redirect it
-    // deliberately does not do, so scanning the raw source would fail on the prose.
-    const code = fs.readFileSync(gatePath, 'utf8')
-      .replace(/\/\*[\s\S]*?\*\//g, '')
-      .replace(/^\s*\/\/.*$/gm, '');
-    assert.ok(
-      !/location\s*\.\s*(?:replace|assign|href)|location\s*=/.test(code),
-      `${src} navigates — the preview page's gate may only reshape, never redirect`,
-    );
+    for (const src of gates) {
+      const gatePath = path.join(PUBLIC, src.replace(/^\//, ''));
+      assert.ok(fs.existsSync(gatePath), `${href} loads ${src}, which must be a real file`);
+      assert.deepEqual(
+        runGateSignedOut(gatePath),
+        [],
+        `${src} bounced a signed-out DESKTOP visitor — the preview row hands them to a page `
+          + 'that instantly redirects, which is the dead end data-staging-preview exists to avoid',
+      );
+    }
   }
 });
+
+/**
+ * Run a page's head gate as a signed-out visitor on a desktop viewport, and report every
+ * URL it tried to navigate to.
+ *
+ * BEHAVIOURAL, not textual, and that is the whole point of this helper. The check here used
+ * to be "the source contains no `location.replace`", which was right while every preview
+ * gate was a pure reshaper — and wrong the moment the AI Designer became a preview, because
+ * its gate legitimately redirects on the VIEWPORT (the studio is desktop-only) while no
+ * longer redirecting on the VISITOR. A source scan cannot tell those two apart; running the
+ * thing can. The fixture is the case the promise is about: a desktop-width browser with no
+ * token, which is exactly the visitor the nav row is sending here.
+ *
+ * @param {string} gatePath - Absolute path to the gate source.
+ * @returns {string[]} URLs the gate navigated to; empty is the passing case.
+ */
+function runGateSignedOut(gatePath) {
+  const src = fs.readFileSync(gatePath, 'utf8');
+  /** @type {string[]} */
+  const navigated = [];
+  let className = '';
+  const html = {
+    get className() { return className; },
+    set className(v) { className = v; },
+    classList: { contains: () => false, remove: () => {} },
+  };
+  const win = {
+    location: {
+      pathname: '/',
+      replace: (t) => navigated.push(String(t)),
+      assign: (t) => navigated.push(String(t)),
+    },
+    // A desktop viewport: every media query a gate asks about is false, which for the
+    // `(max-width: 768px)` check means "not a phone".
+    matchMedia: () => ({ matches: false }),
+  };
+  const run = new Function('window', 'document', 'location', 'localStorage', 'setTimeout', src);
+  run(
+    win,
+    { documentElement: html, currentScript: { getAttribute: () => 'x-pro-pending' } },
+    win.location,
+    { getItem: () => null },
+    // Fire timers immediately: a gate that redirects from a stall would otherwise pass by
+    // simply never being given the chance to.
+    (fn) => { fn(); return 1; },
+  );
+  return navigated;
+}
 
 test('the old pro nav links are gone everywhere', () => {
   // They were toggled by a selector in auth.js that no longer exists; a leftover

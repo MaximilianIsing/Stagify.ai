@@ -2016,3 +2016,135 @@
         background: var(--brand-strong);
         background-clip: padding-box;
       }
+
+      /* --- The public preview --------------------------------------------
+       *
+       * This page shows one of three views on a single URL — the pitch for an anonymous
+       * visitor and for a signed-in free account, the studio for Stagify+. It used to
+       * redirect all three cases away; see the note at the top of ai-designer.html.
+       *
+       * The look is the Exterior and Masking Studios' pitch, deliberately: one frosted
+       * surface, hairline-separated columns, and ONE colour ramp (--brand-deep headings,
+       * --accent prose). Three studios that look like three products is a worse outcome
+       * than some repetition between three stylesheets.
+       */
+
+      /* The pre-paint Pro shape. ai-designer-gate.js puts this class on <html> before the
+       * first paint when the plan auth.js cached says Stagify+, and ai-designer/access.js
+       * takes it off once the live plan is known.
+       *
+       *  1. `display`, never `visibility` — styles.css's i18n anti-FOUC rule
+       *     (`body.language-loaded [data-lang] { visibility: visible }`, (0,2,1)) matches
+       *     every translatable element here and would silently un-hide it again.
+       *  2. The third selector must outrank `.chat-container[hidden]`. An id does; a class
+       *     would tie and lose to source order. */
+      html.ai-pro-pending #ai-pitch,
+      html.ai-pro-pending #ai-hero-actions { display: none; }
+      html.ai-pro-pending #ai-tool[hidden] { display: flex; }
+
+      /* [hidden] is a UA rule at (0,0,0), which the class above beats — so without this the
+       * chat stays laid out for a signed-out visitor. */
+      .chat-container[hidden] { display: none; }
+
+      .ai-pitch {
+        display: grid;
+        width: 100%;
+        max-width: 1000px;
+        margin: 0 auto;
+        padding-bottom: 44px;
+      }
+      #ai-pitch[hidden] { display: none; }
+
+      .ai-intro { text-align: center; margin: 4px auto 28px; max-width: 1000px; }
+      /* An h2, not an h1: the page's single h1 is the sr-only one at the top of <main>,
+       * because the studio is a full-height chat app with nowhere to put a visible
+       * heading. Sized like the other studios' h1 so it reads as the page title anyway. */
+      .ai-intro__title {
+        margin: 0 0 8px;
+        font-size: clamp(26px, 3.2vw, 38px);
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        color: var(--brand-deep);
+      }
+      .ai-intro__sub { margin: 0; color: var(--accent); font-size: 15px; line-height: 1.55; }
+      .ai-intro p.ai-intro__actions { margin: 18px 0 0; }
+      /* By id, so it outranks any `display` a later rule puts on the (0,2,1) selector
+       * above — and still loses to `html.ai-pro-pending #ai-hero-actions` (1,1,1). */
+      #ai-hero-actions[hidden] { display: none; }
+      .ai-intro__actions a { text-decoration: none; }
+      /* The site's default buttons shout in uppercase; on a studio page they read as tool
+       * controls, so use sentence case. `display: inline-flex` because the base .btn sets
+       * no display, and an inline <a class="btn"> paints its vertical padding outside the
+       * line box — the call to action lands on top of the paragraph above it. */
+      .ai-pitch .btn {
+        text-transform: none;
+        letter-spacing: normal;
+        font-weight: 600;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .ai-features-section { margin: 0; }
+      .ai-section__title {
+        margin: 0 0 16px;
+        text-align: center;
+        font-size: clamp(1.05rem, 1.9vw, 1.3rem);
+        font-weight: 700;
+        letter-spacing: -0.2px;
+        color: var(--brand-deep);
+      }
+      /* The one panel. The frosted recipe is inline here rather than borrowed from a
+       * `.ai-panel`, because this stylesheet has no such shared class — the studio's own
+       * surfaces are chat bubbles. Same values as .ms-panel and .ex-panel. */
+      .ai-board {
+        padding: 4px 10px 6px;
+        background: rgba(255, 255, 255, 0.5);
+        backdrop-filter: blur(16px) saturate(170%);
+        -webkit-backdrop-filter: blur(16px) saturate(170%);
+        border: 1px solid rgba(255, 255, 255, 0.55);
+        border-radius: 16px;
+        box-shadow: 0 14px 40px rgba(30, 58, 138, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+      }
+      .ai-features { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .ai-feature { padding: 22px 22px 24px; }
+      .ai-feature + .ai-feature { border-left: 1px solid rgba(37, 99, 235, 0.13); }
+      .ai-feature__title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0 0 7px;
+        font-size: 14.5px;
+        font-weight: 700;
+        color: var(--brand-deep);
+      }
+      /* `flex: 0 0 auto` because the SVG is a flex item and a long heading would squeeze it
+       * rather than wrap. The `data-lang` sits on a <span> beside the icon, never on the
+       * heading: language-loader writes textContent and would delete the icon. */
+      .ai-feature__icon { flex: 0 0 auto; color: var(--brand); }
+      .ai-feature__body { margin: 0; font-size: 13.5px; line-height: 1.6; color: var(--accent); }
+      .ai-honest {
+        margin: 0;
+        padding: 16px 22px 18px;
+        border-top: 1px solid rgba(37, 99, 235, 0.13);
+        font-size: 13.5px;
+        line-height: 1.6;
+        color: var(--accent);
+      }
+      .ai-honest__title { color: var(--brand-deep); font-weight: 700; }
+      /* A full stop rather than a free-standing separator glyph: it attaches to the words
+       * before it, so a wrap can never strand it on a line of its own. */
+      .ai-honest__title::after { content: "."; }
+      .ai-honest__body { margin: 0; }
+
+      @media (max-width: 780px) {
+        .ai-features { grid-template-columns: minmax(0, 1fr); }
+        /* The rule turns with the layout — a left border between stacked rows is a stray
+         * vertical tick down the side of the panel. */
+        .ai-feature + .ai-feature {
+          border-left: 0;
+          border-top: 1px solid rgba(37, 99, 235, 0.13);
+        }
+        .ai-feature { padding: 18px 20px; }
+      }

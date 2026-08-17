@@ -311,7 +311,7 @@ ESLint uses a flat config ([`eslint.config.js`](../../eslint.config.js)):
     that tree at load and lints any file with a top-level `export` or static `import … from`
     (browser globals). As classic `<script>` files migrate to ES modules they start being linted
     automatically — no config edit needed. Files with neither marker (the render-blocking gate
-    scripts like `masking-studio-gate.js`, and generated/vendor bundles like `demo-data.js`,
+    scripts like `preview-gate.js`, and generated/vendor bundles like `demo-data.js`,
     `vendor/*.min.js`) match no block and stay unlinted — currently 7 of the 75 files under
     `public/scripts/`; the other 68 are linted **and** type-checked.
 - **No blanket `public/**` ignore.** Only `node_modules`, `ds-bundle`, `supademo-local`,

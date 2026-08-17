@@ -2,13 +2,15 @@ import { syncRemoveFurnitureRow } from './app/remove-furniture-gate.js';
 import { syncStagingMenu } from './staging-menu.js';
 import { syncGalleryTab } from './gallery-tab.js';
 import { syncExteriorAccess } from './exterior-studio/access.js';
+import { syncMaskingStudioAccess } from './masking-studio/access.js';
+import { syncDesignerAccess } from './ai-designer/access.js';
 import { syncPlusRail } from './app/plus-rail.js';
 
 (function () {
   var TOKEN_KEY = 'stagifyAuthToken';
   // Last known plan ('pro' | 'free'), mirrored into storage purely so a render-blocking
   // head script can read it BEFORE paint — /api/auth/me is a round trip away, which is a
-  // whole paint too late for a page that has to choose a shape (exterior-studio-gate.js).
+  // whole paint too late for a page that has to choose a shape (scripts/preview-gate.js).
   // It is a cache, never a fact: nothing may authorize on it, and the server gate
   // (requireProAccount) is what actually decides. Written by setUser() below, and only
   // there, so sign-out and an expired token both drop it on the floor with the token.
@@ -183,12 +185,18 @@ import { syncPlusRail } from './app/plus-rail.js';
       // again, and that is the branch that runs when it does.
       syncGalleryTab();
 
-      // The Exterior Studio page, which shows one of three views on a single URL
-      // (pitch / pitch + upgrade dialog / the tool). Like the three writers above it
-      // is idempotent and no-ops on every page that has no studio in it — and like
-      // syncGalleryTab it is called BEFORE the early return below, because signing OUT
-      // has to put the public pitch back.
+      // The PREVIEW pages, each of which shows one of three views on a single URL
+      // (pitch for anonymous, the same pitch for free, the tool for Stagify+). Like the
+      // three writers above they are idempotent and no-op on every page that is not
+      // theirs — and like syncGalleryTab they are called BEFORE the early return below,
+      // because signing OUT has to put the public pitch back.
+      //
+      // One line per page rather than a loop: each writer is bound to its own element
+      // ids at module load (createPreviewAccess), and a registry would put the ids one
+      // indirection away from the page that owns them for no saving at four entries.
       syncExteriorAccess();
+      syncMaskingStudioAccess();
+      syncDesignerAccess();
 
       // The "What Stagify+ could add" rail at the foot of the staging toolbar — the
       // inverse of the pro panel below, and the reason it is called up here with the

@@ -41,7 +41,7 @@ const REVEAL_JS = read('public', 'scripts', 'home-reveal.js');
 const ENGLISH = JSON.parse(read('public', 'languages', 'english.json'));
 
 /** Every data-lang key the section carries, in the order the strips use them. */
-const LEARN_KEYS = ['home.info.title', 'home.info.subtitle'];
+const LEARN_KEYS = ['home.info.title'];
 for (const row of ['why', 'how', 'who', 'team']) {
   for (const part of ['eyebrow', 'title', 'body', 'caption', 'p1', 'p2', 'p3']) {
     LEARN_KEYS.push(`home.info.rows.${row}.${part}`);

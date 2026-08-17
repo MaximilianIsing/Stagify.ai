@@ -108,6 +108,14 @@ globalThis.sessionStorage = /** @type {any} */ ({
   setItem(k, v) { this.store[k] = String(v); },
   removeItem(k) { delete this.store[k]; },
 });
+// Where the console keeps its session token. Empty at import, so the boot IIFE that
+// resumes a stored session finds nothing and this file starts signed out.
+globalThis.localStorage = /** @type {any} */ ({
+  store: /** @type {Record<string, string>} */ ({}),
+  getItem(k) { return k in this.store ? this.store[k] : null; },
+  setItem(k, v) { this.store[k] = String(v); },
+  removeItem(k) { delete this.store[k]; },
+});
 /** @type {(url: string) => Promise<any>} */
 let fetchImpl = async () => { throw new Error('no fetch stub'); };
 globalThis.fetch = /** @type {any} */ ((url) => fetchImpl(String(url)));
@@ -206,15 +214,17 @@ test('an expired session raises an error toast and the sign-out it accompanies d
   const realNow = Date.now;
   const realError = console.error;
   const t0 = 1_800_000_000_000;
+  const TTL = 30 * 24 * 60 * 60 * 1000;
+  const TOKEN = 'sess-token-for-the-expiry-test';
   let now = t0;
   Date.now = () => now;
   console.error = () => {};
 
   try {
-    // Sign in: only the key probe succeeds, so loadAll() bails in its own catch
+    // Sign in: only the session mint succeeds, so loadAll() bails in its own catch
     // instead of dragging the whole render pass into this test.
     fetchImpl = async (url) => {
-      if (url === '/api/admin/ping') return { ok: true };
+      if (url === '/api/admin/session') return { ok: true, json: async () => ({ token: TOKEN, expiresAt: t0 + TTL }) };
       throw new Error('offline');
     };
     adminDom.querySelector('#adm-key').value = 'test-endpoint-key';
@@ -222,11 +232,15 @@ test('an expired session raises an error toast and the sign-out it accompanies d
     assert.equal(submits.length, 1, 'admin.js should have wired the login form');
     await captureToasts(() => { submits[0]({ preventDefault() {} }); });
 
-    assert.equal(sessionStorage.getItem('adm_ts'), String(t0), 'sign-in should start the session clock');
+    assert.equal(localStorage.getItem('adm_session'), TOKEN, 'sign-in should store the minted session');
+    assert.equal(localStorage.getItem('adm_session_exp'), String(t0 + TTL), 'and the expiry it came with');
     assert.equal(adminDom.querySelector('#adm-dash').classList.contains('hidden'), false);
 
-    // Walk past the one-hour timeout, then make any authed request.
-    now = t0 + 61 * 60 * 1000;
+    // Walk past the token's expiry, then make any authed request. NOTE there is
+    // deliberately no idle timeout any more: a 30-day session that signed you out
+    // after an hour of the tab sitting open would reintroduce exactly the friction
+    // it exists to remove. Only the real expiry does this.
+    now = t0 + TTL + 1000;
     const toasts = await captureToasts(() => { adminDom.querySelector('#adm-refresh').click(); });
 
     assertErrorToast(toasts, 'Session expired. Please sign in again.');
@@ -235,11 +249,11 @@ test('an expired session raises an error toast and the sign-out it accompanies d
     assert.equal(adminDom.querySelector('#adm-dash').classList.contains('hidden'), true, 'the dashboard should be hidden');
     assert.equal(adminDom.querySelector('#adm-login').style.display, '', 'the login form should be shown again');
     assert.equal(adminDom.querySelector('#adm-key').value, '');
-    assert.equal(sessionStorage.getItem('adm_ts'), null, 'the session clock should be cleared');
+    assert.equal(localStorage.getItem('adm_session'), null, 'the stored session should be cleared');
     assert.equal(toasts[0].parent, adminDom.getElementById('toast-host'));
 
-    // The clock is cleared before the toast, so the eight sibling requests in the
-    // same loadAll() burst re-enter checkSessionTimeout and no-op: still one toast.
+    // The expiry is cleared before the toast, so the eight sibling requests in the
+    // same loadAll() burst re-enter checkSessionExpiry and no-op: still one toast.
     const more = await captureToasts(() => { adminDom.querySelector('#adm-refresh').click(); });
     assert.equal(more.length, 1, 'a signed-out dashboard must not keep re-toasting');
   } finally {

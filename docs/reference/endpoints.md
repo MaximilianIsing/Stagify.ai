@@ -45,8 +45,13 @@ three buckets — keep `robots.txt` and the canonical/sitemap in sync when addin
 - **Indexable** — carries `<meta name="robots" content="index, follow">` **and** a
   `sitemap.xml` entry whose `<loc>` matches its `rel="canonical"`. These are the
   marketing/product/legal pages: `/`, `ai-designer.html`, `masking-studio.html`,
-  `stagify-plus.html`, `enterprise.html`, `guides.html`, `contact.html`, `/status`,
-  `privacy.html`, `terms.html`. Each is **served in 11 languages at its own URL** (`/`
+  `exterior-studio.html`, `basic-mask.html`, `stagify-plus.html`, `enterprise.html`,
+  `guides.html`, `contact.html`, `/status`, `privacy.html`, `terms.html`. The first four
+  are Stagify+ tools and are indexable **because** they no longer redirect a visitor
+  without a token — each shows a public pitch or the tool on the same URL, which is what
+  makes the canonical/hreflang work on them worth anything (see
+  [`frontend.md`](../guides/frontend.md#paid-pages-reshape-they-do-not-redirect)).
+  Each is **served in 11 languages at its own URL** (`/`
   English + `/<lang>/…` for the other 10) with a self-referential canonical, a full
   `hreflang` cluster (all languages + `x-default`), and one sitemap `<url>` per language
   carrying `xhtml:link` alternates — all driven by `lib/i18n/locales.js` (see
@@ -329,7 +334,7 @@ object backend is active; in production nothing serves render bytes from this pr
 | `POST` | `/api/log-contact` | **Body:** JSON with `userRole`, `referralSource`, `email`, `userAgent` (and similar). Appends a row to `contact_logs.csv` and bumps an in-memory contact counter. Returns `{ success: true }`. |
 | `POST` | `/api/send-email` | **Protected by server access key:** the **`X-Stagify-Endpoint-Key` header** must match `endpointkey.txt` or `process.env.endpoint_key` (`LOGS_ACCESS_KEY`), compared in constant time (a key in `?key=`/`body.key` is refused — it would leak via access logs, proxies, browser history, and `Referer`). **Body:** `to`, `subject`, `text` (Resend). Returns `403` if key wrong/missing, `500` if no Resend, etc. |
 | `GET` | `/api/health` | **Public.** `{ status, timestamp, aiConfigured: boolean }` (and similar). Also registered as `GET /health` (same handler). |
-| `GET` | `/api/status` | **Public.** Uptime/status snapshot for the `/status` page. `Cache-Control: no-store`. Returns `{ status, currentState, monitoringSince, lastBeat, lastCheckedMsAgo, bootCount, windows: { '24h','7d','30d': { uptimePct, downMs, monitoredMs, coverage, incidents } }, buckets: { '24h'(48), '7d'(56): [{ start, end, state, uptimePct }] }, incidents: [{ start, end, durationMs, cause }], totalIncidents }`. Computed by `lib/data/uptime-monitor.js` from a heartbeat written every 60s to the `uptime_state` row in `auth-store.db`; downtime is inferred from heartbeat gaps detected on restart. `uptimePct` is `null` for a window with no monitored coverage yet. |
+| `GET` | `/api/status` | **Public.** Uptime/status snapshot for the `/status` page. `Cache-Control: no-store`. Returns `{ status, currentState, monitoringSince, lastBeat, lastCheckedMsAgo, bootCount, windows: { '24h','7d','30d': { uptimePct, downMs, monitoredMs, coverage, incidents } }, buckets: { '24h'(48), '7d'(56): [{ start, end, state, uptimePct }] }, incidents: [{ start, end, durationMs, cause, source, ongoing, affectsUptime }], totalIncidents }`. Computed by `lib/data/uptime-monitor.js` from a heartbeat written every 60s to the `uptime_state` row in `auth-store.db`; downtime is inferred from heartbeat gaps detected on restart, **plus** any incident an operator posted from the admin console (`source: 'manual'`, and `ongoing: true` while unresolved — see [`admin-dashboard.md`](../guides/admin-dashboard.md#server-status-tab)). An unresolved posted outage sets `currentState: 'down'`, so the public banner reports the disruption. `uptimePct` is `null` for a window with no monitored coverage yet. |
 | `GET` | `/api/prompt-count` | Returns `{ promptCount }` (server-side counter, used for hero “Rooms staged” type stats). In-memory, **seeded at boot** by counting the records in `prompt_logs.csv` — see [`data-stores.md`](data-stores.md#csv-logs-append-only). |
 | `GET` | `/api/contact-count` | Returns `{ contactCount, userCount, usersServed }` where `usersServed = contactCount + registered user count` (the hero "users served" stat). Under `STATS_DEBUG` returns only `{ usersServed: DEBUG_USERS }`. |
 
@@ -401,13 +406,21 @@ Notes that bite:
 
 These routes use **`protectLogs`**: a shared secret `LOGS_ACCESS_KEY` from `endpointkey.txt` or `process.env.endpoint_key`, supplied in the **`X-Stagify-Endpoint-Key` header** — **never** the query string (a key in the URL leaks via access logs, proxies, browser history, and `Referer`). **If the server has no key configured:** `500`. **If the header is missing/invalid:** `403`.
 
+`protectLogs` — and *only* `protectLogs` — also accepts an admin-console **session token** in the `X-Stagify-Admin-Session` header (`POST /api/admin/session` above). It is header-only for the same reason the key is, so these routes stay unreachable by anything a browser sends on its own. The token does **not** open `/api/stage-by-endpoint-key`, `POST /api/getpro` or `POST /api/send-email`: those compare the key itself.
+
 The same `LOGS_ACCESS_KEY` authenticates several endpoints. All of them now take it via the **same** transport — the `X-Stagify-Endpoint-Key` header, compared in constant time; a key in `?key=`/`body.key` is refused (it would leak via access logs, proxies, browser history, and `Referer`):
 
 - **`protectLogs`** routes below, **`POST /api/getpro`**, **`POST /api/stage-by-endpoint-key`**, and **`POST /api/send-email`** — `X-Stagify-Endpoint-Key` header **only**.
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `GET` | `/api/admin/ping` | `{ ok: true }`. Exists so the `/admin` sign-in screen can validate a key without fetching a data endpoint. No payload, but still key-gated — it is an oracle for the admin key. |
+| `GET` | `/api/admin/ping` | `{ ok: true }`. No payload, but still gated — it is an oracle for the admin credential. The console calls it on load to check a stored session token before revealing the dashboard. |
+| `POST` | `/api/admin/session` | Exchange `endpoint_key` for a console session: `{ token, expiresAt }`, 30 days, sliding. **Key-only** (`requireEndpointKey`) — a session token cannot mint another, or revoking one would be meaningless. `503` if the store is unavailable. See [`lib/data/admin-sessions.js`](../../lib/data/admin-sessions.js). |
+| `DELETE` | `/api/admin/session` | Sign out: revokes the token in the `X-Stagify-Admin-Session` header. Body `{ all: true }` (with the key) revokes **every** session — the lost-laptop lever. Returns `{ ok, revoked }`; an unknown token is `revoked: 0`, not an error. |
+| `GET` | `/api/admin/status` | The admin server-status snapshot: everything `/api/status` returns, plus the 30-day graph, the operator-posted entries as their own list, and the monitor's configuration. Separate from the public route because that one is polled by every visitor to `/status`. `Cache-Control: no-store`. |
+| `POST` | `/api/admin/incidents` | Post an incident by hand: `{ title, start?, end?, affectsUptime }` → `201 { incident }`. `end` omitted means **ongoing**; `affectsUptime` decides whether it moves the uptime percentages. It appears in **Recent incidents** on the public status page. A `400` carries a message written for the operator. See [`admin-dashboard.md`](../guides/admin-dashboard.md#server-status-tab). |
+| `POST` | `/api/admin/incidents/:id/resolve` | Close an ongoing incident at now. `404` if unknown. |
+| `DELETE` | `/api/admin/incidents/:id` | Delete a posted incident — it leaves the public page immediately. `404` if unknown. |
 | `GET` | `/authstore` | Live **redacted** user list (`{ users: [...] }`) via `exportRedacted()`, streamed as `auth-store.json`. Carries only the fields the dashboard renders — id, email, plan, createdAt, usage, `googleSub`, Stripe ids, grant timestamps, plus the trial fields `lifetimeStaged`, `lastStagedAt` and a **projected** `trialLifecycle` (`{ startAt, sent: { welcome, activation, value, ending, canceled } }`). Still sensitive (every customer email), hence the key. **It deliberately does NOT carry credentials.** `exportRedacted` uses an *allowlist*, so a new field added to `extra_json` is withheld until someone adds it there on purpose — and `trialLifecycle` is projected key-by-key rather than listed in that allowlist, so anything a future feature parks *inside the bag* is withheld too. |
 | `GET` | `/promptlogs` | Download `prompt_logs.csv` (or `404` if missing). |
 | `GET` | `/contactlogs` | Download `contact_logs.csv`. |
@@ -429,7 +442,7 @@ The same `LOGS_ACCESS_KEY` authenticates several endpoints. All of them now take
 | `POST` | `/api/admin/email-test-send` | Body `{ id, email }`. Sends a live `[Test] <subject>` copy of catalog email `id` to `email` (the exact address given — no `EMAIL_DEBUG_MODE` redirect). `400` on a missing/invalid id or email; `503` if Resend is unconfigured. The recipient address is never logged. |
 | `GET` | `/memories` | Download AI Designer `memories` JSON. |
 | `POST` | `/resetmemories` | **Clears** every user's AI Designer memories. Returns JSON success. **`POST`, not `GET`** — it mutates, so a retried or replayed request must not be able to wipe again; `GET` answers `405` with `Allow: POST` (behind the same key, so an unkeyed caller still just gets `403`). Matches `POST /api/status/reset`. |
-| `POST` | `/api/status/reset` | **Wipes** all recorded uptime history/incidents and restarts monitoring from now, via `uptimeMonitor.reset()` (rewrites the `uptime_state` row in `auth-store.db`). Backs the admin "Reset server status data" button and changes the public `/status` page immediately. Returns `{ success: true, message, snapshot }`. |
+| `POST` | `/api/status/reset` | **Wipes** all recorded uptime history, detected incidents **and operator-posted ones**, and restarts monitoring from now, via `uptimeMonitor.reset()` (rewrites the `uptime_state` row in `auth-store.db`). Backs the admin "Reset server status data" button and changes the public `/status` page immediately. Returns `{ success: true, message, snapshot }`. |
 
 `POST` `/api/send-email` uses the **same** `LOGS_ACCESS_KEY` (see above), not only for logs.
 
@@ -437,7 +450,7 @@ The same `LOGS_ACCESS_KEY` authenticates several endpoints. All of them now take
 
 ## Admin dashboard & image hosting
 
-The admin dashboard (`admin.html`) collects the `LOGS_ACCESS_KEY` client-side and calls these image-hosting APIs (and the log exports above) with the `X-Stagify-Endpoint-Key` header. Hosted images are served publicly at `GET /i/:id` (see Public pages).
+The admin dashboard (`admin.html`) collects the `LOGS_ACCESS_KEY` client-side once, exchanges it for a session token, and calls these image-hosting APIs (and the log exports above) with the `X-Stagify-Admin-Session` header. Hosted images are served publicly at `GET /i/:id` (see Public pages).
 
 **Comp Stagify+ grants.** In the **Users** tab, expanding a row shows a *Stagify+ Grant* section ([`public/scripts/admin/grant.js`](../../public/scripts/admin/grant.js)) that calls `POST /api/admin/grant-plus` / `revoke-plus` above. It renders one of four states: a free account gets a *Grant 1 month of Stagify+* button; a running grant shows its end date plus *Revoke now*; a Stripe subscriber and an enterprise-covered account are read-only. Nothing here touches Stripe — the grant expires on its own (see [`data-stores.md`](data-stores.md)), so there is no follow-up action to remember.
 

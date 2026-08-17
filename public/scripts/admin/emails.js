@@ -47,7 +47,9 @@ export function createEmailsPanel({ apiSend }) {
   function frameDoc(html) {
     return '<!doctype html><html><head><meta charset="utf-8">' +
       '<meta name="viewport" content="width=device-width, initial-scale=1"></head>' +
-      '<body style="margin:0;background:#ffffff">' + html + '</body></html>';
+      // flow-root, so a first child with a top margin cannot collapse it through
+      // <body> — that collapse is what made the measured height come up short.
+      '<body style="margin:0;background:#ffffff;display:flow-root">' + html + '</body></html>';
   }
 
   function card(email) {
@@ -77,9 +79,24 @@ export function createEmailsPanel({ apiSend }) {
     frame.addEventListener('load', function () {
       try {
         var doc = frame.contentDocument;
-        if (doc && doc.body) {
-          var h = Math.min(900, Math.max(160, doc.body.scrollHeight + 8));
+        if (!doc || !doc.body) return;
+        var fit = function () {
+          // body, not documentElement: documentElement.scrollHeight is floored at
+          // the iframe's own height, so measuring it lets the frame grow and never
+          // shrink — every preview then sits at the CSS default with dead space
+          // under a two-line email. frameDoc's `display:flow-root` is what makes
+          // the body measurement trustworthy.
+          var h = Math.min(900, Math.max(120, doc.body.scrollHeight + 8));
           frame.style.height = h + 'px';
+        };
+        fit();
+        // A first measurement can only see what has loaded. Logos and webfont
+        // metrics land after it, so re-fit as the document settles rather than
+        // freezing the height at whatever the first frame happened to be.
+        if (typeof ResizeObserver === 'function') new ResizeObserver(fit).observe(doc.body);
+        var imgs = doc.images || [];
+        for (var i = 0; i < imgs.length; i++) {
+          if (!imgs[i].complete) imgs[i].addEventListener('load', fit, { once: true });
         }
       } catch (e) { /* opaque frame — keep the CSS default height */ }
     });

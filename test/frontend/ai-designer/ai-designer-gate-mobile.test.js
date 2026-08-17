@@ -56,10 +56,18 @@ function matchMediaFor(width) {
  * @param {{ width?: number, pathname?: string, token?: string|null, matchMedia?: any }} opts
  * @returns {{ redirects: string[], html: { className: string }, timers: number[] }}
  */
-function runGate({ width = 1440, pathname = '/ai-designer.html', token = null, matchMedia } = {}) {
+function runGate({ width = 1440, pathname = '/ai-designer.html', token = null, plan = null, matchMedia } = {}) {
   const redirects = [];
   const timers = [];
-  const html = { className: '', classList: { contains: (c) => html.className.split(' ').includes(c) } };
+  const html = {
+    className: '',
+    classList: {
+      contains: (c) => html.className.split(' ').includes(c),
+      remove: (c) => {
+        html.className = html.className.split(/\s+/).filter(Boolean).filter((x) => x !== c).join(' ');
+      },
+    },
+  };
 
   const win = {
     location: { replace: (target) => redirects.push(String(target)) },
@@ -67,12 +75,19 @@ function runGate({ width = 1440, pathname = '/ai-designer.html', token = null, m
     matchMedia: matchMedia === undefined ? matchMediaFor(width) : matchMedia,
   };
   const doc = { documentElement: html };
-  const storage = { getItem: () => token };
-  const timeout = (fn, ms) => { timers.push(ms); return timers.length; };
+  // KEYED, not a single value. This used to answer every read with `token`, which was fine
+  // while the gate only ever asked whether a token existed. It now also reads
+  // `stagifyPlan`, and a stub that hands back 'tok-pro' for both would report the plan as
+  // 'tok-pro' — never equal to 'pro', so the pre-paint branch could not be reached at all
+  // and three tests would have been asserting the absence of a feature.
+  const store = { stagifyAuthToken: token, stagifyPlan: plan };
+  const storage = { getItem: (k) => (k in store ? store[k] : null) };
+  const timers2 = [];
+  const timeout = (fn, ms) => { timers.push(ms); timers2.push(fn); return timers.length; };
 
   const run = new Function('window', 'document', 'location', 'localStorage', 'setTimeout', gateSource);
   run(win, doc, { pathname }, storage, timeout);
-  return { redirects, html, timers };
+  return { redirects, html, timers, fire: () => timers2.forEach((fn) => fn()) };
 }
 
 // ── the PC-only rule ─────────────────────────────────────────────────────────
@@ -113,24 +128,49 @@ test('768px is inside the rule and 769px is outside it', () => {
 
 // ── the desktop half, so the guard above cannot pass by redirecting everyone ──
 
-test('a desktop Pro visitor still reaches the studio', () => {
-  const { redirects, html, timers } = runGate({ width: 1440, token: 'tok-pro' });
-  assert.deepEqual(redirects, [], 'no redirect for a desktop visitor with a token');
-  assert.ok(html.className.includes('ai-gate-pending'), 'the page hides until the plan check answers');
-  assert.deepEqual(timers, [6000], 'and the stall-safety timer is armed');
+test('a desktop visitor with a cached Stagify+ plan gets the studio pre-painted', () => {
+  // The class RESHAPES now; it used to HIDE. `ai-gate-pending` put
+  // `body{visibility:hidden}` over the whole page until the plan check answered, and
+  // redirected if it never did. `ai-pro-pending` hides only the pitch, which is why the
+  // timer below can simply drop it instead of bouncing anyone.
+  const g = runGate({ width: 1440, token: 'tok', plan: 'pro' });
+  assert.deepEqual(g.redirects, [], 'no redirect for a desktop visitor');
+  assert.ok(g.html.className.includes('ai-pro-pending'), 'the subscriber must never see the pitch');
+  assert.deepEqual(g.timers, [6000], 'and the stall-safety timer is armed');
+
+  g.fire();
+  assert.ok(!g.html.className.includes('ai-pro-pending'), 'a stalled check restores the public page');
+  assert.deepEqual(g.redirects, [], 'and still does not bounce anyone');
 });
 
-test('a desktop signed-out visitor still bounces to the homepage demo', () => {
-  const { redirects } = runGate({ width: 1440, token: null });
-  assert.deepEqual(redirects, ['index.html#ai-designer-demo'], 'the Stagify+ gate is unchanged');
+test('a desktop signed-out visitor STAYS — this page has a public view now', () => {
+  // The regression this replaces: the gate used to `location.replace` anyone without a
+  // token to index.html#ai-designer-demo, so the page written to explain the tool was
+  // never shown to the people it was written for, and Googlebot (which carries no token
+  // either) was bounced with them. Asserted as a negative, so it is paired below with the
+  // positive that the desktop pre-paint still works — "no redirect" passes just as
+  // happily on a gate that has stopped doing anything at all.
+  const g = runGate({ width: 1440, token: null });
+  assert.deepEqual(g.redirects, [], 'a signed-out desktop visitor gets the pitch, not the homepage');
+  assert.deepEqual(g.timers, [], 'nothing armed, so nothing to unwind');
+  g.fire();
+  assert.deepEqual(g.redirects, [], 'and no timer bounces them a moment later either');
+});
+
+test('a signed-in FREE desktop visitor stays too, and gets no pre-paint', () => {
+  // The shipped markup is already their page; arming the class would hide the pitch on a
+  // page whose tool they cannot use.
+  const g = runGate({ width: 1440, token: 'tok', plan: 'free' });
+  assert.deepEqual(g.redirects, []);
+  assert.equal(g.html.className, '');
 });
 
 test('a browser with no matchMedia fails OPEN', () => {
-  // Locking a paying desktop user out of a tool because their browser cannot be
-  // measured is the worse failure. The plan gate below still applies.
-  const { redirects, html } = runGate({ matchMedia: null, token: 'tok-pro' });
+  // Locking a paying desktop user out of a tool because their browser cannot be measured
+  // is the worse failure. The plan gate on the chat routes still applies.
+  const { redirects, html } = runGate({ matchMedia: null, token: 'tok', plan: 'pro' });
   assert.deepEqual(redirects, []);
-  assert.ok(html.className.includes('ai-gate-pending'));
+  assert.ok(html.className.includes('ai-pro-pending'));
 });
 
 // ── the couplings that live in other files ───────────────────────────────────

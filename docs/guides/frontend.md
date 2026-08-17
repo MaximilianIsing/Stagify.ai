@@ -508,9 +508,15 @@ duplication rather than showing up in one config file. A synchronous `<script sr
 `<head>` stops HTML parsing until it is fetched and executed, which also delays
 discovery of the stylesheet links below it.
 
-Exactly three scripts are allowed to do that, because they gate or redirect before
-anything paints: `ai-designer-gate.js`, `masking-studio-gate.js`, `faq-redirect.js`.
-Everything else in a `<head>` carries `defer`, `async`, or is a module.
+A short allow-list is permitted to do it, because each has to act before anything paints:
+`ai-designer-gate.js` and `gallery-gate.js` (viewport redirects), `faq-redirect.js` (a
+meta-refresh stub), `preview-gate.js` (applies the cached-Pro page shape — see *Paid pages
+RESHAPE* below), and `session-class.js` (sets `html.has-session` so the nav's Gallery tab
+does not pop in a round trip late). Everything else in a `<head>` carries `defer`, `async`,
+or is a module. The list lives in
+[`head-scripts.test.js`](../../test/frontend/head-scripts.test.js), each entry with its
+reason, and it has been shrinking: `masking-studio-gate.js` and `exterior-studio-gate.js`
+were both on it and are gone.
 
 The Google Ads tag (`scripts/gtag.js`) was the exception that proved the rule: it sat
 synchronous and **first** in `<head>` on all 19 public pages, ahead of every stylesheet
@@ -664,30 +670,69 @@ its only caller), so adopting the pattern elsewhere needs no JS change: mark the
 fallback across as well** — the flip is the only thing that ever loads those sheets, so
 without it a no-JS visitor gets none of them.
 
-**FOUC auth gates.** `ai-designer.html` and `masking-studio.html` carry a one-line inline
-`<style>html.<x>-gate-pending body{visibility:hidden!important}</style>`. The gate script
-([`ai-designer-gate.js`](../../public/scripts/ai-designer-gate.js) /
-[`masking-studio-gate.js`](../../public/scripts/masking-studio-gate.js)) adds that class
-before paint so a non-Pro visitor never flashes the studio, and the entry script removes
-it once access is verified (with a ~6s safety-net redirect if the plan check stalls).
-This one style **must** stay inline — it has to apply before any external CSS loads.
+### Paid pages RESHAPE, they do not redirect
 
-**The Exterior Studio deliberately has NO gate**, and it is worth understanding why before
-adding one "for consistency". A pre-paint redirect turns away everyone without a token —
-and **Googlebot carries no token**, so `masking-studio.html` and `ai-designer.html` bounce
-the crawler despite both having a full canonical / hreflang / JSON-LD setup. That SEO work
-currently earns nothing. `exterior-studio.html` instead ships in its *anonymous* state and
-changes shape once `/api/auth/me` answers
-([`exterior-studio/access.js`](../../public/scripts/exterior-studio/access.js)): a visitor
-gets the pitch, a signed-in free account gets the pitch plus an upgrade dialog, and a
-Stagify+ account gets the tool. There is no FOUC problem because the default state is the
-one a stranger should see — the *studio* is what appears late, not the page.
+Every Stagify+ page used to load a render-blocking `*-gate.js` that `location.replace`d
+anyone without a token, plus a one-line inline
+`<style>html.<x>-gate-pending body{visibility:hidden!important}</style>` that hid the whole
+document until the plan check answered. It worked as an affordance and was a terrible front
+door: **Googlebot carries no token either**, so those pages bounced the crawler despite a
+full canonical / hreflang / JSON-LD setup — the SEO work earned nothing — and a curious
+visitor who clicked the tool in the nav was answered with a pricing table rather than with
+what the tool does.
 
-None of that is a security boundary. `requireProAccount` on `POST /api/enhance-exterior`
-is; revealing controls is an affordance. The pairing is pinned by the
-`data-staging-preview` guard in
-[`test/frontend/staging-menu.test.js`](../../test/frontend/staging-menu.test.js), which
-fails if that page ever grows a blocking `*-gate.js`.
+Four pages now show one of three views on a **single URL** instead:
+
+| | anonymous | signed-in free | Stagify+ |
+|---|---|---|---|
+| `exterior-studio.html` | pitch + CTA | *the same page* | the studio |
+| `masking-studio.html` | pitch + CTA | *the same page* | the studio |
+| `ai-designer.html` | pitch + CTA | *the same page* | the studio |
+| `basic-mask.html` | pitch + CTA | *the same page* | an "Open Basic Mask" button |
+
+Free deliberately gets the **same page** as anonymous. Both studios used to raise a
+full-screen, undismissable "this is a Stagify+ feature" dialog instead, which fired the
+moment somebody created an account — so for a new account it was the first thing the
+product ever said — and it covered the very copy meant to do the selling. Do not re-add
+one; the hero's "Get Stagify+ to use it" button is the whole ask.
+
+Three pieces, and each page names its own ids:
+
+- [`preview-access.js`](../../public/scripts/preview-access.js) — the pure predicate
+  (`previewView`), one idempotent writer (`applyPreviewView`), the factory that binds them
+  to a page (`createPreviewAccess`), and `settlePreview`, which is the paint-wait-paint
+  dance every entry point does around `/api/auth/me`.
+- [`preview-gate.js`](../../public/scripts/preview-gate.js) — one render-blocking classic
+  script, mounted as `<script src="scripts/preview-gate.js"
+  data-pending-class="ms-pro-pending">`. It reads the plan `auth.js` cached last visit and
+  pre-applies the Pro shape before first paint, so a subscriber never watches the pitch
+  paint and vanish a round trip later. It **never navigates**.
+- a per-page `<x>/access.js` (four lines) binding the ids, imported by `auth.js` so
+  `applyUserToUI()` re-runs it on every auth change — signing OUT has to put the pitch back.
+
+`ai-designer.html` is the exception that still redirects, and only on **viewport**: the
+studio is a desktop layout, so `ai-designer-gate.js` sends ≤768px to the home page before
+anything else runs. It therefore cannot mount the shared gate (which never navigates) and
+carries that file's body inline after its width check. The known cost is that a phone never
+reaches its pitch, so that preview earns nothing from mobile search; revisit together with
+the desktop-only decision, not on its own.
+
+The pre-paint class must switch **`display`, never `visibility`** — `styles.css`'s i18n
+anti-FOUC rule (`body.language-loaded [data-lang] { visibility: visible }`, specificity
+(0,2,1)) matches every translatable element and would silently un-hide it again — and each
+selector needs an **id**, or it ties with `[hidden]` and loses on source order.
+
+None of it is a security boundary. `requireProAccount` on each render route is; revealing
+controls is an affordance, and nothing may authorize on the cached plan. Three guards hold
+the arrangement together:
+[`preview-access.test.js`](../../test/frontend/preview-access.test.js) sweeps all four
+bindings against the shipped markup,
+[`preview-gate.test.js`](../../test/frontend/preview-gate.test.js) runs the gate's real
+source and asserts it never touches `location`, and the `data-staging-preview` guard in
+[`test/frontend/staging-menu.test.js`](../../test/frontend/staging-menu.test.js) *runs* each
+preview page's head gate as a signed-out desktop visitor and fails if it navigates. That
+last one is behavioural rather than a source scan precisely because of the AI Designer: a
+grep for `location.replace` cannot tell a viewport redirect from an auth redirect.
 
 ### `var` is an extraction artifact — sweep it, don't pick at it
 

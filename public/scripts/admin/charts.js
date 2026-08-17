@@ -34,8 +34,16 @@ const VB_W = 1000;
 // the second chart pointing at a detached gradient once the first is replaced.
 let gradSeq = 0;
 
-/** Series colors, in the order a multi-slice chart consumes them. */
-export const PALETTE = ['#2563eb', '#7c3aed', '#16a34a', '#d97706', '#db2777', '#0891b2', '#dc2626', '#64748b'];
+/**
+ * Series colors, in the order a multi-slice chart consumes them.
+ *
+ * One band of lightness and chroma, so no slice shouts over its neighbours and a
+ * donut reads as one figure — the previous set mixed a saturated pure blue with a
+ * near-black red and a grey, which ranked the categories by hue rather than value.
+ * The same eight are declared as `--adm-t-*` in styles/admin.css for the DOM-side
+ * chart furniture (stat-card icons, ranked bars); keep the two lists in step.
+ */
+export const PALETTE = ['#3b62d9', '#8557d9', '#0e9b8e', '#cf8a25', '#d1467a', '#2b8fb3', '#cf4040', '#7b8494'];
 
 /**
  * @param {string} tag
@@ -358,7 +366,7 @@ export function donutChart(slices, opts = {}) {
   const stroke = 26;
 
   const root = svg('svg', { viewBox: '0 0 ' + size + ' ' + size, class: 'adm-donut-svg', role: 'img' });
-  root.appendChild(svg('circle', { cx, cy, r, fill: 'none', stroke: '#eef2f7', 'stroke-width': stroke }));
+  root.appendChild(svg('circle', { cx, cy, r, fill: 'none', stroke: '#eef0f4', 'stroke-width': stroke }));
 
   let angle = -Math.PI / 2;
   data.forEach((d, i) => {
@@ -508,7 +516,7 @@ export function cohortGrid(data) {
         td.className = 'adm-cohort-cell';
         // Opacity, not a hue ramp: one channel, so the eye reads intensity as
         // magnitude directly. Floor it so a real 0% is still a visible cell.
-        td.style.background = 'rgba(37, 99, 235, ' + (cell.pct === 0 ? 0.05 : 0.12 + (cell.pct / 100) * 0.68).toFixed(3) + ')';
+        td.style.background = 'rgba(59, 98, 217, ' + (cell.pct === 0 ? 0.05 : 0.12 + (cell.pct / 100) * 0.68).toFixed(3) + ')';
         if (cell.pct >= 55) td.style.color = '#fff';
         td.textContent = Math.round(cell.pct) + '%';
         td.title = c.label + ' · month ' + i + ': ' + cell.active + ' of ' + c.size + ' active (' + cell.pct.toFixed(1) + '%)';

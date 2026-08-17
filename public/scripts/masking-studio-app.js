@@ -9,52 +9,26 @@ import { createLayersUi } from './masking-studio/layers-ui.js';
 import { createViewer } from './masking-studio/viewer.js';
 import { createUpload } from './masking-studio/upload.js';
 import { createGallerySave } from './masking-studio/gallery-save.js';
-import { localizedTarget } from './i18n-routing.js';
+import { syncMaskingStudioAccess as syncStudioAccess } from './masking-studio/access.js';
+import { settlePreview } from './preview-access.js';
 import { showToast } from './toast.js';
 import { createStampOption } from './mask/stamp-option.js';
 import { initStampStyleRow } from './app/stamp-style-row.js';
 
         // ---------------------------------------------------------------------
-        // Access gate: Masking Studio is Stagify+ only. Anonymous visitors were
-        // already redirected by the pre-paint head script; here we verify the
-        // plan. Pro users get the page revealed; signed-in free users get the
-        // page revealed *behind* the upgrade dialog.
+        // Access: this page is a PUBLIC PREVIEW. It shows one of three views on a
+        // single URL — pitch for anonymous, the same pitch for a signed-in free
+        // account, the tool for Stagify+ — and nobody is ever sent anywhere.
+        //
+        // It used to `location.replace` on four separate paths (no StagifyAuth, a
+        // failed fetchMe, an expired token, and the head gate's 9s timeout) and to
+        // throw a full-screen upgrade dialog at signed-in free accounts. All five
+        // are gone: every one of them turned a page that can explain itself into a
+        // redirect to a pricing table, including for Googlebot. See
+        // scripts/preview-access.js for the whole reasoning, and note that none of
+        // it is a security boundary — requireProAccount on the render routes is.
         // ---------------------------------------------------------------------
-        async function ensureStudioProAccess() {
-          // auth.js is a non-async module script earlier in masking-studio.html's
-          // document order, and it assigns window.StagifyAuth synchronously at top
-          // level — module scripts run in document order, so the global is already
-          // there. A missing global therefore means auth.js failed to load or threw,
-          // not that it is still coming; waiting cannot help. Bounce immediately.
-          if (!window.StagifyAuth) {
-            window.location.replace(localizedTarget('stagify-plus.html'));
-            return false;
-          }
-          try {
-            await window.StagifyAuth.fetchMe();
-          } catch (e) {
-            // Network failure verifying the plan — same treatment as no user.
-            window.location.replace(localizedTarget('stagify-plus.html'));
-            return false;
-          }
-          const u = window.StagifyAuth.user;
-          if (!u) {
-            // Token was present but invalid/expired.
-            window.location.replace(localizedTarget('stagify-plus.html'));
-            return false;
-          }
-          document.documentElement.classList.remove('ms-gate-pending');
-          if (u.plan !== 'pro') {
-            showProGate();
-            return false;
-          }
-          return true;
-        }
-
-        function showProGate() {
-          const gate = document.getElementById('ms-pro-gate');
-          if (gate) gate.classList.add('active');
-        }
+        const ensureStudioProAccess = () => settlePreview(syncStudioAccess);
 
         // ---------------------------------------------------------------------
         // "How it works" dialog
@@ -433,7 +407,11 @@ import { initStampStyleRow } from './app/stamp-style-row.js';
         // Generation: every painted area runs as its own parallel mask edit.
         // ---------------------------------------------------------------------
         function requestError(status, result) {
-          return _requestError(status, result, tx, showProGate);
+          // A 401/403 mid-session means the plan lapsed. The response is to re-shape the
+          // page — the writer hides the tool and puts the pitch back, because the visitor
+          // is a free account now — not to raise a dialog over a studio they can no longer
+          // use. That dialog is gone; see the note in masking-studio.html.
+          return _requestError(status, result, tx, syncStudioAccess);
         }
 
         // ---------------------------------------------------------------------

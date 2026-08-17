@@ -200,8 +200,12 @@ grouped into subdirectories by concern (full breakdown in
 
 Everything the browser loads is under `public/`:
 
-- **Pages:** `index.html` (the staging tool + marketing home), `ai-designer.html`,
-  `masking-studio.html`, `stagify-plus.html`, `plus-welcome.html` (post-checkout
+- **Pages:** `index.html` (the staging tool + marketing home), the four Stagify+
+  **public previews** — `ai-designer.html`, `masking-studio.html`,
+  `exterior-studio.html`, `basic-mask.html`, each showing a pitch or the tool on one URL
+  rather than redirecting a visitor without a token (see
+  [`guides/frontend.md`](guides/frontend.md#paid-pages-reshape-they-do-not-redirect)) —
+  `stagify-plus.html`, `plus-welcome.html` (post-checkout
   "Welcome to Stagify+" confirmation — the Stripe Payment Link's after-payment
   redirect target and the Google Ads conversion page), `enterprise.html`,
   `guides.html`, `contact.html`, `admin.html`, legal pages, `404.html` (served by

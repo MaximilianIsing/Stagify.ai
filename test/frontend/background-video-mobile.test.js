@@ -161,10 +161,17 @@ test('the phone backdrop replaces it, so the page is not left flat', () => {
   assert.match(rule, /cover/, 'backdrop must cover, matching the video\'s object-fit:cover');
 });
 
-test('the scoping page really is the only styles.css page without the video', () => {
+test('the styles.css pages without the video are the two that paint their own background', () => {
   // body:has(#background-video) is narrower than body on purpose. If another page ever
   // drops the <video> while keeping styles.css, that page silently loses its background
   // — this pins the assumption rather than leaving it implicit in a comment.
+  //
+  // Both entries here opt out deliberately and supply their own opaque canvas:
+  //   - reset-password.html: a bare form, no chrome at all.
+  //   - admin.html: the operator console. A tinted, blurred backdrop behind dense
+  //     tables and charts is exactly what its redesign removed, so `.page-admin`
+  //     sets `background: var(--adm-canvas)` and neither the video nor the phone
+  //     backdrop is wanted (styles/admin.css says the same at the top).
   const bare = fs
     .readdirSync(PUBLIC)
     .filter((f) => f.endsWith('.html'))
@@ -174,8 +181,17 @@ test('the scoping page really is the only styles.css page without the video', ()
     });
   assert.deepEqual(
     bare,
-    ['reset-password.html'],
+    ['admin.html', 'reset-password.html'],
     'the set of styles.css pages without a background video changed. Each new one gets '
       + 'no backdrop at all on phones — confirm that is intended, then update this list.',
+  );
+
+  // The opt-out is only safe while the page really does paint its own ground.
+  const adminCss = fs.readFileSync(path.join(PUBLIC, 'styles', 'admin.css'), 'utf8');
+  assert.match(
+    adminCss,
+    /\.page-admin\s*\{[^}]*background:\s*var\(--adm-canvas\)/,
+    'admin.html drops the video, so admin.css must give .page-admin an opaque background '
+      + 'of its own — without one the console renders on bare white.',
   );
 });

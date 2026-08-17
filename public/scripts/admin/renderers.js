@@ -46,13 +46,22 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
   var overview=createOverview({ctx:ctx,effectivePlan:effectivePlan});
   var insights=createInsights({ctx:ctx,effectivePlan:effectivePlan});
 
+  // A zero still shows — it means "checked, nothing there", which is not the same
+  // as a missing chip — but it is de-emphasised so six zeroes in the rail don't
+  // read with the same weight as a real backlog.
+  function setTabCount(id,n){
+    var e=qs(id);if(!e)return;
+    e.textContent=n;
+    e.classList.toggle('adm-tab-count--zero',!n);
+  }
+
   function updateTabCounts(){
-    qs('#tc-users').textContent=ctx.data.users.length;
-    qs('#tc-ent').textContent=ctx.data.enterprise.length;
-    qs('#tc-bugs').textContent=stripHeader(ctx.data.bugRows).length;
-    qs('#tc-contacts').textContent=stripHeader(ctx.data.contactRows).length;
-    qs('#tc-email-opens').textContent=getOpenedEmails().length;
-    qs('#tc-hosting').textContent=ctx.data.hostedImages.length;
+    setTabCount('#tc-users',ctx.data.users.length);
+    setTabCount('#tc-ent',ctx.data.enterprise.length);
+    setTabCount('#tc-bugs',stripHeader(ctx.data.bugRows).length);
+    setTabCount('#tc-contacts',stripHeader(ctx.data.contactRows).length);
+    setTabCount('#tc-email-opens',getOpenedEmails().length);
+    setTabCount('#tc-hosting',ctx.data.hostedImages.length);
   }
 
   // ── Prompt index ──

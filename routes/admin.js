@@ -2,6 +2,7 @@
 import express from 'express';
 import { createAsyncRouter } from '../lib/http/async-router.js';
 import { sendError, resolveAppOrigin } from '../lib/http/http-helpers.js';
+import { ADMIN_SESSION_HEADER } from '../lib/http/http-guards.js';
 import { reportError } from '../lib/http/error-ref.js';
 import path from 'path';
 import fs from 'fs';
@@ -27,6 +28,8 @@ import { logger } from '../lib/logger.js';
  *   readHostedImagesManifest: Function,
  *   writeHostedImagesManifest: Function,
  *   protectLogs: import('express').RequestHandler,
+ *   requireEndpointKey: import('express').RequestHandler,
+ *   adminSessions?: ReturnType<typeof import('../lib/data/admin-sessions.js').createAdminSessions>,
  *   __dirname: string,
  *   HOSTED_IMAGE_MIME_EXT: Record<string, string>,
  *   emailCatalog: ReturnType<typeof import('../lib/services/email-catalog.js').createEmailCatalog>,
@@ -38,7 +41,7 @@ import { logger } from '../lib/logger.js';
  *   campaign-link hit store behind the Referrals tab.
  */
 export default function createAdminRouter(deps) {
-  const { authStore, uptimeMonitor, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, deleteUser, getDataLogDir, getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest, protectLogs , __dirname, HOSTED_IMAGE_MIME_EXT, emailCatalog, sendTestEmail, referralLinks } = deps;
+  const { authStore, uptimeMonitor, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, deleteUser, getDataLogDir, getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest, protectLogs, requireEndpointKey, adminSessions, __dirname, HOSTED_IMAGE_MIME_EXT, emailCatalog, sendTestEmail, referralLinks } = deps;
   const router = createAsyncRouter();
 
 router.get('/admin', (req, res) => {
@@ -114,11 +117,43 @@ router.delete('/api/hosted-images/:id', protectLogs, (req, res) => {
   return res.json({ ok: true });
 });
 
-// Cheap key check for the admin sign-in screen. It exists so the login probe does
-// NOT have to fetch a data endpoint just to learn whether the key is valid — the
-// old flow probed /authstore, pulling the whole user table on every sign-in.
+// Cheap credential check for the admin sign-in screen. It exists so the login probe
+// does NOT have to fetch a data endpoint just to learn whether the key is valid —
+// the old flow probed /authstore, pulling the whole user table on every sign-in.
+// It is also what the console calls on load to see whether a stored session token
+// is still good, so it must accept either credential.
 router.get('/api/admin/ping', protectLogs, (req, res) => {
   return res.json({ ok: true });
+});
+
+// ── Admin console sessions ────────────────────────────────────────────────
+//
+// Trade the master key for a scoped, expiring, revocable token so the operator
+// types the key once rather than on every page load. See
+// lib/data/admin-sessions.js for why the key itself is never persisted.
+
+// requireEndpointKey, NOT protectLogs: minting must cost the KEY. Behind
+// protectLogs a stolen token could mint an endless supply of fresh ones, and
+// revoking the one you knew about would achieve nothing.
+router.post('/api/admin/session', requireEndpointKey, (req, res) => {
+  if (!adminSessions) return sendError(res, 503, 'Sessions unavailable');
+  const { token, expiresAt } = adminSessions.create(req.get('X-Stagify-Endpoint-Key') || '');
+  logger.info('[admin] session issued, expires ' + new Date(expiresAt).toISOString());
+  return res.json({ token, expiresAt });
+});
+
+// Sign out. Takes either credential: normally the console revokes the very token
+// it is presenting, but signing out with the key (`all: true`) drops every device,
+// which is the lever to pull if a laptop goes missing.
+router.delete('/api/admin/session', protectLogs, express.json(), (req, res) => {
+  if (!adminSessions) return sendError(res, 503, 'Sessions unavailable');
+  if (req.body && req.body.all === true) {
+    const removed = adminSessions.revokeAll();
+    logger.info('[admin] all sessions revoked (' + removed + ')');
+    return res.json({ ok: true, revoked: removed });
+  }
+  const removed = adminSessions.revoke(req.get(ADMIN_SESSION_HEADER) || '');
+  return res.json({ ok: true, revoked: removed });
 });
 
 router.get('/authstore', protectLogs, (req, res) => {
@@ -228,6 +263,44 @@ router.get('/resetmemories', protectLogs, (req, res) => {
   sendError(res, 405, 'Method Not Allowed', {
     details: 'Resetting memories is a POST — it mutates state. Retry with -X POST.',
   });
+});
+
+// ── Server status (admin view) ────────────────────────────────────────────
+//
+// The public /api/status payload is fetched by every visitor to /status on a timer,
+// so the extra depth the console wants — the 30-day graph, the manual entries as
+// their own list, the monitor's configuration — hangs off a separate admin route
+// rather than being added to it.
+
+router.get('/api/admin/status', protectLogs, (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  return res.json(uptimeMonitor.getAdminSnapshot());
+});
+
+// Post an incident by hand. The heartbeat can only see the process dying, so this is
+// the only way an outage the server SURVIVED — a dead upstream, a bad deploy, an
+// expired key — reaches the status page at all. `affectsUptime` decides whether it
+// also moves the percentages, which is why an informational notice and a real outage
+// can both live here.
+router.post('/api/admin/incidents', protectLogs, express.json(), (req, res) => {
+  const result = uptimeMonitor.addIncident(req.body || {});
+  // The message is written for the operator reading the form, so it goes back
+  // verbatim — it is the only thing telling them what to type instead.
+  if (!result.ok) return sendError(res, 400, result.error);
+  logger.info('[status] incident posted: ' + result.incident.title);
+  return res.status(201).json({ ok: true, incident: result.incident });
+});
+
+router.post('/api/admin/incidents/:id/resolve', protectLogs, (req, res) => {
+  const result = uptimeMonitor.resolveIncident(String(req.params.id || ''));
+  if (!result.ok) return sendError(res, 404, result.error);
+  return res.json({ ok: true, incident: result.incident });
+});
+
+router.delete('/api/admin/incidents/:id', protectLogs, (req, res) => {
+  const result = uptimeMonitor.deleteIncident(String(req.params.id || ''));
+  if (!result.ok) return sendError(res, 404, result.error);
+  return res.json({ ok: true });
 });
 
 // Wipe all recorded uptime/incident history (admin "reset server status" button).

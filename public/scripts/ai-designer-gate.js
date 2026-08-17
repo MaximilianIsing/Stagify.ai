@@ -53,18 +53,37 @@
     window.location.replace(localeTarget('index.html'));
     return;
   }
-  var hasToken = false;
-  try { hasToken = !!localStorage.getItem('stagifyAuthToken'); } catch (e) {}
-  if (!hasToken) {
-    window.location.replace(localeTarget('index.html#ai-designer-demo'));
-    return;
+
+  // THE ONLY REDIRECT LEFT IS THE ONE ABOVE, and it is about the VIEWPORT, not the
+  // visitor. This gate used to bounce anyone without a token to index.html#ai-designer-demo
+  // and hide the page behind `html.ai-gate-pending body{visibility:hidden}` until the plan
+  // check answered, with a second redirect if it never did. All of that is gone: the page
+  // has a public view now — the pitch for an anonymous visitor and for a signed-in free
+  // account, the studio for Stagify+ — so bouncing them took away the very page written
+  // for them, and took it away from Googlebot too, which carries no token either.
+  //
+  // What is left is the same reshaping job scripts/preview-gate.js does for the other
+  // preview pages. This page cannot simply mount that shared file, because the viewport
+  // check above has to run FIRST and that file never navigates by design; keeping the two
+  // apart is deliberate rather than a duplication to tidy away. Everything below is the
+  // shared gate's body, and test/frontend/preview-gate.test.js pins the shared copy.
+  var PENDING_CLASS = 'ai-pro-pending';
+  var pro = false;
+  try {
+    // BOTH facts, not either: the plan cache alone would pre-paint the studio for someone
+    // who signed out in another tab, and the token alone cannot tell free from Pro.
+    pro = !!localStorage.getItem('stagifyAuthToken') && localStorage.getItem('stagifyPlan') === 'pro';
+  } catch (e) {
+    /* storage unavailable — fall through to the public shape, which is safe for anyone */
   }
-  document.documentElement.className += ' ai-gate-pending';
-  // Safety net: never strand a signed-in user on a hidden page if the
-  // plan check stalls (e.g. a hung request).
+  if (!pro) return;
+
+  document.documentElement.className += ' ' + PENDING_CLASS;
+
+  // The safety net now has the OPPOSITE action to the one it replaced. That timer redirected
+  // a stalled visitor away from a page it had hidden; this one simply drops the class,
+  // which restores the page every visitor is allowed to see. Nothing to bounce.
   setTimeout(function () {
-    if (document.documentElement.classList.contains('ai-gate-pending')) {
-      window.location.replace(localeTarget('index.html#ai-designer-demo'));
-    }
+    document.documentElement.classList.remove(PENDING_CLASS);
   }, 6000);
 })();

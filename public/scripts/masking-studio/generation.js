@@ -44,12 +44,22 @@ export function buildAreaContext(layer, participants, resolveRegion) {
 }
 
 // Maps a failed request (status + parsed JSON body) to a user-facing message.
-// 401/403 also means the plan lapsed mid-session, so `onGate()` re-reveals the
-// upgrade dialog. `translate(key, fallback)` localizes each message.
+//
+// 401/403 means the plan lapsed mid-session — the token expired, or the subscription ended
+// in another tab. `onGate()` is what the page does about it, and what that IS changed with
+// the preview rewrite: it used to raise a full-screen upgrade dialog over the studio, and
+// it now re-runs the page's view writer, which takes the tool away and puts the public
+// pitch back. Same event, same callback, and the caller no longer needs a dialog to own.
+//
+// The message is the call to action rather than a sentence of its own: the three keys that
+// used to phrase this ("Masking Studio is a Stagify+ feature" and its two buttons) went
+// with the dialog, and inventing a fourth string to say the same thing as the button now
+// sitting on screen behind the toast is how eleven packs grow copy nobody reads.
+// `translate(key, fallback)` localizes each message.
 export function requestError(status, result, translate, onGate) {
   if (status === 401 || status === 403) {
     if (onGate) onGate();
-    return translate('maskingStudio.gateTitle', 'Masking Studio is a Stagify+ feature');
+    return translate('maskingStudio.ctaUpgrade', 'Get Stagify+ to use it');
   }
   if (status === 429) return translate('maskingStudio.rateLimited', "You’re generating too quickly. Wait a minute and try again.");
   if (status === 413) return translate('errors.fileTooLarge', 'That image is too large.');

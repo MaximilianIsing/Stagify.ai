@@ -102,6 +102,7 @@ export const LOCALIZED_PATHS = new Set([
   "/",
   "/ai-designer.html",
   "/masking-studio.html",
+  "/basic-mask.html",
   "/exterior-studio.html",
   "/stagify-plus.html",
   "/enterprise.html",

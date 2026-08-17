@@ -31,14 +31,23 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { publicPages, footerPages, extractSiteFooter } from '../helpers/nav-pages.js';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { publicPages, footerPages, allHtmlPages, extractSiteFooter } from '../helpers/nav-pages.js';
+
+const STYLES = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'public', 'styles');
 
 /**
  * enterprise.html's footer is the one sanctioned second shape. It carries the same
  * links, keys and year span, but is styled by a class (`.ent-site-footer`, in
- * styles/enterprise.css) instead of the inline `style=` the other five use, and sits
- * inside the page's own bounded layout wrapper rather than spanning the viewport.
- * Its i18n hooks are still asserted below, with everyone else's.
+ * styles/enterprise.css) instead of the inline `style=` the other five use. That is not
+ * cosmetic preference: the mobile contrast override at the bottom of enterprise.css
+ * needs no `!important` precisely because these links are not inline-styled.
+ *
+ * It used ALSO to sit inside the page's layout wrapper, and that half was not
+ * sanctioned, just unnoticed — see the placement test below. Its i18n hooks are
+ * asserted with everyone else's.
  */
 const OWN_SHAPE = new Set(['enterprise.html']);
 
@@ -53,9 +62,12 @@ function normalize(block) {
 /** Every discovered page's footer — a page that stops being extractable must fail loudly. */
 function footersByPage() {
   const pages = footerPages();
+  // A ratchet, not a description: it went 6 → 8 when contact.html and status.html got
+  // the footer (2026-08-16). Raise it when a page gains one; lowering it means a page
+  // LOST its footer, which is the thing to explain rather than accommodate.
   assert.ok(
-    pages.length >= 6,
-    `expected the shared footer on at least 6 pages, found ${pages.length} ` +
+    pages.length >= 8,
+    `expected the shared footer on at least 8 pages, found ${pages.length} ` +
       `(${pages.map((p) => p.name).join(', ')}) — if a page dropped it, say why here`,
   );
   return pages.map(({ name, html }) => {
@@ -132,6 +144,144 @@ test('every page carrying the shared footer also loads footer-year.js', () => {
     .filter((p) => !p.html.includes('scripts/footer-year.js'))
     .map((p) => p.name);
   assert.deepEqual(missing, [], `pages with .footer-year but no footer-year.js: ${missing.join(', ')}`);
+});
+
+test('every .footer-year span ships a literal year, not an empty placeholder', () => {
+  // The span used to ship EMPTY and be filled by scripts/footer-year.js. That script is
+  // a module, so it is defer-by-default AND costs its own request: the footer painted as
+  // "© Stagify.ai" and the year popped in about a second later. Seeding the markup makes
+  // it correct in the first paint and demotes the script to a corrector.
+  //
+  // Checked across public/**/*.html, not just the top level: the blog and legal pages
+  // carry their own footer shapes (extractSiteFooter returns null for them) and so are
+  // invisible to every other test in this file — which is exactly where an empty span
+  // would come back from, since new blog articles are written by copying an old one.
+  //
+  // Deliberately tolerant of a STALE seed (2026 still sitting there in 2027): the script
+  // fixes that in the browser, and a guard that failed on New Year would block the deploy
+  // — npm test gates it — at the least convenient possible moment for no visible defect.
+  const years = new Map();
+  for (const { name, html } of allHtmlPages()) {
+    for (const m of html.matchAll(/<span class="footer-year">([^<]*)<\/span>/g)) {
+      if (!years.has(m[1])) years.set(m[1], []);
+      years.get(m[1]).push(name);
+    }
+  }
+  assert.ok(years.size > 0, 'no .footer-year spans found at all — has the footer changed shape?');
+  assert.equal(
+    years.size,
+    1,
+    'the seeded copyright year disagrees between pages:\n' +
+      [...years].map(([y, pages]) => `  ${y === '' ? '(empty)' : y}: ${pages.join(', ')}`).join('\n'),
+  );
+  const [seed] = [...years.keys()];
+  assert.match(seed, /^\d{4}$/, `the seeded year is not a four-digit year: ${JSON.stringify(seed)}`);
+  assert.ok(
+    Number(seed) >= 2026 && Number(seed) <= new Date().getFullYear(),
+    `the seeded year ${seed} is impossible — a future year would ship a wrong copyright ` +
+      'until the corrector script runs, which is worse than the blank it replaced',
+  );
+});
+
+test('the site footer sits after </main>, never inside it', () => {
+  // enterprise.html had it INSIDE <main>, and this guard could not see it: the markup
+  // was byte-correct, all four keys were there, and every assertion above passed. But
+  // <main> is the scroll container on this site, so a footer in there scrolls away with
+  // the content and is laid out inside the page's max-width column instead of resting
+  // under the page. Same block, wrong place, and it read as a missing footer.
+  //
+  // Checked by index rather than by parsing: the footer must start after the LAST
+  // </main> on the page. A page with no <main> at all (404.html) simply has nothing to
+  // be inside of and passes trivially.
+  const offenders = [];
+  for (const { name, html } of footerPages()) {
+    const mainClose = html.lastIndexOf('</main>');
+    if (mainClose === -1) continue;
+    const footer = extractSiteFooter(html);
+    const at = html.indexOf(footer);
+    assert.notEqual(at, -1, `${name}: the extracted footer is not findable in the source`);
+    if (at < mainClose) offenders.push(name);
+  }
+  assert.deepEqual(
+    offenders,
+    [],
+    'the site footer is inside <main>, which is the scroll container, so it scrolls away ' +
+      `with the page content instead of sitting under it: ${offenders.join(', ')}`,
+  );
+});
+
+/** `:root`'s custom properties from styles.css, so `var(--accent)` can be compared to `#374151`. */
+function rootTokens() {
+  const css = fs.readFileSync(path.join(STYLES, 'styles.css'), 'utf8');
+  /** @type {Record<string, string>} */
+  const out = {};
+  for (const m of css.matchAll(/(--[a-z0-9-]+)\s*:\s*([^;}]+)/gi)) out[m[1]] = m[2].trim();
+  return out;
+}
+
+/** `prop: value; …` → a map, with `var(--x)` resolved and whitespace flattened. */
+function declarations(body, tokens) {
+  /** @type {Record<string, string>} */
+  const out = {};
+  for (const part of body.split(';')) {
+    const at = part.indexOf(':');
+    if (at === -1) continue;
+    const prop = part.slice(0, at).trim().toLowerCase();
+    if (!prop || prop.startsWith('--')) continue;
+    const value = part
+      .slice(at + 1)
+      .replace(/var\((--[a-z0-9-]+)\)/gi, (_m, name) => tokens[name] ?? _m)
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toLowerCase();
+    out[prop] = value;
+  }
+  return out;
+}
+
+test('enterprise.html’s class-styled footer renders the same as the inline-styled one', () => {
+  // The class is a MECHANISM (it keeps the mobile override below free of !important),
+  // not a licence to restyle. It had become both: colour --muted instead of #374151, and
+  // a -apple-system font-family stack that opted this one page out of Inter — narrower
+  // glyphs at the same 13px, so the footer looked smaller as well as greyer than the
+  // identical block one page over. Neither is visible to the markup comparison above,
+  // because the markup was never wrong. The rendered result is what has to match.
+  const tokens = rootTokens();
+
+  const inline = /<footer style="([^"]+)"/.exec(
+    footerPages().find((p) => !OWN_SHAPE.has(p.name)).html,
+  );
+  assert.ok(inline, 'no inline-styled footer left to compare against — update this guard');
+  const shared = declarations(inline[1], tokens);
+
+  const css = fs.readFileSync(path.join(STYLES, 'enterprise.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  const rule = /\.ent-site-footer\s*\{([^}]*)\}/.exec(css);
+  assert.ok(rule, '.ent-site-footer no longer has a rule in enterprise.css');
+  const own = declarations(rule[1], tokens);
+
+  for (const [prop, value] of Object.entries(shared)) {
+    assert.equal(own[prop], value, `.ent-site-footer sets ${prop}: ${own[prop] ?? '(nothing)'}, the other pages ${value}`);
+  }
+  // And nothing EXTRA: font-family was the declaration that made this footer look
+  // different without changing a single value the loop above compares.
+  assert.deepEqual(
+    Object.keys(own).filter((p) => !(p in shared)).sort(),
+    [],
+    '.ent-site-footer declares properties the shared footer does not, so the two render differently: ',
+  );
+
+  // The link colour is the fifth value, and it lives in its own rule on this page.
+  const linkRule = /\.ent-site-footer a\s*\{([^}]*)\}/.exec(css);
+  assert.ok(linkRule, '.ent-site-footer a no longer has a rule');
+  const sharedLink = /<a [^>]*style="([^"]+)"/.exec(
+    extractSiteFooter(footerPages().find((p) => !OWN_SHAPE.has(p.name)).html),
+  );
+  assert.ok(sharedLink, 'the shared footer’s links are no longer inline-styled — update this guard');
+  const wantedLink = declarations(sharedLink[1], tokens);
+  const gotLink = declarations(linkRule[1], tokens);
+  for (const [prop, value] of Object.entries(wantedLink)) {
+    assert.equal(gotLink[prop], value, `.ent-site-footer a sets ${prop}: ${gotLink[prop] ?? '(nothing)'}, the other pages ${value}`);
+  }
 });
 
 // ---- sanity: the guard would actually notice ------------------------------------
