@@ -5,6 +5,7 @@
 
 import express from 'express';
 import createStagingRouter from '../../routes/staging.js';
+import { multerErrorHandler } from '../../lib/http/multer-errors.js';
 
 const pass = (req, res, next) => next();
 
@@ -66,6 +67,10 @@ export async function mountStaging(overrides = {}) {
   const app = express();
   app.use(express.json({ limit: '50mb' }));
   app.use(createStagingRouter({ ...baseDeps(), ...overrides }));
+  // The SHIPPED multer error mapping (lib/http/multer-errors.js), so a test that
+  // overrides `stagingProcessUpload` with the production multer sees the real 413 a
+  // browser would rather than Express's default 500.
+  app.use(multerErrorHandler);
   const server = await new Promise((resolve) => {
     const s = app.listen(0, '127.0.0.1', () => resolve(s));
   });

@@ -164,9 +164,23 @@ test('the route is mounted behind the shared generation rate limiter', async () 
   } finally { await app.close(); }
 });
 
-test('the upload middleware runs before the handler', async () => {
-  // stagingProcessUpload is what fills req.files; without it the handler always 400s with
-  // "No image file provided" and the failure looks like a client bug.
+test('the pro gate runs BEFORE the upload middleware, which runs before the handler', async () => {
+  // Two orderings in one assertion, because each protects a different thing.
+  //
+  // stagingProcessUpload before the handler: it is what fills req.files, and without it
+  // the handler always 400s with "No image file provided" — a failure that looks like a
+  // client bug.
+  //
+  // The gate before stagingProcessUpload: multer reads the WHOLE multipart body into
+  // memory before any handler runs, so with the gate only inside the handler an
+  // anonymous caller made this single-instance process allocate 25MB x 6 files and THEN
+  // get told to sign in. This assertion previously read ['upload', 'gate', 'handler'] —
+  // it pinned that bug rather than the behaviour.
+  //
+  // 'gate' appears TWICE on purpose: the pre-multer copy is a cost guard that can only
+  // read the Authorization header (req.body does not exist yet), and the in-handler call
+  // remains the authority that sees the header AND the form field. Collapsing the two
+  // into one is the regression this ordering exists to catch.
   const order = [];
   const app = await mountStaging({
     stagingProcessUpload: (req, res, next) => { order.push('upload'); next(); },
@@ -175,6 +189,26 @@ test('the upload middleware runs before the handler', async () => {
   });
   try {
     await post(app.baseUrl);
-    assert.deepEqual(order, ['upload', 'gate', 'handler']);
+    assert.deepEqual(order, ['gate', 'upload', 'gate', 'handler']);
+  } finally { await app.close(); }
+});
+
+test('a refused caller never reaches the upload middleware at all', async () => {
+  // The point of the reorder: not just "who answers", but what got allocated first. A
+  // non-pro caller must be turned away without multer having buffered a byte.
+  let uploadRan = false;
+  const app = await mountStaging({
+    stagingProcessUpload: (req, res, next) => { uploadRan = true; next(); },
+    // The real requireProAccount writes its own reply and returns null.
+    requireProAccount: (req, res) => {
+      res.status(403).json({ error: 'Stagify+ subscription required', code: 'PRO_REQUIRED' });
+      return null;
+    },
+  });
+  try {
+    const { status, json } = await post(app.baseUrl);
+    assert.equal(status, 403);
+    assert.equal(json.code, 'PRO_REQUIRED', 'the same reply the handler would have sent');
+    assert.equal(uploadRan, false, 'multer buffered the body for a caller we had already refused');
   } finally { await app.close(); }
 });

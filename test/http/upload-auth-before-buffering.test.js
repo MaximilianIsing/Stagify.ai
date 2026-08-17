@@ -159,3 +159,87 @@ for (const client of CLIENTS) {
     });
   }
 }
+
+// ── the server half ─────────────────────────────────────────────────────────────
+//
+// Route chains, one entry per multipart upload route. `gate` must appear in the
+// middleware list BEFORE `upload`, and `authority` must still be called inside the
+// handler body. The behavioural proof lives in test/server/upload-limits.test.js (an
+// over-cap anonymous upload answers 401, not 413); these are the guards that say WHICH
+// line to put back when it goes red, and that stop the in-handler check being
+// "tidied away" as a duplicate of the middleware.
+const ROUTES = [
+  {
+    file: 'routes/staging.js',
+    url: '/api/process-image',
+    gate: 'requireSessionBeforeUpload',
+    upload: 'stagingProcessUpload',
+    authority: 'getAuthUserFromRequest(req)',
+  },
+  {
+    file: 'routes/staging.js',
+    url: '/api/enhance-exterior',
+    gate: 'requireProBeforeUpload',
+    upload: 'stagingProcessUpload',
+    authority: 'requireProAccount(req, res)',
+  },
+  {
+    file: 'routes/chat.js',
+    url: '/api/chat-upload',
+    gate: 'requireProBeforeUpload',
+    upload: 'chatUpload.array',
+    authority: 'requireProAccount(req, res)',
+  },
+];
+
+/**
+ * Split a `router.post('<url>', …)` registration into its middleware list and body.
+ * @param {string} src - Comment-stripped router source.
+ * @param {string} url - The route path.
+ * @returns {{ chain: string, body: string }} Text before the handler, and the handler body.
+ */
+function routeParts(src, url) {
+  const start = src.indexOf(`router.post('${url}'`);
+  assert.notEqual(start, -1, `no router.post('${url}') found`);
+  const handlerAt = src.indexOf('async (req, res)', start);
+  assert.notEqual(handlerAt, -1, `the ${url} handler is not the inline async one this guard reads`);
+  let depth = 0;
+  let end = -1;
+  for (let i = src.indexOf('{', handlerAt); i < src.length; i += 1) {
+    if (src[i] === '{') depth += 1;
+    else if (src[i] === '}') {
+      depth -= 1;
+      if (depth === 0) { end = i; break; }
+    }
+  }
+  assert.notEqual(end, -1, `unbalanced braces in the ${url} handler`);
+  return { chain: src.slice(start, handlerAt), body: src.slice(handlerAt, end + 1) };
+}
+
+for (const route of ROUTES) {
+  test(`${route.url} authenticates before it buffers`, () => {
+    const { chain } = routeParts(readCode(route.file), route.url);
+    const gateAt = chain.indexOf(route.gate);
+    const uploadAt = chain.indexOf(route.upload);
+    assert.notEqual(gateAt, -1, `${route.url} has no ${route.gate} in its chain`);
+    assert.notEqual(uploadAt, -1, `${route.url} has no ${route.upload} in its chain`);
+    assert.ok(
+      gateAt < uploadAt,
+      `${route.url}: ${route.upload} runs before ${route.gate}, so an anonymous request ` +
+        'buffers the whole multipart body into memory before anyone checks who is asking',
+    );
+  });
+
+  test(`${route.url} still checks auth inside the handler`, () => {
+    // The pre-gate is NOT the boundary and must not be mistaken for one: it runs before
+    // req.body exists, so it only ever sees the Authorization header, while the handler
+    // sees the header AND the form field (still the documented transport for non-browser
+    // callers). Delete the in-handler call and the gate silently becomes the whole gate.
+    const { body } = routeParts(readCode(route.file), route.url);
+    assert.ok(
+      body.includes(route.authority),
+      `${route.url}: the handler no longer calls ${route.authority} — the pre-multer gate ` +
+        'is a cost guard, not the auth boundary',
+    );
+  });
+}

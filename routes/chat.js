@@ -77,6 +77,18 @@ export default function createChatRouter(deps) {
   const recordStagingActivity = deps.recordStagingActivity || (() => false);
   const router = createAsyncRouter();
 
+  // A cost guard mounted ahead of multer on /api/chat-upload, NOT the auth boundary.
+  // multer reads the whole multipart body into memory before any handler runs, so
+  // without this an anonymous request made the process buffer 20MB x 5 files plus a
+  // 25MB history field and only then reach the requireProAccount call that refuses it.
+  // genLimiter bounds the RATE of those requests, not the cost of one.
+  //
+  // It does NOT replace the in-handler check, which stays the authority: this runs
+  // before req.body exists, so it sees only `Authorization: Bearer`, while the handler
+  // sees the header AND the form field. Reusing requireProAccount itself makes the two
+  // replies byte-identical — a caller refused here would have been refused there.
+  const requireProBeforeUpload = (req, res, next) => (requireProAccount(req, res) ? next() : undefined);
+
   /**
    * Mark a trial/paid account as having actually used the AI Designer.
    *
@@ -296,7 +308,7 @@ router.post('/api/chat', genLimiter, async (req, res) => {
   }
 });
 
-router.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async (req, res) => {
+router.post('/api/chat-upload', genLimiter, requireProBeforeUpload, chatUpload.array('files', 5), async (req, res) => {
   try {
     const proUser = requireProAccount(req, res);
     if (!proUser) return;

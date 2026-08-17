@@ -130,6 +130,28 @@ export default function createStagingRouter(deps) {
   const preCheckLimiter = validateImageLimiter ?? defaultValidateImageLimiter;
   const galleryImportLimiter = injectedGalleryImportLimiter ?? defaultGalleryImportLimiter;
   const previewLimiter = deps.disclosurePreviewLimiter ?? defaultDisclosurePreviewLimiter;
+  // ── Cost guards, NOT the auth boundary ──────────────────────────────────────
+  // These two run BEFORE multer on the upload routes below. multer reads the whole
+  // multipart body into memory before any handler runs, so without them an anonymous
+  // request made this single-instance process allocate 25MB x 6 files and only then
+  // reach the in-handler check that tells it to sign in. genLimiter bounds the RATE of
+  // those requests (60 per 5 min per IP), not the cost of one, and memory pressure is
+  // concurrency-bound rather than rate-bound.
+  //
+  // They do NOT replace the in-handler check, which stays the authority: this runs
+  // before req.body exists, so it can only see `Authorization: Bearer`, while the
+  // handler sees the header AND the form field. A caller rejected here would have been
+  // rejected there too — with the same status, code and message, which is why the
+  // literal below is copied from the handler rather than reworded.
+  const requireSessionBeforeUpload = (req, res, next) => {
+    if (!getAuthUserFromRequest(req)) {
+      return sendError(res, 401, 'Please sign in to stage images', { code: 'AUTH_REQUIRED' });
+    }
+    return next();
+  };
+  // requireProAccount writes its own 401/403 and returns null, so reusing it here makes
+  // the pre-gate's reply byte-identical to the handler's by construction.
+  const requireProBeforeUpload = (req, res, next) => (requireProAccount(req, res) ? next() : undefined);
   const stampLimiter = deps.stampImageLimiter ?? defaultStampImageLimiter;
   const downloadResultLimiter = deps.downloadResultLimiter ?? defaultDownloadResultLimiter;
 
@@ -160,7 +182,9 @@ router.get('/api/disclosure-preview', previewLimiter, async (req, res) => {
   }
 });
 
-router.post('/api/process-image', genLimiter, stagingProcessUpload, async (req, res) => {
+// requireSessionBeforeUpload is a cost guard ahead of multer, not the gate — see its
+// definition above. The check below stays the authority and is the one to read.
+router.post('/api/process-image', genLimiter, requireSessionBeforeUpload, stagingProcessUpload, async (req, res) => {
   try {
     const sessionUser = getAuthUserFromRequest(req);
 
@@ -264,7 +288,9 @@ router.post('/api/validate-image', genLimiter, preCheckLimiter, async (req, res)
   }
 });
 
-router.post('/api/enhance-exterior', genLimiter, stagingProcessUpload, async (req, res) => {
+// requireProBeforeUpload is a cost guard ahead of multer, not the gate — see its
+// definition above. The requireProAccount call below stays the authority.
+router.post('/api/enhance-exterior', genLimiter, requireProBeforeUpload, stagingProcessUpload, async (req, res) => {
   try {
     // Stagify+ only, and this is the real gate — the Exterior Studio page reveals its
     // controls from JS, which is a UI affordance, not a boundary. requireProAccount
