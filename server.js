@@ -4,7 +4,6 @@ import './load-env.js'; // must be first: populates process.env from .env before
 // an in-file import would call Sentry.init() too late to instrument express. --import runs it first.
 import * as Sentry from '@sentry/node';
 import express from 'express';
-import multer from 'multer';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { createCadHandling } from './lib/staging/cad-handling.js';
@@ -56,6 +55,7 @@ import { stagingProcessUpload, chatUpload, hostImageUpload, HOSTED_IMAGE_MIME_EX
 import { authLimiter, emailLimiter, genLimiter, setRateLimitRejectionLogger } from './lib/http/rate-limiters.js';
 import { logger } from './lib/logger.js';
 import { applyEdgeMiddleware, applyBodyAndStatic } from './lib/http/app-middleware.js';
+import { multerErrorHandler } from './lib/http/multer-errors.js';
 import { createStagingGeneration } from './lib/staging/staging-generation.js';
 import { createVirtualStagingHandler } from './lib/staging/virtual-staging-handler.js';
 import { createExteriorHandler } from './lib/staging/exterior-handler.js';
@@ -456,22 +456,9 @@ app.use(createNotFoundHandler({ __dirname, DEBUG_MODE }));
 // Multer upload errors surface here — AFTER the routers that use multer, so Express
 // actually reaches this handler (it only runs error middleware registered after the
 // throwing route). Placed BEFORE the Sentry handler so an over-cap upload returns a
-// clean 413 and doesn't get reported as a server error.
-app.use((err, req, res, next) => {
-  if (err instanceof multer.MulterError) {
-    if (err.code === 'LIMIT_FILE_SIZE') {
-      return sendError(res, 413, 'File too large', {
-        code: 'FILE_TOO_LARGE',
-        details: 'That file is too large. Please upload a smaller file.',
-      });
-    }
-    // Fold the multer message into `error` itself — the staging client surfaces
-    // this field to the user (app.js falls back to `error` when there's no `code`
-    // it recognises), so the specific reason must stay in the primary string.
-    return sendError(res, 400, err.message || 'Upload error', { code: err.code });
-  }
-  next(err);
-});
+// clean 413 and doesn't get reported as a server error. The mapping itself lives in
+// lib/http/multer-errors.js; this line owns only its position in the chain.
+app.use(multerErrorHandler);
 
 // Sentry Express error handler — after ALL routes so it can capture errors thrown in
 // them. Captures the error, then passes it through unchanged (no effect on responses).

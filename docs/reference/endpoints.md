@@ -5,10 +5,18 @@ This document describes HTTP endpoints for the Stagify server. Routes are regist
 ## Authentication helpers (used by several routes)
 
 - **Bearer session:** `Authorization: Bearer <token>` (JWT/session token from `authToken` in login/register responses).
-- **Token in body:** `authToken` in JSON or multipart field (e.g. staging).
-- **Token in query:** `?authToken=...` (used by some browser flows).
+- **Token in body:** `authToken` in a JSON or multipart field — accepted by the handler-side
+  check on most routes, but **not sufficient on the three multipart upload routes**
+  (`/api/process-image`, `/api/enhance-exterior`, `/api/chat-upload`). Those refuse an
+  unauthenticated caller in middleware *before* multer runs, so that they do not buffer up
+  to 150 MB for a request they are about to reject — and at that point `req.body` does not
+  exist yet, so only the header is readable. Send the header to those three.
+- **Token in query:** not supported. A token in a URL leaks via access logs, browser
+  history and `Referer`, so `getAuthUserFromRequest` deliberately never reads `req.query`
+  (see the comment in `lib/services/auth-helpers.js`). This line previously claimed the
+  opposite.
 
-**`getAuthUserFromRequest`:** loads the user from a valid session token (header, body, or query).
+**`getAuthUserFromRequest`:** loads the user from a valid session token (header or body).
 
 **`requireProAccount`:** requires a signed-in user with `plan === 'pro'`; otherwise `401` (`AUTH_REQUIRED`) or `403` (`PRO_REQUIRED`).
 

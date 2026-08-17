@@ -20,6 +20,7 @@
 import express from 'express';
 import multer from 'multer';
 import createChatRouter from '../../routes/chat.js';
+import { multerErrorHandler } from '../../lib/http/multer-errors.js';
 
 const pass = (req, res, next) => next();
 
@@ -103,6 +104,11 @@ export async function mountChat(options = {}) {
   const app = express();
   app.use(express.json({ limit: '50mb' }));
   app.use(createChatRouter({ ...baseChatDeps, ...over }));
+  // The SHIPPED multer error mapping, so a test that mounts the production `chatUpload`
+  // (over.chatUpload) sees the real 413/400 a browser would — without it a
+  // LIMIT_FILE_SIZE reaches Express's default handler as a 500 and the limits are only
+  // assertable by restating the mapping here, which would then drift from server.js.
+  app.use(multerErrorHandler);
 
   const server = await new Promise((resolve) => {
     const s = app.listen(0, '127.0.0.1', () => resolve(s));
