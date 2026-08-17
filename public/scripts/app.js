@@ -19,6 +19,7 @@ import { createStagingFailure } from './app/staging-failure.js';
 import { createEmptyRoomViewer } from './app/empty-room-viewer.js';
 import { readImageFile } from './app/image-file.js';
 import { initStagingEntry } from './app/staging-entry.js';
+import { initPlusRail } from './app/plus-rail.js';
 
     const $ = (sel) => document.querySelector(sel);
 
@@ -72,6 +73,10 @@ import { initStagingEntry } from './app/staging-entry.js';
     initStampStyleRow({ optsId: 'mask-stamp-opts', checkboxId: 'mask-label-virtually-staged' });
     // …and it sits in a different PARENT on a phone — see mask-stamp.js.
     initMaskStampPlacement();
+
+    // The Stagify+ rail's disclosure button. Only the open/shut state — whether the
+    // rail is on screen at all belongs to the plan, and auth.js owns that half.
+    initPlusRail();
 
     const heroUpload = $('#hero-upload');
     const navUpload = $('#nav-upload');

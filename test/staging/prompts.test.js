@@ -5,6 +5,7 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import {
   buildChatSystemInstruction,
   buildChatUploadSystemInstruction,
@@ -14,6 +15,13 @@ import {
   styleReferencePromptSuffix,
   maskReferencePromptSuffix,
   furnitureReferencePromptSuffix,
+  // Shared model-facing prose (re-exported from ./designer-rules.js) plus the routing
+  // schema — the drift guards at the bottom of this file assert these stay single-copy.
+  AI_DESIGNER_CAD_RULES,
+  AI_DESIGNER_MESSAGE_TAG_RULES,
+  MESSAGE_TAG_PREFIXES,
+  REALISTIC_DEFECT_FREE_RULES,
+  DESIGNER_ROUTING_SCHEMA,
 } from '../../lib/staging/prompts.js';
 
 test('buildChatSystemInstruction embeds image/date/base-selection context and the JSON contract', () => {
@@ -211,4 +219,89 @@ test('furnitureReferencePromptSuffix adds the preserve-existing-staging clause w
   assert.match(kept, /ALREADY-STAGED ROOM/);
   const fresh = furnitureReferencePromptSuffix(2, false);
   assert.ok(!fresh.includes('ALREADY-STAGED ROOM'), 'no preserve clause without the flag');
+});
+
+// ── Drift guards ─────────────────────────────────────────────────────────────
+//
+// THE GUARD IS THE POINT of each extraction below, not the extraction. Three blocks of
+// model-facing prose used to exist as two or three byte-identical copies each; nothing
+// stopped one copy being tuned and the other left behind, and the two chat endpoints
+// would then have quietly disagreed about how to route.
+
+test('DRIFT: the CAD rules exist ONCE and reach BOTH system instructions', () => {
+  const chat = buildChatSystemInstruction({
+    imageContext: '', memories: [], dateContext: '', baseSelectionContext: '',
+  });
+  const upload = buildChatUploadSystemInstruction({ memories: [], dateContext: '' });
+
+  for (const [name, s] of [['chat', chat], ['upload', upload]]) {
+    assert.ok(s.includes(AI_DESIGNER_CAD_RULES), `${name} carries the shared CAD rules verbatim`);
+    // Once, not twice: a re-inlined copy would show up as a second occurrence.
+    assert.equal(
+      s.split('CAD-STAGING RULES (for blueprints/floor plans and CAD-staged images):').length - 1,
+      1,
+      `${name} contains exactly one CAD-STAGING RULES header`,
+    );
+  }
+});
+
+test('DRIFT: the message-tag prefixes are defined once and every one is explained', () => {
+  // The [TAG: …] prefix is the user's EXPLICIT pathway choice from the dropdown, and
+  // nothing used to tell the model what it meant — so the one control meant to override
+  // the model's inference was a string it had never been taught to read. A prefix the
+  // rules do not name is exactly that bug again.
+  for (const prefix of Object.values(MESSAGE_TAG_PREFIXES)) {
+    assert.ok(
+      AI_DESIGNER_MESSAGE_TAG_RULES.includes(prefix),
+      `the tag rules explain ${prefix}`,
+    );
+  }
+  assert.deepEqual(
+    Object.keys(MESSAGE_TAG_PREFIXES).sort(),
+    ['cad-stage', 'describe', 'generate', 'stage'],
+    'the map matches the dropdown in public/ai-designer.html',
+  );
+});
+
+test('DRIFT: the tag map has no second copy in the two prep modules', async () => {
+  // It used to live in three places: chat-request-prep once and chat-upload-prep twice.
+  const files = ['../../lib/chat/chat-request-prep.js', '../../lib/chat/chat-upload-prep.js'];
+  for (const rel of files) {
+    const src = await readFile(new URL(rel, import.meta.url), 'utf8');
+    assert.ok(
+      !src.includes("'[TAG: CAD-Stage]'"),
+      `${rel} must use MESSAGE_TAG_PREFIXES, not its own literal copy`,
+    );
+    assert.ok(src.includes('MESSAGE_TAG_PREFIXES'), `${rel} imports the shared map`);
+  }
+});
+
+test('DRIFT: the realism rules are one constant, used by staging AND the eye-level CAD prompt', () => {
+  // generatePrompt is no longer the only consumer — lib/staging/cad-handling.js's
+  // eye-level render needs the identical list, and a hand-written second copy would
+  // drift the moment either is tuned.
+  const staged = generatePrompt('Living room', 'modern', '', false);
+  assert.ok(staged.includes(REALISTIC_DEFECT_FREE_RULES), 'generatePrompt interpolates the constant');
+  assert.match(REALISTIC_DEFECT_FREE_RULES, /grounded contact shadows/);
+});
+
+test('DRIFT: both CAD views are described to the routing model', () => {
+  // The schema can offer a `view` the prose never explains, in which case the model will
+  // never pick the new one and the feature is inert.
+  for (const view of ['top-down', 'eye-level']) {
+    assert.ok(AI_DESIGNER_CAD_RULES.includes(`"${view}"`), `the rules name the ${view} view`);
+  }
+  assert.match(AI_DESIGNER_CAD_RULES, /"room" is REQUIRED for "eye-level"/);
+});
+
+test('DRIFT: every cad schema property is also listed as required', () => {
+  // OpenAI structured outputs are STRICT here (additionalProperties:false): a property
+  // added to `properties` but not to `required` makes the API reject the whole request,
+  // which shows up as the Designer failing on every turn.
+  const cad = DESIGNER_ROUTING_SCHEMA.properties.cad.items;
+  assert.deepEqual(
+    Object.keys(cad.properties).sort(),
+    [...cad.required].sort(),
+    'cad: properties and required must match exactly',
+  );
 });

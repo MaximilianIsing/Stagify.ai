@@ -121,6 +121,21 @@ export function createFileIntake(deps) {
             return;
           }
         }
+        // Floor plans arrive as PDFs, and the server cannot read one: chat-upload-prep.js
+        // turns it into the placeholder text "[File: plan.pdf … Content cannot be
+        // directly read]", so it never becomes an image and can never be rendered. Same
+        // treatment as HEIC, at the same point in the flow — rasterize page 1 in the
+        // browser and hand the rest of the pipeline a normal PNG.
+        if (window.StagifyPdf) {
+          try {
+            incoming = await Promise.all(incoming.map(f =>
+              (f && window.StagifyPdf.isPdf(f)) ? window.StagifyPdf.toDisplayableFile(f) : f
+            ));
+          } catch (e) {
+            showToast("We couldn’t read that PDF. Try exporting the floor plan as a PNG or JPG.", 'error');
+            return;
+          }
+        }
 
         const accepted = [];
         const rejected = [];

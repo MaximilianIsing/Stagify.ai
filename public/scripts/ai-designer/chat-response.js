@@ -121,8 +121,22 @@ export function createChatResponse(deps) {
       }
     }
 
+    // STAGED / GENERATED / CAD ARE NOT MUTUALLY EXCLUSIVE — do not turn these back into
+    // an `else if` ladder. lib/chat/chat-post-routing.js runs the staging, generate and
+    // CAD steps UNCONDITIONALLY, so one turn can carry all three. As a ladder, a turn
+    // that staged a room AND rendered a floor plan silently dropped the floor plan from
+    // both the transcript and the history the next turn is built from — the render was
+    // paid for, produced, and thrown away in the browser.
+    //
+    // What the ladder DID get right, and what the shape below preserves: the assistant's
+    // text bubble is added exactly once, and exactly one history entry is pushed, with
+    // every image from the turn in it.
     const stagedImages = data.stagedImages || (data.stagedImage ? [data.stagedImage] : []);
-    if (stagedImages.length > 0) {
+    const generatedImages = data.generatedImages || (data.generatedImage ? [data.generatedImage] : []);
+    const cadImages = data.cadImages || (data.cadImage ? [data.cadImage] : []);
+    const newImageCount = stagedImages.length + generatedImages.length + cadImages.length;
+
+    if (newImageCount > 0) {
       addedAssistantImages = true;
       const rootBaseName = getPendingStagingRootBaseName() || 'Upload';
       setPendingStagingRootBaseName(null);
@@ -131,21 +145,45 @@ export function createChatResponse(deps) {
       if (!imagesOnly) {
         addMessage('assistant', data.response);
       }
+
+      // Appended in the order the pipeline produced them.
       const lastMessage = getLastAssistantContentEl();
       if (lastMessage) {
+        const appendImage = (url, alt, downloadName, baseName) => {
+          const wrapper = document.createElement('div');
+          wrapper.style.cssText = 'margin-top: 12px; text-align: left;';
+          wrapper.appendChild(createAIImageWithDownload(url, alt, downloadName, baseName));
+          lastMessage.appendChild(wrapper);
+        };
         stagedImages.forEach((stagedImage, index) => {
-          const stagedImageDiv = document.createElement('div');
-          stagedImageDiv.style.cssText = 'margin-top: 12px; text-align: left;';
-          const imageContainer = createAIImageWithDownload(
+          appendImage(
             stagedImage,
             getPdfAlt('stagedRoom', { suffix: imageCountSuffix(index, stagedImages.length) }),
             `staged-${index + 1}`,
             rootBaseName
           );
-          stagedImageDiv.appendChild(imageContainer);
-          lastMessage.appendChild(stagedImageDiv);
+        });
+        generatedImages.forEach((generatedImage, index) => {
+          appendImage(
+            generatedImage,
+            getPdfAlt('generatedImage', { suffix: imageCountSuffix(index, generatedImages.length) }),
+            `generated-image-${index}`
+          );
+        });
+        // Alt text follows the VIEW. "3D render from floor plan" is right for a top-down
+        // plan render and wrong for an eye-level one, which is a photograph of a room —
+        // and alt text is read by people who cannot see which of the two they got.
+        const cadViews = data.cadViews || [];
+        cadImages.forEach((cadImage, index) => {
+          const altKey = cadViews[index] === 'eye-level' ? 'cadRenderInterior' : 'cadRender';
+          appendImage(
+            cadImage,
+            getPdfAlt(altKey, { suffix: imageCountSuffix(index, cadImages.length) }),
+            `cad-render-${index}`
+          );
         });
       }
+
       /** @type {Array<Record<string, any>>} */
       const contentItems = [{ type: 'text', text: data.response }];
       stagedImages.forEach((stagedImage, index) => {
@@ -162,36 +200,6 @@ export function createChatResponse(deps) {
           _annotation: annotation,
         });
       });
-      const assistantMessage = { role: 'assistant', content: contentItems };
-      const lastMsg = getConversationHistory()[getConversationHistory().length - 1];
-      const isDuplicate = lastMsg &&
-        lastMsg.role === 'assistant' &&
-        JSON.stringify(lastMsg.content) === JSON.stringify(assistantMessage.content);
-      if (!isDuplicate) {
-        getConversationHistory().push(assistantMessage);
-      }
-    } else if (data.generatedImages || data.generatedImage) {
-      const generatedImages = data.generatedImages || (data.generatedImage ? [data.generatedImage] : []);
-      addedAssistantImages = true;
-      if (!imagesOnly) {
-        addMessage('assistant', data.response);
-      }
-      const lastMessage = getLastAssistantContentEl();
-      if (lastMessage) {
-        generatedImages.forEach((generatedImage, index) => {
-          const generatedImageDiv = document.createElement('div');
-          generatedImageDiv.style.cssText = 'margin-top: 12px; text-align: left;';
-          const imageContainer = createAIImageWithDownload(
-            generatedImage,
-            getPdfAlt('generatedImage', { suffix: imageCountSuffix(index, generatedImages.length) }),
-            `generated-image-${index}`
-          );
-          generatedImageDiv.appendChild(imageContainer);
-          lastMessage.appendChild(generatedImageDiv);
-        });
-      }
-      /** @type {Array<Record<string, any>>} */
-      const contentItems = [{ type: 'text', text: data.response }];
       generatedImages.forEach((generatedImage, index) => {
         const annotationKey = generatedImages.length === 1 ? 'generated_0' : `generated_${index}`;
         const annotation = data.generatedImageAnnotations && data.generatedImageAnnotations[annotationKey]
@@ -204,6 +212,21 @@ export function createChatResponse(deps) {
           _annotation: annotation,
         });
       });
+      // The single-result server response carries `cadImageAnnotation` (singular) for
+      // backward compatibility; the multi-result one carries the `cad_N` map.
+      const cadAnnotation = data.cadImageAnnotation || null;
+      const cadAnnotations = data.cadImageAnnotations || {};
+      cadImages.forEach((cadImage, index) => {
+        contentItems.push({
+          type: 'image_url',
+          image_url: { url: cadImage },
+          isGenerated: true,
+          _annotation: cadImages.length === 1
+            ? (cadAnnotation || cadAnnotations.cad_0 || null)
+            : (cadAnnotations[`cad_${index}`] || null),
+        });
+      });
+
       const assistantMessage = { role: 'assistant', content: contentItems };
       const lastMsg = getConversationHistory()[getConversationHistory().length - 1];
       const isDuplicate = lastMsg &&
@@ -211,49 +234,6 @@ export function createChatResponse(deps) {
         JSON.stringify(lastMsg.content) === JSON.stringify(assistantMessage.content);
       if (!isDuplicate) {
         getConversationHistory().push(assistantMessage);
-      }
-    } else if (data.cadImage || (data.cadImages && data.cadImages.length > 0)) {
-      addedAssistantImages = true;
-      if (!imagesOnly) {
-        addMessage('assistant', data.response);
-      }
-      const cadImages = data.cadImages || (data.cadImage ? [data.cadImage] : []);
-      if (cadImages.length > 0) {
-        const lastMessage = getLastAssistantContentEl();
-        if (lastMessage) {
-          cadImages.forEach((cadImage, index) => {
-            const cadImageDiv = document.createElement('div');
-            cadImageDiv.style.cssText = 'margin-top: 12px; text-align: left;';
-            const imageContainer = createAIImageWithDownload(
-              cadImage,
-              getPdfAlt('cadRender', { suffix: imageCountSuffix(index, cadImages.length) }),
-              `cad-render-${index}`
-            );
-            cadImageDiv.appendChild(imageContainer);
-            lastMessage.appendChild(cadImageDiv);
-          });
-        }
-        const cadAnnotation = data.cadImageAnnotation || null;
-        const cadAnnotations = data.cadImageAnnotations || {};
-        const cadAssistantMessage = {
-          role: 'assistant',
-          content: [
-            { type: 'text', text: data.response },
-            ...cadImages.map((cadImage, index) => ({
-              type: 'image_url',
-              image_url: { url: cadImage },
-              isGenerated: true,
-              _annotation: cadImages.length === 1 ? cadAnnotation : (cadAnnotations[`cad_${index}`] || null),
-            })),
-          ],
-        };
-        const lastMsg2 = getConversationHistory()[getConversationHistory().length - 1];
-        const isDuplicate2 = lastMsg2 &&
-          lastMsg2.role === 'assistant' &&
-          JSON.stringify(lastMsg2.content) === JSON.stringify(cadAssistantMessage.content);
-        if (!isDuplicate2) {
-          getConversationHistory().push(cadAssistantMessage);
-        }
       }
     } else if (data.recalledImage) {
       addedAssistantImages = true;

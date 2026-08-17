@@ -524,6 +524,48 @@ conversion snippet will depend on.
 deploy on an unexplained blocking tag; adding one means adding it to that file's
 allowlist with its reason.
 
+### Two upload formats are converted in the browser, not on the server
+
+The upload pipeline can only handle formats a browser can decode and the vision models
+accept. Two common ones miss, and both are fixed client-side rather than by adding a
+server dependency:
+
+| Module | Handles | Vendored library |
+|--------|---------|------------------|
+| `scripts/heic-convert.js` | iPhone HEIC/HEIF → JPEG. Most browsers cannot decode HEIC, and the flows need a decodable image for the instant preview and the `<canvas>` paint. | `scripts/vendor/heic2any.min.js` (~1.3 MB) |
+| `scripts/pdf-page-to-image.js` | Floor-plan PDF → PNG of **page 1**. The server has never been able to read a PDF: `lib/chat/chat-upload-prep.js` accepts `application/pdf` and reduces it to the placeholder `[File: … Content cannot be directly read]`, so it never becomes an image and can never be rendered — while the product copy promised exactly that. | `scripts/vendor/pdf.min.js` (~370 KB) + `scripts/vendor/pdf.worker.min.js` (~1.1 MB) |
+
+They share one shape, and it is worth copying for a third:
+
+- **Self-hosted, never a CDN.** `script-src` is a real allowlist with no third-party JS
+  host on it, so a CDN import is dead on arrival. The bundles live in
+  `public/scripts/vendor/` (unlinted by design — see the note in `eslint.config.js`).
+- **Lazy.** The vendor bundle is only fetched the first time a user actually picks a file
+  of that type, so ordinary JPEG/PNG uploads pay nothing for either. The module itself is
+  a few KB and is the only thing on the page at load.
+- **Pure helpers exported at module scope, the browser wiring in an IIFE below.** That is
+  what makes the decisions unit-testable under `node --test` (`isPdf`/`sniffPdf`/
+  `scaleForPage`, `isHeic`/`sniff`) while the DOM half is exercised in a real browser.
+  Both files therefore sit around 40–50% line coverage on purpose; the uncovered block is
+  the IIFE, which node cannot execute at all.
+- **Content beats extension.** Both sniff the leading bytes and pass a mislabelled file
+  through untouched, because a real PNG named `.pdf` handed to the PDF renderer just
+  throws.
+- **`window.*` bridge + `globals.d.ts`.** `window.StagifyPdf` / `window.StagifyHeic` are
+  cross-file names, so each needs an entry in `public/scripts/globals.d.ts` or the
+  frontend typecheck fails.
+
+One CSP trap worth knowing: pdf.js spawns its parser in a **Web Worker** loaded from
+`scripts/vendor/pdf.worker.min.js`. That is covered by `worker-src 'self'` in
+`lib/http/app-middleware.js`. Tightening that directive would make floor-plan PDFs
+*hang* rather than error, because a blocked worker is not a failed fetch.
+
+And one testing trap: pdf.js's `page.render()` drives itself with
+`requestAnimationFrame`, which **never fires in a backgrounded tab**. A browser-automation
+check that opens the page in a hidden tab will sit in `render()` forever and look like a
+deadlock in our code. Foreground the tab, or pass `intent: 'print'` to make pdf.js skip
+its rAF scheduling for the check only.
+
 ## Styles
 
 CSS mirrors the JS split: one shared base plus per-page and per-feature files, linked

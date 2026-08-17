@@ -157,6 +157,10 @@
     <script type="module" src="scripts/heic-convert.js"></script>
     <script type="module" src="scripts/profile-menu.js"></script>
     <link rel="stylesheet" href="styles/masking-studio.css">
+    <!-- Sets html.has-session from the stored token BEFORE first paint, so the nav’s
+         Gallery tab does not pop in a round trip late. Render-blocking on purpose, and
+         last in <head> so it never delays discovery of the CSS above it. -->
+    <script src="scripts/session-class.js"></script>
   </head>
   <body>
     <!-- Background Video -->
@@ -205,7 +209,9 @@
     <!-- "How it works" dialog, opened from the ? button in the toolbar. -->
     <div id="ms-help" class="ms-pro-gate" role="dialog" aria-modal="true" aria-labelledby="ms-help-title">
       <div class="ms-pro-gate__card ms-help-card">
-        <button type="button" id="ms-help-close" class="ms-help-close" data-lang-attr="common.close|aria-label" aria-label="Close">&times;</button>
+        <button type="button" id="ms-help-close" class="close-x close-x--corner" data-lang-attr="common.close|aria-label" aria-label="Close">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
         <h2 id="ms-help-title" data-lang="maskingStudio.helpTitle">How the Masking Studio works</h2>
         <ol class="ms-help-steps">
           <li data-lang="maskingStudio.helpStep1">Upload a photo of your room.</li>
@@ -260,7 +266,9 @@
         <!-- A corner × rather than a second full-width button. The photo is already back
              out of the studio by the time this opens, so dismissing lands on the empty
              dropzone — which IS "try another image", spelled out in its own words. -->
-        <button type="button" id="ms-exterior-back" class="ms-help-close" data-lang-attr="common.close|aria-label" aria-label="Close">&times;</button>
+        <button type="button" id="ms-exterior-back" class="close-x close-x--corner" data-lang-attr="common.close|aria-label" aria-label="Close">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
         <h2 id="ms-exterior-title" data-lang="maskingStudio.exteriorTitle">That’s one for the Exterior Studio</h2>
         <p id="ms-exterior-body"></p>
         <div class="ms-pro-gate__actions">

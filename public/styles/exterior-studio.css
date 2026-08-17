@@ -32,9 +32,36 @@ body { overflow-x: clip; max-width: 100vw; }
  * re-add an overlay here; requireProAccount on POST /api/enhance-exterior is the real
  * gate, and this page's job is to be readable by everyone including Googlebot. */
 
+/* --- The pre-paint Pro shape ----------------------------------------------- */
+/* The markup ships in the anonymous state — pitch visible, tool hidden — which is right
+ * for everyone except the people who already paid, who used to watch the sales pitch paint
+ * and then vanish a round trip later when /api/auth/me finally answered. scripts/
+ * exterior-studio-gate.js runs before the first paint and puts this class on <html> when
+ * the plan auth.js cached says Stagify+; exterior-studio/access.js takes it off the moment
+ * the live plan is known, after which the `hidden` properties are the whole truth. These
+ * three rules ARE that pre-paint state — the class does nothing without them.
+ *
+ * Two things they must keep doing, both load-bearing:
+ *
+ *  1. `display`, never `visibility`. styles.css's i18n anti-FOUC rule
+ *     (`body.language-loaded [data-lang] { visibility: visible }`, specificity (0,2,1))
+ *     matches every translatable element on this page and would silently un-hide anything
+ *     suppressed with `visibility` — the trap written up at length in home.css.
+ *  2. The third selector has to outrank `.ex-grid[hidden] { display: none }` below. An id
+ *     does that; a class would tie and lose to source order. */
+html.ex-pro-pending #ex-features,
+html.ex-pro-pending #ex-hero-actions { display: none; }
+html.ex-pro-pending #ex-tool[hidden] { display: grid; }
+
 /* --- Shell + intro (masking-studio conventions) ---------------------------- */
 .ex-shell { width: 100%; max-width: 1400px; margin: 0 auto; }
-.ex-intro { text-align: center; margin: 4px auto 18px; max-width: 760px; }
+/* Wide enough that the subtitle sets on ONE line — it is a single sentence pair and read
+ * as two ragged lines under a centred title. Deliberately a max-width and not `nowrap`:
+ * the sentence is ~120 characters in English and longer in German, so no phone will ever
+ * hold it, and `nowrap` would push a scrollbar across the page rather than wrapping. The
+ * line-length rule this breaks (~75ch for comfortable reading) is about paragraphs; this
+ * is one line of display copy. */
+.ex-intro { text-align: center; margin: 4px auto 28px; max-width: 1000px; }
 .ex-intro h1 {
   margin: 0 0 8px;
   font-size: clamp(26px, 3.2vw, 38px);
@@ -47,7 +74,14 @@ body { overflow-x: clip; max-width: 100vw; }
  * and would otherwise win the margin outright, leaving the call to action flush against
  * the subtitle with no gap at all. */
 .ex-intro p.ex-intro__actions { margin: 18px 0 0; }
-.ex-intro__actions[hidden] { display: none; }
+/* Matched by id, not by class. The row briefly carried a "Billed monthly · Cancel anytime"
+ * line under the button, which needed `display: flex` on the (0,2,1) selector above — and
+ * that outranks a class-only `[hidden]`, leaving the sales button on screen for a
+ * subscriber. The line is gone and the `display` with it, so a class would do again; the id
+ * stays because it cannot be wrong, and the trap comes back the moment anyone adds a second
+ * child here. It still loses to `html.ex-pro-pending #ex-hero-actions` (1,1,1), which is
+ * what the pre-paint gate needs. */
+#ex-hero-actions[hidden] { display: none; }
 .ex-intro__actions a { text-decoration: none; }
 
 /* The site's default buttons shout in uppercase; inside the studio they read as tool
@@ -68,33 +102,132 @@ body { overflow-x: clip; max-width: 100vw; }
   justify-content: center;
 }
 
-/* --- The public half ------------------------------------------------------ */
-.ex-features-section { margin: 0 auto 8px; max-width: 1080px; }
-.ex-features-section[hidden] { display: none; }
-.ex-section__title {
-  margin: 0 0 20px;
-  text-align: center;
-  font-size: clamp(1.2rem, 2.4vw, 1.6rem);
-  color: var(--text-heading);
-}
-.ex-features {
+/* --- The public half ------------------------------------------------------
+ *
+ * Three stacked sections inside ONE #ex-features container, because that id is what
+ * exterior-studio/access.js hides for a Stagify+ account — the whole pitch has to leave
+ * together, and a second toggled region would be a second thing to keep in step.
+ *
+ * The `hidden` rule needs the id. The UA's `[hidden] { display: none }` is a type-less
+ * (0,0,0) rule that any `display` set on a class loses to nothing but wins over — so
+ * `.ex-pitch { display: grid }` would keep the pitch on screen for a subscriber. It also
+ * has to stay BELOW `html.ex-pro-pending #ex-features` in specificity (that one is (1,1,1)
+ * against this (1,1,0)), so the pre-paint gate still wins during the in-flight window.
+ *
+ * NOTE ON COLOUR: --muted (#6b7280) composites to about 3.9:1 against the frosted panels
+ * on this page's lavender background, which is a fail at body size. Secondary text here is
+ * --slate-deep, which clears AA on the same composite. */
+/* padding-bottom, because this page has no footer: whatever the pitch ends on IS the last
+ * thing in the scroll container, and flush against the viewport edge reads as a page that
+ * was cut off rather than one that finished. */
+.ex-pitch {
   display: grid;
-  /* auto-fit rather than a breakpoint ladder: four cards go 4 / 2 / 1 across on their
-   * own, and the page is responsive by construction rather than at three chosen widths. */
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-  gap: 16px;
+  gap: 32px;
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding-bottom: 44px;
 }
-.ex-feature {
-  background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(16px) saturate(170%);
-  -webkit-backdrop-filter: blur(16px) saturate(170%);
-  border: 1px solid rgba(255, 255, 255, 0.55);
-  border-radius: 16px;
-  box-shadow: 0 14px 40px rgba(30, 58, 138, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  padding: 20px 18px;
+#ex-features[hidden] { display: none; }
+
+/* --- What it changes ------------------------------------------------------
+ *
+ * ONE colour ramp for the whole pitch, and it is the page's own: --brand-deep for every
+ * heading, --accent for prose, --slate-deep for the option lists. It used to run a
+ * near-black --text-heading on the h2, --brand-deep on the card titles, --brand-strong on
+ * the pills and --brand-tint behind the icons — four values doing one job, on a page whose
+ * background is already a blue. Nothing here paints a colour that is not in that ramp.
+ *
+ * ONE surface, too. This was three frosted cards plus a fourth frosted band, each carrying
+ * its own border, its own 40px shadow and a tinted tile inside it: glass boxes nested in a
+ * glass page. The panel below is the only box on the pitch, and the columns are separated
+ * by hairlines rather than by gaps and borders. */
+.ex-features-section { margin: 0; }
+.ex-section__title {
+  margin: 0 0 16px;
+  text-align: center;
+  font-size: clamp(1.05rem, 1.9vw, 1.3rem);
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  color: var(--brand-deep);
 }
-.ex-feature__title { margin: 0 0 8px; font-size: 15px; font-weight: 700; color: var(--brand-deep); }
-.ex-feature__body { margin: 0; font-size: 14px; line-height: 1.6; color: var(--accent); }
+
+/* The one panel. `.ex-panel` supplies the frosted recipe the whole site uses; only the
+ * padding is ours, and it is asymmetric because the columns bring their own. */
+.ex-board { padding: 4px 10px 6px; }
+
+.ex-features { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.ex-feature { padding: 22px 22px 24px; }
+/* A hairline between columns rather than three bordered cards: one line, one weight, and
+ * nothing to align at the bottom — which is why the old rule could drop the flex column
+ * and the `margin-top: auto` that bottom-aligned the pill rows across three cards of
+ * different heights. Adjacent-sibling, so the first column has no rule to its left. */
+.ex-feature + .ex-feature { border-left: 1px solid rgba(37, 99, 235, 0.13); }
+.ex-feature__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 7px;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--brand-deep);
+}
+/* An inline glyph on the title's own baseline, NOT the 36px tinted tile this used to be.
+ * The tile was a second box inside a box and its --brand-tint was a fourth blue; the icon
+ * is one step brighter than the heading it sits beside and paints nothing else.
+ *
+ * `flex: 0 0 auto` because an SVG is a flex item here and would otherwise be squeezed by a
+ * long heading rather than wrapping it. The `data-lang` sits on a <span> beside it, not on
+ * the <h3>: language-loader writes textContent, so a key on the heading would delete the
+ * icon on the first language switch. */
+.ex-feature__icon { flex: 0 0 auto; color: var(--brand); }
+.ex-feature__body { margin: 0; font-size: 13.5px; line-height: 1.6; color: var(--accent); }
+
+/* The card's own control vocabulary, in the studio's own words — and as plain text, not as
+ * pills. Fifteen pills on a page where nothing is clickable is fifteen controls that do not
+ * control anything, and they carried most of the visual weight of the section.
+ *
+ * It reads as ONE run of prose, which is why the list is not a flex container. Flex makes
+ * every <li> an unbreakable item, so a column narrower than "Rain & puddles" plus what is
+ * beside it pushes whole items onto lines of their own — six removals came out as a ragged
+ * stack of one and two per row that looked like a broken table rather than a list. Inline
+ * items wrap on the spaces between them, exactly like the sentence above them.
+ *
+ * The comma is a CSS separator, so the pack strings stay clean nouns with no punctuation.
+ * A comma and not the middot this used to draw: punctuation that ATTACHES to the word
+ * before it can never be left dangling at the start or end of a wrapped line, which is the
+ * whole failure mode a free-standing glyph has here. The space after it comes from the
+ * newline between the <li> tags in the markup. */
+.ex-feature__opts {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  font-size: 12.5px;
+  line-height: 1.75;
+  color: var(--slate-deep);
+}
+.ex-feature__opts li { display: inline; }
+.ex-feature__opts li:not(:last-child)::after { content: ","; }
+
+/* The promise: same surface, under a rule. It is the constraint that makes the three
+ * columns above usable on a listing, not a fourth feature — so it reads as one sentence
+ * with a lead-in rather than as another titled block. */
+.ex-honest {
+  margin: 0;
+  padding: 16px 22px 18px;
+  border-top: 1px solid rgba(37, 99, 235, 0.13);
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--accent);
+}
+.ex-honest__title { color: var(--brand-deep); font-weight: 700; }
+/* The stop between the lead-in and the sentence, in CSS for the same reason as the comma
+ * above: neither pack should have to carry punctuation that belongs to the layout. A full
+ * stop rather than the free-standing middot this used to draw, for the same reason the
+ * option lists changed — it attaches to the words before it, so a wrap can never strand it
+ * on a line by itself. */
+.ex-honest__title::after { content: "."; }
+.ex-honest__body { margin: 0; }
 
 /* --- The tool ------------------------------------------------------------- */
 .ex-grid {
@@ -577,6 +710,21 @@ body { overflow-x: clip; max-width: 100vw; }
   border: 0;
 }
 
+/* --- The pitch, stacked ---------------------------------------------------- */
+/* Three columns straight to one, with no two-column step: three of anything in a two-track
+ * grid orphans the last one beside an empty cell, and the columns are one line of prose
+ * each now, so they hold their width well past the point where the tool has to stack. */
+@media (max-width: 780px) {
+  .ex-features { grid-template-columns: minmax(0, 1fr); }
+  /* The rule turns with the layout — a left border between stacked rows is a stray
+   * vertical tick down the side of the panel. */
+  .ex-feature + .ex-feature {
+    border-left: 0;
+    border-top: 1px solid rgba(37, 99, 235, 0.13);
+  }
+  .ex-feature { padding: 18px 20px; }
+}
+
 /* --- Narrow desktop windows: stack the panels, photo first ----------------- */
 @media (max-width: 900px) {
   .ex-grid { grid-template-columns: 1fr; }
@@ -598,4 +746,7 @@ body { overflow-x: clip; max-width: 100vw; }
   .ex-workspace { padding: 12px; min-height: 0; }
   .ex-dropzone { min-height: 220px; }
   .ex-preview__img, .ex-compare { max-height: 60vh; }
+  .ex-pitch { gap: 24px; }
+  .ex-board { padding: 2px 4px; }
+  .ex-honest { padding: 14px 20px 16px; }
 }

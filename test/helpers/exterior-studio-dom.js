@@ -74,10 +74,17 @@ export function fakeEl(id, { hidden = false } = {}) {
 /**
  * Build a document exposing exactly the ids the real page carries, each element starting
  * in the state the markup ships it in.
- * @param {{ user?: { plan?: string } | null, lang?: Record<string, string> }} [opts] - The signed-in account to expose on window.StagifyAuth, and a language pack.
- * @returns {{ els: Record<string, any>, restore: () => void }}
+ *
+ * `token` and `pending` model the pre-paint gate: the head script arms
+ * `html.ex-pro-pending` from a CACHED plan, and access.js only takes it off once the live
+ * plan is known — which it decides by asking whether there is a token still awaiting an
+ * answer. Defaulting `token` to "one exists iff a user does" keeps every existing caller
+ * in the settled state they were written for.
+ *
+ * @param {{ user?: { plan?: string } | null, lang?: Record<string, string>, token?: string | null, pending?: boolean }} [opts] - The signed-in account to expose on window.StagifyAuth, a language pack, the stored auth token, and whether the head gate armed its class.
+ * @returns {{ els: Record<string, any>, root: any, restore: () => void }}
  */
-export function mountExteriorPage({ user = null, lang = {} } = {}) {
+export function mountExteriorPage({ user = null, lang = {}, token = undefined, pending = false } = {}) {
   const hidden = hiddenPageIds();
   /** @type {Record<string, any>} */
   const els = {};
@@ -92,20 +99,32 @@ export function mountExteriorPage({ user = null, lang = {} } = {}) {
   const prevDoc = globalThis.document;
   const prevWin = globalThis.window;
 
+  // <html>, carrying the class the render-blocking gate sets before first paint.
+  const root = fakeEl('html');
+  if (pending) root.classList.add('ex-pro-pending');
+
+  const storedToken = token === undefined ? (user ? 'tok_test' : null) : token;
+
   globalThis.document = /** @type {any} */ ({
     readyState: 'complete',
+    documentElement: root,
     addEventListener() {},
     removeEventListener() {},
     getElementById: (id) => els[id] || null,
     querySelectorAll: () => [],
   });
   globalThis.window = /** @type {any} */ ({
-    StagifyAuth: { user, isProUser: () => user?.plan === 'pro' },
+    StagifyAuth: {
+      user,
+      isProUser: () => user?.plan === 'pro',
+      getToken: () => storedToken,
+    },
     LanguageSystem: { getText: (key, fallback) => (key in lang ? lang[key] : fallback) },
   });
 
   return {
     els,
+    root,
     ctaLabel,
     restore() { globalThis.document = prevDoc; globalThis.window = prevWin; },
   };

@@ -18,7 +18,9 @@ export const REPORT_ISSUE_HTML =
   '<div id="report-issue-modal" class="report-modal hidden" aria-hidden="true">' +
   '<div class="report-modal__backdrop" id="report-issue-backdrop"></div>' +
   '<div class="report-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="report-issue-title">' +
-  '<button type="button" class="report-modal__close" id="report-issue-close" data-lang-attr="common.close|aria-label" aria-label="Close"><span aria-hidden="true">&times;</span></button>' +
+  '<button type="button" class="close-x close-x--corner" id="report-issue-close" data-lang-attr="common.close|aria-label" aria-label="Close">' +
+  '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>' +
+  '</button>' +
   '<h2 id="report-issue-title" data-lang="profile.report.title">Report an issue</h2>' +
   '<p class="report-modal__sub" data-lang="profile.report.intro">Tell us what went wrong and we’ll take a look.</p>' +
   '<form id="report-issue-form" novalidate>' +

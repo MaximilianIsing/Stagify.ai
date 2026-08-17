@@ -2,8 +2,9 @@
 
 AI-powered virtual staging and interior design for real estate. Upload a photo of an
 empty or dated room and get a professionally staged result in about eight seconds —
-plus an **AI Designer** (chat-to-stage, and CAD/PDF floor plans → photorealistic 3D
-renders) and a **Masking Studio** for pixel-precise edits.
+plus an **AI Designer** (chat-to-stage, and floor plans → either a furnished plan view
+from above or a photorealistic photo taken inside one room) and a **Masking Studio** for
+pixel-precise edits.
 
 Node/Express monolith (`server.js`) serving a no-build static frontend (`public/`) and
 a JSON API from one origin. State is a SQLite file plus flat JSON/CSV on a persistent

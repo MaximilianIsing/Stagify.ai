@@ -87,6 +87,10 @@
       <link rel="stylesheet" href="styles/auth.css">
     </noscript>
     <link rel="stylesheet" href="styles/enterprise.css">
+    <!-- Sets html.has-session from the stored token BEFORE first paint, so the nav’s
+         Gallery tab does not pop in a round trip late. Render-blocking on purpose, and
+         last in <head> so it never delays discovery of the CSS above it. -->
+    <script src="scripts/session-class.js"></script>
   </head>
   <body class="page-enterprise">
     <video id="background-video" autoplay muted loop playsinline webkit-playsinline preload="metadata" poster="media-webp/background-poster.webp">

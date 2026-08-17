@@ -121,9 +121,6 @@ const E2E_COVERED = [
   // staging-nav.spec.js, among others.
   { module: 'app.js', page: 'index.html' },
   { module: 'app/stage-mask-editor.js', page: 'index.html' },
-  // Session wiring shared by eleven pages. Driven by stage-signin-entry.spec.js
-  // and gallery-gate.spec.js.
-  { module: 'auth.js', page: 'index.html' },
   // The homepage carousel. It runs at PARSE time rather than on DOMContentLoaded
   // because the <img> it injects is the page's LCP element, so there is not even a
   // mount function to call. Asserted in index.spec.js, basic-mask.spec.js and
@@ -154,10 +151,19 @@ const BLOCKED_CLASSIC = [
   'ai-designer-model-selector.js',
   'demo-data.js',
   'demo-player.js',
+  // Behaviourally covered by test/frontend/exterior-studio/gate.test.js, which runs the
+  // shipped source through `new Function` with document/localStorage/setTimeout injected —
+  // the same harness ai-designer-gate.js has. It still belongs here rather than delisted:
+  // this list tracks what node can `import`, and an IIFE with no exports is not that.
+  'exterior-studio-gate.js',
   'faq-redirect.js',
   'gallery-gate.js',
   'gtag.js',
   'masking-studio-gate.js',
+  // Same story as the two gates above: behaviourally covered by
+  // test/frontend/gallery/session-class.test.js through `new Function`, but an IIFE with
+  // no exports is not something node can import, which is what this list tracks.
+  'session-class.js',
 ];
 
 /** Every module on the ledger, whichever list it sits on. */

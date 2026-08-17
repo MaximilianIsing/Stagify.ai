@@ -79,7 +79,7 @@ export function createChatMessages(deps) {
       function getTypingStatusMessages(messageType) {
         // Prefer the localized list for the current language; fall back to the
         // English defaults below if the key is missing or not yet loaded.
-        const category = ['generating', 'staging', 'analyzing', 'welcome'].includes(messageType)
+        const category = ['generating', 'staging', 'floorplan', 'analyzing', 'welcome'].includes(messageType)
           ? messageType
           : 'general';
         if (window.LanguageSystem && window.LanguageSystem.isLoaded && window.LanguageSystem.isLoaded()) {
@@ -109,6 +109,19 @@ export function createChatMessages(deps) {
             'creating the design...',
             'generating the layout...',
             'refining details...',
+            'almost ready...',
+          ];
+        }
+        if (messageType === 'floorplan') {
+          return [
+            'reading your floor plan...',
+            'measuring the rooms...',
+            'laying out the space...',
+            'placing walls, doors, and windows...',
+            'furnishing the rooms...',
+            'setting the lighting...',
+            'rendering the view...',
+            'adding the finishing touches...',
             'almost ready...',
           ];
         }

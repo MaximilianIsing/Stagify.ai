@@ -24,7 +24,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { mountExteriorPage, pageIds, hiddenPageIds, pageHtml } from '../../helpers/exterior-studio-dom.js';
-import { exteriorView, applyExteriorView, syncExteriorAccess } from '../../../public/scripts/exterior-studio/access.js';
+import {
+  exteriorView,
+  applyExteriorView,
+  syncExteriorAccess,
+  PENDING_CLASS,
+} from '../../../public/scripts/exterior-studio/access.js';
 
 const PRO = { plan: 'pro' };
 const FREE = { plan: 'free' };
@@ -190,6 +195,56 @@ test('syncExteriorAccess no-ops on a page with no Exterior Studio', () => {
   assert.doesNotThrow(() => syncExteriorAccess());
   assert.equal(syncExteriorAccess(), false);
   globalThis.document = prevDoc;
+});
+
+// ---- handing back from the head gate's cached guess ------------------------
+//
+// The predicate that decides WHEN is shared with the nav's Gallery tab and tested in
+// test/frontend/session-state.test.js. What belongs here is that this page wires it up:
+// the writer must not strip the class on the optimistic first sync, and must strip it the
+// moment the answer lands.
+
+test('the optimistic first sync leaves the gate class alone; the answer takes it off', () => {
+  // exterior-studio-app.js calls syncExteriorAccess() BEFORE /api/auth/me is even sent, so
+  // at that moment the writer reads "anonymous" for a subscriber. If that call stripped the
+  // class, the pitch would paint — which is the exact bug the gate exists to prevent.
+  const inFlight = mountExteriorPage({ user: null, token: 'tok', pending: true });
+  syncExteriorAccess();
+  assert.ok(
+    inFlight.root.classList.contains(PENDING_CLASS),
+    'the cached guess must stand until the plan is actually known',
+  );
+  inFlight.restore();
+
+  const answered = mountExteriorPage({ user: PRO, token: 'tok', pending: true });
+  syncExteriorAccess();
+  assert.ok(!answered.root.classList.contains(PENDING_CLASS), 'the live plan takes over');
+  assert.equal(answered.els['ex-tool'].hidden, false, 'and it agrees with what was painted');
+  assert.equal(answered.els['ex-features'].hidden, true);
+  answered.restore();
+});
+
+test('a stale cache is corrected: the class comes off and the pitch comes back', () => {
+  // Someone who cancelled still has `stagifyPlan: 'pro'` in storage until /api/auth/me
+  // answers, so they get the tool for one round trip. Cosmetic only — requireProAccount
+  // refuses the render — but the correction has to actually land.
+  const page = mountExteriorPage({ user: FREE, token: 'tok', pending: true });
+  syncExteriorAccess();
+  assert.ok(!page.root.classList.contains(PENDING_CLASS), 'the CSS override must stop applying');
+  assert.equal(page.els['ex-tool'].hidden, true, 'and the tool goes away with it');
+  assert.equal(page.els['ex-features'].hidden, false, 'leaving the pitch');
+  page.restore();
+});
+
+test('signing out disarms the class as well as restoring the pitch', () => {
+  // clear() drops the token, the user AND the cached plan together, so this is the
+  // "no token" branch of settled — the one that must not wait for an answer that is
+  // never coming.
+  const page = mountExteriorPage({ user: null, token: null, pending: true });
+  syncExteriorAccess();
+  assert.ok(!page.root.classList.contains(PENDING_CLASS));
+  assert.equal(page.els['ex-features'].hidden, false);
+  page.restore();
 });
 
 test('syncExteriorAccess reads the live plan off window.StagifyAuth', () => {

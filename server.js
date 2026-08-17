@@ -275,6 +275,21 @@ const { deleteUser } = createUserDeletion({ baseDir: __dirname, getDataLogDir, f
 const { annotateImage } = createImageAnnotation({ openai });
 const { reviewImageQuality, reviewMaskEdit, validateStageableImage, validateExteriorImage } = createImageReview({ genAI });
 const { roomIsAlreadyEmpty, eraseFurniture } = createErase({ genAI, openai });
+// NO reviewer, on purpose — the quality gate is OFF for blueprint renders, and that is a
+// measured decision rather than an oversight (cad-handling.js still accepts one, and the
+// specs inject a fake, so re-enabling is a one-word change here).
+//
+// The gate's bargain is "retry until perfect, cheaply, because most renders pass first
+// time". Blueprint renders do not pass. Measured on a clean five-room plan, both views ran
+// the full 3 attempts and settled at 80/100, each time on a real but minor defect the
+// reviewer named correctly (a floating bathtub; an armchair leg melting into the floor).
+// So the gate degenerates from "usually one call" into "always three calls for best-of-3"
+// — on gemini-3-pro-image, the priciest model in the app, at ~57s per attempt.
+//
+// maxAttempts is deliberately left alone (see the same note in staging-generation.js): the
+// loop only re-enters on a THROW, so a passing reviewer means ONE generation in the happy
+// path while a transient provider error is still retried. That is the half of the retry
+// worth keeping, and `maxAttempts: 1` would have thrown it away with the rest.
 const { blueprintTo3D } = createCadHandling({ genAI });
 const { getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest } = createHostedImages({ getDataLogDir });
 const { healthHandler, protectLogs, stagingEndpointKeyGuard } = createHttpGuards({ genAI, LOGS_ACCESS_KEY, endpointKeyMatches });

@@ -84,14 +84,21 @@ export interface GenerateRequest {
 }
 
 /**
- * The AI routing 'cad' object (blueprint -> 3D render). Also stored as the
+ * The AI routing 'cad' object (blueprint -> render). Also stored as the
  * `params` of a CadResult.
+ *
+ * `view` picks which of the two renders to produce; it is optional here because a
+ * decision made before the field existed carries no value, and cad-handling.js defaults
+ * a missing one to 'top-down'. `room` is only meaningful for 'eye-level'.
  */
 export interface CadRequest {
   shouldProcessCAD?: boolean;
   imageIndex?: number;
   furnitureImageIndex?: number | number[] | null;
   additionalPrompt?: string;
+  view?: 'top-down' | 'eye-level' | null;
+  room?: string | null;
+  disclosure?: unknown;
   [key: string]: unknown;
 }
 

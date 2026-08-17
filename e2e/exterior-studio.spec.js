@@ -118,6 +118,25 @@ test.describe('Exterior Studio — signed-in free account', () => {
     await expect(page.locator(CTA)).toBeVisible();
     await expect(page.locator(CTA)).toHaveAttribute('href', 'stagify-plus.html');
   });
+
+  test('a cached Stagify+ plan that is no longer true is CORRECTED, not honoured', async ({ page }) => {
+    // The accepted cost of pre-painting from a cache: somebody who cancelled still has
+    // `stagifyPlan: 'pro'` in storage, so they get the tool until /api/auth/me answers.
+    // Cosmetic — requireProAccount refuses the render either way — but the correction has
+    // to actually arrive, and it is the one path where the guess is WRONG.
+    await seedFreeSession(page);
+    await page.addInitScript(() => {
+      try { localStorage.setItem('stagifyPlan', 'pro'); } catch { /* ignore */ }
+    });
+    await page.goto(URL);
+
+    await expect(page.locator(FEATURES)).toBeVisible();
+    await expect(page.locator(TOOL)).toBeHidden();
+    await expect(page.locator(CTA)).toBeVisible();
+    // The class has to come off too. Left on, the CSS override outranks the `hidden`
+    // attribute and the tool stays on screen no matter what the writer sets.
+    await expect(page.locator('html')).not.toHaveClass(/ex-pro-pending/);
+  });
 });
 
 test.describe('Exterior Studio — Stagify+', () => {
@@ -131,6 +150,44 @@ test.describe('Exterior Studio — Stagify+', () => {
     // The sales button goes too — the tool is right there, so offering to sell it again
     // is noise. The masking studio has no hero button for the same reason.
     await expect(page.locator('#ex-hero-actions')).toBeHidden();
+    // Including every section of it. #ex-features is one container precisely so this is one
+    // assertion — a pitch section added outside it looks right in every signed-out check
+    // and leaves a subscriber scrolling past sales copy to reach what they already bought.
+    await expect(page.locator('.ex-honest')).toBeHidden();
+    await expect(page.locator('.ex-features')).toBeHidden();
+  });
+
+  test('the sales pitch is NEVER flashed at a subscriber, however slow the plan check', async ({ page }) => {
+    // The regression: the markup ships in the anonymous shape, so before this page had a
+    // pre-paint gate a Stagify+ visitor got the pitch and the "Get Stagify+" button for as
+    // long as /api/auth/me took to answer, and only then the tool. It was brief on a fast
+    // connection and very much not brief on a slow one.
+    //
+    // Held the only way it can be: stall the answer, so the whole in-flight window is open
+    // for inspection. Everything asserted below happens while the request the page is
+    // waiting on has not been answered yet.
+    let release;
+    const answered = new Promise((r) => { release = r; });
+    await page.route('**/api/auth/me', async (route) => {
+      await answered;
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(PRO_ME) });
+    });
+
+    await page.goto(URL);
+    await expect(page.locator(HERO)).toBeVisible();
+
+    await expect(page.locator(FEATURES)).toBeHidden();
+    await expect(page.locator('#ex-hero-actions')).toBeHidden();
+    // Paired positive, and the reason this is not just "hide everything and hope": the tool
+    // is up and usable during the same window, not merely the pitch suppressed.
+    await expect(page.locator(TOOL)).toBeVisible();
+
+    release();
+    // And it stays that way once the real plan lands — the class comes off, and the
+    // `hidden` properties access.js sets must agree with what was already painted.
+    await expect(page.locator(TOOL)).toBeVisible();
+    await expect(page.locator(FEATURES)).toBeHidden();
+    await expect(page.locator('html')).not.toHaveClass(/ex-pro-pending/);
   });
 
   test('the controls are OPT-IN: nothing is requested, and submit stays disabled', async ({ page }) => {
@@ -321,8 +378,12 @@ test.describe('Exterior Studio — Stagify+', () => {
     await page.click('#ex-enhance');
     await expect(page.locator('#ex-result')).toBeVisible();
 
-    const beforeTag = page.locator('.ex-compare__tag--before');
-    const afterTag = page.locator('.ex-compare__tag--after');
+    // Scoped to the RESULT's box even though it is once again the only one on the page. The
+    // pitch briefly drew a second comparison with these same tag classes and the bare
+    // selector started matching two elements, which Playwright's strict mode refused; the
+    // scope is what this test always meant, and it costs nothing to keep saying it.
+    const beforeTag = page.locator('#ex-compare .ex-compare__tag--before');
+    const afterTag = page.locator('#ex-compare .ex-compare__tag--after');
     await expect(beforeTag).toBeVisible();
     await expect(afterTag).toBeVisible();
 

@@ -540,26 +540,6 @@
         margin: 0;
       }
       
-      .bug-report-popup-close {
-        background: transparent;
-        border: none;
-        font-size: 28px;
-        color: var(--muted);
-        cursor: pointer;
-        padding: 0;
-        width: 32px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 8px;
-        transition: background 0.2s;
-      }
-      
-      .bug-report-popup-close:hover {
-        background: rgba(0, 0, 0, 0.05);
-      }
-      
       .bug-report-form {
         display: flex;
         flex-direction: column;
@@ -1469,27 +1449,6 @@
         font-weight: 600;
         margin: 0;
         color: var(--brand-deep);
-      }
-      
-      .mask-editor-close {
-        background: transparent;
-        border: none;
-        color: var(--brand-deep);
-        font-size: 32px;
-        cursor: pointer;
-        padding: 0;
-        width: 36px;
-        height: 36px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 6px;
-        transition: background 0.2s;
-      }
-      
-      .mask-editor-close:hover {
-        background: rgba(37, 99, 235, 0.1);
-        color: var(--brand);
       }
       
       .mask-editor-canvas-container {

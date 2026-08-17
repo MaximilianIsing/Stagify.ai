@@ -354,8 +354,8 @@ test('a missing OpenAI client yields a 500 AI-not-configured error', async () =>
 });
 
 // 8 ─ CAD (flagship 3D-render intent): opt-in + a shouldProcessCAD decision on a
-//     message that carries a blueprint image → SSE. chatIntentType maps CAD to the
-//     'staging' status category, and the rendered blueprint lands in the "images"
+//     message that carries a blueprint image → SSE. chatIntentType gives CAD its own
+//     'floorplan' status category, and the rendered blueprint lands in the "images"
 //     frame as cadImage (a data: URL built from blueprintTo3D's returned buffer).
 test('cad routing with streamResponse renders the blueprint and streams cadImage in the images frame', async () => {
   app = await mountChat({
@@ -389,7 +389,7 @@ test('cad routing with streamResponse renders the blueprint and streams cadImage
   );
 
   const byEvent = Object.fromEntries(frames.map((f) => [f.event, f.data]));
-  assert.equal(byEvent.status.type, 'staging'); // chatIntentType maps CAD → 'staging'
+  assert.equal(byEvent.status.type, 'floorplan'); // CAD has its OWN status category
   assert.equal(byEvent.message.response, 'Here is your 3D render.');
 
   // cadImage is a data: URL whose base64 payload is exactly blueprintTo3D's buffer.
@@ -485,8 +485,302 @@ test('a blueprint in the current message overrides an earlier baseImageIndex sel
 
   assert.equal(res.status, 200);
   assert.equal(app.calls.cad.length, 1);
-  // blueprintTo3D(imageBuffer, mimeType, furnitureImages, additionalPrompt)
+  // blueprintTo3D(imageBuffer, { mimeType, furnitureImages, additionalPrompt, view, room })
   assert.equal(app.calls.cad[0][0].toString(), 'new-blueprint');
+});
+
+// 8d ─ ACCOUNTING. A blueprint render is a gemini-3-pro-image call — the most
+//      expensive model in the app — and it was the only image-producing path that
+//      incremented nothing, wrote no gallery row, and left the trial-activation signal
+//      unset. The last one had a user-visible consequence: someone whose use of the
+//      Designer is floor plans was classed "signed up but never staged" by the
+//      lifecycle sweep and got the day-1 "you haven't staged anything yet" nudge.
+const CAD_ONLY_ROUTING = {
+  response: 'Here is your 3D render.',
+  cad: [{ shouldProcessCAD: true, imageIndex: 0, furnitureImageIndex: null, additionalPrompt: '' }],
+};
+
+test('a CAD-only turn counts the render and marks the account active', async () => {
+  const activity = [];
+  app = await mountChat({
+    routing: CAD_ONLY_ROUTING,
+    recordStagingActivity: (user) => { activity.push(user?.id); return true; },
+  });
+
+  const res = await postChat(app.baseUrl, {
+    messages: [{
+      role: 'user',
+      content: [
+        { type: 'text', text: 'render this floorplan' },
+        { type: 'image_url', image_url: { url: ROOM_IMAGE } },
+      ],
+    }],
+  });
+
+  assert.equal(res.status, 200);
+  assert.equal(app.calls.cad.length, 1, 'the render happened');
+  assert.equal(app.calls.incPromptCount.calls, 1, 'and it was counted');
+  assert.deepEqual(activity, ['test'], 'and it marks the account as having actually used the tool');
+});
+
+test('a CAD-only turn writes a gallery row', async () => {
+  const recorded = [];
+  const uploads = [];
+  app = await mountChat({
+    routing: CAD_ONLY_ROUTING,
+    renderPersistence: {
+      enabled: () => true,
+      recordPending: (arg) => { recorded.push(arg); return { entries: ['e1'] }; },
+      uploadInBackground: async (arg) => { uploads.push(arg); },
+    },
+  });
+
+  const res = await postChat(app.baseUrl, {
+    messages: [{
+      role: 'user',
+      content: [
+        { type: 'text', text: 'render this floorplan' },
+        { type: 'image_url', image_url: { url: ROOM_IMAGE } },
+      ],
+    }],
+  });
+
+  assert.equal(res.status, 200);
+  assert.equal(recorded.length, 1, 'one gallery row per render');
+  // The NATIVE bytes, not the delivered upscale — render-persistence.js never stores the
+  // delivery copy, and the CAD path used to hand it the wrong one.
+  assert.equal(recorded[0].natives[0].buffer.toString(), 'cad-native');
+  assert.equal(recorded[0].isPro, true, 'both chat endpoints sit behind requireProAccount');
+  assert.equal(recorded[0].model, 'gemini-3-pro-image');
+  assert.equal(recorded[0].extra.source, 'designer');
+  assert.equal(recorded[0].extra.qualifier, 'Floor plan');
+  assert.equal(uploads.length, 1, 'and the bytes are uploaded in the background');
+});
+
+test('an eye-level render is filed in the gallery under its ROOM', async () => {
+  // `view` is not a column, so the room is what distinguishes two renders of one plan
+  // (see the naming rule in public/scripts/render-name.js).
+  const recorded = [];
+  app = await mountChat({
+    routing: {
+      response: 'Here is the living room.',
+      cad: [{
+        shouldProcessCAD: true, imageIndex: 0, furnitureImageIndex: null,
+        additionalPrompt: '', view: 'eye-level', room: 'living room',
+      }],
+    },
+    renderPersistence: {
+      enabled: () => true,
+      recordPending: (arg) => { recorded.push(arg); return { entries: ['e1'] }; },
+      uploadInBackground: async () => {},
+    },
+  });
+
+  await postChat(app.baseUrl, {
+    messages: [{
+      role: 'user',
+      content: [
+        { type: 'text', text: 'show me the living room' },
+        { type: 'image_url', image_url: { url: ROOM_IMAGE } },
+      ],
+    }],
+  });
+
+  assert.equal(recorded[0].extra.qualifier, 'living room');
+  // And the view reached the renderer at all.
+  assert.equal(app.calls.cad[0][1].view, 'eye-level');
+  assert.equal(app.calls.cad[0][1].room, 'living room');
+});
+
+// 8e ─ SILENT FAILURE. Both of these branches used to log under DEBUG_MODE, return no
+//      results, and set NO textSuffix — so the user got the routing model's cheerful
+//      "Here is your 3D render." with no image attached and nothing saying why.
+test('a CAD request with no blueprint in the conversation says so instead of going quiet', async () => {
+  // The model decided to CAD-stage on a turn that carries no image at all. Note this is
+  // the ONLY way the branch fires: getImageFromHistory falls back to index 0 for any
+  // out-of-range index, so a merely WRONG index resolves to something.
+  app = await mountChat({
+    routing: {
+      response: 'Here is your 3D render.',
+      cad: [{ shouldProcessCAD: true, imageIndex: 0, furnitureImageIndex: null, additionalPrompt: '' }],
+    },
+  });
+
+  const res = await postChat(app.baseUrl, {
+    messages: [{ role: 'user', content: 'render the floorplan I sent' }],
+  });
+
+  const body = await res.json();
+  assert.equal(app.calls.cad.length, 0, 'nothing was rendered');
+  assert.equal(body.cadImage, undefined, 'and no image is claimed');
+  assert.match(body.response, /couldn't find the floor plan/i,
+    'the reply must not stop at "Here is your 3D render."');
+});
+
+// 8f ─ DISCLOSURE. CAD was the one render surface that never stamped: staging, masking
+//      and exterior all do. An eye-level render is a furnished depiction of a real
+//      listing, so it carries the same obligation a staged photo does and the routing
+//      model does not get to opt out of it. A top-down plan render is a diagram, so
+//      there the model's decision stands.
+test('an eye-level render is ALWAYS labelled, whatever the routing model asked for', async () => {
+  app = await mountChat({
+    routing: {
+      response: 'Here is the living room.',
+      cad: [{
+        shouldProcessCAD: true, imageIndex: 0, furnitureImageIndex: null, additionalPrompt: '',
+        view: 'eye-level', room: 'living room',
+        disclosure: null, // the model declined the label
+      }],
+    },
+  });
+
+  await postChat(app.baseUrl, {
+    messages: [{
+      role: 'user',
+      content: [
+        { type: 'text', text: 'show me the living room' },
+        { type: 'image_url', image_url: { url: ROOM_IMAGE } },
+      ],
+    }],
+    stampLang: 'spanish',
+  });
+
+  const stamp = app.calls.cad[0][1].stamp;
+  assert.equal(stamp.enabled, true, 'the model cannot opt an interior render out of the label');
+  assert.equal(stamp.lang, 'spanish', 'the badge language comes from the REQUEST, not the model');
+  assert.ok(stamp.style, 'a style is always resolved, so the stamp cannot fail on an absent one');
+});
+
+test('a top-down plan render follows the routing decision', async () => {
+  app = await mountChat({
+    routing: {
+      response: 'Here is your floor plan.',
+      cad: [{
+        shouldProcessCAD: true, imageIndex: 0, furnitureImageIndex: null, additionalPrompt: '',
+        view: 'top-down', room: null, disclosure: null,
+      }],
+    },
+  });
+
+  await postChat(app.baseUrl, {
+    messages: [{
+      role: 'user',
+      content: [
+        { type: 'text', text: 'furnish this plan' },
+        { type: 'image_url', image_url: { url: ROOM_IMAGE } },
+      ],
+    }],
+  });
+
+  assert.equal(app.calls.cad[0][1].stamp.enabled, false, 'a plan view is a diagram, not a listing photo');
+});
+
+test('a top-down render IS labelled when the routing model asks for it', async () => {
+  // The positive case for the assertion above.
+  app = await mountChat({
+    routing: {
+      response: 'Here is your floor plan.',
+      cad: [{
+        shouldProcessCAD: true, imageIndex: 0, furnitureImageIndex: null, additionalPrompt: '',
+        // The REAL shape the model can emit: DISCLOSURE_ROUTING_FIELD is `{ style, scale }`
+        // or null, with no `enabled` property, and `style` is a four-value enum. An
+        // invented `{ enabled: true, style: 'corner' }` tests a payload that cannot occur.
+        view: 'top-down', room: null, disclosure: { style: 'dark', scale: 1 },
+      }],
+    },
+  });
+
+  await postChat(app.baseUrl, {
+    messages: [{
+      role: 'user',
+      content: [
+        { type: 'text', text: 'furnish this plan and label it' },
+        { type: 'image_url', image_url: { url: ROOM_IMAGE } },
+      ],
+    }],
+  });
+
+  assert.equal(app.calls.cad[0][1].stamp.enabled, true);
+});
+
+test('an out-of-range furniture index does NOT smuggle the blueprint in as a reference', async () => {
+  // getImageFromHistory falls back to index 0 for an unknown index. On a CAD turn index 0
+  // is the BLUEPRINT, so an index the model got wrong used to hand the floor plan back to
+  // the renderer as a "furniture photo" — and the DEBUG-only not-found log could never
+  // fire, so nothing recorded it. Bound-checked now, and reported.
+  app = await mountChat({
+    routing: {
+      response: 'Here is your 3D render.',
+      cad: [{ shouldProcessCAD: true, imageIndex: 0, furnitureImageIndex: 9, additionalPrompt: '' }],
+    },
+  });
+
+  const res = await postChat(app.baseUrl, {
+    messages: [{
+      role: 'user',
+      content: [
+        { type: 'text', text: 'render it with that sofa' },
+        { type: 'image_url', image_url: { url: ROOM_IMAGE } },
+      ],
+    }],
+  });
+
+  const body = await res.json();
+  assert.equal(app.calls.cad.length, 1, 'the render still happens — the reference is a bonus, not a gate');
+  assert.equal(app.calls.cad[0][1].furnitureImages.length, 0, 'and the blueprint is NOT passed as furniture');
+  assert.match(body.response, /couldn't find one of the furniture photos/i);
+});
+
+test('a furniture index pointing AT the blueprint is refused', async () => {
+  // Same failure, arrived at honestly: the model names the blueprint's own index.
+  app = await mountChat({
+    routing: {
+      response: 'Here is your 3D render.',
+      cad: [{ shouldProcessCAD: true, imageIndex: 0, furnitureImageIndex: 0, additionalPrompt: '' }],
+    },
+  });
+
+  await postChat(app.baseUrl, {
+    messages: [{
+      role: 'user',
+      content: [
+        { type: 'text', text: 'render it' },
+        { type: 'image_url', image_url: { url: ROOM_IMAGE } },
+      ],
+    }],
+  });
+
+  assert.equal(app.calls.cad[0][1].furnitureImages.length, 0);
+});
+
+test('a valid furniture reference is still forwarded', async () => {
+  // The positive case for the bound check above — pair every negative assertion with it,
+  // or "0 furniture images" passes for the wrong reason forever.
+  const SOFA = 'data:image/png;base64,' + Buffer.from('sofa').toString('base64');
+  app = await mountChat({
+    routing: {
+      response: 'Here is your 3D render.',
+      cad: [{ shouldProcessCAD: true, imageIndex: 0, furnitureImageIndex: 1, additionalPrompt: '' }],
+    },
+  });
+
+  const res = await postChat(app.baseUrl, {
+    messages: [
+      { role: 'user', content: [{ type: 'image_url', image_url: { url: SOFA } }] },
+      {
+        role: 'user',
+        content: [
+          { type: 'text', text: 'render this plan with that sofa' },
+          { type: 'image_url', image_url: { url: ROOM_IMAGE } },
+        ],
+      },
+    ],
+  });
+
+  const body = await res.json();
+  assert.equal(app.calls.cad[0][1].furnitureImages.length, 1);
+  assert.equal(app.calls.cad[0][1].furnitureImages[0].image.toString(), 'sofa');
+  assert.doesNotMatch(body.response, /couldn't find/i, 'nothing was missing, so nothing is reported');
 });
 
 // 9 ─ Multi-request staging: the router returns an ARRAY of two shouldStage

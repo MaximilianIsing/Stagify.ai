@@ -45,6 +45,34 @@ test.describe('Gallery — phone', () => {
     await expect(page.locator(GALLERY_TAB)).toHaveCount(1);
     await expect(page.locator(GALLERY_TAB)).toBeHidden();
   });
+
+  test('not even before the plan check — the pre-paint reveal must lose to this rule', async ({ page }) => {
+    // session-class.js arms `html.has-session` from the stored token, and the rule that
+    // shows the tab through `.hidden` has to carry !important AND more specificity to beat
+    // `.hidden` — which makes it outrank `.desktop-only` too. The stylesheet re-hides it
+    // below the breakpoint for exactly this case; without that, every signed-in phone
+    // visitor is offered a tab whose page redirects them home the moment they tap it.
+    await stubAnalytics(page);
+    await hideStagingBanner(page);
+    await page.addInitScript(() => {
+      try { localStorage.setItem('stagifyAuthToken', 'e2e-token'); } catch { /* private mode */ }
+    });
+    let release;
+    const answered = new Promise((r) => { release = r; });
+    await page.route('**/api/auth/me', async (route) => {
+      await answered;
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(PRO_ME) });
+    });
+
+    await page.goto('/index.html');
+    // The class really is armed — otherwise this passes for the wrong reason, on a page
+    // where the pre-paint mechanism simply never ran.
+    await expect(page.locator('html')).toHaveClass(/has-session/);
+    await expect(page.locator(GALLERY_TAB)).toBeHidden();
+
+    release();
+    await expect(page.locator(GALLERY_TAB)).toBeHidden();
+  });
 });
 
 test.describe('Gallery — signed out', () => {
@@ -84,29 +112,27 @@ test.describe('Gallery tab — the nav pill follows it', () => {
   //   were. Asserting on Guides (after the tab) can never fail. Home moves; measured at
   //   82px on a 1280px viewport.
   //
-  //   WHEN AUTH ANSWERS. nav-pill.js already re-settles on window 'load' and on a 60ms
-  //   timer of its own. Under Playwright 'load' lands ~1.1s in — later than any stubbed
-  //   /api/auth/me — so a reveal driven by a normal route stub is always followed by a
-  //   free re-settle, and the test passes with the listener deleted. Production is the
-  //   other way round: a cached page fires 'load' in milliseconds and the auth answer
-  //   arrives long after. Holding the response until after 'load' is what reproduces
-  //   that, and it is the only reason this test can fail.
+  //   WHEN THE TAB APPEARS. This used to seed a token and hold /api/auth/me past 'load',
+  //   because a returning visitor's tab arrived a round trip after the pill had settled.
+  //   session-class.js closed that window: a stored token now shows the tab before the
+  //   first paint, so on that path there is nothing left to push aside and the assertion
+  //   below could no longer fail — it would pass with the listener deleted.
+  //
+  //   Signing in DURING the session is the path that still reveals the tab late, and it
+  //   always will: there is no token at paint time by definition. So that is what this
+  //   drives — the same two calls auth-modal.js makes when a sign-in completes. Everything
+  //   the test is actually about (measure, reveal, re-measure) is unchanged.
   //
   // `is-lit` alone would not catch any of it: the class lands on the right link, the
   // pill is simply drawn in the wrong place.
   test('the pill follows the links the tab pushes aside', async ({ page }) => {
     await stubAnalytics(page);
     await hideStagingBanner(page);
-    await page.addInitScript(() => {
-      try { localStorage.setItem('stagifyAuthToken', 'e2e-token'); } catch { /* private mode */ }
-    });
-
-    let releaseAuth;
-    const authGate = new Promise((resolve) => { releaseAuth = resolve; });
-    await page.route('**/api/auth/me', async (route) => {
-      await authGate;
-      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(PRO_ME) });
-    });
+    // Deliberately NO token: a signed-out first paint is the only state in which the tab
+    // can still arrive after the pill has settled.
+    await page.route('**/api/auth/me', (route) =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(PRO_ME) }),
+    );
 
     await page.goto('/index.html');
     await page.waitForLoadState('load');
@@ -114,9 +140,15 @@ test.describe('Gallery tab — the nav pill follows it', () => {
 
     const home = page.locator('.nav-center a[href="index.html"].nav-link');
     await expect(home).toHaveClass(/is-lit/);
+    await expect(page.locator(GALLERY_TAB)).toBeHidden();
     const before = await home.evaluate((el) => Math.round(el.getBoundingClientRect().left));
 
-    releaseAuth();
+    // What a completed sign-in does: auth-modal.js stores the token, takes the user from
+    // /api/auth/me, and calls applyUserToUI — which is what reveals the tab.
+    await page.evaluate(() => {
+      window.StagifyAuth.setToken('e2e-token');
+      return window.StagifyAuth.fetchMe().then(() => window.StagifyAuth.applyUserToUI());
+    });
     await expect(page.locator(GALLERY_TAB)).toBeVisible();
 
     // The reveal really did move the link this test is about — otherwise the assertion
@@ -137,6 +169,62 @@ test.describe('Gallery tab — the nav pill follows it', () => {
         return Math.round(Math.abs(p.left + p.width / 2 - (l.left + l.width / 2)));
       }), { timeout: 5000 })
       .toBeLessThanOrEqual(2);
+  });
+});
+
+test.describe('Gallery tab — no pop-in for a returning visitor', () => {
+  test.skip(({ isMobile }) => isMobile, 'the tab is desktop-only; the phone half is above');
+
+  // The regression: the tab could only be revealed once /api/auth/me answered, so a
+  // signed-in visitor watched it appear in the middle of the nav a round trip after the
+  // page had settled — and because .nav-center is flex-end, its arrival shoved Home and
+  // Staging leftwards with it.
+  //
+  // Stalling the answer is what makes this provable: everything asserted here happens
+  // while the request the page is waiting on is still open.
+
+  test('the tab is already in the nav before /api/auth/me answers', async ({ page }) => {
+    await stubAnalytics(page);
+    await hideStagingBanner(page);
+    await page.addInitScript(() => {
+      try { localStorage.setItem('stagifyAuthToken', 'e2e-token'); } catch { /* private mode */ }
+    });
+
+    let release;
+    const answered = new Promise((r) => { release = r; });
+    await page.route('**/api/auth/me', async (route) => {
+      await answered;
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(PRO_ME) });
+    });
+
+    await page.goto('/index.html');
+    await expect(page.locator(GALLERY_TAB)).toBeVisible();
+    // Still the shipped markup underneath — the reveal is the stylesheet's, so the writer
+    // has not run yet and this really is the pre-answer window.
+    await expect(page.locator(GALLERY_TAB)).toHaveClass(/hidden/);
+
+    release();
+    await expect(page.locator(GALLERY_TAB)).not.toHaveClass(/hidden/);
+    await expect(page.locator(GALLERY_TAB)).toBeVisible();
+  });
+
+  test('an EXPIRED token loses the tab again', async ({ page }) => {
+    // The cost of a presence check: a dead token still arms the pre-paint class. When
+    // /api/auth/me refuses it the tab has to go — and the class with it, or the stylesheet
+    // keeps showing a tab the writer believes it has hidden.
+    await stubAnalytics(page);
+    await hideStagingBanner(page);
+    await page.addInitScript(() => {
+      try { localStorage.setItem('stagifyAuthToken', 'stale-token'); } catch { /* private mode */ }
+    });
+    await page.route('**/api/auth/me', (route) =>
+      route.fulfill({ status: 401, contentType: 'application/json', body: JSON.stringify({ error: 'unauthorized' }) }),
+    );
+
+    await page.goto('/index.html');
+    await waitForHomeReady(page);
+    await expect(page.locator(GALLERY_TAB)).toBeHidden();
+    await expect(page.locator('html')).not.toHaveClass(/has-session/);
   });
 });
 

@@ -3548,12 +3548,19 @@ body.page-home main {
 }
 
 /* Contact CTA (below FAQ) */
-.home-contact-cta .home-section__head {
+/* Both outro heads drop `.home-section__head`'s 28px bottom margin — it exists to
+   separate a heading from the section body below it, and these two sections ARE
+   only a head. Left on, it padded #review-cta 28px taller than #contact-cta. */
+.home-contact-cta .home-section__head,
+.home-review-cta .home-section__head {
   margin-bottom: 0;
 }
 .contact-cta-email {
   display: inline-block;
-  margin-top: 14px;
+  /* 4px, not the 14px this carried when a subtitle sat above it: riding on the
+     heading's own 10px bottom margin, that totals the same 14px of air the stars
+     get in #review-cta next door, so the two outro columns keep one rhythm. */
+  margin-top: 4px;
   font-size: clamp(1.1rem, 2.2vw, 1.35rem);
   font-weight: 700;
   color: var(--brand);
@@ -3592,7 +3599,10 @@ body.page-home main {
   margin: 0 auto;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  align-items: start;
+  /* stretch, not start: the two sections share the row's height instead of each
+     sizing to its own content, so the band is even. Their contents stay top-aligned
+     on their own (both heads are plain blocks), so the headings still line up. */
+  align-items: stretch;
 }
 @media (max-width: 760px) {
   .home-outro {
@@ -3612,12 +3622,20 @@ body.page-home main {
   height: 0;
 }
 .review-cta-stars {
-  display: inline-flex;
+  /* Block-level flex, NOT inline-flex: the button below is itself an inline-flex
+     <a>, and with the subtitle <p> that used to separate them now gone, two
+     inline-level boxes would share a line and the button would land beside the
+     stars instead of under them. A block box forces the line break. `fit-content`
+     + auto side margins keeps it centred WITHOUT stretching to the column width —
+     a full-width box would drag the :focus-visible outline out with it. */
+  display: flex;
+  width: fit-content;
   gap: 7px;
-  /* The stars sit BETWEEN the heading and the subtitle, so they need air on both
-     sides. The 4px top rides on the heading's own 10px bottom margin to match the
-     14px below — when the stars led the block they needed no top margin at all. */
-  margin: 4px 0 14px;
+  /* The 4px top rides on the heading's own 10px bottom margin, for 14px of air
+     above. Bottom is 0 on purpose: the button's own 18px margin-top is the whole
+     gap below. These used to be separated by the subtitle, which absorbed both
+     margins; stacked directly they summed to 32px and read as a hole. */
+  margin: 4px auto 0;
   border-radius: 10px;
   text-decoration: none;
 }
@@ -3695,7 +3713,9 @@ body.page-home main {
   }
 }
 .btn.review-cta-btn {
-  margin-top: 18px;
+  /* The whole stars-to-button gap (they meet directly now that the subtitle that
+     used to sit between them is gone). 18px read as a hole under the star row. */
+  margin-top: 10px;
   display: inline-flex;
   align-items: center;
   justify-content: center;

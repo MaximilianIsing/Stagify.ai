@@ -99,7 +99,9 @@ test('slugifyName: lowercases, drops extension, dashes, clamps, "image" fallback
 test('messageTypeFromTag: maps known tags, else "general"', () => {
   assert.equal(messageTypeFromTag('generate'), 'generating');
   assert.equal(messageTypeFromTag('stage'), 'staging');
-  assert.equal(messageTypeFromTag('cad-stage'), 'staging');
+  // Its own category, not 'staging' — the client must ask for the floor-plan status list
+  // the moment the user picks the tag, before the server's status frame arrives.
+  assert.equal(messageTypeFromTag('cad-stage'), 'floorplan');
   assert.equal(messageTypeFromTag('describe'), 'analyzing');
   assert.equal(messageTypeFromTag('auto'), 'general');
   assert.equal(messageTypeFromTag(undefined), 'general');

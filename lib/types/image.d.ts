@@ -13,6 +13,32 @@ export interface FurnitureImageDescriptor {
 }
 
 /**
+ * Options for lib/staging/cad-handling.js's blueprintTo3D(). An options object rather
+ * than positional args because `view`/`room`/`stamp` pushed it past four parameters.
+ *
+ * `view` picks between the two renders the module produces: 'top-down' (a furnished 3D
+ * floor plan seen from above — the DEFAULT, and what a missing/unknown value falls back
+ * to) and 'eye-level' (a photorealistic interior photo taken standing inside one room).
+ * `room` names that room and is only meaningful for 'eye-level'.
+ */
+export interface BlueprintRenderOptions {
+  mimeType?: string | null;
+  furnitureImages?: FurnitureImageDescriptor[];
+  additionalPrompt?: string | null;
+  view?: 'top-down' | 'eye-level' | null;
+  room?: string | null;
+  /** "Virtually staged" disclosure params, as returned by readStampRequest(). */
+  stamp?: { enabled?: boolean; lang?: string; style?: string; scale?: number } | null;
+  /**
+   * Receives the model's own output — stamped, but BEFORE the delivery upscale — for
+   * callers that need to store it (the gallery does; the delivered upscale is
+   * interpolation carrying no extra detail). Best-effort: a throw here is logged and
+   * swallowed rather than failing the render.
+   */
+  onNative?: ((buffer: Buffer) => void) | null;
+}
+
+/**
  * The verdict shape returned by the GPT-vision quality reviewers, driving the
  * quality-retry loop. Merged from QualityReviewResult (perfect+score) and the
  * richer ImageReviewResult (adds `reason`); `reason` is optional so both call

@@ -2,12 +2,21 @@ import { syncRemoveFurnitureRow } from './app/remove-furniture-gate.js';
 import { syncStagingMenu } from './staging-menu.js';
 import { syncGalleryTab } from './gallery-tab.js';
 import { syncExteriorAccess } from './exterior-studio/access.js';
+import { syncPlusRail } from './app/plus-rail.js';
 
 (function () {
   var TOKEN_KEY = 'stagifyAuthToken';
+  // Last known plan ('pro' | 'free'), mirrored into storage purely so a render-blocking
+  // head script can read it BEFORE paint — /api/auth/me is a round trip away, which is a
+  // whole paint too late for a page that has to choose a shape (exterior-studio-gate.js).
+  // It is a cache, never a fact: nothing may authorize on it, and the server gate
+  // (requireProAccount) is what actually decides. Written by setUser() below, and only
+  // there, so sign-out and an expired token both drop it on the floor with the token.
+  var PLAN_KEY = 'stagifyPlan';
 
   window.StagifyAuth = {
     TOKEN_KEY: TOKEN_KEY,
+    PLAN_KEY: PLAN_KEY,
     user: null,
     // Public client config from /api/auth/config (googleClientId, isStaging).
     // Populated by fetchConfig(); isStaging drives the staging-only UI (no Google
@@ -46,9 +55,42 @@ import { syncExteriorAccess } from './exterior-studio/access.js';
       else localStorage.removeItem(TOKEN_KEY);
     },
 
+    /**
+     * Mirror the current plan into storage. Kept private to this file and called from
+     * exactly two places — setUser (the /api/auth/me answer, and sign-out) and
+     * applyUserToUI (which every auth change already funnels through, so a call site that
+     * assigns `StagifyAuth.user` directly still cannot leave the cache stale).
+     *
+     * @param {{ plan?: string } | null | undefined} u - The account, or null when signed out.
+     */
+    cachePlan: function (u) {
+      // Storage can throw (Safari private mode, a blocked third-party context). The cache
+      // is an optimization — losing it costs a flash — so it may never break sign-in.
+      try {
+        if (u && u.plan) localStorage.setItem(PLAN_KEY, u.plan);
+        else localStorage.removeItem(PLAN_KEY);
+      } catch (e) {
+        /* no cache this session */
+      }
+    },
+
+    /**
+     * Set the signed-in account and keep the plan cache with it.
+     *
+     * @param {{ plan?: string } | null | undefined} u - The account, or null when signed out.
+     * @returns {any} The stored user, so callers can chain.
+     */
+    setUser: function (u) {
+      this.user = u || null;
+      this.cachePlan(this.user);
+      return this.user;
+    },
+
     clear: function () {
       this.setToken(null);
-      this.user = null;
+      // Via setUser so the cached plan goes with the token. If it outlived sign-out, the
+      // next page load would pre-paint the studio for someone who is no longer signed in.
+      this.setUser(null);
     },
 
     fetchMe: function () {
@@ -66,8 +108,7 @@ import { syncExteriorAccess } from './exterior-studio/access.js';
           return r.json();
         })
         .then(function (d) {
-          self.user = d && d.user ? d.user : null;
-          return self.user;
+          return self.setUser(d && d.user ? d.user : null);
         })
         .catch(function () {
           self.clear();
@@ -117,6 +158,12 @@ import { syncExteriorAccess } from './exterior-studio/access.js';
       var u = this.user;
       var proPanel = document.getElementById('stagify-pro-panel');
 
+      // Re-mirror the plan before anything is painted. setUser already does this for the
+      // two paths that own `user`, but a couple of render responses assign it directly
+      // (exterior-studio-app.js, app/staging-pipeline.js) and then call straight through
+      // to here — so this is what keeps the cache honest for them.
+      this.cachePlan(u);
+
       // "Remove existing furniture" is Stagify+ / Enterprise only (enterprise users
       // carry plan === 'pro'), AND is unavailable for room types whose furniture is
       // fixed. Both conditions are applied by the shared gate so this call site and
@@ -142,6 +189,13 @@ import { syncExteriorAccess } from './exterior-studio/access.js';
       // syncGalleryTab it is called BEFORE the early return below, because signing OUT
       // has to put the public pitch back.
       syncExteriorAccess();
+
+      // The "What Stagify+ could add" rail at the foot of the staging toolbar — the
+      // inverse of the pro panel below, and the reason it is called up here with the
+      // other four rather than in the branches: it is shown to signed-OUT visitors as
+      // well as free ones, so the `if (!u)` return would skip exactly the people it
+      // exists for. Signing out has to bring it back, and this is the branch that runs.
+      syncPlusRail();
 
       if (!u) {
         if (proPanel) proPanel.classList.add('hidden');

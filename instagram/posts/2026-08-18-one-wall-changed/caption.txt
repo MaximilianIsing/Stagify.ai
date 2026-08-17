@@ -1,0 +1,17 @@
+We brushed one wall. The bath, the tap and the towels are the same pixels they were before.
+
+That is the whole of Masking Studio. You paint over the part you want changed, and everything outside the brush is left exactly as it was. Not re-rendered, not redrawn. The original file.
+
+The alternative is restaging the whole photo, and that gives you a new room rather than a new wall. The bath moves. The tap grows a second handle. The light from the window lands somewhere else. It all looks fine until you put it next to the picture you started with.
+
+So here is the check. Run your eye across the seam. The bath rim carries straight through it without a step, and the grout lines meet on both sides. Only the tile changes colour.
+
+We measured it rather than trusting it: of the 118,054 pixels outside the brushed area, zero changed.
+
+One photo. One brush. One pass.
+
+Save this for the next time a client asks what a different tile would look like.
+
+Virtually staged with Stagify.ai
+
+#interiordesign #roommakeover #bathroomdesign #tiledesign #designinspo #virtualstaging #aistaging

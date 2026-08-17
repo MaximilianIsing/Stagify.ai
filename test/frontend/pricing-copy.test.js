@@ -133,7 +133,12 @@ test('the compare table matches the gallery ceilings the server actually enforce
   // Comments stripped first: a commented-out row still contains every token this
   // matches on, so scanning the raw file would pass with the row invisible on the page.
   const html = fs.readFileSync(path.join(PUBLIC, 'stagify-plus.html'), 'utf8').replace(/<!--[\s\S]*?-->/g, '');
-  const row = /stagifyPlus\.compare\.rows\.gallery[\s\S]{0,400}?<\/tr>/.exec(html);
+  // The window has to clear a whole row, and a row now carries its own explanation
+  // (label + ⓘ button + hidden tip text) ahead of the two value cells — roughly 900
+  // characters of it. The bound is only here to stop a runaway match swallowing the
+  // rest of the table if the closing </tr> ever goes missing; the non-greedy quantifier
+  // is what actually stops it at this row.
+  const row = /stagifyPlus\.compare\.rows\.gallery[\s\S]{0,1600}?<\/tr>/.exec(html);
   assert.ok(row, 'stagify-plus.html no longer has a gallery row in the compare table');
 
   const cells = [...row[0].matchAll(/<span class="sp-value[^"]*"([^>]*)>([^<]+)<\/span>/g)];
@@ -164,10 +169,12 @@ test('the compare table matches the gallery ceilings the server actually enforce
 });
 
 test('every language pack labels the gallery row and its Stagify+ value', () => {
-  // No cross-pack parity guard covers the stagifyPlus namespace, so a key added to
-  // english.json alone ships green and the row renders untranslated in ten languages.
-  // Both keys of the row are checked: the label was the only translated part until the
-  // Stagify+ cell stopped being a language-neutral figure and became a word.
+  // `translations cover english.json keys` in test/server/static.test.js already fails a
+  // pack that is MISSING either key — an earlier version of this comment claimed no such
+  // guard existed, which was wrong. What that one cannot see is a key present but blank,
+  // so what is load-bearing here is the non-empty half. Both keys of the row are checked:
+  // the label was the only translated part until the Stagify+ cell stopped being a
+  // language-neutral figure and became a word.
   const all = packs();
   assert.ok(all.length >= 11, `expected 11 language packs, found ${all.length}`);
 

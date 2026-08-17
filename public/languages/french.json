@@ -243,7 +243,7 @@
           "eyebrow": "À qui ça s’adresse",
           "caption": "S’asseoir en tête-à-tête pour meubler les photos d’un agent",
           "title": "Conçu pour les agents, les vendeurs et les acheteurs",
-          "body": "Les agents commercialisent chaque annonce en quelques minutes au lieu d’attendre une équipe de staging. Les vendeurs meublent leurs propres photos sans engager personne. Les acheteurs prévisualisent une rénovation avant de s’engager. Et avec le Designer IA, vous pouvez transformer des PDF de plans CAO en rendus 3D photoréalistes.",
+          "body": "Les agents commercialisent chaque annonce en quelques minutes au lieu d’attendre une équipe de staging. Les vendeurs meublent leurs propres photos sans engager personne. Les acheteurs prévisualisent une rénovation avant de s’engager. Et avec le Designer IA, vous pouvez transformer un plan en une vue meublée du dessus, ou entrer dans n’importe quelle pièce pour un rendu photoréaliste.",
           "p1": "Agents : publiez plus tôt et concluez davantage",
           "p2": "Vendeurs & acheteurs : aucun logiciel, aucun designer nécessaire",
           "p3": "Designer IA : mise en scène autonome de pièces"
@@ -327,7 +327,7 @@
         "name": "Stagify+",
         "tag": "Pour les particuliers",
         "per": "/ mois",
-        "f1": "Générations de staging illimitées",
+        "f1": "Références de meubles : aménagez avec le mobilier de votre choix",
         "f2": "Modèle d’image de meilleure qualité",
         "f3": "Plusieurs variations par génération",
         "f4": "Outil de masquage pour modifier n’importe quelle zone",
@@ -424,13 +424,11 @@
     },
     "contactCta": {
       "title": "Notre boîte de réception est toujours ouverte",
-      "subtitle": "Questions, retours ou idées ? Nous lisons chaque message et répondons au plus vite.",
       "email": "team@stagify.ai",
       "phone": "(929) 251-4372"
     },
     "reviewCta": {
       "title": "Vous aimez Stagify ?",
-      "subtitle": "Vous aimez vos annonces ? Un avis Google aide d’autres agents à nous trouver.",
       "button": "Laisser un avis Google",
       "aria": "Laisser un avis Google (ouvre dans un nouvel onglet)"
     }
@@ -464,7 +462,6 @@
     },
     "staging": {
       "title": "Options",
-      "close": "x",
       "roomType": "Type de pièce",
       "furnitureStyle": "Style de mobilier",
       "additionalPrompt": "Consigne supplémentaire",
@@ -559,7 +556,19 @@
       "uploadAnotherShort": "Changer",
       "downloadResultShort": "Télécharger",
       "galleryEvicted": "D’anciens rendus ont été supprimés pour faire de la place : l’offre gratuite conserve les plus récents.",
-      "galleryEvictedShared": "Un rendu plus ancien avait un lien de partage actif, qui ne fonctionne plus."
+      "galleryEvictedShared": "Un rendu plus ancien avait un lien de partage actif, qui ne fonctionne plus.",
+      "plusRail": {
+        "title": "Ce que Stagify+ pourrait ajouter",
+        "hide": "Ne plus afficher",
+        "items": {
+          "remove": "Supprimer les meubles existants",
+          "model": "Meilleur modèle d’image",
+          "variations": "Plusieurs variantes d’image",
+          "references": "Références de meubles",
+          "mask": "Édition par masque",
+          "gallery": "Galerie illimitée"
+        }
+      }
     }
   },
   "roomTypes": {
@@ -879,7 +888,6 @@
       "keywords": "Designer IA, assistant de design IA, consultation en design, chat IA, aide au design, IA de design d’intérieur"
     },
     "title": "Designer IA",
-    "description": "Convertissez vos PDF de plans CAO en visualisations d’intérieur 3D photoréalistes",
     "statusMessages": {
       "generating": [
         "génération de l’image...",
@@ -901,6 +909,17 @@
         "création du design...",
         "génération de l’agencement...",
         "affinage des détails...",
+        "presque prêt..."
+      ],
+      "floorplan": [
+        "lecture de votre plan...",
+        "mesure des pièces...",
+        "agencement de l’espace...",
+        "placement des murs, portes et fenêtres...",
+        "ameublement des pièces...",
+        "réglage de l’éclairage...",
+        "rendu de la vue...",
+        "dernières retouches...",
         "presque prêt..."
       ],
       "analyzing": [
@@ -935,41 +954,11 @@
       ]
     },
     "emptyState": "Démarrez une conversation en saisissant un message ou en important un fichier",
-    "welcomeFallback": "Bonjour ! Je suis votre Designer IA Stagify. Dites-moi ce que vous imaginez, ou téléchargez la photo d’une pièce, et nous la concevrons ensemble. Quelques choses que je peux faire :\n• **Aménager des pièces vides** : meublez un espace nu dans n’importe quel style\n• **Réaménager des pièces existantes** : changez le style, les meubles ou toute l’ambiance\n• **Plan → pièce** : transformez un plan en un rendu meublé et photoréaliste\n• **Affiner au fil de la discussion** : ajustez les couleurs, les éléments et l’agencement jusqu’à ce que ce soit parfait\nPar où souhaitez-vous commencer ?",
+    "welcomeFallback": "Bonjour ! Je suis votre Designer IA Stagify. Dites-moi ce que vous imaginez, ou téléchargez la photo d’une pièce, et nous la concevrons ensemble. Quelques choses que je peux faire :\n• **Aménager des pièces vides** : meublez un espace nu dans n’importe quel style\n• **Réaménager des pièces existantes** : changez le style, les meubles ou toute l’ambiance\n• **Plan → pièce** : meublez un plan vu du dessus, ou entrez dans une pièce pour une photo\n• **Affiner au fil de la discussion** : ajustez les couleurs, les éléments et l’agencement jusqu’à ce que ce soit parfait\nPar où souhaitez-vous commencer ?",
     "uploadFile": "Importer un fichier",
     "inputPlaceholder": "Saisissez votre message...",
     "sendButton": "Envoyer",
-    "uploadArea": "Importez un PDF ou glissez-déposez",
     "uploadSubtext": "Pris en charge : fichiers PDF",
-    "options": {
-      "title": "Options de traitement",
-      "skip": "Ignorer les premières pages",
-      "skipHint": "Ignorer les pages de couverture et de titre",
-      "concurrency": "Vitesse de traitement",
-      "concurrencyHint": "Des vitesses plus élevées peuvent augmenter le temps de traitement par pièce",
-      "dpi": "Qualité d’image (DPI)",
-      "dpiHint": "Un DPI plus élevé produit une meilleure qualité mais prend plus de temps"
-    },
-    "processButton": "Traiter le PDF",
-    "progress": {
-      "uploading": "Import du PDF…",
-      "processing": "Traitement du PDF…",
-      "complete": "Terminé !"
-    },
-    "result": {
-      "title": "Traitement terminé !",
-      "description": "Votre PDF traité est prêt à être téléchargé.",
-      "download": "Télécharger le PDF traité",
-      "uploadAnother": "Importer un autre PDF"
-    },
-    "info": {
-      "title": "Comment ça marche",
-      "step1": "Importez votre PDF de plan CAO",
-      "step2": "Notre IA identifie les pièces et extrait les détails du plan",
-      "step3": "Chaque pièce est convertie en visualisation 3D photoréaliste",
-      "step4": "Téléchargez votre PDF traité avec les rendus 3D (cela prend généralement 2 minutes)",
-      "note": "Remarque : le traitement prend généralement environ 2 minutes. Merci de patienter pendant que notre IA génère vos rendus 3D."
-    },
     "status": {
       "fileReady": "Fichier prêt"
     },
@@ -1002,7 +991,8 @@
       "uploadPreview": "Aperçu du fichier importé : {filename}",
       "stagedRoom": "Pièce meublée par IA{suffix}",
       "generatedImage": "Image de design générée par IA{suffix}",
-      "cadRender": "Rendu 3D à partir du plan{suffix}",
+      "cadRender": "Plan meublé vu du dessus{suffix}",
+      "cadRenderInterior": "Pièce du plan, photographiée de l’intérieur{suffix}",
       "recalledImage": "Image précédemment partagée dans cette conversation",
       "requestedImage": "Image demandée depuis l’historique de la conversation",
       "editedImage": "Image de design modifiée par masque{suffix}",
@@ -1435,33 +1425,6 @@
       "noCommitment": "Sans engagement",
       "manage": "Gérer ou annuler l’abonnement"
     },
-    "features": {
-      "heading": "Tout ce qu’il vous faut pour un home staging de pro",
-      "remove": {
-        "title": "Supprimer les meubles existants",
-        "desc": "Effacez meubles, désordre et décoration, puis réaménagez la pièce vidée sur une base vierge."
-      },
-      "designer": {
-        "title": "AI Designer",
-        "desc": "Décrivez ce que vous voulez en langage simple et affinez chaque résultat au fil de la conversation."
-      },
-      "masking": {
-        "title": "Outil de masque",
-        "desc": "Peignez sur une zone pour modifier ou restyliser uniquement cette partie de la photo."
-      },
-      "studio": {
-        "title": "Masking Studio",
-        "desc": "Surlignez plusieurs zones de différentes couleurs, donnez à chacune sa propre photo de meuble et aménagez-les toutes en même temps. Générez plusieurs versions par zone et gardez la meilleure."
-      },
-      "references": {
-        "title": "Références de meubles",
-        "desc": "Téléversez des photos de produits pour aménager des pièces avec des meubles précis que vous choisissez."
-      },
-      "exterior": {
-        "title": "Studio Extérieur",
-        "desc": "Corrigez la photo qui ouvre chaque annonce. Changez l’heure, dégagez un ciel gris et supprimez voitures et poubelles, pendant que le bien reste exactement tel qu’il a été photographié."
-      }
-    },
     "compare": {
       "heading": "Comparer les offres",
       "feature": "Fonctionnalité",
@@ -1469,6 +1432,7 @@
       "included": "Inclus",
       "notIncluded": "Non inclus",
       "unlimitedValue": "Illimitées",
+      "tipAria": "Ce que cela signifie",
       "rows": {
         "customizable": "Home staging personnalisable",
         "fastModel": "Modèle d’image rapide",
@@ -1482,6 +1446,20 @@
         "variations": "Plusieurs variations par génération",
         "references": "Références de meubles",
         "exterior": "Studio Extérieur (façade)"
+      },
+      "tips": {
+        "gallery": "Les rendus enregistrés restent dans votre compte : vous pouvez les rouvrir, les retélécharger ou envoyer un lien de partage à un client. Une galerie gratuite ne garde que vos pièces les plus récentes et écarte les plus anciennes au fur et à mesure ; avec Stagify+, rien n’est jamais supprimé.",
+        "customizable": "Choisissez le type de pièce et le style de mobilier avant de générer, pour qu’une chambre d’enfant ne revienne pas en bureau et qu’un brief bord de mer ne revienne pas en mid-century. L’ensemble complet des pièces et des styles est inclus dans les deux formules.",
+        "fastModel": "Le générateur par défaut, calibré pour la rapidité. Il répond en quelques secondes, ce qui est exactement ce qu’il faut tant que vous comparez encore des types de pièce et des styles. Disponible dans toutes les formules.",
+        "unlimited": "Aménagez autant de photos que vous voulez. Aucune formule ne vend de crédits ni ne facture au rendu : Stagify+ change ce qu’une génération sait faire, pas le nombre auquel vous avez droit.",
+        "hqModel": "Un générateur plus lent et plus soigneux, pour l’image qui partira vraiment sur l’annonce. Il tient bien mieux les lignes droites, la lumière des fenêtres et les reflets, si bien que les meubles sont dans la pièce et non posés dessus.",
+        "remove": "Une case à cocher et la pièce est d’abord vidée — canapés, encombrants, cadres, tout — puis réaménagée à partir de zéro. C’est ce qu’il faut pour un bien occupé, où aménager par-dessus les meubles du vendeur ne rend jamais bien.",
+        "designer": "Une fenêtre de discussion avec votre photo dedans. Demandez ce que vous voulez en langage courant, puis affinez la même image sur plusieurs échanges — des bois plus chauds, enlever le tapis, l’essayer en chambre d’enfant — au lieu de relancer un rendu à chaque fois.",
+        "masking": "Peignez sur une partie du résultat et ne changez que celle-là. Tout ce qui est hors du pinceau reste intact, pixel pour pixel : vous pouvez remplacer une seule chaise ou repeindre un mur sans relancer toute la pièce.",
+        "studio": "La version complète du masquage. Marquez plusieurs zones dans des couleurs différentes, donnez à chacune son propre brief ou sa propre photo de meuble, et aménagez-les toutes en une seule passe — puis générez quelques options par zone et gardez la meilleure de chaque.",
+        "exterior": "Pour la photo qui ouvre toutes les annonces. Changez l’heure de la journée, nettoyez un ciel gris et plat, retirez les voitures garées et les poubelles, pendant que le bien lui-même reste exactement tel qu’il a été photographié.",
+        "variations": "Demandez plusieurs versions du même brief en une fois. Elles diffèrent par l’agencement et le choix du mobilier au lieu d’être deux fois le même rendu : vous avez de quoi choisir plutôt que de relancer jusqu’à ce que ça tombe juste.",
+        "references": "Envoyez la photo d’un produit — un canapé, un lit ou une salle à manger précis — et la pièce est aménagée avec ce meuble-là plutôt qu’avec un vague équivalent. Pratique quand un client, un promoteur ou un décorateur a déjà choisi le mobilier."
       }
     },
     "enterpriseRow": "Pour les équipes ou les entreprises, <a href=\"enterprise.html\">découvrez notre offre enterprise</a> ou contactez <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> pour des options d’abonnement personnalisées.",
@@ -1604,25 +1582,25 @@
   },
   "exteriorStudio": {
     "title": "Studio Extérieur",
-    "subtitle": "La première photo de chaque annonce, c’est l’extérieur, et c’est la seule prise que vous ne pouvez pas refaire quand le temps se gâte. Importez-la ici et obtenez la version prise par beau temps.",
+    "subtitle": "La seule prise que vous ne pouvez pas refaire quand le temps tourne. Corrigez la lumière, le ciel et le désordre, et laissez la maison intacte.",
     "ctaUpgrade": "Passez à Stagify+ pour l’utiliser",
     "features": {
-      "title": "Ce qu’il change, et ce qu’il ne touche jamais",
+      "title": "Ce qu’il change",
       "light": {
         "title": "Heure de la journée",
-        "body": "Photographiez à midi, publiez à l’heure dorée. Matin, midi, heure dorée ou crépuscule, avec des ombres et une lumière intérieure cohérentes avec le soleil choisi."
+        "body": "Photographiez à midi, publiez à l’heure dorée, avec des ombres et des reflets accordés."
       },
       "sky": {
         "title": "Ciel et météo",
-        "body": "Un ciel gris et plat devient bleu limpide, légèrement nuageux ou plus dramatique, accordé à la lumière déjà présente sur le bâtiment, avec des bords nets le long du toit."
+        "body": "Le gris plat devient bleu franc, légèrement nuageux ou plus dramatique, avec des bords nets sur la toiture."
       },
       "clutter": {
         "title": "Voitures, encombrants et neige",
-        "body": "La camionnette du voisin dans l’allée, les poubelles sorties, le tuyau d’arrosage sur la pelouse, le passant, et la neige, la pluie et les flaques qui se trouvaient là le jour de la prise de vue. Le temporaire disparaît, et la surface en dessous est reconstruite à l’identique."
+        "body": "Ce qui est temporaire disparaît, et le sol en dessous est reconstitué à l’identique."
       },
       "honest": {
         "title": "La maison reste la maison",
-        "body": "Pas de pelouse refaite, pas de lignes électriques effacées, pas d’allée refaite, pas de murs repeints. Un acheteur devant le portail voit ce que montrait la photo, et c’est ce qui la rend utilisable dans une annonce."
+        "body": "Pas de pelouse refaite, pas de lignes électriques effacées, pas d’allée neuve, pas de repeinte."
       }
     },
     "upload": {

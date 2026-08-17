@@ -1198,9 +1198,7 @@ main {
 /* Reduced motion: sponsors-scroll.js returns early and never starts the marquee,
    which left a 20-item track parked at translateX(0) inside `overflow:hidden`.
    On a 390px phone that made roughly 2 of the 10 logos reachable and the other 8
-   simply unreachable — no scroll, no animation, no way to see them. (The
-   `animation:none` in the mobile blocks does nothing here: the marquee is rAF and
-   transform, not CSS animation.)
+   simply unreachable — no scroll, no animation, no way to see them.
    So in that mode the strip becomes an ordinary scroller, the loop's duplicate
    half is dropped (it exists only to make the wrap seamless), and the edge mask is
    removed because it would fade out the very logos you are scrolling toward.
@@ -1213,7 +1211,8 @@ main {
   -webkit-mask:none
 }
 .sponsors-container.sponsors--static .sponsors-track {
-  transform:none
+  transform:none;
+  animation:none
 }
 .sponsors-container.sponsors--static .sponsor-item--dup {
   display:none
@@ -1223,8 +1222,38 @@ main {
   align-items:center;
   gap:56px;
   will-change:transform;
-  transform:translateX(0);
-  animation:none
+  transform:translateX(0)
+}
+/* The sponsors marquee. Time-based and compositor-driven ON PURPOSE: this was a
+   rAF loop advancing pixels-per-FRAME, so its real speed was whatever the
+   viewer's refresh rate happened to be (54px/s at 60Hz, ~108px/s at 120Hz) and
+   it lost ground on every dropped frame.
+   sponsors-scroll.js supplies the two custom properties and .is-animating — it
+   must measure one copy of the logo set (11 items + 11 gaps) rather than letting
+   CSS use -50%, because the track is 22 items with only 21 gaps between them and
+   -50% would land half a gap short and hitch on every repeat.
+   Longhands, not the `animation:` shorthand: an unresolved var() inside a
+   shorthand drops the WHOLE declaration, so a missing --marquee-duration would
+   kill the animation outright instead of just mistiming it. */
+@keyframes sponsors-marquee {
+  from { transform:translateX(0) }
+  to { transform:translateX(calc(-1 * var(--marquee-distance))) }
+}
+.sponsors-track.is-animating {
+  animation-name:sponsors-marquee;
+  animation-duration:var(--marquee-duration,20s);
+  animation-timing-function:linear;
+  animation-iteration-count:infinite
+}
+/* Backstop only — sponsors-scroll.js already returns before adding .is-animating
+   under reduced motion. It must repeat the .is-animating class to MATCH that
+   rule's specificity (0,2,0); the bare `.sponsors-track` this started as was
+   (0,1,0) and would have lost to it, bracing nothing. Equal specificity, declared
+   later, so this wins. */
+@media (prefers-reduced-motion:reduce) {
+  .sponsors-track.is-animating {
+    animation:none
+  }
 }
 .actions,.sponsor-item {
   align-items:center
@@ -2709,7 +2738,7 @@ h2 {
   border-radius:10px;
   cursor:pointer
 }
-.modal-close,.modal-dialog {
+.modal-dialog {
   color:var(--fg);
   border:1px solid var(--border)
 }
@@ -2749,28 +2778,88 @@ h2 {
   overflow:hidden
 }
 .modal-scroll {
-  position:relative; /* containing block for .modal-close, which scrolls with the content */
+  position:relative; /* containing block for .close-x--corner, which scrolls with the content */
   overflow-y:auto;
   min-height:0; /* a flex item refuses to shrink past its content without this */
   padding:12px 12px 20px
 }
-.modal-close {
-  position:absolute;
-  top:8px;
-  right:10px;
-  background:var(--bg-elevated);
-  border-radius:999px;
-  width:36px;
-  height:36px;
-  cursor:pointer;
-  transition:.2s
-}
 .contact-card,.select-trigger {
   border:1px solid var(--border)
 }
-.modal-close:hover {
-  background:var(--border);
-  border-color:var(--accent)
+
+/* The one dismiss control for every dialog and panel on the site.
+ *
+ * This replaced EIGHT hand-rolled variants: three shapes (circle, pill, rounded
+ * square), six sizes (28/32/34/36/40px), five glyph encodings (&times;, a literal
+ * ×, ✕, a CSS content:'×', and an SVG) and eight different hovers. Only one of
+ * the eight — the gallery's — had a focus ring, so keyboard users could not see
+ * where they were on the other seven. This is that gallery button, generalised.
+ *
+ * The glyph is an SVG on purpose. A text × renders at a different optical weight
+ * in every font, which is exactly why the old sizes diverged: each surface picked
+ * its own font-size (18/28/32/40px) to compensate. A vector is the same drawing
+ * at every call site, and it carries aria-hidden by construction, so the glyph
+ * cannot leak into the accessible name beside the aria-label.
+ *
+ * NO POSITIONING on the base class: three of the call sites sit in a flex header
+ * row rather than a panel corner. Corner placement is the --corner modifier, and
+ * it needs a positioned ancestor (.modal-scroll and .ms-pro-gate both set one).
+ *
+ * test/frontend/close-button-consistency.test.js pins the call sites, the 24px
+ * touch-target floor, and the absence of the retired selectors. */
+.close-x {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:36px;
+  height:36px;
+  padding:0;
+  border:0;
+  border-radius:50%;
+  background:none;
+  color:var(--slate);
+  cursor:pointer;
+  transition:background .18s ease,color .18s ease
+}
+.close-x:hover {
+  background:var(--brand-wash);
+  color:var(--brand-deep)
+}
+.close-x:active {
+  background:var(--brand-tint)
+}
+.close-x:focus-visible {
+  outline:3px solid var(--brand-soft);
+  outline-offset:2px
+}
+.close-x svg {
+  display:block
+}
+.close-x--corner {
+  position:absolute;
+  top:12px;
+  right:12px
+}
+/* The staging modal pulls its X tighter into the corner. Not a preference — the
+   offset has to answer to the gutter it sits in, and this one is unusually thin.
+ * Every other --corner surface is a padded card (the sign-in modal pads 28/24,
+   .ms-pro-gate 32/28), so a 12px inset drops the 36px button comfortably inside
+   the padding. Here the band between the dialog edge and .stage-inner is only
+   ~33px — NARROWER than the button — so at 12px the glyph's centre landed 30px
+   in against a band whose centre is 16px, and it read as floating in from the
+   corner rather than sitting in it.
+ * 4px, not 0: centring the glyph exactly wants a NEGATIVE inset, and at 0 the
+   hover circle goes tangent to both edges and gets visibly trimmed by the
+   dialog's 16px corner radius. 4px is the tightest offset that still paints a
+   full circle. */
+.modal-scroll > .close-x--corner {
+  top:4px;
+  right:4px
+}
+@media (prefers-reduced-motion:reduce) {
+  .close-x {
+    transition:none
+  }
 }
 @keyframes fadeInUp {
   from {
@@ -3006,8 +3095,7 @@ body:has(.stage-mask-modal.active) .language-picker-container {
     -webkit-mask:linear-gradient(90deg,transparent 0%,black 5%,black 95%,transparent 100%)
   }
   .sponsors-track {
-    gap:40px;
-    animation:none
+    gap:40px
   }
   .sponsor-logo {
     max-height:42px;
@@ -3240,8 +3328,7 @@ body:has(.stage-mask-modal.active) .language-picker-container {
     -webkit-mask:linear-gradient(90deg,transparent 0%,black 3%,black 97%,transparent 100%)
   }
   .sponsors-track {
-    gap:32px;
-    animation:none
+    gap:32px
   }
   .sponsor-logo {
     max-height:38px;
@@ -3356,11 +3443,6 @@ body:has(.stage-mask-modal.active) .language-picker-container {
   .btn-lg {
     padding:10px 16px;
     font-size:14px
-  }
-  .modal-close {
-    width:32px;
-    height:32px;
-    font-size:16px
   }
   .advantages,.contact,.faq,.features,.gallery,.how,.pricing,.trust-inner {
     padding-left:24px;
@@ -3704,20 +3786,6 @@ html::-webkit-scrollbar-thumb {
   margin:0;
   font-size:1.25rem;
   color:var(--text-heading)
-}
-.stage-mask-close {
-  background:var(--bg-elevated);
-  border:1px solid var(--border);
-  border-radius:999px;
-  width:34px;
-  height:34px;
-  font-size:18px;
-  cursor:pointer;
-  color:var(--fg);
-  transition:.18s
-}
-.stage-mask-close:hover {
-  border-color:var(--accent)
 }
 .stage-mask-canvas-container {
   position:relative;
@@ -4476,6 +4544,27 @@ html::-webkit-scrollbar-thumb {
     display:none!important
   }
 }
+/* The Gallery tab, shown before the first paint for a visitor who already has a token.
+   scripts/session-class.js sets the class synchronously in <head>; scripts/gallery-tab.js
+   owns the `.hidden` below and takes the class away again if /api/auth/me disagrees.
+   Without this the tab could only appear a round trip late, and it sits mid-nav, so it
+   shoved Guides and Contact sideways as it arrived.
+
+   `.hidden` is `display:none!important`, so beating it needs !important AND more
+   specificity — which unavoidably also beats `.desktop-only` above. Hence the second rule:
+   the gallery is desktop-only (gallery-gate.js redirects a phone outright), and a tab
+   offering a page that answers a tap by undoing it is worse than no tab. The two
+   breakpoints are pinned to each other in test/frontend/desktop-only-gates.test.js.
+   Matching `.hidden` in the selector is deliberate too: the rule goes inert the instant
+   the writer removes that class, so it can only ever cover the pre-answer window. */
+html.has-session .site-header .nav-link.hidden[data-nav-gallery] {
+  display:inline-block!important
+}
+@media(max-width:768px) {
+  html.has-session .site-header .nav-link.hidden[data-nav-gallery] {
+    display:none!important
+  }
+}
 /* ===== Custom language switcher ===== */
 .lang-native-select {
   position:absolute!important;
@@ -4693,6 +4782,162 @@ html::-webkit-scrollbar-thumb {
 }
 @media (prefers-reduced-motion:reduce) {
   .card-spotlight {
+    transition:none
+  }
+}
+
+/* --- "What Stagify+ could add" rail (staging toolbar foot) ------------------------
+   The upsell shown to free and signed-out visitors, below the Process button.
+   Collapsed it is one 40px bar; open it is a two-column list plus the CTA. Its
+   visibility belongs to scripts/app/plus-rail.js, its open state to the
+   `data-open` attribute that module writes — no class does double duty here.
+
+   Deliberately quiet at rest: a hairline, the page's own wash, and 13px type. It
+   is the last thing in the toolbar and it is selling, so it does not get to look
+   more important than the button above it. --- */
+.plus-rail {
+  margin-top:14px;
+  border:1px solid var(--brand-tint);
+  border-radius:12px;
+  background:var(--bg-elevated);
+  overflow:hidden
+}
+.plus-rail__bar {
+  width:100%;
+  display:flex;
+  align-items:center;
+  gap:9px;
+  padding:10px 12px;
+  border:0;
+  background:var(--brand-wash);
+  font-family:inherit;
+  text-align:left;
+  cursor:pointer
+}
+.plus-rail__bar:hover {
+  background:var(--brand-tint)
+}
+/* The Stagify+ mark, with the homepage plus card's warm double drop-shadow
+   (home.css .plus-card--pro .plus-card__logo). The shadow is re-stated rather than
+   shared because that one is tuned for a 32px logo: reused at 18px its 7px offset
+   and 16px blur detach from the mark and read as a smudge, so both layers are
+   scaled by the same 0.56 the icon is. Gold has no token — the palette is blues
+   and slates — so these stay literals, exactly as they are in home.css. */
+.plus-rail__mark {
+  flex:none;
+  width:18px;
+  height:18px;
+  filter:drop-shadow(0 1px 1px rgba(120,78,10,.35)) drop-shadow(0 4px 9px rgba(160,105,15,.45))
+}
+.plus-rail__title {
+  font-size:13.5px;
+  font-weight:700;
+  color:var(--brand-deep)
+}
+.plus-rail__chev {
+  flex:none;
+  margin-left:auto;
+  color:var(--brand);
+  transition:transform .22s ease
+}
+.plus-rail[data-open] .plus-rail__chev {
+  transform:rotate(180deg)
+}
+/* Display, not max-height: the list's height depends on how long the six
+   translated strings run, and German and Japanese do not agree on that. A
+   max-height transition would need a number that is wrong in some language. */
+.plus-rail__body {
+  display:none;
+  padding:6px
+}
+.plus-rail[data-open] .plus-rail__body {
+  display:block
+}
+/* Two up, three rows. The toolbar is a ~310px column inside the 1100px modal, so
+   each cell gets ~140px and the labels are written short enough to live there. An
+   earlier one-column version ran the open rail past 200px, which is a lot of modal
+   to spend on an upsell; 2x3 roughly halves it while holding one more feature.
+   align-items:stretch (the grid default) is load-bearing — it keeps the two cells
+   in a row the same height when only one of them wraps to a second line. */
+.plus-rail__grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:4px;
+  margin:0;
+  padding:0;
+  list-style:none
+}
+.plus-rail__item {
+  display:flex;
+  align-items:center;
+  gap:5px;
+  padding:6px 4px;
+  border:1px solid var(--border);
+  border-radius:9px
+}
+.plus-rail__ico {
+  flex:none;
+  display:flex;
+  color:var(--brand)
+}
+/* 11px and the hair of negative tracking are both MEASURED, not taste. The cell is
+   167px, and after the 14px icon, the gap, the padding and the border the label gets
+   136px. "Remove existing furniture" — the longest English string here — needs 128px
+   of that, which leaves ~8px. At 11.5px it needs 135px and wraps to a second line,
+   which is what this whole block exists to avoid; 11.5px only fits with tracking so
+   tight it breaks the moment Inter falls back to the system stack. Measured slack:
+   ~8px on Inter, ~16px on the fallback. Re-measure before raising either value, and
+   remember the grid is 2-up, so the budget is HALF the rail. */
+.plus-rail__label {
+  font-size:11px;
+  letter-spacing:-.008em;
+  line-height:1.3;
+  color:var(--slate-deep)
+}
+/* Below ~430px the modal goes full-bleed and the toolbar is the whole width, but the
+   cells do not grow with it — the dialog's own padding eats the difference — so two
+   up would start clipping the longer labels. One column there. */
+@media (max-width:430px) {
+  .plus-rail__grid {
+    grid-template-columns:1fr
+  }
+}
+/* Two-selector specificity (0,2,0) on purpose. .plus-cta is defined in home.css,
+   which index.html loads AFTER this sheet, so a single-class override here would
+   lose on source order. It also carries margin-top:auto for the pricing card's
+   flex column, which would shove the button around in this one. */
+/* The permanent opt-out. Quieter than everything above it on purpose: it is the
+   one control on this panel that is not selling, and it sits below the CTA so it
+   is never the first thing a reader's eye lands on. Underlined rather than
+   button-shaped — it is a text action, and a second boxed control under the CTA
+   would read as an alternative offer. Full width so the tap target spans the
+   panel; at 11.5px on --bg-elevated, --muted is 4.8:1 and clears AA. */
+.plus-rail__hide {
+  display:block;
+  width:100%;
+  margin-top:8px;
+  padding:6px 4px;
+  border:0;
+  background:none;
+  font-family:inherit;
+  font-size:11.5px;
+  color:var(--muted);
+  text-decoration:underline;
+  text-underline-offset:2px;
+  cursor:pointer
+}
+.plus-rail__hide:hover {
+  color:var(--text-heading)
+}
+.plus-rail .plus-rail__cta {
+  margin-top:10px;
+  width:100%;
+  font-size:13px;
+  padding:9px 16px;
+  border-radius:10px
+}
+@media (prefers-reduced-motion:reduce) {
+  .plus-rail__chev {
     transition:none
   }
 }

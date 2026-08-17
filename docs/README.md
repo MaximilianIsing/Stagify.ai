@@ -2,8 +2,9 @@
 
 AI-powered virtual staging and interior design for real estate. Upload a photo of
 an empty or dated room and get a professionally staged result in about eight
-seconds. Also includes an **AI Designer** (chat-to-stage, and CAD/PDF floor plans →
-photorealistic 3D renders) and a **Masking Studio** for pixel-precise edits.
+seconds. Also includes an **AI Designer** (chat-to-stage, plus floor plans → either a
+furnished plan view from above or a photorealistic photo taken inside one room) and a
+**Masking Studio** for pixel-precise edits.
 
 This README is the entry point for the `docs/` folder. See also:
 
@@ -191,7 +192,7 @@ grouped into subdirectories by concern (full breakdown in
 | `lib/i18n/` | `locales.js` (the single source of truth for the language set and `LOCALIZED_PAGES`), `render-page.js` (`renderLocalizedPage` — the pure string transform), `page-renderer.js` (its raw-HTML/translations/render caches, shared by `routes/i18n.js` and `lib/http/not-found.js`), `sitemap.js`. See [`guides/i18n.md`](guides/i18n.md). |
 | `lib/image/` | `image-primitives.js` (`sharp`), `image-annotation.js`, `image-review.js` (quality gate), `erase.js`, `hosted-images.js`. |
 | `lib/services/` | `ai-clients.js` (Gemini/OpenAI/Resend), `auth-helpers.js`, `email.js`, `logging.js` (append-only **CSV** business logs), `stripe-webhooks.js`. |
-| `lib/staging/` | `prompts.js` (incl. `generatePrompt`), `promptMatrix.js` (room × style style-layer), `room-constraints.js` (per-room hard rules), `staging-pipeline.js` (quality-retry loop), `staging-generation.js` (`processStaging`/`processImageGeneration`) + `virtual-staging-handler.js` (from `server.js`), `mask-edit.js` / `segment.js` (from `routes/staging.js`), `cad-handling.js` (CAD/PDF → 3D). |
+| `lib/staging/` | `prompts.js` (incl. `generatePrompt`), `promptMatrix.js` (room × style style-layer), `room-constraints.js` (per-room hard rules), `staging-pipeline.js` (quality-retry loop), `staging-generation.js` (`processStaging`/`processImageGeneration`) + `virtual-staging-handler.js` (from `server.js`), `mask-edit.js` / `segment.js` (from `routes/staging.js`), `cad-handling.js` (floor plan → top-down plan render or eye-level room photo). |
 | `lib/chat/` | `chat-pipeline.js` (pure wiring) composing `chat-memory.js` / `chat-image-retrieval.js` / `chat-image-dispatch.js` / `chat-staging.js` / `chat-response.js`; pre-routing `chat-upload-prep.js` / `chat-request-prep.js` / `welcome-message-handler.js` / `chat-upload-error.js`; `chat-history.js` (barrel over `chat-history-sanitize.js` / `chat-image-collection.js` / `chat-image-classification.js` / `chat-dual-upload.js` / `chat-base-image-staging.js`), `chat-routing.js`, `chat-sse.js`. |
 | `lib/logger.js` | The **diagnostic** logger — the single `logger.debug/info/warn/error` stdout funnel (`LOG_LEVEL`). Distinct from `services/logging.js` (CSV). |
 

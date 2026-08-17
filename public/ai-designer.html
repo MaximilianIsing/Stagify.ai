@@ -154,8 +154,15 @@
     <script type="module" src="scripts/nav-pill.js"></script>
     <script type="module" src="scripts/auth.js"></script>
     <script type="module" src="scripts/heic-convert.js"></script>
+    <!-- Floor-plan PDFs. Tiny on its own; the ~1.5MB pdf.js bundle it lazily pulls from
+         scripts/vendor/ is only fetched when someone actually picks a PDF. -->
+    <script type="module" src="scripts/pdf-page-to-image.js"></script>
     <script type="module" src="scripts/profile-menu.js"></script>
     <link rel="stylesheet" href="styles/ai-designer.css">
+    <!-- Sets html.has-session from the stored token BEFORE first paint, so the nav’s
+         Gallery tab does not pop in a round trip late. Render-blocking on purpose, and
+         last in <head> so it never delays discovery of the CSS above it. -->
+    <script src="scripts/session-class.js"></script>
   </head>
   <body>
     <!-- Background Video -->
@@ -375,7 +382,9 @@
       <div class="bug-report-popup-content">
         <div class="bug-report-popup-header">
           <h2 class="bug-report-popup-title" id="bug-report-popup-title">Report a Bug</h2>
-          <button type="button" class="bug-report-popup-close" id="bug-report-popup-close" data-lang-attr="common.close|aria-label" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <button type="button" class="close-x" id="bug-report-popup-close" data-lang-attr="common.close|aria-label" aria-label="Close">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
         </div>
         <form class="bug-report-form" id="bug-report-form">
           <div class="bug-report-form-group">

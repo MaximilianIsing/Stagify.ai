@@ -14,12 +14,23 @@
 //     signed-in visitor is revealed once /api/auth/me answers. The other direction
 //     would flash a tab at everyone and take it back.
 //
+// That default cost the OTHER flash — a signed-in visitor watched the tab pop into the
+// nav a round trip late, shoving the links beside it along — so scripts/session-class.js
+// now sets `html.has-session` from the stored token before the first paint and the
+// stylesheet shows the tab through the `.hidden` this writer owns. The writer still owns
+// the truth: it takes that class back off the moment /api/auth/me disagrees.
+//
 // `.hidden` rather than `desktop-only`: the two stack, and they mean different
 // things. `desktop-only` is the PC-only rule (a width), this is the auth rule (a
 // person). Either one alone is enough to keep the tab off the screen.
 
+import { authSettled } from './session-state.js';
+
 /** The event nav-pill.js listens for. See dispatch below for why it exists. */
 export const NAV_VISIBILITY_EVENT = 'stagify:navvisibility';
+
+/** The class scripts/session-class.js puts on <html> before the first paint. */
+export const SESSION_CLASS = 'has-session';
 
 /**
  * Should the Gallery tab be shown?
@@ -53,6 +64,17 @@ export function syncGalleryTab() {
   const tabs = document.querySelectorAll('[data-nav-gallery]');
   if (!tabs.length) return false;
   const show = galleryTabVisible(currentIsSignedIn());
+
+  // Hand the tab back from session-class.js's pre-paint guess to the real answer, but only
+  // once there IS one. That class makes the CSS show the tab THROUGH the `.hidden` below,
+  // so leaving it armed for a visitor whose token turned out to be expired would keep a tab
+  // on screen that this writer believes it has just hidden. Taking it off too early is the
+  // opposite failure and just as quiet: every call site today runs after /api/auth/me
+  // settles, but one optimistic call added later would restore the flash with nothing
+  // failing, which is why this asks rather than assumes.
+  if (authSettled(window.StagifyAuth)) {
+    document.documentElement?.classList?.toggle(SESSION_CLASS, show);
+  }
 
   let changed = false;
   tabs.forEach((el) => {

@@ -4,7 +4,12 @@ export const AUTH_MODAL_HTML =
   '<div id="auth-modal" class="auth-modal hidden" aria-hidden="true">' +
   '<div class="auth-modal__backdrop" id="auth-modal-backdrop"></div>' +
   '<div class="auth-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">' +
-  '<button type="button" class="auth-modal__close" id="auth-modal-close" aria-label="Close">×</button>' +
+  // data-lang-attr, matching the static twin baked into index.html — this copy shipped
+  // hardcoded English on every other page. language-loader.js re-runs its pass on
+  // inserted nodes via MutationObserver, so an injected template still gets translated.
+  '<button type="button" class="close-x close-x--corner" id="auth-modal-close" data-lang-attr="common.close|aria-label" aria-label="Close">' +
+  '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>' +
+  '</button>' +
   '<h2 id="auth-modal-title">Welcome to Stagify</h2>' +
   '<p class="auth-modal__sub" id="auth-modal-sub">Create a free account to upload and stage your photos.</p>' +
   '<div id="auth-error" class="auth-error" role="alert"></div>' +

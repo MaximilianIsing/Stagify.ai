@@ -5,7 +5,8 @@
 // `gallery.html`) loads a render-blocking `*-gate.js` that `location.replace`s anyone
 // without a token. That works, but it also means Googlebot — which carries no token —
 // is redirected away, so those pages' canonical/hreflang/JSON-LD setup earns nothing.
-// Here the page stays put and changes shape instead:
+// This page has a gate too (`scripts/exterior-studio-gate.js`), but it only ever
+// RESHAPES: no visitor is ever sent anywhere. The page stays put and changes shape:
 //
 //   anonymous → the pitch, and a Stagify+ call to action.
 //   free      → exactly the same page. A signed-in free account USED to get a
@@ -32,6 +33,14 @@
 // ANONYMOUS state, so signed-out is the no-JS default and the tool is revealed once
 // /api/auth/me answers — the other direction would flash the studio at everyone and
 // then take it away.
+//
+// That default is right for everyone except the people who already paid, who watched the
+// sales pitch paint and then vanish a round trip later. The head gate covers exactly that
+// gap: it pre-applies the Pro shape in CSS from the plan auth.js cached last visit, and
+// `exteriorPlanSettled` below decides when the guess gives way to the real answer. The
+// cached plan is never an authorization — requireProAccount still answers 403.
+
+import { authSettled } from '../session-state.js';
 
 /**
  * Which audience a visitor belongs to.
@@ -54,6 +63,9 @@ function currentUser() {
   const auth = window.StagifyAuth;
   return (auth && auth.user) || null;
 }
+
+/** The class scripts/exterior-studio-gate.js puts on <html> before the first paint. */
+export const PENDING_CLASS = 'ex-pro-pending';
 
 /**
  * Apply a view to the page. Idempotent and reversible — signing out must put the pitch
@@ -93,9 +105,19 @@ export function applyExteriorView(view, els) {
 export function syncExteriorAccess() {
   const tool = document.getElementById('ex-tool');
   if (!tool) return false;
-  return applyExteriorView(exteriorView(currentUser()), {
+  const pro = applyExteriorView(exteriorView(currentUser()), {
     features: document.getElementById('ex-features'),
     tool,
     heroActions: document.getElementById('ex-hero-actions'),
   });
+  // Hand the page back from the head gate's cached guess to the live plan — but only once
+  // there IS a live plan. Doing it unconditionally would strip the class on the optimistic
+  // first call from exterior-studio-app.js, which runs with no user yet, and re-create the
+  // very flash the gate exists to prevent. Done after the writer above so the `hidden`
+  // properties are already correct when the CSS override stops applying; the two never
+  // disagree for a frame. The gate carries its own timeout as a second escape.
+  if (authSettled(window.StagifyAuth)) {
+    document.documentElement?.classList?.remove(PENDING_CLASS);
+  }
+  return pro;
 }
