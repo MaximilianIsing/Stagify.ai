@@ -70,7 +70,17 @@
   color: var(--brand);
   background: none;
   border: 0;
-  border-bottom: 0.075em solid var(--brand-pale);
+  /* The underline is the affordance — it is what says these two words are controls and not
+     just coloured text, since the chevron on its own is 0.28em of hairline. It has to be
+     picked against the BACKGROUND VIDEO, not against white: the hero carries no panel, so
+     this composites over #b2c4f6 (styles.css) and the phone poster resolves to the same
+     tint. The blue ramp is deceptive there — --brand-pale #93c5fd lands at 1.04:1 on that
+     background and is arithmetically almost the same colour, so it was being painted and
+     not seen; even --brand-soft only reaches 1.47:1. --brand-strong is the first step that
+     clears the 3:1 a non-text indicator needs (3.9:1), which leaves --brand-deep as the
+     hover step. Do not walk either back up the ramp for subtlety — they were already up
+     there, and the result was an invisible underline. */
+  border-bottom: 0.075em solid var(--brand-strong);
   border-radius: 2px;
   padding: 0 0.06em;
   margin: 0;
@@ -81,11 +91,14 @@
 .hp-slot__btn:hover,
 .hp-slot__btn[aria-expanded="true"] {
   color: var(--brand-strong);
-  border-bottom-color: var(--brand);
+  border-bottom-color: var(--brand-deep);
 }
 
+/* Same background problem as the underline: --brand-soft is 1.47:1 over the hero video, so
+   the ring was drawn but not perceivable, and a focus indicator needs 3:1. --brand-deep
+   matches the sentence text around it and clears that comfortably. */
 .hp-slot__btn:focus-visible {
-  outline: 3px solid var(--brand-soft);
+  outline: 3px solid var(--brand-deep);
   outline-offset: 3px;
 }
 

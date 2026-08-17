@@ -18,6 +18,7 @@ import { t, plural } from './gallery/i18n.js';
 import { createRenameRow } from './gallery/rename.js';
 import { createDeleteConfirm } from './gallery/delete-confirm.js';
 import { createSharePanel } from './gallery/share-panel.js';
+import { setInert } from './inert-background.js';
 import { createRefresher, REFRESH_DEBOUNCE_MS } from './share/refresh.js';
 import { copyText } from './clipboard.js';
 
@@ -219,18 +220,16 @@ export async function start({
    * modal to a keyboard and porous to a reader. The manual Tab trap kept KEYBOARD focus
    * in, which is exactly why nobody noticed.
    *
-   * By id and via setAttribute, because the specs drive a document stand-in with
-   * getElementById and no querySelectorAll. `inert` is a boolean content attribute, so
-   * the empty string is the correct value.
+   * The two landmarks are named by id rather than derived from `<body>`'s children
+   * (which is what `backgroundOf` does for the auth modal) because this page's nav is
+   * nested inside a header — so the body-children partition would inert the header and
+   * leave `#gal-nav` itself without the attribute the specs assert on. Same mechanism,
+   * different selection; see scripts/inert-background.js for why the mechanism is
+   * shared and why it avoids the `.inert` property.
    * @param {boolean} on
    */
   function inertBackground(on) {
-    for (const id of ['gal-nav', 'gal-main']) {
-      const node = byId(id);
-      if (!node) continue;
-      if (on) node.setAttribute('inert', '');
-      else node.removeAttribute('inert');
-    }
+    setInert(['gal-nav', 'gal-main'].map(byId), on);
   }
 
   function closeDetail() {

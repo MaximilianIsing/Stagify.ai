@@ -426,3 +426,112 @@ test('every variation of a multi-variation render carries the disclosure flag', 
     assert.equal(params.stampScale, 1.2, `variation ${i + 1} keeps the size`);
   }
 });
+
+// ---- The two-stage furniture-removal branch --------------------------------
+//
+// "Remove existing furniture" runs a dedicated erase pass BEFORE staging, so a render on
+// this path is two full generative passes rather than one — and each pass is another chance
+// for the model to reconstruct the room's architecture. The branch had no test at all, which
+// is how its three outcomes (already empty / erased / erase unavailable) could each silently
+// change behaviour. All three converge on the same requirement: the staging pass must NOT be
+// re-issued the "remove all furniture" instruction, because by then there is nothing to
+// remove and the instruction only invites the model to keep deleting.
+
+test('remove-furniture: an already-empty room skips the erase entirely', async () => {
+  let erased = 0;
+  const cap = { seen: [] };
+  const { handleVirtualStagingMultipart } = makeHandler({
+    roomIsAlreadyEmpty: async () => true,
+    eraseFurniture: async () => { erased += 1; return null; },
+    processStaging: async (buf, params) => { cap.seen.push({ buf, params }); return 'img'; },
+  });
+
+  const res = fakeRes();
+  await handleVirtualStagingMultipart(
+    fakeReq({ roomType: 'Bedroom', removeFurniture: 'true' }), res,
+    { user: PRO, recordUsage: true, treatAsPro: true },
+  );
+
+  assert.equal(erased, 0, 'no Gemini erase call is paid for on an already-empty room');
+  assert.equal(cap.seen[0].params.removeFurniture, false, 'and staging is not told to remove anything');
+  assert.equal(res.body.emptyRoom, undefined, 'nothing was emptied, so no empty-room image is returned');
+});
+
+test('remove-furniture: a successful erase stages from the EMPTIED room, not the original', async () => {
+  const emptied = Buffer.from('emptied-room-bytes');
+  const cap = { seen: [] };
+  const { handleVirtualStagingMultipart } = makeHandler({
+    roomIsAlreadyEmpty: async () => false,
+    eraseFurniture: async () => ({ buffer: emptied, dataUrl: 'data:image/png;base64,AAAA' }),
+    processStaging: async (buf, params) => { cap.seen.push({ buf, params }); return 'img'; },
+  });
+
+  const res = fakeRes();
+  await handleVirtualStagingMultipart(
+    fakeReq({ roomType: 'Bedroom', removeFurniture: 'true' }), res,
+    { user: PRO, recordUsage: true, treatAsPro: true },
+  );
+
+  assert.equal(cap.seen[0].buf, emptied, 'staging runs on the erased room');
+  assert.equal(cap.seen[0].params.removeFurniture, false, 'and is not asked to remove furniture again');
+  assert.equal(res.body.emptyRoom, 'data:image/png;base64,AAAA', 'the empty room is returned for the before/after view');
+});
+
+test('remove-furniture: a failed erase falls back to single-pass removal, not to a no-op', async () => {
+  // eraseFurniture returns null when Gemini is unavailable or every attempt failed. The
+  // fallback must keep removeFurniture TRUE — the user asked for an empty room, and the
+  // single-pass staging prompt is the only thing left that will deliver one.
+  const cap = { seen: [] };
+  const { handleVirtualStagingMultipart } = makeHandler({
+    roomIsAlreadyEmpty: async () => false,
+    eraseFurniture: async () => null,
+    processStaging: async (buf, params) => { cap.seen.push({ buf, params }); return 'img'; },
+  });
+
+  const res = fakeRes();
+  await handleVirtualStagingMultipart(
+    fakeReq({ roomType: 'Bedroom', removeFurniture: 'true' }), res,
+    { user: PRO, recordUsage: true, treatAsPro: true },
+  );
+
+  assert.equal(cap.seen[0].params.removeFurniture, true, 'staging still removes furniture itself');
+  assert.equal(res.body.emptyRoom, undefined, 'and there is no empty-room image to show');
+});
+
+test('remove-furniture: the keep-list is trimmed and clamped before it reaches the eraser', async () => {
+  // Free-text off a request body. 500 chars is the documented ceiling; without the clamp an
+  // unbounded string rides into the erase prompt.
+  let seenKeep = null;
+  const { handleVirtualStagingMultipart } = makeHandler({
+    roomIsAlreadyEmpty: async () => false,
+    eraseFurniture: async (_buf, _req, keep) => { seenKeep = keep; return null; },
+  });
+
+  await handleVirtualStagingMultipart(
+    fakeReq({ roomType: 'Bedroom', removeFurniture: 'true', keepFurniture: '  ' + 'x'.repeat(600) + '  ' }),
+    fakeRes(), { user: PRO, recordUsage: true, treatAsPro: true },
+  );
+
+  assert.equal(seenKeep.length, 500, 'clamped to 500 characters');
+  assert.ok(!/^\s|\s$/.test(seenKeep), 'and trimmed');
+});
+
+test('remove-furniture: a free account cannot reach the erase pass at all', async () => {
+  // Removal is Stagify+/Enterprise. The gate is `isPro`, not the checkbox, so a tampered
+  // request body must not buy a second generative pass.
+  let erased = 0;
+  const cap = { seen: [] };
+  const { handleVirtualStagingMultipart } = makeHandler({
+    roomIsAlreadyEmpty: async () => false,
+    eraseFurniture: async () => { erased += 1; return null; },
+    processStaging: async (buf, params) => { cap.seen.push(params); return 'img'; },
+  });
+
+  await handleVirtualStagingMultipart(
+    fakeReq({ roomType: 'Bedroom', removeFurniture: 'true' }), fakeRes(),
+    { user: FREE, recordUsage: true },
+  );
+
+  assert.equal(erased, 0, 'no erase pass for a free account');
+  assert.equal(cap.seen[0].removeFurniture, false, 'and the flag is dropped, not honoured');
+});
