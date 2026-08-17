@@ -2,18 +2,20 @@
  *
  *   #compare  — a savings calculator. Drag a listings-per-year slider and watch the
  *               traditional-staging cost climb against Stagify's $0.
- *   #ai-shift — the NAR adoption chart. The bar wipes in and the five percentages
- *               count up the first time the card is scrolled into view.
+ *   #ai-shift — the NAR adoption chart. Static: the bar and its numerals are the
+ *               markup's own. All this adds is the legend highlight.
  *
- * WHY ONE MODULE. Both features need the same three pieces of scaffolding — a
- * reduced-motion check, a play-once-when-in-view observer, and a rAF ramp driven by
- * count-up.js's `rampValue`. Splitting them would either duplicate that or need a third
- * shared file. index-inline.js already groups two unrelated homepage behaviours.
+ * WHY ONE MODULE. Both features want the same scaffolding — a reduced-motion check, a
+ * play-once-when-in-view observer, and a rAF ramp driven by count-up.js's `rampValue`.
+ * Only the calculator still uses the last two, but the pair stayed together because the
+ * chart's legend is the other half of the same section's behaviour and a file per
+ * widget is not worth it. index-inline.js already groups two unrelated homepage
+ * behaviours.
  *
  * PROGRESSIVE ENHANCEMENT IS THE CONTRACT, not a nicety:
  *   - the chart's final segment widths live in `--seg-w` in the markup and its final
- *     numerals are the authored text, so with no JS (or reduced motion) it is already
- *     the finished chart and this file returns without touching it;
+ *     numerals are the authored text, so with no JS at all it is already the finished
+ *     chart and nothing here touches its appearance;
  *   - the calculator's authored text is the value at CALC.initial, so the pre-JS paint
  *     agrees with the first render. test/frontend/home-figures.test.js pins both.
  */
@@ -182,24 +184,19 @@ function prefersReducedMotion() {
  * observer's negative bottom rootMargin) and `threshold` is the share of the element
  * that must be inside what is left.
  *
- * `earlyPx` does the opposite — it pushes the line DOWN past the fold, so the animation
- * runs while the element is still below the last visible pixel and is already finished
- * by the time it scrolls into view. Alternatives, not a pair: set one or the other.
- *
- * @typedef {{ threshold: number, bottomPct: number, earlyPx?: number }} ViewGate
+ * @typedef {{ threshold: number, bottomPct: number }} ViewGate
  */
 /** @type {ViewGate} */
 const DEFAULT_GATE = { threshold: 0.15, bottomPct: 5 };
 
 /**
  * The trigger line for `gate`, in client coordinates: the scrollport's bottom edge,
- * lifted by `bottomPct` or pushed past the fold by `earlyPx`.
+ * lifted by `bottomPct`.
  *
  * @param {{ top: number, bottom: number }} band
  * @param {ViewGate} gate
  */
 function triggerLine(band, gate) {
-  if (gate.earlyPx) return band.bottom + gate.earlyPx;
   return band.bottom - ((band.bottom - band.top) * gate.bottomPct) / 100;
 }
 
@@ -307,13 +304,12 @@ function playWhenInView(el, fn, gate = DEFAULT_GATE) {
       fn();
     },
     // A spread of thresholds purely to get called often enough near the line. The
-    // bottom margin must be at least as LOOSE as the gate — an `earlyPx` gate wants
-    // callbacks while the element is still below the fold, and a root box that stops
-    // at the fold would not deliver one until it was already too late.
+    // bottom margin mirrors the gate's own lift, so the callbacks arrive against the
+    // same box `reached` measures against.
     {
       root,
       threshold: [0, gate.threshold, 1],
-      rootMargin: `0px 0px ${gate.earlyPx ? `${gate.earlyPx}px` : `-${gate.bottomPct}%`} 0px`,
+      rootMargin: `0px 0px -${gate.bottomPct}% 0px`,
     }
   );
   observer.observe(el);
@@ -379,46 +375,6 @@ function tx(key, fallback) {
    ========================================================================== */
 
 /**
- * Gate the wipe on the BAR, never on the card, and NEVER stricter than the `onScreen`
- * guard below.
- *
- * `is-narm` blanks the bar, so anything that delays the wipe past the moment the bar
- * becomes visible opens a band of scroll positions where the card is fully painted and
- * the bar is an empty track — and a visitor who stops scrolling inside it never sees
- * the bar at all. Both previous gates did exactly that: gating on the card at 15% ran
- * the 0.9s wipe 75px BELOW the last visible pixel, and `{ threshold: 0.5, bottomPct: 8 }`
- * held the trigger 59px ABOVE the fold, leaving a 67px dead band where the bar stayed
- * blank indefinitely. A better-framed wipe is not worth a window of missing content —
- * the bar is the content.
- *
- * So the wipe runs 50px EARLY: `earlyPx: 50` puts the trigger line below the fold, so
- * it starts while the bar is still off screen and is done, or all but done, by the time
- * it scrolls into view. Strictly looser than `onScreen`, which makes the dead band
- * impossible by construction — being visible now implies having triggered 50px ago.
- *
- * `threshold: 0.01` because one pixel of the 16px strip past the line is enough; not
- * `0`, which `viewRatio` also returns for an element nowhere near it.
- *
- * @type {ViewGate}
- */
-const NAR_GATE = { threshold: 0.01, bottomPct: 0, earlyPx: 50 };
-
-/**
- * Any part of `el` inside the band that is actually painted right now.
- *
- * Deliberately the loosest possible test — one visible pixel counts. It guards the one
- * thing that must never happen (see initNarChart), so it biases hard towards "assume
- * they can see it".
- *
- * @param {Element} el
- */
-function onScreen(el) {
-  const r = el.getBoundingClientRect();
-  const band = viewportBand(scrollRootOf(el));
-  return r.top < band.bottom && r.bottom > band.top;
-}
-
-/**
  * Hover / focus / click a legend row to light its bar segment and dim the rest.
  *
  * The rows are real <button aria-pressed> elements, not `tabindex="0"` list items:
@@ -481,52 +437,28 @@ function initNarChart() {
   const card = /** @type {HTMLElement|null} */ (document.querySelector("[data-nar-chart]"));
   if (!card) return;
 
-  // The highlight is direct manipulation, not motion — it stays on under reduced motion.
+  // The highlight is direct manipulation, not motion — it stays on under reduced motion,
+  // and it is the ONLY thing this function does. The chart itself is finished markup:
+  // `--seg-w` carries the four final widths and the percentages are authored text.
   wireNarLegend(card);
 
-  // Everything below is the entrance wipe only. The markup already carries the final
-  // widths, so returning here leaves the chart complete.
+  // THE BAR HAS NO ENTRANCE ANIMATION, and re-adding one is the bug, not the feature.
+  // It used to wipe in from a collapsed clip-path (`is-narm` → `is-ncharted`), but the
+  // markup ships the bar already drawn, so blanking it is an ERASE-then-redraw. That
+  // leaves exactly two outcomes and no third: arm the wipe early enough to finish
+  // unseen below the fold, in which case nobody ever sees it; or arm it late enough to
+  // be seen, in which case the visitor scrolls to the chart, finds an empty gap where
+  // the bar should be — `.nar-bar` has no track background, so a clipped bar renders as
+  // nothing — and watches it fill ~0.9s later. That reads as a loading glitch. The
+  // trigger point was retuned three times chasing a middle ground that does not exist.
+  // The card's shared `.reveal` fade is the section's entrance; the bar is just there.
   //
-  // THE PERCENTAGES ARE NEVER ANIMATED, deliberately. They were counted up from 0% at
-  // first, and it read as nonsense: a survey share is a fixed measured fact, not a
-  // quantity accumulating, so ramping "68%" up from "0%" implies a process that never
-  // happened and shows six wrong figures on the way to the right one. (The calculator
-  // in #compare ramps because its numbers ARE a running total the visitor is building.)
-  if (prefersReducedMotion() || !("IntersectionObserver" in window)) return;
-
-  const bar = card.querySelector(".nar-bar");
-  if (!bar) return;
-
-  // MEASURE ONE FRAME LATE. On a deep link (/#ai-shift) or a restored scroll position
-  // the browser applies the scroll to <main> — the real scroll container — AFTER this
-  // module runs (it runs at `load` + requestIdleCallback). Measuring synchronously
-  // reads pre-scroll geometry, decides the bar is off screen, and erases one the
-  // visitor is already looking at. One rAF is enough for that scroll to have landed.
-  requestAnimationFrame(() => {
-    // THE ONE RULE HERE: never collapse a bar the visitor can already see. `is-narm`
-    // blanks it, and the markup ships it fully drawn, so applying that on screen is an
-    // erase — it visibly empties and redraws, which reads as a glitch, not an
-    // entrance. For a visitor already looking at the chart the honest answer is no
-    // animation; the authored widths are the finished chart, so returning costs
-    // nothing.
-    if (onScreen(bar)) return;
-
-    card.classList.add("is-narm");
-
-    // Gated on the BAR, not the card — see NAR_GATE. `is-narm`/`is-ncharted` still go
-    // on the card, because that is where the CSS hangs them.
-    playWhenInView(
-      bar,
-      () => {
-        // Commit the collapsed clip-path before the transition class lands. Without the
-        // forced reflow the browser coalesces both class changes into one style
-        // resolution and the bar simply appears at full width with no wipe.
-        void card.offsetWidth;
-        requestAnimationFrame(() => card.classList.add("is-ncharted"));
-      },
-      NAR_GATE
-    );
-  });
+  // THE PERCENTAGES ARE NEVER ANIMATED EITHER, for a different reason. They were
+  // counted up from 0% at first, and it read as nonsense: a survey share is a fixed
+  // measured fact, not a quantity accumulating, so ramping "68%" up from "0%" implies a
+  // process that never happened and shows six wrong figures on the way to the right
+  // one. (The calculator in #compare ramps because its numbers ARE a running total the
+  // visitor is building.)
 }
 
 /* ==========================================================================

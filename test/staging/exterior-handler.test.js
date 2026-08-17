@@ -19,7 +19,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createExteriorHandler } from '../../lib/staging/exterior-handler.js';
 import {
-  EXTERIOR_REVIEW_PROMPT, EXTERIOR_PRESERVATION_RULES, CLEANUP_CLAUSES, CLEANUP_LABELS,
+  EXTERIOR_PRESERVATION_RULES, CLEANUP_CLAUSES, CLEANUP_LABELS,
 } from '../../lib/staging/exterior-prompts.js';
 
 /** Minimal Express-ish response recorder. */
@@ -183,7 +183,10 @@ test('the handler supplies the WHOLE prompt and the exterior QA rubric', async (
   const { params } = seen.staging[0];
   assert.ok(params.promptOverride, 'promptOverride must be set');
   assert.ok(params.promptOverride.includes(EXTERIOR_PRESERVATION_RULES), 'and carry the hard rules');
-  assert.equal(params.reviewBasePrompt, EXTERIOR_REVIEW_PROMPT);
+  // No reviewBasePrompt: skipQualityReview means no reviewer runs, so a rubric here would be
+  // unreachable config that reads as maintained. See the exterior-prompts spec for the full
+  // reasoning behind deleting the one that used to be passed.
+  assert.equal(params.reviewBasePrompt, undefined, 'no rubric on a path with no reviewer');
   assert.equal(params.removeFurniture, false, 'nothing on this path removes furniture');
 });
 

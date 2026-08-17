@@ -1,0 +1,342 @@
+/* The homepage hero's room/style picker. Replaces carousel.css, which served the seven-slide
+   hero carousel this supersedes.
+
+   Everything here is prefixed `hp-` so none of it can collide with the `.hero-stage-*`
+   classes already in styles.css, which belong to the staging studio, not to this. */
+
+/* ---------------------------------------------------------------- the sentence */
+
+/* styles.css sets `.hero-content h1 span { display:inline-block; margin-right:8px }` for the
+   per-word hover effects the old headline had. This headline is one sentence, not a row of
+   words, and that margin opens a visible gap before every slot and before the full stop.
+   Specificity has to beat (0,1,2), hence the class on the h1 rather than a bare `.hp-*`. */
+.hero-content h1.hp-sentence span {
+  display: inline;
+  margin-right: 0;
+}
+
+/* ...but EVERY span in here that is a box rather than a word has to win it back, and that
+   rule is (0,2,2), so a bare `.hp-slot` at (0,1,0) loses. This has now bitten three times:
+   the slot (needs inline-block to be a positioning context for its menu), the chevron
+   (without a width it renders as a bare 0-wide vertical bar), and the menu itself, which
+   became a span so it could legally live inside an h1 and promptly went `display:inline`
+   and stopped opening. If you add a span to the sentence, decide which side of this it is
+   on. */
+.hero-content h1.hp-sentence .hp-slot,
+.hero-content h1.hp-sentence .hp-slot__chev {
+  display: inline-block;
+}
+
+.hero-content h1.hp-sentence .hp-menu:not([hidden]),
+.hero-content h1.hp-sentence .hp-menu__list {
+  display: block;
+}
+
+/* And the closed case has to be spelled out too. `[hidden]`'s `display:none` comes from the
+   UA sheet, which loses to ANY author declaration — including the blanket `span` reset
+   above, which is why the menu opened correctly and then would not close: it was still
+   `display:inline` with the attribute set. The attribute is only a switch if both of its
+   positions are author-declared here. */
+.hero-content h1.hp-sentence .hp-menu[hidden] {
+  display: none;
+}
+
+/* The h1 has to be qualified, NOT written as a bare `.hp-sentence`. styles.css already has
+   `.hero-content h1 { font-size: clamp(40px, 5vw, 60px) }` at (0,1,1), which beats a lone
+   class at (0,1,0) — so a bare rule here is overridden and every size you try does nothing
+   at all. That cost a round of "why is changing the font-size not changing the layout".
+   Same trap as the two span rules above; this file has to out-specify styles.css or lose. */
+.hero-content h1.hp-sentence {
+  /* Well below the 60px the old six-word headline took, and that is a layout constraint
+     rather than a type preference. This sentence is at its widest with a long room and a
+     long style in it at once, in the wordiest language: German renders "Gestalte dieses
+     Schlafzimmer im Stil Skandinavisch." where English has "Stage this bedroom in Modern."
+     Each extra line it wraps to is a line the hero column overflows by, and it overflows
+     onto the sponsor logos. Re-measure the locales before raising this. */
+  font-size: clamp(26px, 2.8vw, 42px);
+  line-height: 1.14;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.hp-slot {
+  position: relative;
+  display: inline-block;
+}
+
+.hp-slot__btn {
+  font: inherit;
+  letter-spacing: inherit;
+  color: var(--brand);
+  background: none;
+  border: 0;
+  border-bottom: 0.075em solid var(--brand-pale);
+  border-radius: 2px;
+  padding: 0 0.06em;
+  margin: 0;
+  cursor: pointer;
+  transition: color 0.16s, border-color 0.16s;
+}
+
+.hp-slot__btn:hover,
+.hp-slot__btn[aria-expanded="true"] {
+  color: var(--brand-strong);
+  border-bottom-color: var(--brand);
+}
+
+.hp-slot__btn:focus-visible {
+  outline: 3px solid var(--brand-soft);
+  outline-offset: 3px;
+}
+
+/* Drawn rather than typed: a glyph would inherit the headline's font-size and sit on the
+   text baseline, which at 50px is a chevron the size of a word. */
+.hp-slot__chev {
+  display: inline-block;
+  width: 0.28em;
+  height: 0.28em;
+  margin-left: 0.18em;
+  vertical-align: 0.18em;
+  border-right: 0.07em solid currentColor;
+  border-bottom: 0.07em solid currentColor;
+  transform: rotate(45deg);
+  transform-origin: center;
+  opacity: 0.72;
+}
+
+.hp-slot__btn[aria-expanded="true"] .hp-slot__chev {
+  transform: rotate(225deg);
+  vertical-align: 0.34em;
+}
+
+/* -------------------------------------------------------------------- the menus */
+
+/* `hidden` is the open/closed switch, so this must not set an unconditional `display` —
+   the attribute's UA rule loses to any author declaration. */
+.hp-menu:not([hidden]) {
+  display: block;
+}
+
+.hp-menu {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 0;
+  z-index: 40;
+  min-width: 266px;
+  padding: 7px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 26px 60px -22px rgba(13, 26, 58, 0.5), 0 2px 8px rgba(13, 26, 58, 0.07);
+  /* The headline's type scale must not leak into the menu. */
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: normal;
+  line-height: 1.4;
+  animation: hp-pop 0.16s ease;
+}
+
+@keyframes hp-pop {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* A span, not a ul: an h1 may only contain phrasing content, and role="listbox" does the
+   semantic job without the invalid nesting. That is also why the option buttons are direct
+   children with no <li> between them. */
+.hp-menu__list {
+  display: block;
+}
+
+.hp-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  padding: 8px 9px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--slate-deep);
+  text-align: left;
+  cursor: pointer;
+}
+
+.hp-menu__item:hover,
+.hp-menu__item:focus-visible {
+  background: var(--brand-wash);
+  color: var(--brand-deep);
+  outline: none;
+}
+
+.hp-menu__item[aria-selected="true"] {
+  background: var(--brand-deep);
+  color: var(--bg-elevated);
+}
+
+.hp-menu__thumb {
+  flex: 0 0 auto;
+  width: 46px;
+  height: 31px;
+  border-radius: 6px;
+  object-fit: cover;
+  background: var(--brand-tint);
+}
+
+/* --------------------------------------------------------------------- the photo */
+
+/* The glass frame the carousel used to sit in, at close to the same geometry. It is about
+   10px taller (the caption flows below the photo instead of eating into it), which is why
+   `.sponsors { margin-top }` in home.css went from 200px to 210px — read the note there
+   before changing anything here that affects this box's height.
+
+   backdrop-filter is on THIS element and overflow:hidden is on .hp-stage inside it,
+   deliberately apart. Chrome skips painting descendant <img>s when both land on the same
+   element, and every diagnostic still reports the image as healthy, so it is an expensive
+   half hour to rediscover. The rounded clip belongs to the photo; the blur belongs to the
+   frame; they must not meet. */
+.hp-frame {
+  width: 100%;
+  max-width: 800px;
+  margin: 40px auto 0;
+  padding: 16px 16px 10px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+/* aspect-ratio lives here rather than on the frame on purpose. The carousel put it on the
+   outer box and gave the caption a fixed pixel budget out of the remainder, which its own
+   stylesheet warned would truncate the caption silently the moment anything above it grew.
+   Sizing the photo and letting the note flow underneath cannot fail that way. */
+.hp-stage {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--brand-tint);
+}
+
+.hp-stage__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.42s ease;
+}
+
+.hp-stage__img.is-on {
+  opacity: 1;
+}
+
+.hp-original {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 3;
+  padding: 7px 13px;
+  border: 0;
+  border-radius: 9px;
+  background: rgba(15, 23, 42, 0.58);
+  backdrop-filter: blur(8px);
+  color: var(--bg-elevated);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.hp-original:hover {
+  background: rgba(15, 23, 42, 0.82);
+}
+
+.hp-original[aria-pressed="true"] {
+  background: var(--bg-elevated);
+  color: var(--brand-deep);
+}
+
+/* Sits over whichever render is currently shown, so a switch reads as "rendering" rather
+   than as a gap. Only ever visible on a pair the visitor has not opened before. */
+.hp-stage::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 4;
+  width: 30px;
+  height: 30px;
+  margin: -15px 0 0 -15px;
+  border: 3px solid rgba(255, 255, 255, 0.55);
+  border-top-color: var(--bg-elevated);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+.hp-stage.is-loading::after {
+  opacity: 1;
+  animation: hp-spin 0.7s linear infinite;
+}
+
+@keyframes hp-spin {
+  to { transform: rotate(360deg); }
+}
+
+.hp-note {
+  margin: 10px 0 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--slate);
+}
+
+/* The pills moved into the left column (see the comment on the markup). index.css owns
+   everything about the pills themselves and must keep owning it — this is only the gap
+   that separates them from the call to action they now sit under. */
+.hero-content .hero-stats {
+  margin-top: 26px;
+}
+
+/* ------------------------------------------------------------------- responsive */
+
+@media (max-width: 768px) {
+  .hp-frame {
+    margin: 0 auto;
+    padding: 12px;
+  }
+
+  .hp-menu {
+    min-width: min(300px, 78vw);
+  }
+
+  /* The colour below 769px only. --slate on this caption composites against
+     rgba(255,255,255,.2) over the page background here, because #background-video is
+     display:none at this width and the paint stack resolves down to <body>. Above it the
+     video sits in the stack and the darker value is unnecessary. Same reasoning the
+     carousel's note carried; see the audit note that moved it. */
+  .hp-note {
+    color: var(--slate-deep);
+    font-size: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hp-stage__img {
+    transition: none;
+  }
+
+  .hp-menu {
+    animation: none;
+  }
+
+  .hp-stage.is-loading::after {
+    animation: none;
+  }
+}

@@ -32,6 +32,54 @@ function fakeGrader(content) {
   };
 }
 
+// --- the architecture verdict is TRI-STATE ----------------------------------
+//
+// `undefined` means the reviewer never answered — the line was omitted, or the reply was cut
+// off before it. Collapsing that into `false` is how a metric flatters itself: the
+// architectureDrift column exists to measure the drift RATE, and counting unanswered as
+// clean biases it in the comfortable direction. It is the same distinction `degraded` draws
+// for the review as a whole, and the same mistake the erase verifier used to make when it
+// was told to ignore the walls.
+test('reviewImageQuality: an omitted ARCHITECTURE line is UNKNOWN, never "clean"', async () => {
+  const { reviewImageQuality } = createImageReview({ genAI: fakeGrader('PERFECT: true') });
+  const v = await reviewImageQuality(TINY_PNG, { sourceDataUrl: TINY_PNG });
+  assert.equal(v.architectureDrift, undefined, 'unanswered is not the same as unchanged');
+  assert.equal(v.perfect, true, 'but it still fails OPEN — a quiet reviewer must not block a render');
+});
+
+test('reviewImageQuality: a reply truncated before the verdict is also UNKNOWN', async () => {
+  const { reviewImageQuality } = createImageReview({ genAI: fakeGrader('PERFECT: false\nSCORE: 70\nARCHITE') });
+  const v = await reviewImageQuality(TINY_PNG, { sourceDataUrl: TINY_PNG });
+  assert.equal(v.architectureDrift, undefined);
+  assert.equal(v.score, 70, 'the score it did manage to emit is still honoured');
+});
+
+test('reviewImageQuality: "same" and "changed" map to false and true', async () => {
+  const same = createImageReview({ genAI: fakeGrader('PERFECT: true\nARCHITECTURE: same') });
+  assert.equal((await same.reviewImageQuality(TINY_PNG, { sourceDataUrl: TINY_PNG })).architectureDrift, false);
+
+  const changed = createImageReview({ genAI: fakeGrader('PERFECT: true\nARCHITECTURE: changed\nWHY: the window is gone') });
+  const v = await changed.reviewImageQuality(TINY_PNG, { sourceDataUrl: TINY_PNG });
+  assert.equal(v.architectureDrift, true);
+  assert.equal(v.perfect, false, 'drift overrides a PERFECT verdict — a flawless photo of the wrong room is not a pass');
+});
+
+test('reviewImageQuality: a drifted render always loses to a clean one on score', async () => {
+  // The retry loop returns the best-scored attempt when none is perfect, so a drifted render
+  // scoring 90 would otherwise beat a slightly-imperfect correct one scoring 60.
+  const drifted = createImageReview({ genAI: fakeGrader('PERFECT: false\nSCORE: 90\nARCHITECTURE: changed') });
+  const v = await drifted.reviewImageQuality(TINY_PNG, { sourceDataUrl: TINY_PNG });
+  assert.ok(v.score <= 20, `drift caps the score (got ${v.score})`);
+});
+
+test('reviewImageQuality: without a source, the architecture question is not asked at all', async () => {
+  // Text-to-image has no input photo and the CAD render's input is a 2D plan. Asking a
+  // reviewer to compare against an image it was never given produces confident nonsense.
+  const { reviewImageQuality } = createImageReview({ genAI: fakeGrader('PERFECT: true') });
+  const v = await reviewImageQuality(TINY_PNG);
+  assert.equal(v.architectureDrift, undefined);
+});
+
 // --- reviewImageQuality -----------------------------------------------------
 test('reviewImageQuality: disabled reviewer (no client) passes the image with score 100, marked degraded', async () => {
   const { reviewImageQuality } = createImageReview({ genAI: null });

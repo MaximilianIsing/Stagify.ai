@@ -103,7 +103,140 @@ test('generatePrompt uses the additionalPrompt as the base for a custom style', 
 
 test('generatePrompt appends non-custom additional details as a priority suffix', () => {
   const p = generatePrompt('Kitchen', 'standard', 'add a green island', false);
-  assert.match(p, /Prioritize the following above everything else: add a green island/);
+  // Scoped to the STYLE guidance, deliberately. This used to read "above everything else",
+  // which sat ~2,500 characters after the architecture rule and therefore told the model, in
+  // as many words, that the free-text box outranked "do not resize the windows" — so a
+  // request as ordinary as "make it feel bright and open" enlarged them.
+  assert.match(p, /Prioritize the following over the style guidance above: add a green island/);
+  assert.ok(!/above everything else/.test(p), 'nothing in the prompt claims to outrank the preservation block');
+});
+
+// --- The architecture lock: position, authority, and the two tiers -----------
+//
+// Position is the whole mechanism. Whichever block speaks LAST wins the argument — the same
+// discipline ROOM_TYPE_CONSTRAINTS relies on to survive a remove-furniture request — so a
+// block that claims to override everything above it is only telling the truth if nothing
+// follows it. These pin that.
+
+test('generatePrompt emits the architecture lock LAST, after the user free text', () => {
+  const p = generatePrompt('Kitchen', 'standard', 'make it bright and open', false);
+  assert.ok(
+    p.indexOf('PRESERVE THE ARCHITECTURE') > p.indexOf('Prioritize the following'),
+    'the preservation block must come after the free text it claims authority over',
+  );
+  assert.ok(
+    p.trimEnd().endsWith('finishes of existing permanent fixtures.'),
+    'nothing is appended after the preservation block',
+  );
+});
+
+test('generatePrompt gives the architecture lock explicit authority over the user\'s own words', () => {
+  const p = generatePrompt('Bedroom', 'standard', '', false);
+  assert.match(p, /overrides EVERY instruction above it, including any request in the user's own words/);
+});
+
+test('generatePrompt states the window/door rule as a COUNT, not a vague noun list', () => {
+  // A model can check a count against itself; "keep it as it appears" it cannot. The
+  // partly-hidden clause is load-bearing: the most common way a window disappears is that
+  // furniture was placed where it used to be and the model then had no reason to draw it.
+  const p = generatePrompt('Living room', 'modern', '', false);
+  assert.match(p, /same number of windows, doors and wall openings/i);
+  assert.match(p, /PARTLY HIDDEN behind furniture in the input is still a window or door/i);
+});
+
+test('generatePrompt keeps surface finishes reachable by an explicit request (tier 2)', () => {
+  // The lock is two-tier on purpose. Structure is absolute; finish is preserved BY DEFAULT
+  // but an explicit request may change it — otherwise "paint the walls sage" stops working
+  // and the free-text box stops being worth having.
+  const p = generatePrompt('Bedroom', 'standard', '', false);
+  const tier2 = p.slice(p.indexOf('DEFAULT-PRESERVE'));
+  assert.match(tier2, /change these ONLY if the user explicitly asked for it/i);
+  assert.match(tier2, /Wall colours, paint, wallpaper/);
+  // …and the structural nouns must NOT be in the negotiable tier.
+  for (const structural of ['windows', 'doors', 'wall openings']) {
+    assert.ok(!tier2.includes(structural), `${structural} must stay in the absolute tier, not DEFAULT-PRESERVE`);
+  }
+});
+
+// --- Framing lives in the lock, and only there ------------------------------
+//
+// It used to be emitted separately as `CRITICAL — IMAGE FRAMING`, which granted the camera
+// an exception ("move it ONLY if the user explicitly asked for a closer or different crop")
+// that the lock then denied outright — and the lock, speaking last, won. The result was a
+// rule nobody had decided: "zoom in on the seating area" was silently refused. Two sections
+// both claiming to own the camera is how that happens, so there is now one.
+
+test('the structural camera rule is stated exactly once', () => {
+  // THE drift test for this class of bug. A second framing section reintroduces the
+  // contradiction, and nothing else in the suite would notice.
+  const p = generatePrompt('Kitchen', 'modern', 'make it bright and open', false);
+  const structural = p.split('\n').filter((l) => /camera/i.test(l) && /Do not change/i.test(l));
+  assert.equal(structural.length, 1, 'exactly one bullet locks the camera');
+  assert.ok(
+    !p.includes('CRITICAL — IMAGE FRAMING'),
+    'no standalone framing section — the lock owns framing now',
+  );
+});
+
+test('no crop carve-out survives; the lock says so explicitly', () => {
+  const p = generatePrompt('Living room', 'standard', 'zoom in on the fireplace', false);
+  assert.ok(
+    !p.includes('asked for a closer or different crop'),
+    'the stale exception is gone — it contradicted the lock and lost silently',
+  );
+  assert.match(p, /No request may re-crop, zoom, or re-frame the photograph/);
+});
+
+test('the framing rules moved INTO the lock, none of them dropped', () => {
+  const p = generatePrompt('Bedroom', 'standard', '', false);
+  const lock = p.slice(p.indexOf('PRESERVE THE ARCHITECTURE'));
+  for (const rule of [
+    /EXACT same aspect ratio, orientation and canvas dimensions/,
+    /Keep the FULL scene from the input in frame/,
+    /no stretching, squashing, letterboxing or padding/,
+    /Fit every staging change INSIDE the existing frame/,
+  ]) {
+    assert.match(lock, rule, `framing rule survived the move: ${rule}`);
+  }
+});
+
+test('the merged fragments survived being folded into other bullets', () => {
+  // The "do not add a window/skylight" bullet was deleted as subsumed by the
+  // permanent-element list and the COUNT rule. Its two unique fragments were merged rather
+  // than dropped — a merge that silently loses content is the failure mode here.
+  const p = generatePrompt('Bedroom', 'standard', '', false);
+  assert.match(p, /arches, skylights, ceilings/, 'skylights joined the permanent-element list');
+  assert.match(
+    p, /never add one either, however much better the room would look with it/i,
+    'the anti-improvement nudge joined the COUNT bullet',
+  );
+});
+
+test('a room-type rule can still veto a tier-2 finish change, but never a tier-1 one', () => {
+  // The lock speaks LAST and so wins every argument — right for structure, wrong for finish.
+  // A dorm student cannot repaint university property, so ROOM_TYPE_CONSTRAINTS['Dorm']
+  // forbids it; without the carve-out, "paint the walls sage" would sail straight past that
+  // rule because the lock's tier 2 permits finish changes on explicit request.
+  const p = generatePrompt('Dorm', 'modern', 'paint the walls sage green', false);
+  assert.match(p, /Do not paint walls, add wallpaper/, 'the dorm rule is still present');
+  assert.match(
+    p, /change these ONLY if the user explicitly asked for it above, AND no rule above forbids it/,
+    'tier 2 defers to a hard room-type rule stated above it',
+  );
+  // Tier 1 keeps NO such carve-out: no room-type rule has any business moving a wall.
+  const tier1 = p.slice(p.indexOf('PRESERVE THE ARCHITECTURE'), p.indexOf('DEFAULT-PRESERVE'));
+  assert.match(tier1, /overrides EVERY instruction above it/);
+  assert.ok(!/no rule above forbids it/.test(tier1), 'structure yields to nothing');
+});
+
+test('generatePrompt falls back to standard when a custom style carries no text', () => {
+  // The picker lets anyone select Custom and type nothing. That used to resolve to the
+  // matrix's own 'custom' entry — "Stage this kitchen with the elements and decor the user
+  // asks for" — a null instruction that left the model to improvise the whole room.
+  const empty = generatePrompt('Kitchen', 'custom', '', false);
+  const standard = generatePrompt('Kitchen', 'standard', '', false);
+  assert.equal(empty, standard, 'an empty custom request stages exactly as standard does');
+  assert.ok(!empty.includes('the elements and decor the user asks for'), 'no null instruction reaches the model');
 });
 
 // --- Dorm: the fixed university-issued furniture + small-room scale constraints ---

@@ -2436,7 +2436,18 @@ body.page-home main {
   z-index: 2;
 }
 .sponsors {
-  margin-top: 200px; /* clears the hero carousel overflow */
+  /* Clears the hero's overflow. `.hero` is sized to the viewport remainder and its columns
+     are taller than that, so they hang below the section box and this reservation is what
+     stops them landing on the logos. It was 200px against the old carousel; the picker's
+     frame plus its caption is ~10px taller, so it grew to match.
+
+     The binding column is the PHOTO, not the text — verified at 1440px across en/de/pt/nl/
+     fr/it, where the media column bottoms out at the same y in every one and the headline
+     (2 lines in English, 3 in German) never reaches it. That is the property to preserve:
+     if the sentence ever starts overflowing further than the photo, this number stops being
+     language-independent and the hero breaks in the wordiest locale only. Re-measure rather
+     than nudging this if you raise the headline's font-size. */
+  margin-top: 210px;
   padding: 24px 0;
   min-height: 200px; /* reserves space so logos don't overlap the next section */
 }
@@ -2706,24 +2717,13 @@ body.page-home main {
   color: var(--brand-strong);
 }
 
-/* Entrance wipe. One clip-path on the bar rather than four animated `width`s: it is a
-   single property, it never triggers layout, and — the reason it matters — the final
-   widths never leave the CSS, which is what makes the no-JS and reduced-motion paths
-   correct for free. home-figures.js only adds the two classes.
-
-   `.is-narm` BLANKS THE BAR, and the markup ships the bar fully drawn — so applying it
-   while the bar is on screen is an ERASE, not an entrance: the bar visibly empties and
-   redraws. home-figures.js therefore only ever adds it from off screen, and skips the
-   whole animation for a visitor who is already looking at the chart. Both halves of
-   that are load-bearing; a wipe you can see start from a drawn bar is the bug. */
-.nar-card.is-narm .nar-bar {
-  clip-path: inset(0 100% 0 0 round 999px);
-  transition: none;
-}
-.nar-card.is-narm.is-ncharted .nar-bar {
-  clip-path: inset(0 0 0 0 round 999px);
-  transition: clip-path 0.9s cubic-bezier(0.22, 0.61, 0.36, 1);
-}
+/* THE BAR HAS NO ENTRANCE ANIMATION — do not add one back. It used to wipe in from a
+   collapsed `clip-path` that home-figures.js armed off screen, but the markup ships the
+   bar fully drawn, so collapsing it is an erase rather than an entrance: play it early
+   and nobody sees it, play it late and the visitor scrolls to an empty gap (the bar has
+   no track background, so a clipped bar renders as nothing) and waits ~0.9s for it to
+   fill. The card's `.reveal` fade above is this section's entrance. See the note in
+   home-figures.js's initNarChart. */
 
 @media (max-width: 900px) {
   .nar-card {
@@ -2738,16 +2738,10 @@ body.page-home main {
   }
 }
 
-/* home-figures.js returns before touching the chart here, so the authored widths and
-   numerals are what you see. These rules make that unconditional: even a stale
-   `.is-narm` left by a motion-preference change mid-session cannot hide the bar. The
-   legend highlight stays — it is direct manipulation, not motion. */
+/* The chart itself needs nothing here any more — it no longer animates for anyone. What
+   is left are the two 0.18s fades the legend highlight uses; the highlight itself stays
+   on, because it is direct manipulation rather than motion. */
 @media (prefers-reduced-motion: reduce) {
-  .nar-card.is-narm .nar-bar,
-  .nar-card.is-narm.is-ncharted .nar-bar {
-    clip-path: none;
-    transition: none;
-  }
   .nar-bar span,
   .nar-legend__btn {
     transition: none;
@@ -3934,13 +3928,13 @@ body.page-home main {
 }
 
 /* ==========================================================================
-   Testimonials — a DECK of five glass quote cards. The top card is readable, the
+   Testimonials — a DECK of seven glass quote cards. The top card is readable, the
    rest fan out behind it, and you drag it away (or use the arrows) to advance.
    Driven by scripts/home-testimonials.js.
 
    PROGRESSIVE ENHANCEMENT IS THE CONTRACT. Every deck rule below is scoped behind
    `.tw-deck--ready`, which that script adds. With no JS the markup renders as what
-   it literally is: a plain column of five readable quotes, controls hidden. Do not
+   it literally is: a plain column of seven readable quotes, controls hidden. Do not
    lift a deck rule out from behind the ready class — a script failure would turn
    the section into a pile of overlapping cards with no way to advance.
 

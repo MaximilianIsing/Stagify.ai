@@ -84,14 +84,18 @@
     <link rel="preload" href="fonts/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="fonts/inter-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
     
-    <!-- Preload critical carousel image -->
-    <link rel="preload" as="image" href="media-webp/example/Original.webp" fetchpriority="high">
+    <!-- Preload the LCP image: the hero picker’s DEFAULT pair (Modern bedroom). Preload
+         matching is by URL, so this has to stay equal to the static <img> in .hp-stage and
+         to DEFAULT_ROOM/DEFAULT_STYLE in scripts/hero-picker.js. A mismatch does not error,
+         it silently buys a wasted download AND delays the element it was meant to speed up.
+         test/frontend/hero-picker-lcp.test.js fails on any of the three drifting. -->
+    <link rel="preload" as="image" href="media-webp/example/modern-bedroom.webp" fetchpriority="high">
 
 
     <!-- Critical CSS — render-blocking on purpose (needed for first paint) -->
     <link rel="stylesheet" href="styles/styles.css">
     <link rel="stylesheet" href="styles/toast.css">
-    <link rel="stylesheet" href="styles/carousel.css">
+    <link rel="stylesheet" href="styles/hero-picker.css">
     <link rel="stylesheet" href="styles/home.css">
     <!-- index.css is render-blocking too, so it belongs here with the rest. It used to
          sit below the module <script> tags, where the preload scanner reached it late
@@ -140,13 +144,13 @@
       </style>
     </noscript>
     <link rel="preload" href="languages/english.json" as="fetch" crossorigin>
-    <!-- carousel.js is FIRST on purpose. It builds the hero carousel, whose <img> is the
-         LCP element, and it has zero imports — so as the first module tag it runs as soon
-         as the document is parsed. Listed after app.js (its old position) it had to wait
-         for that 18-deep import graph to execute first, because modules run in document
-         order. Paired with the direct init() call in carousel.js; moving the tag alone
+    <!-- hero-picker.js is FIRST on purpose. It owns the hero photo, whose <img> is the LCP
+         element, and it has zero imports — so as the first module tag it runs as soon as the
+         document is parsed. Listed after app.js (its old position) it had to wait for that
+         18-deep import graph to execute first, because modules run in document order. Paired
+         with the direct init() call at the bottom of hero-picker.js; moving the tag alone
          does nothing. -->
-    <script type="module" src="scripts/carousel.js"></script>
+    <script type="module" src="scripts/hero-picker.js"></script>
     <script type="module" src="scripts/language-detect.js"></script>
     <script type="module" src="scripts/language-loader.js"></script>
     <script type="module" src="scripts/language-switcher.js"></script>
@@ -330,58 +334,55 @@
       </div>
       <section class="hero" id="home">
         <div class="hero-content">
-          <p class="catchphrase" style="color: #1e3a8a; font-size: clamp(1.25rem, 5vw, 2.5rem); font-weight: 700; margin: 0 0 1.5rem 0; text-align: center; line-height: 1.2; transition: all 0.3s ease; display: inline-block; max-width: 100%; transform-origin: center;" data-hover-glow data-lang="hero.catchphrase">Upload. Stage. Imagine.</p>
-          <div class="announcement" style="background: rgba(255, 255, 255, 0.4); color: #1e3a8a; backdrop-filter: blur(10px);" data-lang="hero.announcement">Built to make your dream space a reality</div>
-          <h1 style="color: #1e3a8a;">
-            <span class="w-free" data-lang="hero.title.free">Free</span>
-            <span class="w-virtual" data-lang="hero.title.virtual">virtual</span>
-            <span class="w-staging" data-lang="hero.title.staging">staging</span>
-            <span class="w-with" data-lang="hero.title.with">with</span><br>
-            <span class="w-one" data-lang="hero.title.one">one</span>
-            <span class="w-click" data-lang="hero.title.click">click</span>
-          </h1>
+          <!-- The line above the headline says what this is, because nothing else above the
+               fold does: the headline is a control ("Stage this bedroom in Modern"), the
+               button is an instruction, and the pills are numbers. It used to hold the
+               slogan "Upload. Stage. Imagine.", which named no product and was hidden below
+               768px, so on a phone the hero never said what Stagify was at all.
+
+               Where the slogan went: `.mobile-test-text` in the shared header still renders
+               it from hero.title.* on all ten pages that carry it. That block is the mirror
+               image of this one — display:none by default, shown only below 768px — so the
+               two never appeared together, and the slogan is now a phone-header line rather
+               than a desktop one. If it should also be somewhere on desktop, that is a
+               separate decision and this is not the slot for it.
+
+               It carries the same phrase as <title> and og:title on purpose. Keep it VISIBLE
+               ON MOBILE (see styles/index.css) — indexing is mobile-first, so a keyword line
+               that only exists above 768px is a keyword line Google does not read. -->
+          <p class="catchphrase" style="color: #1e3a8a; font-size: clamp(1.05rem, 3.4vw, 1.6rem); font-weight: 700; margin: 0 0 1rem 0; line-height: 1.2; transition: all 0.3s ease; display: inline-block; max-width: 100%; transform-origin: center;" data-hover-glow data-lang="hero.eyebrow">Free virtual staging</p>
+          <!-- The headline is a sentence with two holes in it, and both are dropdowns. Picking
+               either one swaps the photo in .hp-stage for the matching render of the SAME
+               source room, so the hero demonstrates the styles instead of listing them.
+
+               THE WHITESPACE IS LOAD-BEARING. The fragment spans and the slots are written
+               with no gaps between the tags because the spaces belong INSIDE the translated
+               fragments ("Stage this " / " in "). Reformat this block onto separate lines and
+               HTML collapses the indentation into extra spaces around each slot, which shows
+               up as a visible gap before the chevron and before the full stop.
+
+               scripts/hero-picker.js drops the data-lang attributes off the two label spans
+               once it takes over, so a later language change cannot reset the sentence to the
+               default pair while the photo stays where the visitor put it.
+
+               The menus are spans carrying ARIA roles rather than a div wrapping a ul. An h1
+               may only contain phrasing content, and while browsers happily render a ul in
+               there, it is invalid and the roles do the same job on a span. Keep it that way
+               if you touch the structure. -->
+          <h1 class="hp-sentence" style="color: #1e3a8a;"><span data-lang="hero.sentence.before">Stage this </span><span class="hp-slot"><button type="button" class="hp-slot__btn" id="hero-room-btn" aria-haspopup="listbox" aria-expanded="false" aria-controls="hero-room-menu"><span id="hero-room-label" data-lang="hero.rooms.bedroom">bedroom</span><span class="hp-slot__chev" aria-hidden="true"></span></button><span class="hp-menu" id="hero-room-menu" hidden><span class="hp-menu__list" id="hero-room-list" role="listbox" aria-label="Room type" data-lang-attr="hero.roomMenuLabel|aria-label"></span></span></span><span data-lang="hero.sentence.middle"> in </span><span class="hp-slot"><button type="button" class="hp-slot__btn" id="hero-style-btn" aria-haspopup="listbox" aria-expanded="false" aria-controls="hero-style-menu"><span id="hero-style-label" data-lang="furnitureStyles.modern">Modern</span><span class="hp-slot__chev" aria-hidden="true"></span></button><span class="hp-menu" id="hero-style-menu" hidden><span class="hp-menu__list" id="hero-style-list" role="listbox" aria-label="Furniture style" data-lang-attr="hero.styleMenuLabel|aria-label"></span></span></span><span data-lang="hero.sentence.after">.</span></h1>
           <div class="hero-ctas">
             <div class="hero-cta-button-wrap">
               <button id="hero-upload" class="btn btn-primary"><strong data-lang="hero.cta">Upload image for free</strong></button>
               <p id="hero-free-gens-today" class="hero-free-gens-today hidden" aria-live="polite"></p>
             </div>
           </div>
-        </div>
-        <div class="hero-media">
-          <!-- Slide 0 is STATIC, and that is load-bearing for LCP. This <img> is the
-               page’s LCP element; when the whole carousel was built by JS its paint was
-               chained behind 128 KB of HTML parsing, five render-blocking stylesheets,
-               and carousel.js’s own download+execute, all while ~60 module files parsed
-               on a throttled CPU. In the markup it is found by the preload scanner in
-               the first packet and paints as soon as the CSSOM is ready.
-
-               Two rules for anyone editing this:
-               1. The <img> must stay byte-identical to items[0].image in
-                  scripts/carousel.js (same src, same data-lang-attr, fetchpriority=high)
-                  so it also matches the <link rel="preload" as="image"> in <head> and
-                  the preload is reused rather than duplicated. There is a drift test.
-               2. width:100% on the track and item is NOT cosmetic. createCarousel()
-                  later writes `container.offsetWidth - 32` as an inline pixel width, and
-                  the container is border-box with `padding:16px 16px 8px`, so that value
-                  IS the content-box width. 100% resolves to the same used width, which
-                  is what keeps the JS hand-off from shifting layout (CLS).
-
-               carousel.js ADOPTS this subtree — it appends slides 1..6 around it and
-               never re-creates this node. Replacing it, even with an identical src,
-               would restart the LCP candidate at the later time. -->
-          <div class="carousel-container">
-            <div class="carousel-track" style="width: 100%;">
-              <div class="carousel-item" style="width: 100%; height: 100%;">
-                <div class="carousel-item-image">
-                  <img src="media-webp/example/Original.webp" data-lang-attr="carouselItems.originalPhotoAlt|alt" alt="Example empty room before virtual staging" style="width: 100%; height: 100%; object-fit: cover;" fetchpriority="high">
-                </div>
-                <div class="carousel-item-overlay">
-                  <div class="carousel-item-title" data-lang="carouselItems.original">Original</div>
-                </div>
-              </div>
-            </div>
-            <div class="carousel-note" data-lang="hero.carouselNote">Example preview, upload your photo to stage.</div>
-          </div>
+          <!-- The stat pills live in the LEFT column, under the call to action, not under the
+               photo where they used to sit. `.hero-media` deliberately overflows `.hero` (the
+               section is sized to the viewport and the photo is taller than the space left
+               over), and the sponsors band below reserves a fixed 200px to clear it. Sixty
+               more pixels of pills on the end of that column overran the reservation and
+               landed on top of the sponsor logos. They also read better here: they back up
+               the button rather than captioning the photo. -->
           <div class="hero-stats" id="hero-stats">
             <div class="stats-pills">
               <div class="stat-pill">
@@ -394,6 +395,38 @@
               </div>
             </div>
             <div class="stats-counting-text stats-counting-text--under-pills" data-lang="hero.stats.andCounting">and counting...</div>
+          </div>
+        </div>
+        <div class="hero-media">
+          <!-- The photo is STATIC, and that is load-bearing for LCP. This <img> is the
+               page’s LCP element; when the hero image was built by JS its paint was
+               chained behind 128 KB of HTML parsing, five render-blocking stylesheets,
+               and the script’s own download+execute, all while ~60 module files parsed
+               on a throttled CPU. In the markup it is found by the preload scanner in
+               the first packet and paints as soon as the CSSOM is ready.
+
+               Three rules for anyone editing this:
+               1. It must stay in agreement with TWO other places: the
+                  <link rel="preload" as="image"> in <head> (matching is by URL, so a
+                  mismatch costs a wasted download and delays this element), and
+                  DEFAULT_ROOM/DEFAULT_STYLE in scripts/hero-picker.js. If the default
+                  pair and this file disagree, the first paint shows one room and the
+                  script immediately swaps it for another. There is a drift test.
+               2. No loading="lazy" and no width/height attributes. Lazy would forfeit the
+                  preload; the attributes would override the aspect-ratio .hp-stage sets
+                  and letterbox the photo.
+               3. hero-picker.js ADOPTS this node — it appends the other renders around it
+                  and never re-creates it. Replacing it, even with an identical src, would
+                  restart the LCP candidate at the later time.
+
+               The empty "before" shot is NOT here on purpose: it is loaded on demand when
+               the visitor presses “See original”, so the first paint pays for one image. -->
+          <div class="hp-frame">
+            <div class="hp-stage" data-hp-stage>
+              <img class="hp-stage__img" data-hp-img src="media-webp/example/modern-bedroom.webp" alt="A bedroom virtually staged in a modern style" data-lang-attr="hero.defaultAlt|alt" style="width: 100%; height: 100%; object-fit: cover;" fetchpriority="high">
+              <button type="button" class="hp-original" id="hero-original-btn" aria-pressed="false" data-lang="hero.seeOriginal">See original</button>
+            </div>
+            <div class="hp-note" data-lang="hero.stageNote">Every look here is one real render of the same empty room.</div>
           </div>
         </div>
       </section>
@@ -719,11 +752,11 @@
           <h2 class="home-section__title" id="nar-title" data-tx="rise" data-lang="home.nar.title">Don’t fall behind</h2>
         </div>
         <!-- Every visible string here is unchanged; scripts/home-figures.js adds the
-             entrance wipe and the legend highlight through the data-* hooks only.
+             legend highlight through the data-* hooks and nothing else.
 
-             The segment widths moved from `width:` to `--seg-w` so the CSS owns the
-             final value and JS only toggles a class — with no JS, or under reduced
-             motion, the bar is already fully drawn.
+             The segment widths live in `--seg-w` so the CSS owns the final value — with
+             no JS at all the bar is already fully drawn, and there is deliberately no
+             entrance animation on it (see initNarChart in home-figures.js).
 
              THE PERCENTAGES ARE PLAIN TEXT AND STAY THAT WAY. They were briefly
              animated (counted up from 0%) and it read as nonsense — a survey share is
@@ -1182,7 +1215,7 @@
              rest fan out behind it, and you drag it away or use the arrows to advance.
              home-testimonials.js adds `tw-deck--ready`, and EVERY deck rule in home.css
              is scoped behind that class — so with no JS this stays what it is in the
-             markup, a plain readable column of five quotes. Do not move the deck styling
+             markup, a plain readable column of seven quotes. Do not move the deck styling
              out from behind the ready class.
 
              All seven are real, named agents. A guard in

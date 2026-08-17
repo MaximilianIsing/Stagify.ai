@@ -176,9 +176,9 @@ for the hand-rolled SVG) that are unit-tested without a browser. See
 [`admin-dashboard.md`](admin-dashboard.md).
 
 **3. Standalone page scripts** — the non-interactive pages (marketing, legal, status,
-guides) load small independent scripts (`carousel.js`, `home-reveal.js`, `count-up.js`,
-the `language-*.js` i18n helpers, …). No entry/island structure — there is no app state
-to compose.
+guides) load small independent scripts (`home-reveal.js`, `count-up.js`, `hero-picker.js`,
+`footer-year.js`, the `language-*.js` i18n helpers, …). No entry/island structure — there
+is no app state to compose.
 
 ### The custom select
 
@@ -595,10 +595,11 @@ gets the files as authored (same [no-build-step decision](architecture.md#decisi
   local custom properties where its palette/scale genuinely differs from the site's —
   `admin.css` does, on `.page-admin`, for the dashboard's denser data UI.
 - **Shared feature CSS — opt-in per page.** Small files a page links only if it uses the
-  feature: `auth.css` (nav + auth-modal UI, on ~10 pages), `carousel.css`,
-  `star-border.css`, `home-text-animate.css`, `demo-player.css`, `toast.css` (required by
-  any page importing `scripts/toast.js`). A page pulls in only the feature CSS it actually
-  renders, so no page carries the whole site's styles.
+  feature: `auth.css` (nav + auth-modal UI, on ~14 pages), `hero-picker.css` and
+  `faq-plan.css` (both index-only), `star-border.css`, `home-text-animate.css`,
+  `demo-player.css`, `toast.css` (required by any page importing `scripts/toast.js`). A
+  page pulls in only the feature CSS it actually renders, so no page carries the whole
+  site's styles.
 
 A given page therefore links `styles.css` + (usually) `auth.css` + its own `<page>.css`
 + any feature files it needs. Overlap between base and page files is deliberate and tiny
@@ -655,9 +656,10 @@ report the cascade working as designed. The cost is readability, not correctness
 un-merging a 3,200-line sheet with no visual-regression coverage is not worth it.
 
 **Non-render-blocking (lazy) CSS.** Pages split their stylesheets by criticality. On
-`index.html`, `styles.css` / `carousel.css` / `home.css` load normally (render-blocking);
-the below-the-fold ones (`auth.css`, `star-border.css`, `home-text-animate.css`,
-`demo-player.css`) ship as `media="print"` with a `data-lazy-css` attribute so they
+`index.html`, `styles.css` / `toast.css` / `hero-picker.css` / `home.css` / `index.css`
+load normally (render-blocking); the below-the-fold ones (`auth.css`, `star-border.css`,
+`home-text-animate.css`, `demo-player.css`, `faq-plan.css`) ship as `media="print"` with a
+`data-lazy-css` attribute so they
 **don't block first paint**, and [`scripts/lazy-css.js`](../../public/scripts/lazy-css.js)
 promotes each to `media="all"` once fetched. A `<noscript>` block links them the normal
 way for the no-JS path. The promotion is an external script rather than an inline
@@ -764,17 +766,18 @@ one command plus four judgement calls:
 npx eslint public/scripts --rule '{"no-var":"error","prefer-const":"error"}' --fix
 ```
 
-That reports 589 problems and fixes **587 automatically** (585 `no-var` + both
-`prefer-const`). ESLint deliberately declines exactly **two**, and they are the only ones
-needing a human: `admin/helpers.js:43` (`export var ICONS` — an exported binding, so check
-no importer reassigns it before making it `const`) and
-`profile-menu/auth-modal.js:362`. Afterwards, add both rules to `eslint.config.js` so it cannot drift
-back, and verify with `npm run typecheck` — `checkJs` turns the two dangerous conversion
-mistakes (a `let` referenced outside the block it was declared in, and a redeclaration in
-one scope) into hard errors, which is what makes an otherwise-untested sweep safe.
+That reports 567 problems and fixes **566 automatically** (565 `no-var` + both
+`prefer-const`). ESLint deliberately declines exactly **one**, and it is the only one
+needing a human: `export var ICONS` in `admin/helpers.js` — an exported binding, so check
+no importer reassigns it before making it `const`. Afterwards, add both rules to
+`eslint.config.js` so it cannot drift back, and verify with `npm run typecheck` —
+`checkJs` turns the two dangerous conversion mistakes (a `let` referenced outside the
+block it was declared in, and a redeclaration in one scope) into hard errors, which is
+what makes an otherwise-untested sweep safe.
 
-**Timing matters more than usual**: it rewrites 37 files at once, so run it when nobody
-else has work open under `public/scripts/`.
+**Timing matters more than usual**: it rewrites 39 files at once, so run it when nobody
+else has work open under `public/scripts/`. (Re-run the command before trusting these
+counts — they drift with every file added under `public/scripts/`.)
 
 ### The auth modal's element handles
 
@@ -817,17 +820,18 @@ is a deliberate, standing decision — not a gap we simply haven't filled.** A f
 remains **deferred**, and the island-splitting / de-monolithing work is the chosen
 alternative to one, not a way-station toward one.
 
-This is worth writing down because at ~15k lines of vanilla JS the absence of a
+This is worth writing down because at ~33k lines of vanilla JS the absence of a
 component abstraction reads, at a glance, like an oversight. It isn't — here is the
 reasoning, and the (narrow) conditions under which we'd revisit it.
 
 **Why this is the right default here:**
 
-- **The interactive surface is small and isolated.** Of ~16 pages, only three carry
-  real interactivity (the staging tool, AI Designer, Masking Studio). The rest —
-  marketing, legal, status, guides, auth — are essentially static content with light
+- **The interactive surface is small and isolated.** Of ~21 pages (plus a dozen blog
+  articles), only a handful carry real interactivity — the staging tool, AI Designer,
+  Masking Studio, Exterior Studio, Basic Mask, and the gallery. The rest — marketing,
+  legal, status, guides, auth, blog — are essentially static content with light
   nav/i18n/auth scripts and would gain **nothing** from a component runtime. A framework
-  would tax every page to benefit three.
+  would tax every page to benefit a few.
 - **The heaviest interactive code is canvas, which a framework does not simplify.** The
   largest modules — mask editing, draw tools, image viewers, viewport transforms — are
   imperative pointer/pixel code. `view = f(state)` rendering helps lists, forms, and
@@ -847,19 +851,22 @@ reasoning, and the (narrow) conditions under which we'd revisit it.
 
 **The maintenance cost is real, but localized — so we manage it, not migrate for it.**
 The honest downside the pattern carries is that entry scripts are procedural and can
-grow (`app.js` is ~1k lines). But recent git history concentrates frontend change in
-that **one** staging entry, not evenly across the 15k lines — the studio internals and
-the static pages are comparatively stable. (Some of `app.js`'s churn is ordinary feature
-work on the flagship tool, not pure friction.) The proportionate response is to keep
-`app.js` healthy, not to re-architect the whole frontend:
+grow — `app.js` reached ~1k lines before the `max-lines: 650` ratchet split it into
+`scripts/app/` submodules, and it now sits just under that cap along with every other
+entry. But git history concentrates frontend change in that **one** staging entry, not
+evenly across the ~33k lines — the studio internals and the static pages are
+comparatively stable. (Some of `app.js`'s churn is ordinary feature work on the flagship
+tool, not pure friction.) The proportionate response is to keep `app.js` healthy, not to
+re-architect the whole frontend:
 
 - **Type safety everywhere** — the entire frontend is `checkJs` + JSDoc typed with zero
   `@ts-nocheck`, and a type error gates the deploy (see [`testing.md`](testing.md#type-checking)).
 - **Pure logic is extracted and unit-tested** — branchy or reusable logic moves from the
   entry into a pure helper island with a `node --test` spec, shrinking the hotspot and
   pinning its behavior.
-- **The two studios have Playwright e2e smokes** (`e2e/`) covering their happy, error,
-  and resume paths with every `/api/*` mocked.
+- **Every interactive surface has Playwright e2e smokes** (`e2e/`) — the two studios, the
+  Exterior Studio, Basic Mask, the main tool's stage/mask flows, the gallery and the share
+  page — covering their happy, error, and resume paths with every `/api/*` mocked.
 - **Islands keep each feature bounded** — new behavior lands in a new module, not as
   another 50 lines in the entry.
 

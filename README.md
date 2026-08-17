@@ -3,12 +3,14 @@
 AI-powered virtual staging and interior design for real estate. Upload a photo of an
 empty or dated room and get a professionally staged result in about eight seconds —
 plus an **AI Designer** (chat-to-stage, and floor plans → either a furnished plan view
-from above or a photorealistic photo taken inside one room) and a **Masking Studio** for
-pixel-precise edits.
+from above or a photorealistic photo taken inside one room), a **Masking Studio** for
+pixel-precise edits, an **Exterior Studio** for curb appeal, and a gallery whose every
+render carries a share link for the seller or buyer on the other end.
 
-Node/Express monolith (`server.js`) serving a no-build static frontend (`public/`) and
-a JSON API from one origin. State is a SQLite file plus flat JSON/CSV on a persistent
-disk — no external database.
+Node/Express monolith (`server.js`) serving an unbundled static frontend (`public/`) and
+a JSON API from one origin; the localized URLs (`/es`, `/fr/…`) are the one server-rendered
+surface. All structured state is one SQLite file on a persistent disk, with append-only
+CSV logs beside it and gallery render bytes in Cloudflare R2 — no external database.
 
 ## Quick start
 
@@ -39,9 +41,9 @@ Everything lives in [`docs/`](docs/README.md) — start there. Highlights:
 
 ## Deploying
 
-Hosted on **Render**; the build runs `npm install && npm test`, so a failing test
-blocks the deploy. **Auto-deploy is off** — pushing does not release; deploys are
-triggered manually from the Render dashboard. See the
+Hosted on **Render**; the build runs `sh scripts/build.sh` — `npm ci`, then the `npm test`
+and `npm audit` gates — so a failing test blocks the deploy. **Auto-deploy is off** —
+pushing does not release; deploys are triggered manually from the Render dashboard. See the
 [deployment runbook](docs/operations/deployment.md).
 
 ## Requirements

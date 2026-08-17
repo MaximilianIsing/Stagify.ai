@@ -1,6 +1,6 @@
-/* Stagify.ai — #testimonials, the five-quote deck.
+/* Stagify.ai — #testimonials, the seven-quote deck.
  *
- * The section used to be a two-up grid of two cards. It now holds five, which a grid
+ * The section used to be a two-up grid of two cards. It now holds seven, which a grid
  * cannot carry: that many cards ran about five screens tall between the two heaviest
  * blocks on the page, and the phone rule (`.tw-card:nth-child(n + 2) { display: none }`)
  * "solved" that by showing a phone visitor exactly ONE quote and discarding the rest.
@@ -12,10 +12,10 @@
  * PROGRESSIVE ENHANCEMENT IS THE CONTRACT. Every deck rule in home.css is scoped
  * behind `.tw-deck--ready`, which this module adds at the END of init. If this file
  * fails to load, throws, or is served stale, the section stays what the markup
- * literally is: a plain column of five readable quotes with the controls hidden.
+ * literally is: a plain column of seven readable quotes with the controls hidden.
  * Nothing is hidden by default and no quote is unreachable without JS.
  *
- * WHY THE CARDS STAY IN THE DOM. All five are always present and always in the HTML —
+ * WHY THE CARDS STAY IN THE DOM. All seven are always present and always in the HTML —
  * only `inert` moves. That keeps every testimonial crawlable (this section is social
  * proof; it should be indexed) while keeping the buried cards, which show as ~12px
  * slivers with no readable text, out of the tab order and off the screen-reader path.
@@ -199,7 +199,7 @@ if (typeof document !== 'undefined') {
   } else {
     // index-deferred.js injects this module after `load`, so DOMContentLoaded fired
     // long ago — a bare listener would never run and the deck would silently never
-    // arm, leaving the plain six-quote column. See the trap note in index-deferred.js.
+    // arm, leaving the plain seven-quote column. See the trap note in index-deferred.js.
     initTestimonialDeck();
   }
 }

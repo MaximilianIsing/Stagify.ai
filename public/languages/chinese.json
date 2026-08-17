@@ -32,15 +32,8 @@
     "exteriorStudio": "外观工作室"
   },
   "hero": {
-    "catchphrase": "上传。装修。想象。",
-    "announcement": "为您的梦想之家而打造",
+    "eyebrow": "免费虚拟装修",
     "title": {
-      "free": "免费",
-      "virtual": "虚拟",
-      "staging": "装修",
-      "with": "键",
-      "one": "一",
-      "click": "点击",
       "upload": "上传。",
       "stage": "装修。",
       "imagine": "想象。"
@@ -49,12 +42,32 @@
     "freeGensLeft": "今日还可免费生成 {n} 次，",
     "freeGensLeftUpgrade": "升级",
     "freeGensUpgrade": "今天就试试 Stagify+。<a class=\"hero-free-gens-upgrade\" href=\"stagify-plus.html\">升级</a>",
-    "carouselNote": "示例预览，上传您的照片进行装修",
     "stats": {
       "roomsStaged": "已装修房间",
       "usersServed": "服务用户",
       "andCounting": "还在继续..."
-    }
+    },
+    "sentence": {
+      "before": "将这间",
+      "middle": "布置成",
+      "after": "风格。"
+    },
+    "rooms": {
+      "bedroom": "卧室",
+      "livingRoom": "客厅",
+      "diningRoom": "餐厅",
+      "kitchen": "厨房",
+      "office": "办公室",
+      "bathroom": "浴室"
+    },
+    "roomMenuLabel": "房间类型",
+    "styleMenuLabel": "家具风格",
+    "seeOriginal": "查看原图",
+    "seeStaged": "查看布置后",
+    "stageNote": "这里的每一种风格都是同一个空房间的真实渲染。",
+    "stageAlt": "{style}风格的{room}，虚拟布置",
+    "originalAlt": "布置前的同一个房间，空房",
+    "defaultAlt": "以现代风格虚拟布置的卧室"
   },
   "sponsors": {
     "title": "受以下机构经纪人信赖："
@@ -575,22 +588,6 @@
     "coastal": "海岸",
     "farmhouse": "农舍",
     "custom": "自定义"
-  },
-  "carouselItems": {
-    "original": "原始",
-    "modern": "现代",
-    "scandinavian": "斯堪的纳维亚",
-    "luxury": "奢华",
-    "coastal": "海岸",
-    "midcentury": "中世纪",
-    "farmhouse": "农舍",
-    "originalPhotoAlt": "虚拟装修前的空房间示例",
-    "modernPhotoAlt": "现代风格虚拟装修房间示例",
-    "scandinavianPhotoAlt": "斯堪的纳维亚风格虚拟装修房间示例",
-    "luxuryPhotoAlt": "奢华风格虚拟装修房间示例",
-    "coastalPhotoAlt": "海岸风格虚拟装修房间示例",
-    "midcenturyPhotoAlt": "中世纪风格虚拟装修房间示例",
-    "farmhousePhotoAlt": "农舍风格虚拟装修房间示例"
   },
   "whyUs": {
     "title": "为什么选择我们？",

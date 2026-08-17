@@ -7,10 +7,17 @@
         .hero-content h1 br {
           display: none;
         }
-        /* Mobile: hide the "Upload. Stage. Imagine." hero catchphrase */
-        .hero-content .catchphrase {
-          display: none !important;
-        }
+        /* The eyebrow above the headline USED to be hidden here. It held the slogan
+           "Upload. Stage. Imagine.", which cost a line of a viewport-height hero and named
+           no product, so hiding it on phones was right.
+           It now holds "Free virtual staging" — the same phrase as <title> — and that is
+           the one line of the hero that tells a phone visitor what the page is. Indexing is
+           mobile-first, so hiding it here would also hide it from the crawler that counts.
+           Do not re-add the hide, and note there were two more copies of it in styles.css
+           (at 768px and again at 480px) which went with this one. The line costs 38px:
+           measured at 390x844, 375x667 and 360x640 the CTA moves from 236px to 274px and
+           the whole hero, photo included, still ends above the fold on the smallest of
+           the three. */
         /* Extra breathing room above the mobile hero. MOVED HERE FROM auth.css,
            where it was `body.page-home .hero`. index.html is the only page with
            .page-home AND the only page that loads auth.css lazily

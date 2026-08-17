@@ -18,8 +18,11 @@
 
   // '.sp-feature' was here until the Stagify+ feature grid was folded into the
   // comparison table's row tooltips; those cards no longer exist on any page.
+  // '.ent-feature' was here too, but the enterprise ✓ list is plain text in a
+  // shared panel, not a card — a glow tracking the cursor across those rows read
+  // as a stray hover artifact rather than lit glass.
   var SELECTOR = [
-    '.ent-highlight', '.ent-feature',
+    '.ent-highlight',
     '.whyus-card'
   ].join(',');
 

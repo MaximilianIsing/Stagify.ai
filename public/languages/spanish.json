@@ -32,15 +32,8 @@
     "exteriorStudio": "Estudio de Exteriores"
   },
   "hero": {
-    "catchphrase": "Sube. Diseña. Imagina.",
-    "announcement": "Creado para hacer realidad la casa de tus sueños",
+    "eyebrow": "Escenificación virtual gratuita",
     "title": {
-      "free": "Diseño",
-      "virtual": "virtual",
-      "staging": "gratis",
-      "with": "con",
-      "one": "un",
-      "click": "clic",
       "upload": "Sube.",
       "stage": "Diseña.",
       "imagine": "Imagina."
@@ -49,12 +42,32 @@
     "freeGensLeft": "{n} generaciones gratis restantes hoy, ",
     "freeGensLeftUpgrade": "Mejorar",
     "freeGensUpgrade": "Prueba Stagify+ hoy. <a class=\"hero-free-gens-upgrade\" href=\"stagify-plus.html\">Mejorar</a>",
-    "carouselNote": "Ejemplo de vista previa: sube tu foto al scenario",
     "stats": {
       "roomsStaged": "Habitaciones Escenificadas",
       "usersServed": "Usuarios Atendidos",
       "andCounting": "y contando..."
-    }
+    },
+    "sentence": {
+      "before": "Amuebla ",
+      "middle": " en estilo ",
+      "after": "."
+    },
+    "rooms": {
+      "bedroom": "este dormitorio",
+      "livingRoom": "esta sala de estar",
+      "diningRoom": "este comedor",
+      "kitchen": "esta cocina",
+      "office": "esta oficina",
+      "bathroom": "este baño"
+    },
+    "roomMenuLabel": "Tipo de habitación",
+    "styleMenuLabel": "Estilo de muebles",
+    "seeOriginal": "Ver original",
+    "seeStaged": "Ver amueblado",
+    "stageNote": "Cada estilo aquí es un render real de la misma habitación vacía.",
+    "stageAlt": "{room} en estilo {style}, amueblado virtualmente",
+    "originalAlt": "La misma habitación antes de amueblar, vacía",
+    "defaultAlt": "Un dormitorio amueblado virtualmente en estilo moderno"
   },
   "sponsors": {
     "title": "Con la confianza de agentes de:"
@@ -575,22 +588,6 @@
     "coastal": "Costera",
     "farmhouse": "Cortijo",
     "custom": "Personalizado"
-  },
-  "carouselItems": {
-    "original": "Original",
-    "modern": "Moderno",
-    "scandinavian": "Escandinava",
-    "luxury": "Lujo",
-    "coastal": "Costera",
-    "midcentury": "Mediados de siglo",
-    "farmhouse": "Cortijo",
-    "originalPhotoAlt": "Ejemplo de habitación vacía antes del home staging virtual",
-    "modernPhotoAlt": "Ejemplo de habitación con estilo de home staging moderno",
-    "scandinavianPhotoAlt": "Ejemplo de habitación con estilo de home staging escandinavo",
-    "luxuryPhotoAlt": "Ejemplo de habitación con estilo de home staging de lujo",
-    "coastalPhotoAlt": "Ejemplo de habitación con estilo de home staging costero",
-    "midcenturyPhotoAlt": "Ejemplo de habitación con estilo de home staging de mediados de siglo",
-    "farmhousePhotoAlt": "Ejemplo de habitación con estilo de home staging rústico"
   },
   "whyUs": {
     "title": "¿Por qué elegirnos?",

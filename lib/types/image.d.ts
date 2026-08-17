@@ -50,12 +50,19 @@ export interface BlueprintRenderOptions {
  * them means the image was looked at. Without it a reviewer outage is
  * indistinguishable from a flawless run, so the quality gate can switch itself off
  * and report 100% success.
+ *
+ * `architectureDrift` answers a DIFFERENT question from `perfect`: whether the render
+ * changed the room rather than whether it looks good. A render can be a flawless
+ * photograph of the wrong house. It is only ever present when the reviewer was handed
+ * the original photo to compare against (`reviewImageQuality`'s `sourceDataUrl`);
+ * `undefined` means the question was not asked, which is not the same as `false`.
  */
 export interface ImageReviewResult {
   perfect: boolean;
   score: number;
   reason?: string;
   degraded?: boolean;
+  architectureDrift?: boolean;
 }
 
 /**

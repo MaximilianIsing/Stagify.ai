@@ -32,15 +32,8 @@
     "exteriorStudio": "Studio Esterni"
   },
   "hero": {
-    "catchphrase": "Carica. Arreda. Immagina.",
-    "announcement": "Creato per rendere reale lo spazio dei tuoi sogni",
+    "eyebrow": "Home staging virtuale gratis",
     "title": {
-      "free": "Staging",
-      "virtual": "virtuale",
-      "staging": "gratis",
-      "with": "con",
-      "one": "un",
-      "click": "clic",
       "upload": "Carica.",
       "stage": "Arreda.",
       "imagine": "Immagina."
@@ -49,12 +42,32 @@
     "freeGensLeft": "{n} generazioni gratuite rimaste oggi, ",
     "freeGensLeftUpgrade": "Esegui l’upgrade",
     "freeGensUpgrade": "Prova Stagify+ oggi stesso. <a class=\"hero-free-gens-upgrade\" href=\"stagify-plus.html\">Esegui l’upgrade</a>",
-    "carouselNote": "Anteprima di esempio. Carica la tua foto per arredarla",
     "stats": {
       "roomsStaged": "Stanze arredate",
       "usersServed": "Utenti serviti",
       "andCounting": "e cresce..."
-    }
+    },
+    "sentence": {
+      "before": "Arreda ",
+      "middle": " in stile ",
+      "after": "."
+    },
+    "rooms": {
+      "bedroom": "questa camera da letto",
+      "livingRoom": "questo soggiorno",
+      "diningRoom": "questa sala da pranzo",
+      "kitchen": "questa cucina",
+      "office": "questo ufficio",
+      "bathroom": "questo bagno"
+    },
+    "roomMenuLabel": "Tipo di stanza",
+    "styleMenuLabel": "Stile d’arredo",
+    "seeOriginal": "Vedi originale",
+    "seeStaged": "Vedi arredato",
+    "stageNote": "Ogni stile qui è un render reale della stessa stanza vuota.",
+    "stageAlt": "{room} in stile {style}, arredato virtualmente",
+    "originalAlt": "La stessa stanza prima dell’arredamento, vuota",
+    "defaultAlt": "Una camera da letto arredata virtualmente in stile moderno"
   },
   "sponsors": {
     "title": "La fiducia degli agenti di:"
@@ -575,22 +588,6 @@
     "coastal": "Costiero",
     "farmhouse": "Rustico",
     "custom": "Personalizzato"
-  },
-  "carouselItems": {
-    "original": "Originale",
-    "modern": "Moderno",
-    "scandinavian": "Scandinavo",
-    "luxury": "Lusso",
-    "coastal": "Costiero",
-    "midcentury": "Midcentury",
-    "farmhouse": "Rustico",
-    "originalPhotoAlt": "Esempio di stanza vuota prima dello staging virtuale",
-    "modernPhotoAlt": "Stanza di esempio con stile di staging virtuale moderno",
-    "scandinavianPhotoAlt": "Stanza di esempio con stile di staging virtuale scandinavo",
-    "luxuryPhotoAlt": "Stanza di esempio con stile di staging virtuale di lusso",
-    "coastalPhotoAlt": "Stanza di esempio con stile di staging virtuale costiero",
-    "midcenturyPhotoAlt": "Stanza di esempio con stile di staging virtuale midcentury",
-    "farmhousePhotoAlt": "Stanza di esempio con stile di staging virtuale rustico"
   },
   "whyUs": {
     "title": "Perché sceglierci?",

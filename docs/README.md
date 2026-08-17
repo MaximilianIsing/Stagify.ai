@@ -3,8 +3,9 @@
 AI-powered virtual staging and interior design for real estate. Upload a photo of
 an empty or dated room and get a professionally staged result in about eight
 seconds. Also includes an **AI Designer** (chat-to-stage, plus floor plans → either a
-furnished plan view from above or a photorealistic photo taken inside one room) and a
-**Masking Studio** for pixel-precise edits.
+furnished plan view from above or a photorealistic photo taken inside one room), a
+**Masking Studio** for pixel-precise edits, an **Exterior Studio** for curb appeal, and a
+**gallery** whose every render carries a share link for the seller or buyer on the other end.
 
 This README is the entry point for the `docs/` folder. See also:
 
@@ -45,12 +46,16 @@ This README is the entry point for the `docs/` folder. See also:
 
 ## Tech stack
 
-- **Runtime:** Node.js ≥ 18, ES modules (`"type": "module"`).
+- **Runtime:** Node.js ≥ 22.8.0 (`engines` in `package.json`; `.node-version` pins the
+  exact version CI and Render resolve), ES modules (`"type": "module"`).
 - **Server:** Express 4 — a composition-root `server.js` that mounts route modules
   (`routes/*.js`) and wires shared `lib/` dependencies, serving both the static
   frontend and the JSON API from one origin.
-- **Frontend:** Plain HTML/CSS/vanilla JS in `public/`. **No build step, no framework,
-  no bundler** — files are served as-is.
+- **Frontend:** Plain HTML/CSS/vanilla JS in `public/`. **No framework and no bundler** —
+  nothing is transpiled or minified at deploy time and files are served as authored. The
+  one code-generation step is `scripts/build-i18n-seo.js`, run by hand after a locale/page
+  change, which regenerates `public/sitemap.xml` and `public/scripts/locale-data.js`
+  (see [`guides/i18n.md`](guides/i18n.md)).
 - **Image processing:** `sharp`.
 - **AI:** Google Generative AI (Gemini) for staging/renders, OpenAI for the chat assistant.
 - **Email:** Resend. **Billing:** Stripe. **Auth:** local accounts + Google Sign-In.
@@ -69,30 +74,37 @@ This README is the entry point for the `docs/` folder. See also:
 │   ├── build.sh             # Render build: npm ci → npm test (gate) → npm audit (gate) → fetch litestream
 │   └── start.sh             # Render start: restore DB from R2 if empty → replicate → run app
 ├── package.json             # Scripts, deps, Node engine
-├── routes/                  # Express route modules, mounted by server.js
-│   ├── public.js            # Home/SEO/status pages, health, counters, contact, email, bug reports
-│   ├── auth.js              # Register/login/Google/logout/reset, /getpro, /api/auth/config
+├── routes/                  # Express route modules, mounted by server.js (in this order)
 │   ├── billing.js           # Stripe webhook, customer portal, enterprise config + checkout
-│   ├── staging.js           # process-image, validate-image, mask-edit, segment
+│   ├── auth.js              # Register/login/Google/logout/reset, /getpro, /api/auth/config
+│   ├── admin.js             # /admin + log/JSON exports + image hosting (endpoint_key gated)
+│   │                        #   (the dashboard UI itself: docs/guides/admin-dashboard.md)
+│   ├── staging.js           # process-image, validate-image, mask-edit, segment, exterior
 │   ├── chat.js              # AI Designer: chat, chat-upload, welcome-message
-│   └── admin.js             # /admin + log/JSON exports + image hosting (endpoint_key gated)
-│                            #   (the dashboard UI itself: docs/guides/admin-dashboard.md)
+│   ├── i18n.js              # Localized URLs (/es, /fr/guides.html, …), rendered server-side
+│   ├── public.js            # Home/SEO/status pages, health, counters, contact, email, bug reports
+│   ├── gallery.js           # The signed-in owner's render history + the share link on each entry
+│   ├── share-public.js      # /s/:token — the anonymous share page (no account, token is the credential)
+│   ├── object-local.js      # Dev/CI only: serves locally-stored gallery blobs (R2 presigns in prod)
+│   └── referrals.js         # Campaign short-URLs (/columbia, …) — MOUNTED LAST, matches /:slug
 ├── lib/                     # Shared modules (factory + dependency-injection pattern)
 │   ├── logger.js            # Diagnostic logger — the single stdout/stderr funnel (LOG_LEVEL)
 │   ├── config/              # config.js (secrets), model-config.js, runtime-flags.js
-│   ├── data/                # db.js (shared SQLite conn), auth-store, enterprise-store, stripe-linking, stripe-events, memory, counters, uptime-monitor
-│   ├── http/                # async-router, http-helpers (sendError), http-guards, rate-limiters, uploads, app-middleware, not-found (the terminal 404)
+│   ├── data/                # db.js (shared SQLite conn), data-dir (the ONE "where state lives"), auth-store, session-tokens, admin-sessions, enterprise-store, stripe-linking, stripe-events, memory, counters, uptime-monitor, referral-links, gallery-* + object-store (R2/local) + blob-tombstones, user-deletion
+│   ├── http/                # async-router, http-helpers (sendError), error-ref, http-guards, rate-limiters, uploads, app-middleware, not-found (the terminal 404)
 │   ├── i18n/                # locales (the language + page set), render-page (the string transform), page-renderer (its caches), sitemap
-│   ├── image/               # image-primitives, image-annotation, image-review, erase, hosted-images
+│   ├── image/               # image-primitives, image-annotation, image-review, erase, hosted-images, stamp-disclosure (the "virtually staged" pixel stamp)
 │   ├── services/            # ai-clients, auth-helpers, email, logging (CSV), stripe-webhooks
 │   ├── staging/             # prompts, promptMatrix, room-constraints (per-room hard rules), unstageable (upload-gate prompt + reject taxonomy), staging-pipeline, staging-generation, virtual-staging-handler, mask-edit, segment, cad-handling
-│   └── chat/                # chat-pipeline (wiring) + memory/image-retrieval/image-dispatch/staging/response dispatch, request-prep, upload-prep, welcome-message-handler, history, routing, sse
+│   ├── chat/                # chat-pipeline (wiring) + memory/image-retrieval/image-dispatch/staging/response dispatch, request-prep, upload-prep, welcome-message-handler, history, routing, sse
+│   └── types/               # Ambient .d.ts declarations shared by the checkJs typecheck (no runtime code)
 ├── public/                  # Static frontend (HTML pages, scripts, styles, assets, i18n)
 ├── data/                    # Runtime state: one SQLite DB (all structured state) + CSV logs (see Data & persistence)
 ├── test/                    # `node --test` suite, in subfolders mirroring the source tree
 │                            #   (server/ routes/ chat/ staging/ image/ data/ services/
-│                            #    http/ config/ i18n/ frontend/) + helpers/ harnesses
-├── e2e/                     # Playwright browser smokes of the two studios (npm run test:e2e)
+│                            #    http/ config/ i18n/ seo/ frontend/) + helpers/ harnesses
+├── e2e/                     # Playwright browser smokes of the studios, home page, gallery
+│                            #   and share page (npm run test:e2e)
 ├── ds-bundle/               # design-system bundle (generated)
 ├── to-build/                # source masters: media-png, OG_Image, demos (see to-build/README.md)
 ├── instagram/               # local-only post generator (see instagram/README.md) — never
@@ -102,7 +114,7 @@ This README is the entry point for the `docs/` folder. See also:
 
 ## Prerequisites
 
-- Node.js ≥ 18 and npm.
+- Node.js ≥ 22.8.0 and npm (the repo's `.node-version` names the exact version CI uses).
 - API keys for the features you want to exercise (all optional except Gemini for the
   core staging flow) — see [Configuration & secrets](#configuration--secrets).
 
@@ -159,17 +171,22 @@ first, then the file.
 
 ## Architecture
 
-Stagify is a **static frontend + JSON API monolith**. There is no client framework
-and no server-side rendering — `public/` is plain HTML that talks to `server.js` over
-`fetch`.
+Stagify is a **static frontend + JSON API monolith**. There is no client framework —
+`public/` is plain HTML that talks to `server.js` over `fetch`. The one exception to
+"static" is the localized-URL layer: `routes/i18n.js` renders each non-English page
+server-side from the same English HTML plus a language pack, so `/es` and
+`/fr/guides.html` arrive translated rather than being swapped in by JS. English is still
+served as plain static files.
 
 - **Request flow:** browser loads a static HTML page → vanilla JS (`public/scripts/`)
   calls JSON endpoints → `server.js` validates, calls the relevant AI/billing/email
   provider, persists to `data/`, and responds.
 - **Secret resolution:** each secret resolves from its env var, falling back to a
   local `.txt` file (handy for local dev; production uses the host dashboard).
-- **Persistence:** SQLite (`auth-store.db`) for accounts/sessions, plus flat JSON/CSV
-  files under `data/` for everything else (see below).
+- **Persistence:** one SQLite database (`auth-store.db`) for **all** structured state —
+  accounts/sessions, enterprise domains, memories, uptime, gallery rows — plus flat CSV
+  logs and `hosted-images/` under `data/`, and gallery render bytes in Cloudflare R2
+  (see below).
 - **i18n:** UI strings live in `public/languages/*.json` (11 languages). Each language
   is served at its **own URL** (`/es`, `/fr/guides.html`, …) — rendered server-side by
   `routes/i18n.js` for SEO — and the client applies the same strings for dynamic content.
@@ -208,7 +225,9 @@ Everything the browser loads is under `public/`:
   `stagify-plus.html`, `plus-welcome.html` (post-checkout
   "Welcome to Stagify+" confirmation — the Stripe Payment Link's after-payment
   redirect target and the Google Ads conversion page), `enterprise.html`,
-  `guides.html`, `contact.html`, `admin.html`, legal pages, `404.html` (served by
+  `guides.html`, `contact.html`, `admin.html`, `gallery.html` (the signed-in render
+  history), `listing-share.html` (the anonymous `/s/:token` share page), `status.html`,
+  the blog under `blog/`, legal pages, `404.html` (served by
   `lib/http/not-found.js` at every unmatched URL, translated but deliberately outside
   `LOCALIZED_PAGES`), plus legacy redirect
   stubs (`pro.html` → `stagify-plus.html`, `faq.html` → `index.html#faq`). Which
@@ -217,10 +236,11 @@ Everything the browser loads is under `public/`:
   [`reference/endpoints.md`](reference/endpoints.md#public-pages--seo-no-api-key).
 - **Scripts (`public/scripts/`):** e.g. `app.js` (main staging tool), `auth.js`,
   `mask-core.js` (shared masking canvas math), `count-up.js` (hero stats),
-  `carousel.js`, `home-reveal.js`, and the `language-*.js` i18n helpers.
+  `hero-picker.js` (the home hero's room/style grid), `home-reveal.js`, and the
+  `language-*.js` i18n helpers.
 - **Styles (`public/styles/`):** a site-wide base `styles.css` (partially minified — edit
   with care) plus per-page (`home.css`, `ai-designer.css`, …) and opt-in per-feature
-  (`auth.css`, `carousel.css`, `demo-player.css`, …) files, linked à la carte per page.
+  (`auth.css`, `hero-picker.css`, `demo-player.css`, …) files, linked à la carte per page.
   See [`guides/frontend.md`](guides/frontend.md#styles) for the tiers, the lazy
   (non-render-blocking) CSS on the home page, and the FOUC auth gates.
 - **i18n (`public/languages/`):** one JSON file per language; `english.json` is the
@@ -251,16 +271,21 @@ Served from `server.js` on the same origin. Full reference: [`endpoints.md`](ref
 Rough groups:
 
 - **Core AI:** `POST /api/process-image` (stage), `/api/mask-edit`, `/api/segment`,
-  `/api/validate-image` (upload gatekeeper — returns a localizable rejection `code`),
-  `/api/stage-by-endpoint-key`.
+  `/api/enhance-exterior`, `/api/validate-image` (upload gatekeeper — returns a
+  localizable rejection `code`), `/api/stage-by-endpoint-key`.
 - **Auth:** `/api/auth/register`, `/register/verify`, `/login`, `/logout`, `/me`,
   `/forgot-password`, `/reset-password`, `/google`.
 - **Billing:** `/api/billing/customer-portal`, `/api/billing/stripe-webhook`,
   `/api/enterprise/create-checkout`.
 - **Chat:** `/api/chat`, `/api/chat-upload`, `/api/welcome-message`.
-- **Images/hosting:** `/api/host-image`, `/api/hosted-images`, `GET /i/:id`.
+- **Gallery (session-authed):** `GET /api/gallery`, `PATCH /api/gallery/:id`,
+  `PATCH /api/gallery/:id/share`, `DELETE /api/gallery/:id`.
+- **Public share (token-authed, no account):** `GET /s/:token` (the page),
+  `GET /api/share/:token` (the manifest).
+- **Images/hosting:** `/api/host-image`, `/api/hosted-images`, `GET /i/:id`,
+  `/api/masking-studio/save`, `/api/stamp-image`, `/api/download-result`.
 - **Misc:** `/api/contact-count`, `/api/prompt-count`, `/api/bug-report`,
-  `/api/send-email`, `/health`, `/api/health`.
+  `/api/send-email`, `/health`, `/api/health`, `/api/status`.
 - **Admin/logs (gated by `endpoint_key`):** `/promptlogs`, `/chatlogs`, `/contactlogs`,
   `/masklogs`, `/bugreports`, `/authstore`, `/enterprise-domains`, `/memories`, etc.
 
@@ -273,6 +298,8 @@ Rough groups:
 | Resend | Transactional email | `RESEND_API_KEY` |
 | Stripe | Subscriptions & metered enterprise billing | `STRIPE_*`, `ENTERPRISE_PRICE_ID` |
 | Google Identity | "Sign in with Google" | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` |
+| Cloudflare R2 | Gallery render bytes (presigned, never proxied) **and** the Litestream SQLite replica — deliberately different credentials for the two, see the env doc | `R2_*`, `LITESTREAM_*` |
+| Sentry | Production error tracking (`instrument.js`, imported before `server.js`) | `SENTRY_DSN` |
 
 Each integration degrades gracefully: if its key is missing, that feature is disabled
 rather than crashing the server.
@@ -298,8 +325,11 @@ Full detail in [`guides/testing.md`](guides/testing.md):
   `test/server/route-inventory.test.js` boots the server and asserts every critical route is still
   registered — a safety net for the route extraction.
 - **End-to-end** — [Playwright](https://playwright.dev) specs under `e2e/` drive the real
-  studios in a real Chromium with every `/api/*` call mocked (no AI, no cost). Covers the
-  AI Designer and Masking Studio happy paths, their error paths, and session resume.
+  frontend in a real Chromium with every `/api/*` call mocked (no AI, no cost). Covers the
+  AI Designer, Masking Studio, Exterior Studio, Basic Mask, the main tool's stage/mask
+  flows, the home page, the gallery and the public share page — happy paths, error paths,
+  session resume, and the localized variants. See
+  [`guides/testing.md`](guides/testing.md#end-to-end-browser-tests) for the spec map.
 
 > **`npm test` gates deployment** — `render.yaml`'s build runs `sh scripts/build.sh`
 > → `npm test`, so a type error **or** a failing unit test blocks the Render deploy. The
@@ -368,5 +398,6 @@ around:
   a per-IP ceiling on **wrong** keys (`RL_ENDPOINT_KEY`) so the shared secret can't be
   brute-forced; a valid key never spends the bucket.
 - CSP is enforced via `helmet` (toggle with `DISABLE_CSP=1` only to debug a blocked
-  resource); CORS is limited to `ALLOWED_ORIGINS`; auth/email/generation endpoints are
-  rate-limited (`RL_AUTH` / `RL_EMAIL` / `RL_GEN`).
+  resource — it drops the policy for every response and logs a `[security]` warning at
+  boot when set); CORS is limited to `ALLOWED_ORIGINS`; auth/email/generation endpoints
+  are rate-limited (`RL_AUTH` / `RL_EMAIL` / `RL_GEN`).

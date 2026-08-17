@@ -31,7 +31,7 @@ import { LANGUAGES } from './locale-data.js';
       return {
         meta: { title: 'Stagify.ai', description: 'AI Home Staging Tool' },
         navigation: { home: 'Home', whyUs: 'Why Us?', faq: 'FAQ', contactUs: 'Contact' },
-        hero: { catchphrase: 'Upload. Stage. Imagine.' },
+        hero: { eyebrow: 'Free virtual staging' },
         errors: { processingFailed: 'Processing failed' },
       };
     }

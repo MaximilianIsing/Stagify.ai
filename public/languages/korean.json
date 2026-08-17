@@ -32,15 +32,8 @@
     "exteriorStudio": "외관 스튜디오"
   },
   "hero": {
-    "catchphrase": "업로드. 스테이징. 상상.",
-    "announcement": "당신이 꿈꾸던 공간을 현실로",
+    "eyebrow": "무료 가상 스테이징",
     "title": {
-      "free": "무료",
-      "virtual": "가상",
-      "staging": "스테이징",
-      "with": "—",
-      "one": "한 번의",
-      "click": "클릭",
       "upload": "업로드.",
       "stage": "스테이징.",
       "imagine": "상상."
@@ -49,12 +42,32 @@
     "freeGensLeft": "오늘 무료 생성 {n}회 남음, ",
     "freeGensLeftUpgrade": "업그레이드",
     "freeGensUpgrade": "오늘 Stagify+를 사용해 보세요. <a class=\"hero-free-gens-upgrade\" href=\"stagify-plus.html\">업그레이드</a>",
-    "carouselNote": "예시 미리보기. 스테이징하려면 사진을 업로드하세요",
     "stats": {
       "roomsStaged": "스테이징된 방",
       "usersServed": "이용한 사용자",
       "andCounting": "계속 늘어나는 중..."
-    }
+    },
+    "sentence": {
+      "before": "이 ",
+      "middle": "을 ",
+      "after": " 스타일로 스테이징."
+    },
+    "rooms": {
+      "bedroom": "침실",
+      "livingRoom": "거실",
+      "diningRoom": "식당",
+      "kitchen": "주방",
+      "office": "사무실",
+      "bathroom": "욕실"
+    },
+    "roomMenuLabel": "방 유형",
+    "styleMenuLabel": "가구 스타일",
+    "seeOriginal": "원본 보기",
+    "seeStaged": "스테이징 보기",
+    "stageNote": "여기 모든 스타일은 같은 빈 방을 실제로 렌더링한 결과입니다.",
+    "stageAlt": "{style} 스타일 {room}, 가상 스테이징",
+    "originalAlt": "스테이징 전 같은 방, 빈 상태",
+    "defaultAlt": "모던 스타일로 가상 스테이징된 침실"
   },
   "sponsors": {
     "title": "다음 기관의 에이전트가 신뢰합니다:"
@@ -575,22 +588,6 @@
     "coastal": "코스탈",
     "farmhouse": "팜하우스",
     "custom": "사용자 지정"
-  },
-  "carouselItems": {
-    "original": "원본",
-    "modern": "모던",
-    "scandinavian": "스칸디나비아",
-    "luxury": "럭셔리",
-    "coastal": "코스탈",
-    "midcentury": "미드센추리",
-    "farmhouse": "팜하우스",
-    "originalPhotoAlt": "가상 스테이징 전 예시 빈 방",
-    "modernPhotoAlt": "모던 가상 스테이징 스타일의 예시 방",
-    "scandinavianPhotoAlt": "스칸디나비아 가상 스테이징 스타일의 예시 방",
-    "luxuryPhotoAlt": "럭셔리 가상 스테이징 스타일의 예시 방",
-    "coastalPhotoAlt": "코스탈 가상 스테이징 스타일의 예시 방",
-    "midcenturyPhotoAlt": "미드센추리 가상 스테이징 스타일의 예시 방",
-    "farmhousePhotoAlt": "팜하우스 가상 스테이징 스타일의 예시 방"
   },
   "whyUs": {
     "title": "왜 우리를 선택할까요?",

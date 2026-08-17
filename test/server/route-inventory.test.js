@@ -3,18 +3,36 @@
 // server.js is large and actively refactored; the easiest way to "screw stuff up"
 // is to accidentally remove or rename a route the frontend or integrations depend on.
 // This boots the server and asserts each critical route still EXISTS — i.e. responds
-// with anything other than 404 for its correct method. We assert only "registered"
-// (not a specific success code), so it stays green across refactors and regardless of
-// whether optional services (Stripe/AI/email) are configured. Each route is hit with
-// no credentials and no body, so handlers reject early (400/401/403) before any side
-// effect — nothing is written, sent, or charged.
+// with anything other than 404 for its correct method. We assert no specific success
+// code, so it stays green across refactors and regardless of whether optional services
+// (Stripe/AI/email) are configured. Each route is hit with no credentials and no body,
+// so handlers reject early (400/401/403) before any side effect — nothing is written,
+// sent, or charged.
+//
+// A 5xx also fails, because "registered" is worthless if every request to the route
+// blows up. Know what that check does and does not reach: most of the list is refused
+// at an auth guard (401/403) before the handler body runs, so a handler that throws on
+// every real request still answers 401 here and passes. The 5xx check only covers the
+// routes an unauthenticated bodyless probe actually gets INTO — the ones answering 200
+// or 400 below. It is a floor, not proof the handler works; that is each route's own
+// spec's job.
 
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { startServer } from '../helpers/server.js';
 
 let server;
-before(async () => { server = await startServer(); });
+before(async () => {
+  // Raise the endpoint-key limiter for the child only. ONE bucket of 10/15min is shared
+  // by the admin-key guard and /api/stage-by-endpoint-key on purpose (see
+  // lib/http/rate-limiters.js), and this sweep spends the whole budget on the ten
+  // admin-key routes below — so DELETE /api/admin/referrals/probe and
+  // POST /api/stage-by-endpoint-key used to answer 429 from the limiter instead of 403
+  // from the guard. That passed the 404 check while proving only that a limiter is
+  // mounted, never that the route behind it still is. Raising the ceiling lets every
+  // route reach its real guard.
+  server = await startServer({ RL_ENDPOINT_KEY: '1000' });
+});
 after(() => server?.close());
 
 // [method, path] — hit with the CORRECT method so a 404 unambiguously means
@@ -81,11 +99,27 @@ const CRITICAL_ROUTES = [
   // registration is covered in test/routes/share-public.test.js instead.
 ];
 
-test('every critical route is still registered (not 404)', async () => {
+test('every critical route is still registered (not 404), and none is dead on arrival (not 5xx)', async () => {
   const removed = [];
+  const erroring = [];
   for (const [method, p] of CRITICAL_ROUTES) {
     const res = await fetch(`${server.baseUrl}${p}`, { method });
     if (res.status === 404) removed.push(`${method} ${p}`);
+    else if (res.status >= 500) erroring.push(`${method} ${p} -> ${res.status}`);
   }
-  assert.equal(removed.length, 0, `Route(s) returned 404 — removed or renamed?\n${removed.join('\n')}`);
+  // Two buckets, not one condition: the two failures mean opposite things, and a shared
+  // "removed or renamed?" message would send you hunting for a route that is still there.
+  assert.deepEqual(
+    removed,
+    [],
+    `Route(s) returned 404 — removed or renamed?\n${removed.join('\n')}`,
+  );
+  assert.deepEqual(
+    erroring,
+    [],
+    'Route(s) are registered but throw on an unauthenticated, bodyless probe — the ' +
+      'handler or a guard above it is broken, not missing. This is NOT a rate limit ' +
+      '(429 passes) and NOT a missing credential (401/403 pass):\n' +
+      erroring.join('\n'),
+  );
 });

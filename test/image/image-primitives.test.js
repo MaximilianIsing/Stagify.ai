@@ -18,6 +18,7 @@ import {
   orientedDimensions,
   upscaleForDelivery,
   nearestGeminiAspectRatio,
+  resolveAspectRatioPin,
   cropToAspectRatio,
   detectImageMimeType,
 } from '../../lib/image/image-primitives.js';
@@ -143,6 +144,43 @@ test('nearestGeminiAspectRatio: snaps to the nearest supported ratio (log-symmet
   assert.equal(nearestGeminiAspectRatio(1000, 1500).label, '2:3', 'portrait snaps to a portrait bucket');
   assert.equal(nearestGeminiAspectRatio(1080, 1920).label, '9:16', 'tall portrait (exact 9:16)');
   assert.equal(nearestGeminiAspectRatio(0, 100), null, 'missing dimension → null');
+});
+
+// resolveAspectRatioPin asks the question the CALLERS actually have: not "which bucket is
+// closest" but "closest — and is it close enough to be worth demanding?".
+//
+// The pin used to be applied unconditionally. Standard camera ratios land on a bucket
+// exactly, but a CROPPED photo does not — and cropping is routine in real-estate work,
+// where horizons get straightened and doorways trimmed. Asking a generative model for a
+// shape the input does not have means asking it to invent scene beyond the frame or throw
+// scene away, and invented frame edges are exactly where a window turns into blank wall.
+test('resolveAspectRatioPin: pins when a supported bucket fits the source', () => {
+  assert.equal(resolveAspectRatioPin(1500, 1000)?.label, '3:2', 'exact 3:2 pins');
+  assert.equal(resolveAspectRatioPin(1600, 900)?.label, '16:9', 'exact 16:9 pins');
+  assert.equal(resolveAspectRatioPin(1024, 1024)?.label, '1:1', 'square pins');
+  assert.equal(resolveAspectRatioPin(2048, 1365)?.label, '3:2', '0.02% off still pins');
+  assert.equal(resolveAspectRatioPin(1344, 768)?.label, '16:9', '1.6% off still pins');
+});
+
+test('resolveAspectRatioPin: refuses to pin when the nearest bucket would reshape the photo', () => {
+  // Real uploads, with the reshape each would have been forced into:
+  assert.equal(resolveAspectRatioPin(1700, 1080), null, '4.7% off 3:2 — not worth it');
+  assert.equal(resolveAspectRatioPin(1600, 1000), null, '6.3% off 3:2');
+  assert.equal(resolveAspectRatioPin(1620, 1000), null, '7.4% off 3:2');
+  assert.equal(resolveAspectRatioPin(1200, 1000), null, '4% off 5:4');
+  assert.equal(resolveAspectRatioPin(0, 100), null, 'missing dimension → null');
+});
+
+test('resolveAspectRatioPin: carries the SOURCE ratio alongside the bucket', () => {
+  // The crop safety net judges the output against the source, not the pin. Measuring
+  // against the pin meant the check simply did not run in the case that needed it — an
+  // unpinned render could be delivered at any shape at all and nothing would notice.
+  const pin = resolveAspectRatioPin(1500, 1000);
+  assert.equal(pin.ratio, 1.5);
+  assert.equal(pin.sourceRatio, 1.5);
+  const slightlyOff = resolveAspectRatioPin(1344, 768);
+  assert.equal(slightlyOff.label, '16:9');
+  assert.equal(slightlyOff.sourceRatio, 1344 / 768, 'the source ratio is the real one, not the bucket');
 });
 
 test('cropToAspectRatio: no-op within tolerance, centered cover-crop past it, fail-open', async () => {

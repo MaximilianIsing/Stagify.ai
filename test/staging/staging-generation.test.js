@@ -37,6 +37,16 @@ const passthroughRetry = async (generateOnce, opts) => {
   return url;
 };
 
+// Same, but it actually runs the reviewer once — the minimum needed by the specs that care
+// about WHAT the reviewer is handed and what processStaging does with its verdict.
+// passthroughRetry deliberately skips review, so those specs would pass vacuously on it.
+const reviewingRetry = async (generateOnce, opts) => {
+  const url = await generateOnce(1, null);
+  if (opts && typeof opts.onImageProduced === 'function') opts.onImageProduced(1);
+  if (opts && typeof opts.reviewFn === 'function') await opts.reviewFn(url);
+  return url;
+};
+
 function makeGeneration(modelPng, overrides = {}) {
   const rows = [];
   const api = createStagingGeneration({
@@ -87,11 +97,10 @@ test('processImageGeneration: delivers the model output upscaled ×2 as WebP', a
   assert.equal(m.height, 1200);
 });
 
-test('processStaging: pins imageConfig.aspectRatio to the input\'s nearest supported ratio', async () => {
-  // The wiring guarantee behind the anti-drift fix: a non-standard-AR room (1.607) must be
-  // pinned to the nearest ratio the model supports (3:2), so iterative re-staging lands in a
-  // stable bucket instead of accumulating a stretch. Guards against the pin being dropped.
-  const modelPng = await png(1248, 832); // stand-in for the model's honored 3:2 bucket
+// Run processStaging over a room of the given size and report the generationConfig the
+// model was built with. Shared by the two aspect-ratio-pin cases below.
+async function capturePinFor(width, height) {
+  const modelPng = await png(1248, 832);
   let capturedOptions = null;
   const genAI = {
     getGenerativeModel: (opts) => {
@@ -107,16 +116,97 @@ test('processStaging: pins imageConfig.aspectRatio to the input\'s nearest suppo
     genAI, DEBUG_MODE: false, runQualityRetry: passthroughRetry,
     reviewImageQuality: async () => ({ isPerfect: true }), QUALITY_MAX_ATTEMPTS: 1, logPromptToFile: () => {},
   });
-  const roomInput = await jpg(900, 560); // AR 1.607 → nearest supported ratio is 3:2
   await processStaging(
-    roomInput,
+    await jpg(width, height),
     { roomType: 'Bedroom', furnitureStyle: 'standard', additionalPrompt: '', removeFurniture: false },
     { body: {} }, null, 'gemini-2.5-flash-image',
   );
-  assert.equal(
-    capturedOptions?.generationConfig?.imageConfig?.aspectRatio, '3:2',
-    'staging pins the nearest supported aspect ratio on the model',
+  return capturedOptions?.generationConfig ?? null;
+}
+
+test('processStaging: pins imageConfig.aspectRatio when a supported ratio FITS the input', async () => {
+  // Iterative re-staging ("download → re-upload → stage again") re-anchors the model's
+  // small AR wobble every round and compounds it into a visible stretch. Pinning the output
+  // to a supported bucket stops that — but only when a bucket actually matches the upload.
+  const cfg = await capturePinFor(900, 600); // exactly 3:2
+  assert.equal(cfg?.imageConfig?.aspectRatio, '3:2', 'an on-bucket room is pinned');
+});
+
+test('processStaging: does NOT pin when the nearest supported ratio would reshape the photo', async () => {
+  // 900×560 is 1.607; the nearest bucket, 3:2, is 6.7% away. Pinning there tells the model
+  // to hand back a differently-shaped photograph, which it can only do by inventing scene
+  // beyond the frame or throwing scene away — and invented frame edges are where a window
+  // turns into blank wall. Cropped photos are routine in real-estate work, so this branch
+  // is the common case, not an edge case. Round-trip stability is not worth the architecture.
+  const cfg = await capturePinFor(900, 560);
+  assert.equal(cfg?.imageConfig, undefined, 'an off-bucket room is left unpinned');
+  assert.equal(typeof cfg?.seed, 'number', 'the seed still rides along on the unpinned path');
+});
+
+// The staging reviewer was called with the OUTPUT ALONE for the whole life of the feature.
+// With nothing to compare against it could not distinguish a correctly staged room from one
+// whose window had been replaced by blank wall — the second is just a photo of a room with
+// no window — so drift scored PERFECT and shipped. The retry loop beneath it worked the
+// whole time; it was grading the wrong question. A refactor that drops this argument would
+// silently restore the blind gate with a green suite, so it is pinned here.
+test('processStaging: hands the QA reviewer the SOURCE photo, not just the render', async () => {
+  const modelPng = await png(1248, 832);
+  const genAI = {
+    getGenerativeModel: () => ({
+      generateContent: async () => ({
+        response: { candidates: [{ content: { parts: [{ inlineData: { data: modelPng.toString('base64') } }] } }] },
+      }),
+    }),
+  };
+  let reviewOpts = null;
+  const { processStaging } = createStagingGeneration({
+    genAI, DEBUG_MODE: false, runQualityRetry: reviewingRetry,
+    reviewImageQuality: async (_url, opts) => { reviewOpts = opts; return { perfect: true, score: 100 }; },
+    QUALITY_MAX_ATTEMPTS: 1, logPromptToFile: () => {},
+  });
+  await processStaging(
+    await jpg(900, 600),
+    { roomType: 'Bedroom', furnitureStyle: 'standard', additionalPrompt: '', removeFurniture: false },
+    { body: {} }, null, 'gemini-2.5-flash-image',
   );
+  assert.ok(reviewOpts?.sourceDataUrl, 'the reviewer must receive the source photo');
+  assert.match(reviewOpts.sourceDataUrl, /^data:image\/jpeg;base64,/);
+});
+
+test('processStaging: records the reviewer\'s architecture verdict on the render row', async () => {
+  // Drift was invisible for exactly as long as nothing counted it. The row is what turns
+  // "users say it changes walls" into a number that can be watched.
+  const modelPng = await png(1248, 832);
+  const genAI = {
+    getGenerativeModel: () => ({
+      generateContent: async () => ({
+        response: { candidates: [{ content: { parts: [{ inlineData: { data: modelPng.toString('base64') } }] } }] },
+      }),
+    }),
+  };
+  let outcome = null;
+  const { processStaging } = createStagingGeneration({
+    genAI, DEBUG_MODE: false, runQualityRetry: reviewingRetry,
+    reviewImageQuality: async () => ({ perfect: false, score: 20, architectureDrift: true }),
+    QUALITY_MAX_ATTEMPTS: 1,
+    logPromptToFile: (..._args) => { outcome = _args[9]; },
+  });
+  await processStaging(
+    await jpg(900, 600),
+    { roomType: 'Bedroom', furnitureStyle: 'standard', additionalPrompt: '', removeFurniture: false },
+    { body: {} }, null, 'gemini-2.5-flash-image',
+  );
+  assert.equal(outcome?.architectureDrift, true, 'a drifted render is recorded as such');
+  assert.equal(typeof outcome?.seed, 'number', 'and the seed that produced it is recorded too');
+});
+
+test('processStaging: seeds every generation so a bad render can be reproduced', async () => {
+  // The value is irrelevant; that there IS one, and that it reaches the render log, is the
+  // point. Without it a "this render bricked up my window" report cannot be re-run, which is
+  // why this defect class was argued about rather than measured.
+  const cfg = await capturePinFor(900, 600);
+  assert.equal(typeof cfg?.seed, 'number');
+  assert.ok(cfg.seed >= 0 && cfg.seed <= 0x7fffffff, 'seed stays inside the int32 range Gemini accepts');
 });
 
 
