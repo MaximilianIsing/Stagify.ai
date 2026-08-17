@@ -2,6 +2,7 @@ import { lang } from './dom-utils.js';
 import { AUTH_MODAL_HTML } from './auth-modal-template.js';
 import { createGoogleSignIn } from './google-signin.js';
 import { localizedTarget } from '../i18n-routing.js';
+import { setInert, backgroundOf } from '../inert-background.js';
 
 /**
  * The account auth modal — create-account / sign-in / forgot-password / email
@@ -193,6 +194,18 @@ export function createAuthModal({ onRefresh, onCloseDropdown }) {
     if (!e) return;
     e.modal.classList.add('hidden');
     e.modal.setAttribute('aria-hidden', 'true');
+    // Hand the page back BEFORE anything downstream reveals another dialog.
+    // resumePendingStaging() un-hides #stage-modal, which lives INSIDE <main> on
+    // index.html — and inert is inherited, so a stage modal revealed while <main> is
+    // still inert would appear and be completely dead. Both sign-in paths (password
+    // here, Google in google-signin.js) call this function first and reveal second,
+    // which is what makes doing it here sufficient.
+    //
+    // Unconditional, and on the single close funnel every path routes through
+    // (backdrop, close button, Escape, successful sign-in, Google callback). A page
+    // left inert is unusable until a reload and very hard to diagnose, so the release
+    // must not sit behind a branch.
+    setInert(backgroundOf(e.modal, document), false);
     window.__stagifyPendingStaging = false;
     window.__stagifyPendingPlusRedirect = false;
     resetAuthVerificationFlow();
@@ -237,6 +250,13 @@ export function createAuthModal({ onRefresh, onCloseDropdown }) {
     authModalOpener = /** @type {HTMLElement|null} */ (document.activeElement);
     e.modal.classList.remove('hidden');
     e.modal.setAttribute('aria-hidden', 'false');
+    // Take the rest of the page out of the tab order and the accessibility tree.
+    // aria-modal="true" on the dialog claims modality but enforces none of it: with
+    // the modal open there are 8 focusable controls inside it and 60 still tabbable
+    // behind it, and this dialog has no Tab trap — so Tab left the dialog and walked
+    // the nav under a blurred backdrop the user cannot see through. Mouse users never
+    // noticed because the full-viewport backdrop already swallows their clicks.
+    setInert(backgroundOf(e.modal, document), true);
     syncAuthFormMode();
     gsi.tryInitGoogleSignIn();
     onCloseDropdown();

@@ -73,6 +73,7 @@ class FakeEl {
 
   setAttribute(name, value) { this.attrs[name] = String(value); }
   getAttribute(name) { return name in this.attrs ? this.attrs[name] : null; }
+  removeAttribute(name) { delete this.attrs[name]; }
   addEventListener(type, fn) {
     if (!this.listeners.has(type)) this.listeners.set(type, []);
     this.listeners.get(type).push(fn);
@@ -114,6 +115,7 @@ class FakeEl {
  * @returns {{
  *   el: (id: string) => any,
  *   toggleEl: any,
+ *   background: { header: any, main: any, footer: any },
  *   document: any,
  *   window: any,
  *   calls: { setToken: any[], fetchMe: number, applyUserToUI: number, refresh: number, closeDropdown: number },
@@ -130,7 +132,20 @@ export function installAuthModalDom(opts = {}) {
   // The one element the modal reaches for by selector rather than id.
   const toggleEl = new FakeEl('div');
 
+  // `<body>`'s child list, which is how the modal decides what to make inert: every
+  // direct child except itself (public/scripts/inert-background.js). The real page has
+  // the modal first — profile-menu.js inserts it with body.insertBefore(…, firstChild)
+  // — followed by the page chrome, so the fixture is seeded in that order. Without
+  // background siblings here, backgroundOf() would return [] and every inert assertion
+  // would pass against an empty list.
   const body = new FakeEl('body');
+  const background = {
+    header: new FakeEl('header', 'page-header'),
+    main: new FakeEl('main', 'page-main'),
+    footer: new FakeEl('footer', 'page-footer'),
+  };
+  body.children.push(registry.get('auth-modal'), background.header, background.main, background.footer);
+
   const docListeners = new Map();
   const doc = {
     body,
@@ -180,6 +195,8 @@ export function installAuthModalDom(opts = {}) {
   return {
     el: (id) => registry.get(id) || null,
     toggleEl,
+    /** The `<body>` siblings the modal should take out of the tree while it is open. */
+    background,
     document: doc,
     window: win,
     calls,
