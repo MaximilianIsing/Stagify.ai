@@ -55,7 +55,7 @@ export const DEFERRED = [
   // that section: this one owns `.is-open`, home-reveal.js owns `.is-visible`, and the
   // checklist stagger deliberately keys off the former (see the note in home.css).
   { src: 'scripts/home-strips.js', module: true },
-  // #testimonials' six-quote deck. Self-contained: it owns `tw-deck--ready` and adds
+  // #testimonials' seven-quote deck. Self-contained: it owns `tw-deck--ready` and adds
   // nothing else, so it neither races nor depends on home-reveal.js, which owns
   // `.is-visible` on the .tw-deck wrapper above it.
   { src: 'scripts/home-testimonials.js', module: true },

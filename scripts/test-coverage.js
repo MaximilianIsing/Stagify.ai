@@ -46,9 +46,9 @@
 //
 // WHAT THESE FLOORS CANNOT SEE: V8 coverage only reports files the run actually
 // loaded, so a frontend module no test ever imports contributes to NEITHER the
-// numerator nor the denominator — it is invisible here, not averaged in. As of
-// 2026-08-08 that is 40 of 141 files under public/scripts/ (24 untested, 8 covered
-// only by the Playwright suite, 8 classic scripts node cannot import). Raising
+// numerator nor the denominator — it is invisible here, not averaged in. That is
+// currently 38 of 169 non-vendor files under public/scripts/ (21 untested, 8 covered
+// only by the Playwright suite, 9 classic scripts node cannot import). Raising
 // these floors does not surface them; test/frontend/untested-frontend-modules.test.js
 // is the guard that does, by pinning that set so it can only shrink.
 

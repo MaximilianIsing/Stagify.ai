@@ -66,7 +66,6 @@ const EXCLUDED_PREFIXES = ['vendor/'];
 // Everything here exports something a test could call. Nothing is blocked; these
 // simply have no suite yet.
 const UNTESTED = [
-  'aurora-scrollbar.js',
   'card-spotlight.js',
   'designer-demo.js',
   'enterprise.js',
@@ -126,14 +125,16 @@ const E2E_COVERED = [
   // left here is the side effect of running at module load, which only a browser has.
   // Driven by basic-mask-preview.spec.js.
   { module: 'basic-mask-page.js', page: 'basic-mask.html' },
-  // The homepage carousel. It runs at PARSE time rather than on DOMContentLoaded
-  // because the <img> it injects is the page's LCP element, so there is not even a
-  // mount function to call. Asserted in index.spec.js, basic-mask.spec.js and
-  // report-issue.spec.js.
-  { module: 'carousel.js', page: 'index.html' },
   // The Exterior Studio's composition root: wiring, and its three islands (access,
   // compare, enhance) each have their own suite. Driven by exterior-studio.spec.js.
   { module: 'exterior-studio-app.js', page: 'exterior-studio.html' },
+  // The homepage hero's room/style picker (replaced carousel.js). It runs at PARSE time
+  // rather than on DOMContentLoaded because the <img> it adopts is the page's LCP element,
+  // so there is not even a mount function to call, and it deliberately has no imports —
+  // which also means there is nothing importable to unit-test. What matters about it is
+  // browser-only: that it ADOPTS the static photo instead of re-creating it, and that
+  // picking a style actually swaps the image. Both are asserted in index.spec.js.
+  { module: 'hero-picker.js', page: 'index.html' },
   // The Masking Studio's composition root. Its islands are the eight
   // masking-studio/* entries — several still on UNTESTED above, which is the debt
   // worth paying rather than testing this file. Driven by the six

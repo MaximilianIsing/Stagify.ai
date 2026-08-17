@@ -66,6 +66,14 @@ store factory. It began as the auth store, so the file is still named `auth-stor
     the sending site's own tracking params). The pre-existing `/columbia` link is seeded
     once behind a `meta` guard; without that guard, deleting it would resurrect it on the
     next boot. See [`admin-dashboard.md`](../guides/admin-dashboard.md#referrals-tab).
+  - `admin_sessions` ([`lib/data/admin-sessions.js`](../../lib/data/admin-sessions.js)) —
+    so the operator types `endpoint_key` once rather than on every dashboard page load.
+    The key buys a token that is **strictly weaker** than the key itself: it opens
+    `protectLogs` routes only (never `stagingEndpointKeyGuard` or `POST /api/getpro`),
+    expires after 30 days on a sliding window, and is revocable per device or all at
+    once without a deploy. Each row stores a truncated fingerprint of the key that minted
+    it, so **rotating `endpoint_key` invalidates every outstanding session** on the next
+    request. Tokens are hashed at rest with the same scheme as `sessions`.
   - `meta` — key/value bookkeeping (e.g. the one-time-import guards).
 - **Indexes** cover the lookups a table actually performs, not just its primary key:
   `users` by `email` / `google_sub` / both Stripe ids (in `auth-store.js`'s `SCHEMA`), and

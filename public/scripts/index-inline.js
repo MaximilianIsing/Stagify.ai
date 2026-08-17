@@ -8,9 +8,9 @@
 //    WHY THE UA CANNOT BE TRUSTED HERE. index-deferred.js runs the below-fold modules
 //    AFTER `load`, i.e. after the browser has already done its one fragment scroll, and
 //    one of them changes the page's height above the anchors: home-testimonials.js
-//    collapses #testimonials from its no-JS column of five stacked quotes (~2000px) into
-//    a ~375px deck. Everything below that section — #compare, #why, #plans, #faq — then
-//    slides ~1.6k px UP the document while the scroll position stays put, so
+//    collapses #testimonials from its no-JS column of seven stacked quotes into a ~375px
+//    deck. Everything below that section — #compare, #why, #plans, #faq — then slides
+//    thousands of px UP the document while the scroll position stays put, so
 //    `index.html#faq` (the Stagify+ page's "Questions before you buy?" link) used to land
 //    in the footer, well past the FAQ. Re-assert the scroll while the page is still
 //    resizing, and stop the moment the visitor takes over.

@@ -32,15 +32,8 @@
     "exteriorStudio": "Exterior Studio"
   },
   "hero": {
-    "catchphrase": "Upload. Stage. Imagine.",
-    "announcement": "Built to make your dream space a reality",
+    "eyebrow": "Free virtual staging",
     "title": {
-      "free": "Free",
-      "virtual": "virtual",
-      "staging": "staging",
-      "with": "with",
-      "one": "one",
-      "click": "click",
       "upload": "Upload.",
       "stage": "Stage.",
       "imagine": "Imagine."
@@ -49,12 +42,32 @@
     "freeGensLeft": "{n} free generations left today, ",
     "freeGensLeftUpgrade": "Upgrade",
     "freeGensUpgrade": "Try Stagify+ today. <a class=\"hero-free-gens-upgrade\" href=\"stagify-plus.html\">Upgrade</a>",
-    "carouselNote": "Example preview, upload your photo to stage.",
     "stats": {
       "roomsStaged": "Rooms Staged",
       "usersServed": "Users Served",
       "andCounting": "and counting..."
-    }
+    },
+    "sentence": {
+      "before": "Stage this ",
+      "middle": " in ",
+      "after": "."
+    },
+    "rooms": {
+      "bedroom": "bedroom",
+      "livingRoom": "living room",
+      "diningRoom": "dining room",
+      "kitchen": "kitchen",
+      "office": "office",
+      "bathroom": "bathroom"
+    },
+    "roomMenuLabel": "Room type",
+    "styleMenuLabel": "Furniture style",
+    "seeOriginal": "See original",
+    "seeStaged": "See staged",
+    "stageNote": "Every look here is one real render of the same empty room.",
+    "stageAlt": "{style} {room}, virtually staged",
+    "originalAlt": "The same room before staging, empty",
+    "defaultAlt": "A bedroom virtually staged in a modern style"
   },
   "sponsors": {
     "title": "Trusted by agents at:"
@@ -575,22 +588,6 @@
     "coastal": "Coastal",
     "farmhouse": "Farmhouse",
     "custom": "Custom"
-  },
-  "carouselItems": {
-    "original": "Original",
-    "modern": "Modern",
-    "scandinavian": "Scandinavian",
-    "luxury": "Luxury",
-    "coastal": "Coastal",
-    "midcentury": "Midcentury",
-    "farmhouse": "Farmhouse",
-    "originalPhotoAlt": "Example empty room before virtual staging",
-    "modernPhotoAlt": "Example room with modern virtual staging style",
-    "scandinavianPhotoAlt": "Example room with Scandinavian virtual staging style",
-    "luxuryPhotoAlt": "Example room with luxury virtual staging style",
-    "coastalPhotoAlt": "Example room with coastal virtual staging style",
-    "midcenturyPhotoAlt": "Example room with mid-century virtual staging style",
-    "farmhousePhotoAlt": "Example room with farmhouse virtual staging style"
   },
   "whyUs": {
     "title": "Why choose us?",

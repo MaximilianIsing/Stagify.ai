@@ -13,7 +13,7 @@ import { readStampOptions } from './stamp-style-row.js';
 // window where renders still finish normally.
 //
 // Declared above the docblock below on purpose: anything between a factory's JSDoc
-// and its `export function` detaches the two, and test/frontend/island-deps-typed.js
+// and its `export function` detaches the two, and test/frontend/island-deps-typed.test.js
 // then reports the bag as untyped.
 const STAGING_TIMEOUT_MS = 180000;
 

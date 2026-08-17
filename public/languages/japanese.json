@@ -32,15 +32,8 @@
     "exteriorStudio": "外観スタジオ"
   },
   "hero": {
-    "catchphrase": "アップロード。想像。",
-    "announcement": "理想の空間を現実にするために作られました",
+    "eyebrow": "無料のバーチャルステージング",
     "title": {
-      "free": "無料の",
-      "virtual": "バーチャル",
-      "staging": "ステージング",
-      "with": "を",
-      "one": "ワン",
-      "click": "クリックで",
       "upload": "アップロード。",
       "stage": "ステージング。",
       "imagine": "想像。"
@@ -49,12 +42,32 @@
     "freeGensLeft": "本日の無料生成回数は残り{n}回です、",
     "freeGensLeftUpgrade": "アップグレード",
     "freeGensUpgrade": "今すぐStagify+をお試しください。<a class=\"hero-free-gens-upgrade\" href=\"stagify-plus.html\">アップグレード</a>",
-    "carouselNote": "サンプルプレビュー。写真をアップロードしてステージングしましょう",
     "stats": {
       "roomsStaged": "ステージングした部屋",
       "usersServed": "利用ユーザー数",
       "andCounting": "さらに増加中..."
-    }
+    },
+    "sentence": {
+      "before": "この",
+      "middle": "を",
+      "after": "風にステージング。"
+    },
+    "rooms": {
+      "bedroom": "寝室",
+      "livingRoom": "リビング",
+      "diningRoom": "ダイニング",
+      "kitchen": "キッチン",
+      "office": "書斎",
+      "bathroom": "バスルーム"
+    },
+    "roomMenuLabel": "部屋タイプ",
+    "styleMenuLabel": "家具スタイル",
+    "seeOriginal": "元の写真を見る",
+    "seeStaged": "ステージング後を見る",
+    "stageNote": "ここにあるすべてのスタイルは、同じ空室から生成した実際のレンダリングです。",
+    "stageAlt": "{style}風の{room}、バーチャルステージング",
+    "originalAlt": "ステージング前の同じ部屋（空室）",
+    "defaultAlt": "モダンスタイルでバーチャルステージングされた寝室"
   },
   "sponsors": {
     "title": "以下の企業のエージェントに信頼されています:"
@@ -575,22 +588,6 @@
     "coastal": "コースタル",
     "farmhouse": "ファームハウス",
     "custom": "カスタム"
-  },
-  "carouselItems": {
-    "original": "オリジナル",
-    "modern": "モダン",
-    "scandinavian": "スカンジナビア",
-    "luxury": "ラグジュアリー",
-    "coastal": "コースタル",
-    "midcentury": "ミッドセンチュリー",
-    "farmhouse": "ファームハウス",
-    "originalPhotoAlt": "バーチャルステージング前の空室の例",
-    "modernPhotoAlt": "モダンなバーチャルステージングスタイルの部屋の例",
-    "scandinavianPhotoAlt": "スカンジナビア風バーチャルステージングスタイルの部屋の例",
-    "luxuryPhotoAlt": "ラグジュアリーなバーチャルステージングスタイルの部屋の例",
-    "coastalPhotoAlt": "コースタル風バーチャルステージングスタイルの部屋の例",
-    "midcenturyPhotoAlt": "ミッドセンチュリー風バーチャルステージングスタイルの部屋の例",
-    "farmhousePhotoAlt": "ファームハウス風バーチャルステージングスタイルの部屋の例"
   },
   "whyUs": {
     "title": "選ばれる理由",

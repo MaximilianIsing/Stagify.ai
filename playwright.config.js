@@ -1,11 +1,13 @@
-// Playwright e2e config — thin happy-path smoke tests for the two studios.
+// Playwright e2e config — browser smokes for every interactive surface: the two
+// studios, the Exterior Studio, Basic Mask, the main tool's stage/mask flows, the
+// home page, the gallery and the public share page.
 //
 // Deliberately SEPARATE from the deploy-gating `npm test` (node --test): a flaky
 // browser test must never block a Render deploy. Run with `npm run test:e2e`.
 // testDir is scoped to e2e/ so this never touches the node:test suite under test/.
 //
 // The tests boot the REAL app (node server.js) and drive the REAL frontend in a
-// real Chromium, but every /api/* call the studios make is intercepted and fulfilled
+// real Chromium, but every /api/* call a page makes is intercepted and fulfilled
 // with a canned response — so there is NO real Gemini/OpenAI call and NO cost, and
 // the runs are deterministic. The server is only serving static files + the handful
 // of non-mocked endpoints.

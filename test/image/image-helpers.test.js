@@ -245,29 +245,33 @@ test('buildKeepExceptionText: a real instruction is embedded under a NARROW EXCE
 });
 
 // ── F. erase.verifyRoomEmptied ────────────────────────────────────────────────
+//
+// None of these pass a source buffer, so the architecture half of the verdict is not asked
+// and reports `intact: true` — "the question was not put", not "the room was checked and
+// survived". The comparison cases live in test/image/erase.test.js.
 
 test('verifyRoomEmptied: "CLEAN: true" reports the room as empty with no leftovers', async () => {
   const { verifyRoomEmptied } = createErase({ genAI: null, openai: fakeOpenAI('CLEAN: true') });
   const out = await verifyRoomEmptied(REAL_BUF);
-  assert.deepEqual(out, { empty: true, remaining: '' });
+  assert.deepEqual(out, { empty: true, remaining: '', intact: true, damage: '' });
 });
 
 test('verifyRoomEmptied: "CLEAN: false | sofa, rug" reports not-empty with the parsed leftovers', async () => {
   const { verifyRoomEmptied } = createErase({ genAI: null, openai: fakeOpenAI('CLEAN: false | sofa, rug') });
   const out = await verifyRoomEmptied(REAL_BUF);
-  assert.deepEqual(out, { empty: false, remaining: 'sofa, rug' });
+  assert.deepEqual(out, { empty: false, remaining: 'sofa, rug', intact: true, damage: '' });
 });
 
 test('verifyRoomEmptied: a null openai client fails OPEN as empty', async () => {
   const { verifyRoomEmptied } = createErase({ genAI: null, openai: null });
   const out = await verifyRoomEmptied(REAL_BUF);
-  assert.deepEqual(out, { empty: true, remaining: '' });
+  assert.deepEqual(out, { empty: true, remaining: '', intact: true, damage: '' });
 });
 
 test('verifyRoomEmptied: a thrown create() fails OPEN as empty', async () => {
   const { verifyRoomEmptied } = createErase({ genAI: null, openai: fakeOpenAI(new Error('OpenAI exploded')) });
   const out = await verifyRoomEmptied(REAL_BUF);
-  assert.deepEqual(out, { empty: true, remaining: '' });
+  assert.deepEqual(out, { empty: true, remaining: '', intact: true, damage: '' });
 });
 
 // ── G. erase.roomIsAlreadyEmpty ───────────────────────────────────────────────

@@ -267,7 +267,10 @@
          both looked washed out. --accent is 5.95:1 there and --brand-deep 5.97:1 — the
          same pair the shared site footer falls back to on that background. Not gated to
          a breakpoint the way the footer's is: this text is on the body at every width,
-         the >769px case only hides it from axe behind the background video. */
+         the >769px case only hides it from axe behind the background video.
+         The links are the exception: they use --brand so they read as the same blue
+         as the Stagify+ page's .sp-aside-links — a deliberate consistency call over
+         the darker --brand-deep that scored better on this background. */
       .ent-footnote {
         margin: 1.5rem 0 0;
         font-size: 0.8125rem;
@@ -276,7 +279,7 @@
         text-align: center;
       }
       .ent-footnote a {
-        color: var(--brand-deep);
+        color: var(--brand);
         font-weight: 600;
         text-decoration: none;
       }

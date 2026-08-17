@@ -32,15 +32,8 @@
     "exteriorStudio": "Studio Extérieur"
   },
   "hero": {
-    "catchphrase": "Importez. Aménagez.",
-    "announcement": "Conçu pour faire de votre espace de rêve une réalité",
+    "eyebrow": "Home staging virtuel gratuit",
     "title": {
-      "free": "Staging",
-      "virtual": "virtuel",
-      "staging": "gratuit",
-      "with": "en",
-      "one": "un",
-      "click": "clic",
       "upload": "Importez.",
       "stage": "Aménagez.",
       "imagine": "Imaginez."
@@ -49,12 +42,32 @@
     "freeGensLeft": "{n} générations gratuites restantes aujourd’hui, ",
     "freeGensLeftUpgrade": "Mettre à niveau",
     "freeGensUpgrade": "Essayez Stagify+ dès aujourd’hui. <a class=\"hero-free-gens-upgrade\" href=\"stagify-plus.html\">Mettre à niveau</a>",
-    "carouselNote": "Aperçu d’exemple. Importez votre photo pour la meubler",
     "stats": {
       "roomsStaged": "Pièces meublées",
       "usersServed": "Utilisateurs servis",
       "andCounting": "et ça continue..."
-    }
+    },
+    "sentence": {
+      "before": "Aménagez ",
+      "middle": " en style ",
+      "after": "."
+    },
+    "rooms": {
+      "bedroom": "cette chambre",
+      "livingRoom": "ce salon",
+      "diningRoom": "cette salle à manger",
+      "kitchen": "cette cuisine",
+      "office": "ce bureau",
+      "bathroom": "cette salle de bain"
+    },
+    "roomMenuLabel": "Type de pièce",
+    "styleMenuLabel": "Style de mobilier",
+    "seeOriginal": "Voir l’original",
+    "seeStaged": "Voir aménagé",
+    "stageNote": "Chaque style ici est un rendu réel de la même pièce vide.",
+    "stageAlt": "{room} en style {style}, aménagé virtuellement",
+    "originalAlt": "La même pièce avant aménagement, vide",
+    "defaultAlt": "Une chambre aménagée virtuellement en style moderne"
   },
   "sponsors": {
     "title": "La confiance des agents de :"
@@ -575,22 +588,6 @@
     "coastal": "Bord de mer",
     "farmhouse": "Campagne",
     "custom": "Personnalisé"
-  },
-  "carouselItems": {
-    "original": "Original",
-    "modern": "Moderne",
-    "scandinavian": "Scandinave",
-    "luxury": "Luxe",
-    "coastal": "Bord de mer",
-    "midcentury": "Mid-century",
-    "farmhouse": "Campagne",
-    "originalPhotoAlt": "Exemple de pièce vide avant le staging virtuel",
-    "modernPhotoAlt": "Exemple de pièce avec un style de staging virtuel moderne",
-    "scandinavianPhotoAlt": "Exemple de pièce avec un style de staging virtuel scandinave",
-    "luxuryPhotoAlt": "Exemple de pièce avec un style de staging virtuel de luxe",
-    "coastalPhotoAlt": "Exemple de pièce avec un style de staging virtuel bord de mer",
-    "midcenturyPhotoAlt": "Exemple de pièce avec un style de staging virtuel mid-century",
-    "farmhousePhotoAlt": "Exemple de pièce avec un style de staging virtuel campagne"
   },
   "whyUs": {
     "title": "Pourquoi nous choisir ?",

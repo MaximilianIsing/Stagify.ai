@@ -6,16 +6,20 @@ How the Stagify.ai server is put together. For the project overview and setup se
 ## The big picture
 
 Stagify is a **static frontend + JSON API monolith** with no client framework and no
-build step. One Node process (`server.js`) serves the static site in `public/` *and*
-the JSON API. State lives in `data/`: user accounts/sessions in a **SQLite** database,
-everything else in flat JSON/CSV files.
+bundler. One Node process (`server.js`) serves the static site in `public/` *and* the
+JSON API. English pages are served as plain files; the localized URLs (`/es`,
+`/fr/guides.html`, …) are the one server-rendered surface, produced by `routes/i18n.js`.
+State lives in `data/`: **all structured state** — accounts, sessions, enterprise domains,
+memories, uptime, gallery rows — in one **SQLite** database, with append-only CSV logs and
+`hosted-images/` alongside it, and gallery render bytes in Cloudflare R2.
 
 ```
 browser ──HTTP──▶ server.js ──▶ express.static('public')   (HTML/CSS/JS/images)
+                     │           routes/i18n.js            (the same pages, translated)
                      │
-                     ├──▶ routers (routes/*.js)  ──▶ lib/*.js  ──▶ AI / Stripe / Resend
+                     ├──▶ routers (routes/*.js)  ──▶ lib/*.js  ──▶ AI / Stripe / Resend / R2
                      │                                    │
-                     └──────────────────────────────────▶ data/  (SQLite auth + JSON/CSV)
+                     └──────────────────────────────────▶ data/  (one SQLite DB + CSV logs)
 ```
 
 ## The composition-root + factory pattern
@@ -186,8 +190,9 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 | Module | Responsibility |
 |---|---|
 | `prompts.js` | Pure prompt/data constants for the AI Designer, staging, QA review, and image gatekeeping. Single source of truth for model-facing wording. Also holds `generatePrompt()`, which assembles the staging prompt — see [Staging prompt assembly](#staging-prompt-assembly). |
-| `promptMatrix.js` | The room-type × furniture-style prompt templates used when staging — the **style** layer only (a shopping list of furniture and finishes). Non-negotiable per-room rules live in `room-constraints.js` instead. |
+| `promptMatrix.js` | The room-type × furniture-style prompt templates used when staging — the **style** layer only: **movable** furniture and decor. It must never instruct the model to *add* a permanent element; see [Staging prompt assembly](#staging-prompt-assembly). Non-negotiable per-room rules live in `room-constraints.js` instead. |
 | `room-constraints.js` | The **rules** layer: `ROOM_TYPE_CONSTRAINTS`, per-room hard limits that hold whatever style is picked (e.g. a dorm's fixed university-issued furniture and small-room scale). Separate from the matrix because two `generatePrompt` paths skip or outrank a matrix entry — see [Where per-room rules belong](#where-per-room-rules-belong). |
+| `preservation-rules.js` | The **property** layer: `INTERIOR_PRESERVATION_RULES` (the two-tier architecture lock `generatePrompt()` emits **last**), `PERMANENT_ELEMENT_DEFINITION` / `PERMANENT_ELEMENT_NOUNS` (what "permanent" means, in prose for the model and as a list for the build), and `ARCHITECTURE_REVIEW_CLAUSE` (the reviewer-facing half of the same rule). The prompt-side rule and the review-side check live together because they have to say the same thing — a rule the prompt forbids and the reviewer never checks silently stops being enforced. |
 | `staging-pipeline.js` | The generate-with-quality-retry loop (unit-testable, no real model calls). |
 | `staging-generation.js` | The Gemini image-generation pipeline lifted out of `server.js`: the positional quality-gate wrapper plus `processImageGeneration` (text-to-image) and `processStaging` (virtual staging). `processStaging` pins the output shape to the nearest supported ratio (`imageConfig.aspectRatio`) so re-staging a downloaded result doesn't accumulate an aspect-ratio stretch. Both generators run the quality-gate winner through the delivery upscale (`upscaleForDelivery`, WebP ~2×) before returning, so the served image is larger than the model's ~1 MP native output. |
 | `virtual-staging-handler.js` | The `/api/process-image` + `/api/stage-by-endpoint-key` multipart handler (`handleVirtualStagingMultipart`), lifted out of `server.js`: free-tier cap, two-stage furniture removal, per-variation staging, enterprise metering. |
@@ -288,9 +293,14 @@ Each is a factory returning a router (built with `createAsyncRouter()`), mounted
 | `staging.js` | Core AI: `process-image`, `mask-edit`, `segment`, `validate-image`, `stage-by-endpoint-key`. |
 | `chat.js` | AI Designer chat: `/api/chat`, `/api/chat-upload`, `welcome-message`. |
 | `billing.js` | Stripe checkout, customer portal, `stripe-webhook`, enterprise checkout. |
+| `gallery.js` | The signed-in owner's render history, and the share link carried by every entry. Ownership is keyed on the **validated session**, never on a body. |
+| `share-public.js` | `/s/:token` — the anonymous share page. The token is the only credential, and every refusal is the same `404` so nothing leaks which tokens were once real. |
+| `object-local.js` | **Dev/CI only.** Serves the locally-stored gallery blobs that `lib/data/object-store-local.js` presigns; in production R2 presigns straight at the bucket and no render byte passes through this process. Mounted only when the local object backend answered at boot. |
 
-Not in the table, because it is not a router: `referrals.js` (operator-created campaign
-short-URLs) is mounted **after** all of the above, and the 404 handler after that.
+`referrals.js` (operator-created campaign short-URLs) is a router like the rest, but it is
+kept out of the table because its position is the point: it matches `/:slug`, so it is
+mounted **after** every router above — and the 404 handler after that. See
+[The 404 handler](#the-404-handler) for why that ordering is load-bearing.
 
 ## The 404 handler
 
@@ -346,12 +356,17 @@ State lives under `data/` (or the Render `/data` disk when present, detected via
 
 - **SQLite (`better-sqlite3`, one shared connection via `lib/data/db.js`):** `auth-store.db`
   holds all structured state — auth (`users`, `sessions`, …; **sensitive**),
-  `enterprise_domains`, `memories`, `uptime_state`, `stripe_events`. WAL + transactions, so writes are
+  `enterprise_domains`, `memories`, `uptime_state`, `stripe_events`, plus the gallery's
+  render/blob/share rows. WAL + transactions, so writes are
   atomic and per-row. Each store imports its legacy JSON (`auth-store.json`,
   `enterprise-domains.json`, `memories.json`, `uptime.json`) once on first boot, then
   keeps it as a frozen rollback fallback.
 - **Append-only CSV logs:** prompts, chats, contacts, masks, bug reports, email opens.
 - **Uploads:** `hosted-images/`, served via `GET /i/:id`.
+- **Not on this disk — gallery render bytes:** they go to Cloudflare R2 and are read back
+  through short-TTL presigned URLs, so no render byte passes through this process in
+  production. Only the rows describing them are in SQLite (and therefore in the Litestream
+  replica); the objects rely on R2's own durability.
 
 Full detail in [`data-stores.md`](../reference/data-stores.md). See the **Known
 limitations** section of the [README](../README.md#known-limitations): still
@@ -378,6 +393,13 @@ lives in `public/`: hand-written HTML, CSS, and native ES-module JavaScript
 (`<script type="module">`). There is no bundler, transpiler, or minifier and no
 `npm run build`; the pipeline is `npm install` → `npm test` → `start`, with nothing in
 between.
+
+Two generators exist and neither contradicts that, because neither runs at deploy time:
+`scripts/build-i18n-seo.js` (hreflang clusters, `sitemap.xml`, `scripts/locale-data.js`)
+and the `to-build/` asset exporters are run **by hand**, and their output is committed —
+so the browser still receives a file that exists in the repo. What is ruled out is a step
+between the repo and the browser. i18n.md calls its generator "the build step" in that
+narrower sense.
 
 **Why this is the right default here:**
 
@@ -431,15 +453,83 @@ model. It concatenates, **in this order**:
 2. **The base text** — `promptMatrix[roomType][furnitureStyle]`, falling back to that
    room's `standard` entry, then to a generic `Stage this <roomType> professionally.`
    **Exception:** when `furnitureStyle === 'custom'` and an `additionalPrompt` is present,
-   the user's own text replaces this entirely and the matrix is never consulted.
+   the user's own text replaces this entirely and the matrix is never consulted. A `custom`
+   style with an EMPTY box resolves to `standard`, not to the matrix's own `custom` entry —
+   that entry ("…with the furniture and decor the user asks for") is a null instruction when
+   the user asked for nothing.
 3. **The keep-furniture clarifier** — reframes the matrix's shopping list as *style*
    guidance so existing pieces aren't swapped out (omitted when removing).
 4. **`ROOM_TYPE_CONSTRAINTS[roomType]`** from
    [`room-constraints.js`](../../lib/staging/room-constraints.js), if the room has one —
    see below.
-5. **The global blocks** — preserve-architecture, defect-free staging, image framing,
-   targeted-edit rule.
-6. **The priority suffix** — a non-custom `additionalPrompt`, appended last.
+5. **The global blocks** — defect-free staging, targeted-edit rule.
+6. **The priority suffix** — a non-custom `additionalPrompt`.
+7. **`INTERIOR_PRESERVATION_RULES`** from
+   [`preservation-rules.js`](../../lib/staging/preservation-rules.js) — **always last**, see
+   below. Framing and aspect-ratio rules live **inside** this block, not in a section of
+   their own.
+
+### The architecture lock is emitted last, and that is the mechanism
+
+Whichever block speaks **last** wins the argument. `INTERIOR_PRESERVATION_RULES` opens by
+claiming authority over "EVERY instruction above it, including any request in the user's own
+words", and that claim is only true because nothing follows it. **Do not append anything
+after step 7.**
+
+This is not theoretical tidiness. The preservation rules used to sit at step 5, with the
+user's free text appended after them under the words *"Prioritize the following above
+everything else"* — so a request as ordinary as "make it feel bright and open" was presented
+to the image model as outranking "do not resize the windows", and it obliged. The suffix now
+reads "Prioritize the following over the style guidance above", and the lock has the last
+word. [`test/staging/prompts.test.js`](../../test/staging/prompts.test.js) pins both the
+ordering and the fact that nothing is appended afterwards.
+
+The block is **two-tier**, mirroring `EXTERIOR_PRESERVATION_RULES` in
+[`exterior-prompts.js`](../../lib/staging/exterior-prompts.js):
+
+- **Tier 1 — structure and the shot.** Walls, windows, doors, openings, ceilings, floors,
+  room geometry, **and the camera/framing**. Absolute; no request reaches it, so an explicit
+  "zoom in" or "crop tighter" is refused — deliberately, because `render-persistence.js`
+  stores the pristine upload as the gallery's `before` image and a re-cropped render would no
+  longer line up with it. Stated as a **count** ("the same number of windows, doors and wall
+  openings … in the same positions") rather than as a list of nouns to "keep as they appear"
+  — a model can check a count against itself, and cannot check a vague resemblance.
+
+  Framing sits in this block rather than in its own section for a reason worth remembering:
+  it *was* a separate section (`CRITICAL — IMAGE FRAMING`), built from a constant
+  (`IMAGE_FRAMING_PRESERVATION_RULES`) **shared by both studios**, and that section let the
+  camera move "ONLY if the user explicitly asked for a closer or different crop" while the
+  preservation block denied it outright. The preservation block speaks last, so it won an
+  argument nobody knew was happening. Two blocks owning the same rule is how that happens.
+
+  The sharing was wrong in a second way that only showed on the exterior path: the wording
+  was interior-only, so the Exterior Studio's prompt — about a photograph of a *building* —
+  asked the model to keep "the entire ceiling line, floor line, and all walls" in frame and
+  to "fit every staging change inside the existing frame, scaling and placing **new
+  furniture**", while its own rules forbid adding furniture or staging of any kind.
+
+  The constant is **deleted**. Each studio now states its own framing rules inside its own
+  preservation block — `INTERIOR_PRESERVATION_RULES` and `EXTERIOR_PRESERVATION_RULES` — where
+  they have authority and nothing below can contradict them, and where the wording can suit
+  the subject (roofline and ground line on one, ceiling line and floor line on the other).
+  Both lock the camera absolutely; both state it exactly once, which is what the drift tests
+  in `prompts.test.js` and `exterior-prompts.test.js` pin.
+- **Tier 2 — `DEFAULT-PRESERVE`.** Wall colour, paint, wallpaper, floor and fixture
+  finishes. Preserved by default, but an explicit request may change them — which is what
+  keeps the free-text box worth having ("paint the walls sage" still works).
+
+### promptMatrix is the style layer *only*
+
+A matrix entry must never tell the model to **add** a permanent element (see
+`PERMANENT_ELEMENT_DEFINITION` / `PERMANENT_ELEMENT_NOUNS` in `preservation-rules.js`). Those
+prompts used to order walk-in showers, floating vanities, tile backsplashes, built-in
+dishwashers, chandeliers and "natural lighting" — while the block below them forbade touching
+any of it, and a model resolving that contradiction takes the itemised list over the abstract
+rule. The rooms still read as themselves because the tub and the counters are already in the
+photograph; the prompts say "keep the existing … exactly as photographed" instead.
+[`test/staging/prompt-matrix-permanence.test.js`](../../test/staging/prompt-matrix-permanence.test.js)
+enforces this — the previous version of the rule was a comment, and a comment does not block
+a deploy.
 
 ### Where per-room rules belong
 

@@ -10,7 +10,7 @@
 body,main {
   overflow-y:auto
 }
-.nav-link,.nav-link:hover,.w-click {
+.nav-link,.nav-link:hover {
   text-decoration:none
 }
 .dz-icon,.dz-text,body {
@@ -19,7 +19,7 @@ body,main {
 h1,h2 {
   line-height:1.2
 }
-.loading-message,.role-other,.testimonial-text,.w-staging:hover {
+.loading-message,.role-other,.testimonial-text {
   font-style:italic
 }
 .steps,.trust-logos,.vs ul {
@@ -738,7 +738,15 @@ body {
     min-width:0!important;
     font-size:13px!important
   }
-  .catchphrase,.nav-link::before {
+  /* `.catchphrase` used to be hidden here (and again at 480px, and a third time in
+     index.css — three copies of one rule). It held the slogan "Upload. Stage. Imagine.",
+     which named no product and cost a line of a viewport-height hero, so hiding it was
+     right. It now holds "Free virtual staging", the same phrase as <title>, and it is the
+     only line of the hero that tells a phone visitor what the page is. Indexing is
+     mobile-first, so hiding it here hid it from the crawler that counts too. All three
+     copies are gone; do not re-add one. Measured at 390x844, 375x667 and 360x640 the CTA
+     still lands ~270px down, nowhere near the fold. */
+  .nav-link::before {
     display:none!important
   }
   .mobile-test-text {
@@ -775,9 +783,6 @@ body {
   }
   .brand {
     font-size:20px
-  }
-  .catchphrase {
-    display:none!important
   }
   .brand-logo {
     width:24px;
@@ -933,88 +938,19 @@ main {
   margin-right:8px;
   transition:transform .2s,font-weight .2s,opacity .2s
 }
-.w-free {
-  font-weight:700
-}
-.w-free:hover {
-  color:#10b981
-}
-.w-virtual:hover {
-  animation:.3s ease-in-out glitch
-}
-@keyframes glitch {
-  0%,100% {
-    transform:translate(0);
-    text-shadow:0 0 0 transparent
-  }
-  20% {
-    transform:translate(-2px,1px);
-    text-shadow:2px 0 0 rgba(255,0,0,.5),-2px 0 0 rgba(0,255,255,.5)
-  }
-  40% {
-    transform:translate(2px,-1px);
-    text-shadow:-2px 0 0 rgba(255,0,0,.5),2px 0 0 rgba(0,255,255,.5)
-  }
-  60% {
-    transform:translate(-1px,2px);
-    text-shadow:1px 0 0 rgba(255,0,0,.5),-1px 0 0 rgba(0,255,255,.5)
-  }
-  80% {
-    transform:translate(1px,-2px);
-    text-shadow:-1px 0 0 rgba(255,0,0,.5),1px 0 0 rgba(0,255,255,.5)
-  }
-}
-@keyframes wordWaveRoll {
-  0%,100% {
-    transform:rotate(0) translateY(0)
-  }
-  15% {
-    transform:rotate(12deg) translateY(-1px)
-  }
-  30% {
-    transform:rotate(-10deg) translateY(0)
-  }
-  45% {
-    transform:rotate(8deg) translateY(-1px)
-  }
-  60% {
-    transform:rotate(-6deg) translateY(0)
-  }
-  75% {
-    transform:rotate(4deg) translateY(-1px)
-  }
-  90% {
-    transform:rotate(-2deg) translateY(0)
-  }
-}
-.w-with:hover {
-  animation:.8s ease-in-out wordWaveRoll
-}
-.w-one:hover {
-  font-weight:400;
-  opacity:.9
-}
-.w-click:hover {
-  text-decoration:underline
-}
+/* The six per-word hover effects (.w-free/.w-virtual/.w-staging/.w-with/.w-one/.w-click,
+   plus the `glitch` and `wordWaveRoll` keyframes only they used) are GONE with the headline
+   they decorated. The hero H1 is no longer six hoverable words; it is one sentence with two
+   dropdown slots in it. See .hp-sentence in styles/hero-picker.css. */
 .hero-content .subtitle {
   margin:0 0 18px;
   color:var(--muted);
   font-size:clamp(16px, 2vw, 18px);
   max-width:520px
 }
-.announcement {
-  display:block;
-  padding:6px 10px;
-  border:1px solid var(--border);
-  border-radius:999px;
-  color:var(--fg);
-  font-size:12px;
-  margin-bottom:12px;
-  background:rgba(158,158,158,.08);
-  width:fit-content;
-  text-align:left
-}
+/* `.announcement` (the "Built to make your dream space a reality" pill under the old hero
+   catchphrase) is GONE with the headline it sat above, along with its two mobile override
+   blocks further down. index.html was its only user. */
 .hero-stage-img,.preview {
   width:100%;
   object-fit:cover;
@@ -3125,13 +3061,8 @@ body:has(.stage-mask-modal.active) .language-picker-container {
   .hero-content {
     text-align:center
   }
-  .announcement,.contact-card div[style*="font-size: 13px"] {
+  .contact-card div[style*="font-size: 13px"] {
     text-align:center!important
-  }
-  .announcement {
-    display:block!important;
-    margin:0 auto 12px!important;
-    width:fit-content!important
   }
   .hero-ctas {
     flex-wrap:wrap;
@@ -3351,15 +3282,6 @@ body:has(.stage-mask-modal.active) .language-picker-container {
   .hero-content .subtitle {
     text-align:center;
     font-size:14px
-  }
-  .announcement {
-    font-size:11px!important;
-    padding:4px 8px!important;
-    text-align:center!important;
-    display:block!important;
-    margin:0 auto 12px!important;
-    width:fit-content!important;
-    max-width:100%!important
   }
   .btn {
     padding:10px 16px;

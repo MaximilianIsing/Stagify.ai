@@ -32,15 +32,8 @@
     "exteriorStudio": "Außen-Studio"
   },
   "hero": {
-    "catchphrase": "Hochladen. Einrichten.",
-    "announcement": "Entwickelt, um Ihren Traumraum Wirklichkeit werden zu lassen",
+    "eyebrow": "Kostenloses virtuelles Home Staging",
     "title": {
-      "free": "Virtuelles",
-      "virtual": "Staging",
-      "staging": "gratis",
-      "with": "",
-      "one": "per",
-      "click": "Klick",
       "upload": "Hochladen.",
       "stage": "Einrichten.",
       "imagine": "Vorstellen."
@@ -49,12 +42,32 @@
     "freeGensLeft": "{n} kostenlose Generierungen heute übrig, ",
     "freeGensLeftUpgrade": "Upgrade",
     "freeGensUpgrade": "Testen Sie Stagify+ noch heute. <a class=\"hero-free-gens-upgrade\" href=\"stagify-plus.html\">Upgrade</a>",
-    "carouselNote": "Beispielvorschau. Laden Sie Ihr Foto hoch, um es einzurichten",
     "stats": {
       "roomsStaged": "Eingerichtete Räume",
       "usersServed": "Bediente Nutzer",
       "andCounting": "und es werden mehr..."
-    }
+    },
+    "sentence": {
+      "before": "Gestalte ",
+      "middle": " im Stil ",
+      "after": "."
+    },
+    "rooms": {
+      "bedroom": "dieses Schlafzimmer",
+      "livingRoom": "dieses Wohnzimmer",
+      "diningRoom": "dieses Esszimmer",
+      "kitchen": "diese Küche",
+      "office": "dieses Büro",
+      "bathroom": "dieses Badezimmer"
+    },
+    "roomMenuLabel": "Raumtyp",
+    "styleMenuLabel": "Möbelstil",
+    "seeOriginal": "Original ansehen",
+    "seeStaged": "Gestaltet ansehen",
+    "stageNote": "Jeder Look hier ist ein echtes Rendering desselben leeren Raums.",
+    "stageAlt": "{room} im Stil {style}, virtuell eingerichtet",
+    "originalAlt": "Derselbe Raum vor der Gestaltung, leer",
+    "defaultAlt": "Ein Schlafzimmer, virtuell im modernen Stil eingerichtet"
   },
   "sponsors": {
     "title": "Vertraut von Maklern bei:"
@@ -575,22 +588,6 @@
     "coastal": "Maritim",
     "farmhouse": "Landhaus",
     "custom": "Benutzerdefiniert"
-  },
-  "carouselItems": {
-    "original": "Original",
-    "modern": "Modern",
-    "scandinavian": "Skandinavisch",
-    "luxury": "Luxus",
-    "coastal": "Maritim",
-    "midcentury": "Midcentury",
-    "farmhouse": "Landhaus",
-    "originalPhotoAlt": "Beispiel eines leeren Raums vor dem virtuellen Staging",
-    "modernPhotoAlt": "Beispielraum mit modernem virtuellem Staging-Stil",
-    "scandinavianPhotoAlt": "Beispielraum mit skandinavischem virtuellem Staging-Stil",
-    "luxuryPhotoAlt": "Beispielraum mit luxuriösem virtuellem Staging-Stil",
-    "coastalPhotoAlt": "Beispielraum mit maritimem virtuellem Staging-Stil",
-    "midcenturyPhotoAlt": "Beispielraum mit virtuellem Staging-Stil im Midcentury-Look",
-    "farmhousePhotoAlt": "Beispielraum mit virtuellem Staging-Stil im Landhaus-Look"
   },
   "whyUs": {
     "title": "Warum wir?",

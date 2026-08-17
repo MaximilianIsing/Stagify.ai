@@ -141,14 +141,23 @@ HIDE_STAGING_BANNER=false
 # Express trust-proxy setting: trusts 1 hop by default; set 0 to disable.
 # TRUST_PROXY=1
 # Set 1 to turn OFF the Content-Security-Policy (only to debug a blocked resource).
+# Setting it logs a [security] warning at boot, since it disables the policy site-wide.
 # DISABLE_CSP=0
 # Comma-separated CORS allow-list.
 # Default: https://stagify.ai,https://www.stagify.ai,http://localhost:3000
 # ALLOWED_ORIGINS=
 # Absolute base URL for building return links (e.g. the Stripe portal).
-# Defaults to the incoming request's host. APP_URL is the fallback for PUBLIC_APP_URL.
+# Defaults to the incoming request's host. APP_URL is the fallback for PUBLIC_APP_URL,
+# and APP_ORIGIN is the fallback for that.
 # PUBLIC_APP_URL=
 # APP_URL=
+# Third in the same chain, and also injected directly into routes/gallery.js as the origin
+# it stamps into share links. Kept only for compatibility: the gallery invented this name
+# when nothing set it, so every link it minted came out as a bare /s/<token> PATH — and
+# the token is shown once with no read-back, so recovering one meant minting a new link.
+# resolveAppOrigin() now falls back to the request's own host, which is why all three can
+# stay unset. Prefer PUBLIC_APP_URL if you are setting one today.
+# APP_ORIGIN=
 # Rate limits: auth attempts / 15 min, emails / 15 min, AI generations / 5 min,
 # enterprise checkout sessions / 60 min (that endpoint is unauthenticated).
 # RL_AUTH=40
@@ -170,6 +179,13 @@ HIDE_STAGING_BANNER=false
 # /api/download-result), any signed-in session, / 15 min. Cheap CPU-only work (a sharp
 # resize + JPEG encode), not a paid-generation cost cap like RL_GEN.
 # RL_DOWNLOAD_RESULT=60
+# The signed-in gallery's own reads and writes (/api/gallery*), / 15 min. Generous
+# because one page view is several calls and a browsing session is many pages.
+# RL_GALLERY=120
+# The PUBLIC share surface (/s/:token and /api/share/:token), per IP / 15 min. This is
+# the only gallery route an anonymous stranger can reach, and the token is the only
+# credential, so this doubles as the ceiling on guessing one.
+# RL_SHARE=60
 # WRONG endpoint-access keys, per IP / 15 min. The whole admin surface plus
 # /api/stage-by-endpoint-key is gated by one shared static secret with no accounts
 # behind it, so guessing that secret is the only way in; this bounds the guess rate.

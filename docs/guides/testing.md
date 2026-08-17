@@ -11,7 +11,7 @@ Two suites, deliberately kept separate:
 ```bash
 npm test         # npm run typecheck, then node --test "test/**/*.test.js"  (both gate deploy)
 npm run typecheck # tsc --noEmit (backend) + scripts/typecheck-frontend.js (frontend) — see Type-checking below
-npm run test:e2e # playwright test                   — browser smokes of the two studios
+npm run test:e2e # playwright test                   — browser smokes of every interactive page
 npm run lint     # eslint . --max-warnings=0  (backend + frontend ES modules — see Linting below)
 ```
 
@@ -49,6 +49,7 @@ so a new folder needs no registration — just drop the file in.
 | `test/http/` | Async router, guards, helpers, error references + the error-leak scan, rate limiters (including the rejection log they write), uploads, CSV escaping. Also `upload-limit-consistency`, which pins the browser's ceiling to the one multer enforces — note `test/server/upload-limits` is a different thing, covering the 413 itself. | `lib/http/` |
 | `test/config/` | Runtime flags, model config, the diagnostic logger. | `lib/config/`, `lib/logger.js` |
 | `test/i18n/` | The localized-URL layer **and** the translation **drift guards** (`room-types-i18n`, `unstageable-i18n`, `locale-data`). | `lib/i18n/` |
+| `test/seo/` | Whole-site markup guards that belong to no one module: `robots-meta` (indexed vs `noindex` vs redirect stub), `resource-hints` (preload/preconnect tags earning their download), `blog-dates`. | `public/**/*.html` |
 | `test/frontend/` | Browser logic, split **by area** rather than by exact path: `admin/`, `ai-designer/`, `app/`, `masking-studio/` (which also holds `mask-core`, the shared engine that lives a level up in the source), `mask/` for the cross-page mask-editor subsystem (`public/scripts/mask/`), and `profile-menu/` for the account dropdown + auth modal, and `exterior-studio/` for the curb-appeal tool. Standalone modules and page-level guards stay at the top: `count-up`, `heic-convert`, `language-loader`, `unstageable-message`, `escape-html`, `css-tokens`, `plus-welcome`, `classic-scripts-parse`, `pricing-copy` (the free-tier cap the pricing page advertises vs the one `FREE_DAILY_LIMIT` enforces). | `public/scripts/` |
 | `test/helpers/` | Shared harnesses — **not** specs. | — |
 
@@ -222,11 +223,15 @@ npm run test:e2e                                  # all specs (boots the server 
 npx playwright test e2e/masking-studio.spec.js    # one file
 ```
 
-**Getting past the pro gate.** Both studios redirect anonymous users to the upsell page, so
-they can't be driven on a plain static server. [`e2e/fixtures.js`](../../e2e/fixtures.js)'s
-`seedProSession(page)` seeds an auth token into `localStorage` at first paint and mocks `GET
-/api/auth/me` → a Pro user, so the page reveals instead of redirecting. This is how gated
-flows (the mask editor, session resume) are exercised without a real account or backend auth.
+**Getting past the pro gate.** The Stagify+ pages **reshape** rather than redirect (see
+[`frontend.md`](frontend.md#paid-pages-reshape-they-do-not-redirect)): without a Pro plan
+the page renders its pitch and the tool is never revealed, so the studio can't be driven.
+[`e2e/fixtures.js`](../../e2e/fixtures.js)'s `seedProSession(page)` seeds an auth token
+into `localStorage` at first paint and mocks `GET /api/auth/me` → a Pro user, so the page
+settles on the tool view. This is how gated flows (the mask editor, session resume, the
+gallery) are exercised without a real account or backend auth. The two surfaces that do
+still navigate do it on **viewport**, not plan — `ai-designer.html` and `gallery.html` send
+narrow viewports to the home page — which is why their specs pin a desktop size.
 
 **Opening the main tool's stage dialog.** Use `openStageModalViaUI(page)` — it clicks the
 real hero upload button and waits for `#stage-modal`. Do **not** lift `.hidden` off the
@@ -237,11 +242,15 @@ sign-in → staging hand-off could sit **dead** in all three sign-in paths. The 
 half now has its own spec, driven with `stubAnonymousAuth(page)` — the mirror of
 `seedProSession` that mocks the auth endpoints but seeds **no** token.
 
-What's covered today (all green — 79 tests across 23 specs):
+What's covered today (all green — 237 tests across 38 specs; `npm run test:e2e` is the
+authoritative list, this table is the map):
 
 | Spec | Covers |
 |---|---|
-| `index.spec.js` | Home page load smoke — hero stats, the custom select, and the before/after controls. |
+| `index.spec.js` | Home page load smoke — hero stats, the room/style hero picker, and the before/after controls. Also pins that the hero fetches **one** render on load (the preloaded default) and the other 35 on demand. |
+| `staging-nav.spec.js` | The top nav's **Staging dropdown**. A free user sees all four tools and can only use one — the lock is a class, deliberately **not** `aria-disabled`, so the click is driven and the landing URL checked. Also both routes into the home page's screens: the in-place `window` hook and the post-navigation URL fragment. |
+| `guides-walkthrough.spec.js` | The guides **walkthrough tablist**, specifically that the page delivers the deep-link hash to `guides.js`. The module runs after parse, by which time the browser has already failed to scroll to a `hidden` panel — a hash consumed or normalised earlier would leave every unit assertion green while the published links landed on the wrong walkthrough. |
+| `report-issue.spec.js` | The **bug channel's two entrances**: the account menu's site-wide "Report an issue" row really exists in the live dropdown and really POSTs, and the AI Designer's own bug form still works now that its transcript summariser lives in a shared ES module reached through the `window.summariseBugReportHistory` bridge. |
 | `i18n-observer-reentrancy.spec.js` | The i18n `MutationObserver` does not feed itself. Serves a doctored English pack whose `[data-lang-html]` value nests a `[data-lang]` span — the edit a translator could make — then inserts a translated node to kick the observer, and asserts the pass stays bounded. The **only** test that can prove this: the unit guard can scan for `takeRecords()` but not that draining stops the feedback, which needs a real DOM and a real observer. An init script wraps the `innerHTML` setter as a **circuit breaker** — after 400 writes it stops writing, so a runaway unwinds itself and fails as a clean assertion in ~6s instead of hanging the tab until the 45s timeout. Mutation-tested: deleting the drain fails it. |
 | `stage-signin-entry.spec.js` | Main tool — the **signed-out entry path**, which is the app's highest-value flow and was the one thing no browser test touched: click "Upload image for free" → the auth modal (create-account mode), **not** the uploader → sign in → the stage dialog opens with the visitor's intent intact → upload and stage from it. Covers both callers of `completeSignIn()` (password login and register + emailed code), a rejected sign-in as the negative control, and the signed-in branch of the same gate. Mutation-tested against the real regression: reading `__stagifyPendingStaging` *after* `closeAuthModal()` clears it — the shape the bug had until 2026-07-28 — leaves the dialog shut and fails these. |
 | `stage-reject.spec.js` | Main tool — a rejected upload surfaces the **localized** reason in the stage modal's error viewer before any generation is spent, plus an approved-upload negative control. The masking studio's reject path is a different consumer, hence the separate spec below. |
@@ -251,13 +260,31 @@ What's covered today (all green — 79 tests across 23 specs):
 | `ai-designer-floor-plan.spec.js` | Floor plans, and two claims **only a real browser can make**. (1) A staged room and a CAD render in the **same** reply both survive: the dispatch runs staging/generate/CAD unconditionally, and the `else if` ladder this replaced silently discarded the floor-plan render — from the page *and* from the history the next turn is built from. Counts `img[src^="data:image"]`, since each card also mounts a download and a mask icon. (2) The **PDF rasterizer** end to end — a real one-page PDF through `window.StagifyPdf`, asserting a PNG comes back near the 2000 px long edge, on an **opaque white** ground (PDF pages are transparent, and a plan flattened onto transparency reads as black-on-black), with real ink on it so a blank page cannot pass. Must run **foregrounded**: pdf.js drives `page.render()` with `requestAnimationFrame`, which never fires in a hidden tab. |
 | `ai-designer-errors.spec.js` | A failed `/api/chat` shows a **retryable** error bubble, Retry re-sends and recovers, and a 403 (not Stagify+) shows a **non-retryable** error. |
 | `ai-designer-mask-fit.spec.js` | Mask-editor sizing on a **short viewport** — regression for the dialog over-committing its height budget and clipping the photo with nothing to scroll. Asserts the whole image fits at 1280×620, still fits after entering the refine phase, and re-fits on resize. |
+| `ai-designer-mask-reference.spec.js` | The AI Designer editor's **reference photo and processing overlay** — the half that had no coverage after both behaviours moved onto the shared `scripts/mask/` slices. Its elements are resolved from a dialog the page builds at runtime, so a broken wiring would not show up in static markup. Includes the drag-and-drop the two editors now share. |
+| `ai-designer-a11y.spec.js` | The AI Designer's three dialogs really are dialogs — the thing `test/frontend/dialog-a11y.test.js` structurally cannot show. That the attributes are on the **live** elements (one built at runtime), that close buttons resolve a real accessible name once the language pack lands, and that **focus** enters each dialog and comes back out. Without that last part the dialog opens with focus still behind the overlay: a screen reader never announces it, and Escape/Tab act on the page underneath. |
 | `stage-mask-fab-processing.spec.js` | Main tool — the paint-brush FAB while a staging run is **in flight**: it blurs with the photo and stops taking clicks (keyboard path guarded in JS, since `pointer-events` can't cover it), then is sharp and clickable again once the run ends. `/api/process-image` is held open, never fulfilled, so the in-flight state can be inspected. |
+| `stage-mask-brush.spec.js` | Main tool — the mask editor's **brush engine**, written as characterization before the brush was extracted into a shared module: pointer→canvas mapping, brush vs erase, the "painted" flag that gates Submit, and touch. Assertions read the draw canvas's real **alpha channel**, not an internal flag, so they describe what was actually painted. |
+| `stage-mask-reference.spec.js` | Main tool — the mask editor's optional **reference photo**, also characterization for the consolidation. The stage editor wires drop zones on both the "+ Add photo" button and the thumbnail; the AI Designer's extracted slice had no drag-and-drop, so pointing one at the other would have silently deleted a working feature. Geometry is deliberately left to the fit spec. |
+| `stage-mask-fit.spec.js` | Main tool — mask editor sizing on a **short viewport**. Unlike the AI Designer's editor this one is not clipped (its content scrolls), but the flat-fraction sizing it inherited pushed the prompt field and Apply/Cancel below the fold: a dialog that looks finished with its primary action off-screen. |
+| `stage-mask-loading.spec.js` | Main tool — the editor **while the model runs**: `not-allowed` over a canvas you cannot paint on, and a single busy class with a single blur rule. There used to be two (`processing` from the phase machine, `smask-busy` from the overlay) at different radii, so the value in the stylesheet was never the one you saw. |
+| `stage-mask-apply-gate.spec.js` | Main tool — the **"Apply Edit" readiness gate**. Regression: `showInEditor()` disabled it correctly, then `setPhase('draw')` → `setControlsDisabled(false)` re-enabled every control unconditionally and blew the gate away. |
+| `stage-session-expiry.spec.js` | Main tool — the session expiring **between** opening the stage dialog and pressing Process. Formerly `stage-mobile-auth.spec.js`: `AUTH_REQUIRED` used to prompt only on a mobile viewport, so a desktop got no message and no prompt, just a progress bar that vanished. `scripts/app/staging-failure.js` now handles it on any viewport. |
 | `masking-studio.spec.js` | Happy path — upload → paint a mask → prompt → Apply Edit renders a result. |
 | `masking-studio-errors.spec.js` | A 500 from `/api/mask-edit` flips the area to a visible **Failed** state with a retry. |
 | `masking-studio-reject.spec.js` | The stageability reject path: the photo enters the studio **immediately** (the response is gated open to prove it doesn't await the verdict), then is torn back out when the verdict lands. Also the browser-level proof that rejection copy is **localized** — the toast must show the language pack's wording for the returned `code`, not the server's English. |
 | `masking-studio-resume.spec.js` | Session persistence — paint + prompt is saved to IndexedDB, survives a reload, and the Resume dialog restores the photo, layer, prompt, and painted mask. |
 | `masking-studio-snap.spec.js` | An edit that spills past the highlight offers **Snap to object**, and accepting it consumes the suggestion. |
 | `masking-studio-wand.spec.js` | Magic wand — prefetches `/api/segment` with a busy strip and paints from cache on click; a miss toasts and paints nothing; a failing segment toasts and is not cached. |
+| `masking-studio-disclosure.spec.js` | **"Label as virtually staged"** across the studio's two exits, which reach the badge differently on purpose: "Looks Good" writes a gallery entry and the server stamps the composite it is already carrying; "Download Result" has pixels that exist only in the browser, so those round-trip through `/api/stamp-image`. The load-bearing assertion on both is the **negative** — when the badge cannot be applied, nothing is delivered at all. |
+| `basic-mask.spec.js` | **Basic Mask** run standalone from the top nav — the mode with no staging job behind it. Its own uploader, and a commit with nowhere to commit *to*, so the result becomes the new base image and is offered as a download instead. The editor's other two modes both open on an image the staging flow already has, and everything downstream assumed one existed. |
+| `basic-mask-preview.spec.js` | The **Basic Mask preview page** — the odd one out among the four previews, since the tool is not embedded: the Stagify+ view is a way *in*. So the thing under test is a **swap** whose halves fail independently (a subscriber shown the sales button is asked to buy what they own; a free account shown the open button gets a door that 403s), plus the negative that carries the whole preview pattern: a visitor with no token really gets a page and no redirect. |
+| `exterior-studio.spec.js` | The **Exterior Studio** end to end, and the preview arrangement's central negative — that a tokenless visitor is not bounced. A unit test can only show that the module *it* imported fired no redirect; only a real navigation shows nothing else on the page did either. Every negative is paired with its positive ("no redirect" + "here is the rendered content"; "the tool is hidden" + "the tool is in the DOM"). |
+| `exterior-disclosure.spec.js` | The disclosure control **on the Exterior Studio**, separate from the spec above because this control has broken the same two ways every time it is copied onto a new surface, both invisible to unit tests and desktop screenshots: the `position:absolute` (i) explainer escaping to the wrong positioned ancestor, and `.stamp-opts`' large min-content becoming a grid item's automatic minimum and widening the sidebar with no page scrollbar to show it. |
+| `disclosure-mobile.spec.js` | The same control at **393px**, on both surfaces that composite in the browser. The desktop layout is a deliberate horizontal squeeze that does not survive a phone: the strip's four fixed-size swatches painted outside their ~68px box and over the label, and in the Masking Studio the strip's min-content grew the toolbar ~15px past the viewport. Neither produced a page-level scrollbar. |
+| `gallery-gate.spec.js` | The gallery is **PC-only**, and the half the unit test has to stub: that the page actually delivers the layout viewport to `gallery-gate.js`. `<meta name="viewport">` is parsed above the script, so a phone reports device width rather than the ~980px desktop fallback — get the ordering wrong and the redirect fires for nobody while every unit assertion stays green. Both halves are asserted, on the project each belongs to. |
+| `gallery-i18n.spec.js` | Switching language **on the gallery** — the only page with a switcher and no localized URL. The shared switcher would resolve to the locale *home* and throw the visitor off their own gallery onto the marketing page; it opts out with `[data-lang-inplace]`. Asserts both halves, since simply breaking navigation everywhere would pass the first test alone. |
+| `gallery-search.spec.js` | Gallery search, specifically the half that is **CSS**: the box is revealed by an attribute `gallery-app.js` sets from the listing, and a free account must end up with it genuinely off screen rather than merely marked off. A rule that never matched would leave a paid feature visible to everyone with nothing in the unit suite noticing. |
+| `gallery-share.spec.js` | Copying a **share link**. Every entry arrives with its link, so there is no mint to drive — what a browser adds is that the URL is *usable* (absolute, not a bare `/s/<token>`; it shipped that way, because `routes/gallery.js` read an `APP_ORIGIN` set nowhere) and that pressing copy really reaches the clipboard. |
 
 **Writing an e2e spec.** Name it `e2e/<thing>.spec.js`, call `seedProSession(page)` in a
 `beforeEach` if the page is gated, `page.route('**/api/…')` **every** backend call it makes
@@ -332,9 +359,15 @@ that file. It runs in CI only — `npm test` (the deploy gate) does not measure 
 
 - **The floors are a ratchet, not a target.** They sit a few points under measured coverage so
   ordinary churn doesn't trip them. Raise them as coverage improves; **never lower them to make
-  a red build pass.** Current floors — lines 85 / branches 77 / functions 84 — were set on
-  2026-07-28 against a measured 88.09 / 81.04 / 86.44. Branches carry the widest margin because
-  V8's branch attribution shifts most between Node minors.
+  a red build pass.** Current floors — lines 85 / **branches 80** / functions 84 — were last
+  re-measured on 2026-08-08 against 88.51 / 84.07 / 85.77. Branches were **raised from 77**
+  in that pass (they gained ~3 points when the fifteen island suites landed) and still carry
+  the widest margin, because V8's branch attribution shifts most between Node minors.
+  Functions were deliberately *not* raised: that number **fell** from 86.4 while the suite
+  grew, because those island suites brought whole files' function counts into the
+  denominator. A falling percentage there means more code is measured, not less tested —
+  which is why breadth is tracked by the untested ledger below, not by these floors.
+  `scripts/test-coverage.js` carries the full reasoning; keep it and this paragraph in step.
 - **Measure before you raise.** Node only enforces coverage thresholds on **>= 22.8**; on an
   older local Node the script prints the report and skips enforcement (`.node-version` pins
   an exact 22.x that CI installs via `node-version-file`, so the gate always holds there —
@@ -352,13 +385,23 @@ untested frontend file lands without moving the aggregate at all.
 
 [`test/frontend/untested-frontend-modules.test.js`](../../test/frontend/untested-frontend-modules.test.js)
 is the guard for that. It walks the import graph from `test/` into `public/scripts/` and pins the
-exact set of never-loaded modules as a **debt ledger** (68 of 107 files as of 2026-07-28,
-excluding vendored bundles). The assertion is set equality, so it fails three ways:
+exact set of never-loaded modules as a **debt ledger** — 38 of 169 files, excluding vendored
+bundles.
 
-| Failure | What it means | What to do |
+The walk is rooted at `test/` **only**; it never enters `e2e/`, so Playwright coverage is
+invisible to it by construction. A flat list of everything the walk misses is therefore *not*
+a list of untested code — a mistake already made once in review, which is why the ledger is
+**three lists**, not one:
+
+| List | Size | What it holds |
 | --- | --- | --- |
-| `newlyUntested` | A frontend module arrived that no test loads | Write a test, or add it to `UNTESTED` to record the debt deliberately |
-| `nowTestedOrGone` | A ledgered module gained a test, or was deleted/renamed | Remove it from `UNTESTED` — the ledger only ever shrinks |
+| `UNTESTED` | 21 | Real, recoverable debt: exported logic nothing exercises. |
+| `E2E_COVERED` | 8 | Side-effect entry points and composition roots with no unit-testable surface, driven by Playwright instead. A guard in the same spec keeps this from becoming a rubber stamp. |
+| `BLOCKED_CLASSIC` | 9 | Classic `<script>` files (IIFEs, no exports). Node cannot import these at all — blocked on ESM conversion, not on someone writing a test. |
+
+The assertion is set equality, so it fails three ways: a new frontend module with no test must
+be listed (visible debt); a listed module that gains a test must be delisted (the ratchet); and
+a listed module that is deleted or renamed must be delisted too (no stale rot).
 
 Adding an entry is allowed; it's meant to be a visible, reviewable act rather than a silent
 omission. The ledger is the thing that ratchets frontend coverage — the percentage floors can't.

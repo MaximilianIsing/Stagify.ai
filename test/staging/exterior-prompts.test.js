@@ -20,7 +20,6 @@ import {
   CLEANUP_CLAUSES,
   EXTERIOR_PRESERVATION_RULES,
   EXTERIOR_CHECK_PROMPT,
-  EXTERIOR_REVIEW_PROMPT,
   EXTERIOR_IGNORED_CODES,
   buildExteriorPrompt,
   describeExteriorRequest,
@@ -30,7 +29,8 @@ import {
   CLEANUP_LABELS,
 } from '../../lib/staging/exterior-prompts.js';
 import { UNSTAGEABLE_CODES } from '../../lib/staging/unstageable.js';
-import { IMAGE_FRAMING_PRESERVATION_RULES } from '../../lib/staging/prompts.js';
+// IMAGE_FRAMING_PRESERVATION_RULES used to be imported here. It is gone: framing now lives
+// inside EXTERIOR_PRESERVATION_RULES, for the reasons that constant's comment records.
 
 // ---- The preset tables -----------------------------------------------------
 
@@ -217,7 +217,11 @@ test('the hard rules are present and come LAST — after the user\'s own words',
   assert.ok(rules > prompt.indexOf('remove the power lines'), 'the hard rules outrank the free text');
   assert.ok(rules > prompt.indexOf(TIME_OF_DAY_PRESETS.goldenHour), 'and the presets');
   assert.ok(rules > prompt.indexOf(CLEANUP_CLAUSES.removeClutter), 'and the toggles');
-  assert.ok(rules > prompt.indexOf(IMAGE_FRAMING_PRESERVATION_RULES), 'and the framing block');
+  assert.ok(rules > prompt.indexOf('Deliver a photorealistic result'), 'and the closing line');
+  assert.ok(
+    prompt.trimEnd().endsWith('door and window frame colours.'),
+    'nothing follows the hard rules — a block claiming to override everything above it is only telling the truth if it is last',
+  );
 });
 
 test('the hard rules forbid the edits the product deliberately does not offer', () => {
@@ -289,10 +293,41 @@ test('the reconstruction carve-out has NOT weakened the flat prohibitions', () =
   );
 });
 
-test('the framing rules are shared with the interior path, not re-worded', () => {
-  // One definition of "do not move the camera". A second copy would drift, and the drift
-  // would only show up as an aspect-ratio complaint months later.
-  assert.ok(buildExteriorPrompt({}).includes(IMAGE_FRAMING_PRESERVATION_RULES));
+// The framing rules USED to be shared with the interior path, on the reasoning that one
+// definition of "do not move the camera" cannot drift. That was wrong twice over, and these
+// specs pin both corrections.
+//
+// Sharing one wording across two studios meant it fitted neither: written for interiors, it
+// told this prompt — about a photograph of a building — to keep "the entire ceiling line,
+// floor line, and all walls" in frame, and to "fit every staging change inside the existing
+// frame, scaling and placing NEW FURNITURE so the entire original ROOM stays visible", while
+// the bullet above it forbids adding furniture or staging of any kind. And it granted the
+// camera a crop exception that this block denies outright, so a crop request was refused by
+// a rule nobody had decided on.
+
+test('the framing rules are worded for a building, not a room', () => {
+  const p = buildExteriorPrompt({ removeVehicles: true });
+  for (const interiorism of ['ceiling line', 'floor line', 'new furniture', 'original room', 'staging change']) {
+    assert.ok(!p.includes(interiorism), `"${interiorism}" is interior language and must not reach an exterior prompt`);
+  }
+  assert.match(p, /the entire roofline and chimneys, the ground line, and the full width of the property/);
+});
+
+test('the exterior framing rules never ask for the staging this tool refuses', () => {
+  // The sharpest form of the bug: the prompt simultaneously said "place new furniture" and
+  // "do not add furniture". Whichever the model followed, one instruction was a lie.
+  const p = buildExteriorPrompt({ removeClutter: true });
+  assert.match(p, /Do not add people, pets, vehicles, furniture, planting, decoration or staging of any kind/);
+  assert.ok(!/placing new furniture/i.test(p), 'nothing anywhere asks for furniture to be placed');
+});
+
+test('the exterior camera is locked, stated exactly once, with no crop carve-out', () => {
+  const p = buildExteriorPrompt({ additionalPrompt: 'zoom in on the front door' });
+  const cameraRules = p.split('\n').filter((l) => /\bcamera\b/i.test(l));
+  assert.equal(cameraRules.length, 1, 'exactly one bullet owns the camera');
+  assert.ok(!p.includes('asked for a closer or different crop'), 'the stale exception is gone');
+  assert.match(p, /No request may re-crop, zoom, or re-frame the photograph/);
+  assert.ok(!p.includes('CRITICAL — IMAGE FRAMING'), 'no standalone framing section');
 });
 
 // ---- describeExteriorRequest ----------------------------------------------
@@ -534,24 +569,15 @@ test('the check prompt says clutter and cars are NOT grounds for rejection', () 
 
 // ---- The QA rubric ---------------------------------------------------------
 
-test('the exterior review prompt keeps the reply format the retry loop parses', () => {
-  // staging-pipeline.js reads PERFECT/SCORE and folds WHY back into the next attempt.
-  // A rubric that reworded these would make every render score 0 and burn its full
-  // retry budget — expensively, and silently.
-  assert.match(EXTERIOR_REVIEW_PROMPT, /"PERFECT: true"/);
-  assert.match(EXTERIOR_REVIEW_PROMPT, /"PERFECT: false"/);
-  assert.match(EXTERIOR_REVIEW_PROMPT, /"SCORE: <0-100>"/);
-});
-
-test('the exterior rubric grades the edit, not the property', () => {
-  // The failure mode worth naming: a reviewer that treats a worn driveway or a car left
-  // in frame as a defect fails every honest render and retries until the model starts
-  // "fixing" the property — which is the one thing the preservation rules forbid.
-  assert.match(EXTERIOR_REVIEW_PROMPT, /do NOT judge the property itself/i);
-  assert.match(EXTERIOR_REVIEW_PROMPT, /exterior/i);
-  // And it must name the defects this edit actually produces, which the interior rubric
-  // says nothing about.
-  for (const defect of ['halo', 'roofline', 'shadow']) {
-    assert.ok(EXTERIOR_REVIEW_PROMPT.toLowerCase().includes(defect), `the rubric must mention "${defect}"`);
-  }
+test('there is no exterior QA rubric, because the exterior gate is off', async () => {
+  // EXTERIOR_REVIEW_PROMPT is deleted. It was a 38-line rubric that never reached a model:
+  // exterior-handler.js passed it as `reviewBasePrompt` while ALSO setting
+  // `skipQualityReview: true`, and the skip short-circuits in staging-generation.js before
+  // the rubric is read. Three specs asserted its contents, so it looked maintained.
+  //
+  // If the gate is ever switched back on, write the rubric then — against what this edit
+  // actually produces. Do not restore the old one: it had already drifted out of sync with
+  // the shared reply format (reviewReplyFormat) that it claimed to match.
+  const mod = await import('../../lib/staging/exterior-prompts.js');
+  assert.equal(mod.EXTERIOR_REVIEW_PROMPT, undefined, 'the dead rubric must not come back');
 });

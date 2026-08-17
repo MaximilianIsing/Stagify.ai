@@ -30,8 +30,8 @@
       // when that section became the strip widget. A stale selector here does not
       // throw, it just silently stops warming those decodes, so
       // test/frontend/home-strips.test.js pins the two together.
-      // `.tw-logo` is the five testimonial brokerage marks. They sit in a deck, so four
-      // of the five are behind the top card when the section scrolls in and would
+      // `.tw-logo` is the seven testimonial brokerage marks. They sit in a deck, so six
+      // of the seven are behind the top card when the section scrolls in and would
       // otherwise decode one at a time as you advance — visible as a pop on each card.
       // `.rs__empty` is #restage's one shipped photo. It is a below-fold `loading="lazy"`
       // image like `.hstrip__img`, and it sits under every render the section deals, so

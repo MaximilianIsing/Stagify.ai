@@ -32,15 +32,8 @@
     "exteriorStudio": "Buitenstudio"
   },
   "hero": {
-    "catchphrase": "Upload. Style. Verbeeld.",
-    "announcement": "Gemaakt om jouw droomruimte werkelijkheid te maken",
+    "eyebrow": "Gratis virtuele styling",
     "title": {
-      "free": "Gratis",
-      "virtual": "virtuele",
-      "staging": "styling",
-      "with": "met",
-      "one": "één",
-      "click": "klik",
       "upload": "Upload.",
       "stage": "Style.",
       "imagine": "Verbeeld."
@@ -49,12 +42,32 @@
     "freeGensLeft": "{n} gratis generaties over vandaag, ",
     "freeGensLeftUpgrade": "Upgraden",
     "freeGensUpgrade": "Probeer Stagify+ vandaag nog. <a class=\"hero-free-gens-upgrade\" href=\"stagify-plus.html\">Upgraden</a>",
-    "carouselNote": "Voorbeeldweergave. Upload je foto om te stylen",
     "stats": {
       "roomsStaged": "Gestylede kamers",
       "usersServed": "Geholpen gebruikers",
       "andCounting": "en het worden er meer..."
-    }
+    },
+    "sentence": {
+      "before": "Ontwerp ",
+      "middle": " in stijl ",
+      "after": "."
+    },
+    "rooms": {
+      "bedroom": "deze slaapkamer",
+      "livingRoom": "deze woonkamer",
+      "diningRoom": "deze eetkamer",
+      "kitchen": "deze keuken",
+      "office": "dit kantoor",
+      "bathroom": "deze badkamer"
+    },
+    "roomMenuLabel": "Type kamer",
+    "styleMenuLabel": "Meubelstijl",
+    "seeOriginal": "Origineel bekijken",
+    "seeStaged": "Ingericht bekijken",
+    "stageNote": "Elke look hier is een echte render van dezelfde lege kamer.",
+    "stageAlt": "{room} in stijl {style}, virtueel ingericht",
+    "originalAlt": "Dezelfde kamer voor het inrichten, leeg",
+    "defaultAlt": "Een slaapkamer, virtueel ingericht in moderne stijl"
   },
   "sponsors": {
     "title": "Vertrouwd door makelaars bij:"
@@ -575,22 +588,6 @@
     "coastal": "Kust",
     "farmhouse": "Boerderij",
     "custom": "Aangepast"
-  },
-  "carouselItems": {
-    "original": "Origineel",
-    "modern": "Modern",
-    "scandinavian": "Scandinavisch",
-    "luxury": "Luxe",
-    "coastal": "Kust",
-    "midcentury": "Midcentury",
-    "farmhouse": "Boerderij",
-    "originalPhotoAlt": "Voorbeeld lege kamer vóór virtuele styling",
-    "modernPhotoAlt": "Voorbeeldkamer met moderne virtuele styling-stijl",
-    "scandinavianPhotoAlt": "Voorbeeldkamer met Scandinavische virtuele styling-stijl",
-    "luxuryPhotoAlt": "Voorbeeldkamer met luxe virtuele styling-stijl",
-    "coastalPhotoAlt": "Voorbeeldkamer met kust virtuele styling-stijl",
-    "midcenturyPhotoAlt": "Voorbeeldkamer met mid-century virtuele styling-stijl",
-    "farmhousePhotoAlt": "Voorbeeldkamer met boerderij virtuele styling-stijl"
   },
   "whyUs": {
     "title": "Waarom voor ons kiezen?",

@@ -73,12 +73,12 @@ test.describe('Home page — load smoke', () => {
     expect(consoleErrors.filter((t) => !/Failed to load resource/i.test(t))).toEqual([]);
   });
 
-  test('the hero carousel adopts the static LCP slide instead of re-creating it', async ({ page }) => {
-    // The homepage's LCP element is the `<img>` in `.carousel-container`, and it ships
-    // in index.html so it can paint without waiting for the module graph. carousel.js
-    // must therefore APPEND the other six slides around it — replacing the node, even
-    // with an identical src, restarts the browser's LCP candidate at the later time and
-    // silently undoes the optimisation while looking perfect.
+  test('the hero picker adopts the static LCP photo instead of re-creating it', async ({ page }) => {
+    // The homepage's LCP element is the `<img>` in `.hp-stage`, and it ships in index.html
+    // so it can paint without waiting for the module graph. hero-picker.js must therefore
+    // APPEND the other renders around it — replacing the node, even with an identical src,
+    // restarts the browser's LCP candidate at the later time and silently undoes the
+    // optimisation while looking perfect.
     //
     // This lives in e2e and not in a unit test on purpose: the failure mode is an
     // unreachable code path, and a source scan cannot see reachability. Stubbing the
@@ -87,27 +87,82 @@ test.describe('Home page — load smoke', () => {
     // unreachable branch never sets the attribute.
     await page.goto('/index.html');
 
-    const container = page.locator('.carousel-container');
+    const stage = page.locator('.hp-stage');
     await expect(
-      container,
-      'carousel.js did not take the adopt path — the static slide 0 was overwritten'
-    ).toHaveAttribute('data-carousel-adopted', '');
+      stage,
+      'hero-picker.js did not take the adopt path — the static photo was overwritten'
+    ).toHaveAttribute('data-hp-adopted', '');
 
-    // The adopted slide plus the six appended ones.
-    await expect(container.locator('.carousel-item')).toHaveCount(7);
+    // The first paint costs exactly one image: the default pair. The empty "before" shot
+    // and the other 35 renders are fetched on demand, so anything more here means the
+    // hero has started paying for images nobody asked to see.
+    const photo = stage.locator('img').first();
+    await expect(photo).toHaveAttribute('src', 'media-webp/example/modern-bedroom.webp');
+    await expect(photo).toHaveClass(/is-on/);
+  });
 
-    // Slide 0 is still the preloaded LCP image, and still first.
-    await expect(container.locator('.carousel-item').first().locator('img')).toHaveAttribute(
+  test('picking a style swaps the photo and rewrites the sentence', async ({ page }) => {
+    // The whole point of the hero: the headline is a control, not a slogan. If the menu
+    // opens but the photo never changes, the page still looks finished.
+    await page.goto('/index.html');
+
+    await expect(page.locator('#hero-style-label')).toHaveText('Modern');
+    await page.locator('#hero-style-btn').click();
+
+    const menu = page.locator('#hero-style-menu');
+    await expect(menu).toBeVisible();
+    await menu.locator('.hp-menu__item', { hasText: 'Coastal' }).click();
+
+    await expect(menu).toBeHidden();
+    await expect(page.locator('#hero-style-label')).toHaveText('Coastal');
+
+    // The new render is added and shown; the default one is still in the DOM but hidden,
+    // because it is the adopted LCP node and must never be removed.
+    const shown = page.locator('.hp-stage img.is-on');
+    await expect(shown).toHaveCount(1);
+    await expect(shown).toHaveAttribute('src', 'media-webp/example/coastal-bedroom.webp');
+    await expect(page.locator('.hp-stage img[src*="modern-bedroom"]')).toHaveCount(1);
+  });
+
+  test('the hero picker reopens on the last pick, and forgets one it no longer offers', async ({ page }) => {
+    // Remembering the pick is the one hero behaviour that spans two page loads, so a
+    // single-load test cannot see it at all. It is also the behaviour that quietly
+    // undoes the LCP work for returning visitors, which is a reason to be sure it is
+    // doing something real rather than a reason to leave it unguarded.
+    await page.goto('/index.html');
+
+    await page.locator('#hero-style-btn').click();
+    await page.locator('#hero-style-menu .hp-menu__item', { hasText: 'Farmhouse' }).click();
+    await page.locator('#hero-room-btn').click();
+    await page.locator('#hero-room-menu .hp-menu__item', { hasText: 'Kitchen' }).click();
+
+    await page.reload();
+
+    await expect(page.locator('#hero-style-label')).toHaveText('Farmhouse');
+    await expect(page.locator('#hero-room-label')).toHaveText('kitchen');
+    await expect(page.locator('.hp-stage img.is-on')).toHaveAttribute(
       'src',
-      'media-webp/example/Original.webp'
+      'media-webp/example/farmhouse-kitchen.webp',
     );
 
-    // Slides 1..6 ship with `data-src` so their 592 KB stays out of the LCP window, and
-    // are hydrated after `load`. page.goto() resolves on `load`, so by now hydration has
-    // run — assert it COMPLETED. The failure this catches is the deferral silently
-    // stranding them: a carousel that rotates onto permanently blank slides.
-    await expect(container.locator('.carousel-item img[src]')).toHaveCount(7);
-    await expect(container.locator('.carousel-item img[data-src]')).toHaveCount(0);
+    // The adopted LCP node survives the restore. show() hides it, it does not remove it,
+    // and removing it would break the adopt guarantee the test above pins.
+    await expect(page.locator('.hp-stage')).toHaveAttribute('data-hp-adopted', '');
+    await expect(page.locator('.hp-stage img[src*="modern-bedroom"]')).toHaveCount(1);
+
+    // A pick naming a room or style that no longer exists must fall back to the default,
+    // not build a path to a render that was never generated. That is what happens the day
+    // someone drops a room type from ROOMS, and the failure mode is an empty hero for
+    // exactly the returning visitors this feature exists to please.
+    await page.evaluate(() => window.localStorage.setItem('heroPick', 'farmhouse|conservatory'));
+    await page.reload();
+
+    await expect(page.locator('#hero-room-label')).toHaveText('bedroom');
+    await expect(page.locator('#hero-style-label')).toHaveText('Modern');
+    await expect(page.locator('.hp-stage img.is-on')).toHaveAttribute(
+      'src',
+      'media-webp/example/modern-bedroom.webp',
+    );
   });
 
   test('the deferred Google Ads tag still initializes', async ({ page }) => {

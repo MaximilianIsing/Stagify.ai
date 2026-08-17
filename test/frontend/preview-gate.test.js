@@ -19,7 +19,7 @@
 //     replaced — a page that mounts it without `data-pending-class`, or with a class its
 //     stylesheet does not define, gets no error and no pre-paint, just the flash back.
 //
-// Like exterior-studio/gate.test.js this runs the SHIPPED SOURCE with `document`,
+// Like ai-designer/ai-designer-gate-mobile.test.js this runs the SHIPPED SOURCE with `document`,
 // `localStorage` and `setTimeout` passed in as parameters that shadow the globals of the
 // same name inside it — the gate is a classic render-blocking IIFE with no exports, so
 // there is nothing to import.

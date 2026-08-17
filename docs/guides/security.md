@@ -441,8 +441,22 @@ of erased people.
 | `RL_AUTH` | 40 / 15 min | sign-in / account actions (brute-force) |
 | `RL_EMAIL` | 6 / 15 min | anything that sends email (spam/abuse) |
 | `RL_GEN` | 60 / 5 min | paid AI generation (cost abuse) |
+| `RL_VALIDATE_IMAGE` | 20 / 5 min | `POST /api/validate-image` — each accepted call spends a paid vision request |
 | `RL_CHECKOUT` | 10 / 60 min | `POST /api/enterprise/create-checkout` (see below) |
 | `RL_ENDPOINT_KEY` | 10 / 15 min | **wrong** endpoint-access keys (see below) |
+| `RL_SHARE` | 60 / 15 min | `/s/:token` + `GET /api/share/:token` — the **only** anonymous read surface, so this doubles as the ceiling on guessing a token |
+| `RL_GALLERY` | 120 / 15 min | the signed-in gallery's own reads and writes |
+| `RL_GALLERY_IMPORT` | 20 / 15 min | `POST /api/masking-studio/save` — the one endpoint that PUTs client-supplied megabytes to object storage with no model call to brake it |
+| `RL_STAMP_IMAGE` | 30 / 15 min | `POST /api/stamp-image` (Pro-only badge stamping of a browser-built composite) |
+| `RL_DOWNLOAD_RESULT` | 60 / 15 min | `POST /api/download-result` — CPU-only resize/re-encode, not a paid-generation cap |
+| `RL_DISCLOSURE_PREVIEW` | 120 / 5 min | `GET /api/disclosure-preview`, unauthenticated |
+
+Two of them are **write-ceilings, not rate limits**: `RL_EMAIL_PIXEL` (120 / 15 min, the
+email open-tracking pixel) and `RL_REFERRAL` (120 / 15 min, campaign short-URLs). Both sit
+on unauthenticated endpoints that must still answer — a real image, a real redirect — so
+going over drops only the row that would have been logged rather than returning 429. That
+is also why `rejectingLimiter` (which records every refusal to `rejection_logs.csv`)
+deliberately excludes them: they never refuse anything.
 
 ### The endpoint-key limiter counts rejections, not requests
 
@@ -499,9 +513,16 @@ Guarded by [`test/routes/billing-checkout-limit.test.js`](../../test/routes/bill
 
 The body parsers are the cheapest DoS surface, so they're **scoped**, not global:
 
-- **JSON (`express.json`):** app-wide limit is **1 MB**; only the four routes that
-  legitimately carry base64 images in JSON (`/api/chat`, `/api/mask-edit`,
-  `/api/segment`, `/api/validate-image`) get **25 MB**. `/api/bug-report` is
+- **JSON (`express.json`):** app-wide limit is **1 MB**; only the routes that legitimately
+  carry base64 images in JSON get **25 MB**, and the allow-list is
+  `JSON_LARGE_LIMIT_PATHS` in `lib/http/app-middleware.js` — currently `/api/chat`,
+  `/api/mask-edit`, `/api/segment`, `/api/validate-image`, `/api/masking-studio/save`,
+  `/api/stamp-image`, `/api/download-result`. The last three are the browser-composited
+  paths: those images are built on a canvas and exist only client-side, so they reach the
+  server at full resolution or not at all. Note the set is matched on `req.path` with a
+  trailing slash stripped — Express routes non-strictly, so without that `POST /api/chat/`
+  would reach the 25 MB handler through the 1 MB parser and 413 before the handler ran.
+  `/api/bug-report` is
   deliberately **not** among them — it is unauthenticated and appends its body to
   `bug_reports.csv` on the same persistent volume as `auth-store.db`, so it keeps the
   1 MB limit *and* clamps every field it stores (`lib/http/bug-report-row.js`), with an
@@ -573,6 +594,11 @@ is written in this repo, not produced by a runtime exception.
     `style=""` attributes, so this stays for now — a deliberately accepted, lower-severity
     gap (CSS injection, not JS execution).
   - Toggle the whole policy with `DISABLE_CSP=1` only to debug a blocked resource.
+    It drops the policy for **every** response, so it is not silent: boot logs a
+    `[security] DISABLE_CSP=1 …` **warning** (`applyEdgeMiddleware` in
+    `lib/http/app-middleware.js`). If you see that line in a deploy's logs, the site is
+    running with no CSP and the flag needs unsetting — grep for it when auditing an
+    environment, since the flag leaves no other trace in the responses.
 - **CORS** restricted to the `ALLOWED_ORIGINS` allow-list (defaults to the stagify.ai
   origins + `localhost:3000`).
 
@@ -651,8 +677,10 @@ automatically.
   layer one.
 - **Erasure does not reach backups.** Litestream replicates `auth-store.db` to R2, so a
   restored snapshot brings an erased account back. Retention there is a separate policy.
-- **Share-link revocation is eventual (≤15 min)** — see the section above. Bounded and
-  documented, not unbounded, but it is not instant and the copy must not claim it is.
+- **Share-link takedown is eventual (≤15 min)** — and it is *deletion*, not revocation:
+  there is no off switch, so the only takedown is deleting the render (see the section
+  above). Bounded and documented, not unbounded, but it is not instant and the copy must
+  not claim it is.
 - **Erasure of render bytes is a QUEUE, so it is eventually-consistent.** `deleteUser`
   commits tombstones inside its transaction (durable, replicated, survives an R2 outage)
   and a reaper drains them. So an erasure is *promised* atomically but *performed*

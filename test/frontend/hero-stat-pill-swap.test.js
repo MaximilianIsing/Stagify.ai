@@ -40,7 +40,9 @@ const sheet = (name) => fs.readFileSync(path.join(ROOT, 'public', 'styles', name
 
 const INDEX = sheet('index.css');
 const STAR = sheet('star-border.css');
-const CAROUSEL = sheet('carousel.css');
+// hero-picker.css replaced carousel.css in the same slot: the hero's own sheet, loaded
+// before index.css. The duplication risk this file guards belongs to whatever sits there.
+const HERO_SHEET = sheet('hero-picker.css');
 
 const RING = '--star-pill-ring';
 
@@ -199,14 +201,14 @@ test('the fallback pill paints the same box as the star-border inner content', (
 
 test('no sheet gives .stat-pill a shadow or a backdrop blur', () => {
   // Both are absent from `.inner-content`, so either one is a visible change at the swap.
-  // Scanned across all three sheets because the declarations this replaced lived in
-  // carousel.css: index.css never declared backdrop-filter, so deleting it there would
-  // have left carousel.css's copy winning by default.
+  // Scanned across all three sheets because the declarations this replaced lived in the
+  // hero's own sheet (carousel.css at the time, hero-picker.css now): index.css never
+  // declared backdrop-filter, so deleting it there would have left that copy winning.
   const banned = /^(box-shadow|backdrop-filter|-webkit-backdrop-filter)$/;
   /** @type {string[]} */
   const offenders = [];
   let seen = 0;
-  for (const [name, src] of [['index.css', INDEX], ['carousel.css', CAROUSEL], ['star-border.css', STAR]]) {
+  for (const [name, src] of [['index.css', INDEX], ['hero-picker.css', HERO_SHEET], ['star-border.css', STAR]]) {
     for (const region of regions(src)) {
       for (const block of blocksFor(region.css, '.stat-pill')) {
         seen += 1;
@@ -271,29 +273,30 @@ test('the fallback reserves the ring band, from the one token the ring itself us
   );
 });
 
-test('carousel.css carries no second copy of the pill rules', () => {
-  // It used to carry a near-complete stale duplicate of all four selectors plus <=768 and
-  // <=480 blocks. index.css shadowed almost all of it, which is why nobody noticed — but
-  // `backdrop-filter` and `box-shadow` were only ever declared there, so index.css could
-  // not remove them. A duplicate is not a style question here; it is how the fix is undone.
+test('the hero sheet carries no second copy of the pill rules', () => {
+  // carousel.css used to carry a near-complete stale duplicate of all four selectors plus
+  // <=768 and <=480 blocks. index.css shadowed almost all of it, which is why nobody
+  // noticed — but `backdrop-filter` and `box-shadow` were only ever declared there, so
+  // index.css could not remove them. A duplicate is not a style question here; it is how
+  // the fix is undone. hero-picker.css inherits the risk along with the slot.
   /** @type {string[]} */
   const offenders = [];
-  for (const region of regions(CAROUSEL)) {
+  for (const region of regions(HERO_SHEET)) {
     for (const sel of ['.stats-pills', '.stat-pill', '.stat-pill-number', '.stat-pill-text']) {
-      if (blocksFor(region.css, sel).length) offenders.push(`carousel.css ${region.at}: ${sel}`);
+      if (blocksFor(region.css, sel).length) offenders.push(`hero-picker.css ${region.at}: ${sel}`);
     }
   }
   assert.ok(
-    blocksFor(topLevel(CAROUSEL), '.carousel-container').length > 0,
-    'carousel.css no longer defines .carousel-container — this guard is reading the wrong file',
+    blocksFor(topLevel(HERO_SHEET), '.hp-frame').length > 0,
+    'hero-picker.css no longer defines .hp-frame — this guard is reading the wrong file',
   );
   assert.deepEqual(
     offenders,
     [],
-    'carousel.css has grown a copy of the hero stat-pill rules again. index.css is their sole '
-      + 'owner: it loads after carousel.css and shadows it at equal specificity, so a second copy '
-      + 'is invisible until it declares something index.css does not — which is precisely how an '
-      + 'unused backdrop-filter survived on these pills.',
+    'hero-picker.css has grown a copy of the hero stat-pill rules again. index.css is their '
+      + 'sole owner: it loads after hero-picker.css and shadows it at equal specificity, so a '
+      + 'second copy is invisible until it declares something index.css does not — which is '
+      + 'precisely how an unused backdrop-filter survived on these pills.',
   );
 });
 
