@@ -383,3 +383,21 @@ test('logRejectionToFile: never throws, whatever it is handed', () => {
   assert.doesNotThrow(() => logging.logRejectionToFile('rate_limit', 'gen', undefined, { req: {} }));
   assert.doesNotThrow(() => logging.logRejectionToFile(null, null, null, null));
 });
+
+test('logRejectionToFile: a null actor still writes the row, it is not swallowed', async () => {
+  // Not throwing is only half of it. A null `who` used to hit a TypeError that the
+  // catch turned into a log line, so the rejection vanished from the CSV while the
+  // suite still passed. The row is the point: assert it lands, unknown and all.
+  const { logging, dataDir } = freshLogging();
+  const file = path.join(dataDir, 'rejection_logs.csv');
+
+  logging.logRejectionToFile('rate_limit', 'gen', null, null);
+  await waitForLineCount(file, 2);
+
+  const cells = lines(file)[1].split(',');
+  assert.equal(cells[1], 'rate_limit');
+  assert.equal(cells[4], 'unknown');
+  assert.equal(cells[5], 'unknown');
+  assert.equal(cells[6], 'unknown');
+  assert.equal(cells[7], 'unknown');
+});
