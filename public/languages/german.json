@@ -33,6 +33,80 @@
   },
   "hero": {
     "eyebrow": "Kostenloses virtuelles Home Staging",
+    "added": {
+      "title": "In diesem Rendering ergänzt",
+      "item1": "Nussbaumbett, weiße Bettwäsche",
+      "item2": "Lange Nussbaumkommode, sechs Schübe",
+      "item3": "Teppich mit Rastermuster in Creme",
+      "item4": "Bouclé-Sessel am Fenster",
+      "item5": "Gerahmter geometrischer Print",
+      "items": {
+        "standard": {
+          "bedroom": ["Eichenbett, weiße Bettwäsche", "Breite Eichenkommode, sechs Schübe", "Großer beiger Teppich unterm Bett", "Drei gerahmte Schwarz-Weiß-Prints", "Cremefarbener Sessel am Fenster"],
+          "livingRoom": ["Langes Dreisitzer-Sofa in Creme", "Gemusterter Teppich in Grau und Creme", "TV-Board in Weiß und Eiche", "Zwei graue Sessel mit Metallgestell", "Geigenfeige im Tontopf"],
+          "diningRoom": ["Sechsertisch mit Leinendecke", "Sechs cremefarbene Polsterstühle", "Sideboard aus heller Eiche", "Abstraktes Bild über dem Sideboard", "Weiße Orchidee als Tischdeko"],
+          "kitchen": ["Weiße Kücheninsel mit Spüle", "Grifflose weiße Küchenzeile", "Edelstahl-Kühlschrank und Backofen", "Vier graue Barhocker", "Zwei gerahmte geometrische Prints"],
+          "office": ["Weißer rechteckiger Schreibtisch", "Offenes Eichenregal", "Schwarzer Bürostuhl mit Netzrücken", "Graues niedriges Sideboard", "Zwei gerahmte abstrakte Bilder"],
+          "bathroom": ["Weißer Waschtisch, wandhängend", "Glasdusche mit Regenbrause", "Wandhängendes weißes WC", "Anthrazitfarbener Badvorleger", "Schmaler gerahmter Wandspiegel"]
+        },
+        "modern": {
+          "bedroom": ["Nussbaumbett, weiße Bettwäsche", "Lange Nussbaumkommode, sechs Schübe", "Teppich mit Rastermuster in Creme", "Bouclé-Sessel am Fenster", "Gerahmter geometrischer Print"],
+          "livingRoom": ["Graues L-förmiges Ecksofa", "Geometrischer Teppich in Blau-Grau", "Couchtisch aus weißem Stein", "Schwarze Bogenstehlampe", "Dreiteiliges Meer-Triptychon"],
+          "diningRoom": ["Weißer Esstisch, schwarze Beine", "Sechs graue Polsterstühle", "Sideboard aus heller Eiche", "Zwei gerahmte Prints in Navy-Gold", "Trockenes Pampasgras in der Vase"],
+          "kitchen": ["Weiße Kücheninsel, graue Platte", "Weiße Hänge- und Hochschränke", "Drei schwarze Draht-Barhocker", "Zwei Edelstahl-Einbaubacköfen", "Schwarze Schale mit grünen Äpfeln"],
+          "office": ["Weißer Schreibtisch, Chrombeine", "Offenes Regal mit schwarzem Rahmen", "Breiter Monitor auf dem Tisch", "Grauer Bürostuhl auf Rollen", "Weißes niedriges Sideboard"],
+          "bathroom": ["Weißer Doppelwaschtisch, hängend", "Begehbare Glasdusche", "Große Strelitzie im Topf", "Weißes wandhängendes WC", "Grauer Badvorleger mit Rautenmuster"]
+        },
+        "scandinavian": {
+          "bedroom": ["Helles Eichenbett, weiße Wäsche", "Eichenkommode mit sechs Schüben", "Runder Juteteppich unterm Bett", "Zwei Eichen-Nachttische mit Lampen", "Zwei gerahmte abstrakte Prints"],
+          "livingRoom": ["Graues Dreisitzer-Sofa am Fenster", "Großer geflochtener Juteteppich", "Niedriger Couchtisch aus Eiche", "Zwei Loungesessel mit Geflecht", "Monstera und Geigenfeige im Topf"],
+          "diningRoom": ["Langer Eichentisch mit Leinenläufer", "Sechs Stühle aus heller Eiche", "Eichen-Sideboard an der Wand", "Gedeckter Tisch mit Tellern, Gläsern", "Trockenzweige in einer Schale"],
+          "kitchen": ["Eicheninsel mit heller Steinplatte", "Hängeschränke aus heller Eiche", "Weißer Backofen unter der Platte", "Drei Barhocker aus Eiche", "Weiße Metrofliesen als Spritzschutz"],
+          "office": ["Eichenschreibtisch am Fenster", "Schmales offenes Eichenregal", "Eichenstuhl mit grauem Sitzkissen", "Weißer Rollcontainer", "Messinglampe und Kräuter im Topf"],
+          "bathroom": ["Begehbare Glasdusche", "Hängender Eichen-Waschtisch", "Mattschwarze Regenbrause", "Beiger Badvorleger auf Parkett", "Wäschekorb aus Geflecht, Handtücher"]
+        },
+        "coastal": {
+          "bedroom": ["Weißes Bett mit Lattenkopfteil", "Kommode aus weiß gekalktem Holz", "Aquafarbener Streifenläufer", "Rattansessel am Fenster", "Drei gerahmte Muschel-Prints"],
+          "livingRoom": ["Zwei weiße Sofas mit Husse", "Großer Sisalteppich, geflochten", "Couchtisch aus verwittertem Holz", "Zwei Loungesessel aus Korbgeflecht", "Beistelltisch mit Tauumwicklung"],
+          "diningRoom": ["Langer Esstisch, grau gekalkt", "Sechs Stühle aus Seegrasgeflecht", "Weiß patiniertes Sideboard", "Korbbank mit gestreiftem Sitzkissen", "Gerahmtes Bild einer Meereswelle"],
+          "kitchen": ["Weiße Küchenzeile im Shaker-Stil", "Weiße Kücheninsel mit Steinplatte", "Drei Barhocker aus Geflecht", "Zwei Edelstahl-Einbaubacköfen", "Holzbrett neben der Spüle"],
+          "office": ["Rustikaler Schreibtisch mit Böcken", "Vier gerahmte Meeresbilder", "Aktenschrank in Mintgrün", "Schreibtischstuhl aus Rattan", "Tischlampe in Meergrün, Keramik"],
+          "bathroom": ["Weißer Waschtisch mit Becken", "Große Palme im Korb", "Badvorleger in Aqua, marmoriert", "Gerahmter Spiegel über dem Becken", "Deckenleuchte in gebürstetem Nickel"]
+        },
+        "farmhouse": {
+          "bedroom": ["Rustikales Bettgestell aus Kiefer", "Weiß gekalkte Kommode, sechs Schübe", "Blumenquilt und Patchwork-Decke", "Schaukelstuhl mit Geflechtsitz", "Drei gerahmte Bauernhof-Prints"],
+          "livingRoom": ["Cremefarbenes Dreisitzer-Sofa", "Großer geflochtener Juteteppich", "Couchtisch aus Altholz", "Zwei Sessel mit Leinenbezug", "Bilderwand mit Pflanzendrucken"],
+          "diningRoom": ["Langer Esstisch aus alter Eiche", "Weiß patiniertes Sideboard", "Rot karierte Tischdecke", "Sechs Polsterstühle mit Blumenmuster", "Gläser mit orangenen Gartenblumen"],
+          "kitchen": ["Weiß gekalkte Shaker-Küchenzeile", "Landhausspüle mit Frontschürze", "Frühstückstresen aus Massivholz", "Drei rustikale Holz-Barhocker", "Offene Regale mit Töpfen und Kräutern"],
+          "office": ["Massiver Schreibtisch aus Altholz", "Hohes Kiefernregal mit Büchern", "Brauner Lederdrehstuhl auf Rollen", "Schwarzer Aktenschrank aus Metall", "Runde Wanduhr im Landhausstil"],
+          "bathroom": ["Freistehende Wanne mit Löwenfüßen", "Weißes Standwaschbecken mit Armatur", "Eckdusche mit Glaswänden", "Ovaler geflochtener Teppich", "Bemaltes Holzschild an der Wand"]
+        },
+        "luxury": {
+          "bedroom": ["Gestepptes Bett in Navyblau", "Mahagoni-Kommode, sechs Schübe", "Zwei Marmorbilder in Goldrahmen", "Zwei Nachttischlampen aus Glas", "Samtkissen in Juwelentönen"],
+          "livingRoom": ["Ecksofa aus navyblauem Samt", "Couchtisch aus weißem Marmor", "Zwei Samtsessel in Creme", "Abstrakter Teppich in Blau und Gold", "Triptychon in Goldrahmen an der Wand"],
+          "diningRoom": ["Langer Esstisch mit Tischdecke", "Sechs blaue Samtstühle", "Holz-Sideboard mit Marmorplatte", "Kristallleuchter als Tischmitte", "Tischläufer aus Goldbrokat"],
+          "kitchen": ["L-Küchenzeile aus heller Eiche", "Kücheninsel aus Quarzstein", "Zwei cremefarbene Barhocker", "Zwei Edelstahl-Einbaubacköfen", "Weiße Orchidee in der Glasvase"],
+          "office": ["Schreibtisch aus Marmor und Gold", "Geschnitztes Bücherregal aus Holz", "Grüner Bürostuhl aus Steppleder", "Geigenfeige im Messingtopf", "Kannelierte Kristall-Tischlampe"],
+          "bathroom": ["Freistehende ovale Badewanne", "Eckdusche mit Glaswänden", "Doppelwaschtisch aus dunklem Holz", "Stand-Wannenarmatur in Messing", "Wandhängendes WC am Fenster"]
+        },
+        "midcentury": {
+          "bedroom": ["Nussbaumbett, graues Kopfteil", "Lange Teakkommode, sechs Schübe", "Schwarzer Loungesessel aus Leder", "Geometrischer Quilt, senfgelbe Decke", "Gerahmte Reiseposter an der Wand"],
+          "livingRoom": ["Petrolfarbenes Dreisitzer-Sofa", "Teppich mit Muster in Gold und Orange", "Zwei Loungesessel aus Palisander", "Niedriger Couchtisch aus Nussbaum", "Sechs abstrakte Prints als Raster"],
+          "diningRoom": ["Runder Tisch mit Blumendecke", "Vier Schalenstühle aus Kunststoff", "Langes Teak-Sideboard auf Beinen", "Zweite Pendelleuchte über dem Tisch", "Bernsteingläser und Trockenblumen"],
+          "kitchen": ["Weiße Kücheninsel mit Steinplatte", "Wand aus weißen Hängeschränken", "Drei orange Barhocker aus Vinyl", "Kühlschrank aus Edelstahl", "Farn auf weißem Pflanzenständer"],
+          "office": ["Nussbaum-Schreibtisch mit Container", "Drehstuhl aus hellbraunem Leder", "Offenes Teakregal", "Chrom-Tischlampe mit Kuppelschirm", "Drei gerahmte abstrakte Prints"],
+          "bathroom": ["Nussbaum-Waschtisch, weißes Becken", "Eckdusche mit Glaswänden", "Große Topfpflanze auf dem Ständer", "Gemusterter Läufer auf dem Boden", "Holz-Abfalleimer am Waschtisch"]
+        },
+        "custom": {
+          "bedroom": ["Grünes Samt-Kopfteil, wellenförmig", "Geometrischer Teppich, grün-creme", "Nussbaumkommode, sechs Schübe", "Schwarzer Nachttisch, Messinggriffe", "Grüne Polsterbank am Bettende"],
+          "livingRoom": ["Geschwungenes Sofa in Smaragdsamt", "Sideboard in Schwarzlack, Intarsien", "Zwei Drehsessel in Rosé", "Teppich mit grünem Fächermuster", "Goldener Sonnenspiegel an der Wand"],
+          "diningRoom": ["Runder Esstisch aus weißem Marmor", "Kanneliertes Nussbaum-Sideboard", "Sechs grüne Samtstühle", "Runder grüner Medaillonteppich", "Weiße Rosen in der Glasvase"],
+          "kitchen": ["Schwarzer Barwagen mit Messingplatte", "Palme im Messing-Übertopf", "Läufer mit grünem Blattmuster", "Drei Skizzen in Goldrahmen", "Kupferdosen und Gläser"],
+          "office": ["Kannelierter Tisch mit Messingfuß", "Hoher schwarzer Vitrinenschrank", "Grüner Teppich im Zickzackmuster", "Grüner Schalenstuhl aus Samt", "Messinglampe, grüner Glasschirm"],
+          "bathroom": ["Freistehende ovale Badewanne", "Kannelierter Nussbaum-Waschtisch", "Marmorpodest unter der Wanne", "Palme im Messing-Übertopf auf Fuß", "Badvorleger mit grünem Muster"]
+        }
+      }
+    },
     "title": {
       "upload": "Hochladen.",
       "stage": "Einrichten.",
@@ -44,8 +118,7 @@
     "freeGensUpgrade": "Testen Sie Stagify+ noch heute. <a class=\"hero-free-gens-upgrade\" href=\"stagify-plus.html\">Upgrade</a>",
     "stats": {
       "roomsStaged": "Eingerichtete Räume",
-      "usersServed": "Bediente Nutzer",
-      "andCounting": "und es werden mehr..."
+      "usersServed": "Bediente Nutzer"
     },
     "sentence": {
       "before": "Gestalte ",
@@ -63,8 +136,7 @@
     "roomMenuLabel": "Raumtyp",
     "styleMenuLabel": "Möbelstil",
     "seeOriginal": "Original ansehen",
-    "seeStaged": "Gestaltet ansehen",
-    "stageNote": "Jeder Look hier ist ein echtes Rendering desselben leeren Raums.",
+    "seeStaged": "Staging ansehen",
     "stageAlt": "{room} im Stil {style}, virtuell eingerichtet",
     "originalAlt": "Derselbe Raum vor der Gestaltung, leer",
     "defaultAlt": "Ein Schlafzimmer, virtuell im modernen Stil eingerichtet"
@@ -356,7 +428,12 @@
     },
     "instagram": {
       "title": "Sehen Sie es in Aktion auf Instagram",
-      "follow": "@stagify.ai folgen"
+      "follow": "@stagify.ai folgen",
+      "posts": {
+        "emptyToStaged": "Instagram-Beitrag: ein leeres Wohnzimmer neben demselben Raum, eingerichtet mit Sofa, Teppich und Bildern (öffnet in neuem Tab)",
+        "floorPlan": "Instagram-Beitrag: ein möblierter Grundriss über dem daraus gerenderten fotorealistischen Schlafzimmer (öffnet in neuem Tab)",
+        "fiveStyles": "Instagram-Beitrag: ein und dasselbe leere Wohnzimmer in fünf verschiedenen Einrichtungsstilen (öffnet in neuem Tab)"
+      }
     },
     "finalCta": {
       "title": "Testen Sie es an Ihrem eigenen Angebot",

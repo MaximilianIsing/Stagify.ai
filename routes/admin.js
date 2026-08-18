@@ -24,9 +24,7 @@ import { logger } from '../lib/logger.js';
  *   resetAllMemories: Function,
  *   deleteUser: ReturnType<typeof import('../lib/data/user-deletion.js').createUserDeletion>['deleteUser'],
  *   getDataLogDir: ReturnType<typeof import('../lib/services/logging.js').createLogging>['getDataLogDir'],
- *   getHostedImagesDir: Function,
- *   readHostedImagesManifest: Function,
- *   writeHostedImagesManifest: Function,
+ *   hostedImages: import('../lib/types/deps.js').HostedImagesDeps,
  *   protectLogs: import('express').RequestHandler,
  *   requireEndpointKey: import('express').RequestHandler,
  *   adminSessions?: ReturnType<typeof import('../lib/data/admin-sessions.js').createAdminSessions>,
@@ -35,13 +33,18 @@ import { logger } from '../lib/logger.js';
  *   emailCatalog: ReturnType<typeof import('../lib/services/email-catalog.js').createEmailCatalog>,
  *   sendTestEmail: (arg: { id: string, toEmail: string }) => Promise<{ ok: boolean, status?: number, error?: string }>,
  *   referralLinks?: ReturnType<typeof import('../lib/data/referral-links.js').createReferralLinks>,
+ *   adminMetrics?: ReturnType<typeof import('../lib/analytics/admin-metrics.js').createAdminMetrics>,
+ *   adminBrief?: ReturnType<typeof import('../lib/services/admin-brief.js').createAdminBrief>,
  * }} deps - Stores, the hosted-image upload middleware + log-access guard, data-dir
  *   and manifest helpers, memory/uptime admin actions, the mime→ext map, the
- *   user-facing email catalog + test-send helper for the Emails tab, and the
- *   campaign-link hit store behind the Referrals tab.
+ *   user-facing email catalog + test-send helper for the Emails tab, the
+ *   campaign-link hit store behind the Referrals tab, and the two Signals-tab
+ *   readers (SQL aggregates + the written brief). Both of the last two are
+ *   OPTIONAL: absent, their routes answer with a null payload rather than 503, so
+ *   the tab degrades to its deterministic half instead of erroring.
  */
 export default function createAdminRouter(deps) {
-  const { authStore, uptimeMonitor, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, deleteUser, getDataLogDir, getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest, protectLogs, requireEndpointKey, adminSessions, __dirname, HOSTED_IMAGE_MIME_EXT, emailCatalog, sendTestEmail, referralLinks } = deps;
+  const { authStore, uptimeMonitor, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, deleteUser, getDataLogDir, hostedImages, protectLogs, requireEndpointKey, adminSessions, __dirname, HOSTED_IMAGE_MIME_EXT, emailCatalog, sendTestEmail, referralLinks, adminMetrics, adminBrief } = deps;
   const router = createAsyncRouter();
 
 router.get('/admin', (req, res) => {
@@ -61,7 +64,7 @@ router.post('/api/host-image', protectLogs, (req, res) => {
       const ext = HOSTED_IMAGE_MIME_EXT[req.file.mimetype] || 'bin';
       const id = crypto.randomBytes(16).toString('hex'); // 32 hex chars, unguessable
       const file = id + '.' + ext;
-      fs.writeFileSync(path.join(getHostedImagesDir(), file), req.file.buffer);
+      fs.writeFileSync(path.join(hostedImages.getHostedImagesDir(), file), req.file.buffer);
       const entry = {
         id,
         file,
@@ -71,9 +74,9 @@ router.post('/api/host-image', protectLogs, (req, res) => {
         size: req.file.size || req.file.buffer.length,
         uploadedAt: new Date().toISOString(),
       };
-      const manifest = readHostedImagesManifest();
+      const manifest = hostedImages.readHostedImagesManifest();
       manifest.push(entry);
-      writeHostedImagesManifest(manifest);
+      hostedImages.writeHostedImagesManifest(manifest);
       // Was hand-parsing x-forwarded-proto. `trust proxy` (server.js:132) already
       // resolves that into req.protocol, and doing it by hand is the same mistake
       // getStagingClientIp warns about for X-Forwarded-For.
@@ -88,7 +91,7 @@ router.post('/api/host-image', protectLogs, (req, res) => {
 });
 
 router.get('/api/hosted-images', protectLogs, (req, res) => {
-  const images = readHostedImagesManifest()
+  const images = hostedImages.readHostedImagesManifest()
     .slice()
     .sort((a, b) => new Date(b.uploadedAt || 0).getTime() - new Date(a.uploadedAt || 0).getTime())
     .map((e) => Object.assign({}, e, { path: '/i/' + e.id }));
@@ -100,19 +103,19 @@ router.delete('/api/hosted-images/:id', protectLogs, (req, res) => {
   if (!/^[a-f0-9]{16,64}$/.test(id)) {
     return sendError(res, 400, 'Invalid id');
   }
-  const manifest = readHostedImagesManifest();
+  const manifest = hostedImages.readHostedImagesManifest();
   const idx = manifest.findIndex((e) => e && e.id === id);
   if (idx === -1) {
     return sendError(res, 404, 'Not found');
   }
   const [entry] = manifest.splice(idx, 1);
   try {
-    const filePath = path.join(getHostedImagesDir(), entry.file);
+    const filePath = path.join(hostedImages.getHostedImagesDir(), entry.file);
     if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
   } catch (e) {
     logger.error('[host-image] file delete failed', e);
   }
-  writeHostedImagesManifest(manifest);
+  hostedImages.writeHostedImagesManifest(manifest);
   logger.info('[host-image] unhosted', entry.file);
   return res.json({ ok: true });
 });
@@ -432,6 +435,58 @@ router.post('/api/admin/revoke-plus', protectLogs, express.json(), (req, res) =>
   }
   logger.info('[admin] revoked the Stagify+ grant for', result.userId);
   return res.json({ ok: true, userId: result.userId, email: result.email });
+});
+
+// ── Signals tab ───────────────────────────────────────────────────────────
+//
+// The dashboard has deliberately had no backend — it downloads the CSV/JSON
+// exports and aggregates in the browser. These two are the exceptions, and each
+// earns it for a different reason:
+//
+//   - /metrics ships numbers that exist ONLY in SQL. Chiefly `staged_renders`,
+//     whose `user_id` comes from the validated session, unlike the render log's
+//     email (which is `unknown` whenever the client didn't send one). That is
+//     what turns the funnel's documented "floor, not a count" into a count.
+//   - /brief needs the OpenAI key, which obviously cannot go to the browser.
+//
+// Both fail OPEN. A missing dependency answers 200 with a null payload rather
+// than an error, because the Signals tab's findings are computed client-side and
+// must still render when these do not.
+
+// Read-only aggregates over the shared SQLite database. Every statement is a
+// GROUP BY prepared once at factory time — see the N+1 guard in
+// test/analytics/admin-metrics.test.js before adding a query here.
+router.get('/api/admin/metrics', protectLogs, (req, res) => {
+  if (!adminMetrics || typeof adminMetrics.snapshot !== 'function') {
+    return res.json({ metrics: null, reason: 'unavailable' });
+  }
+  try {
+    return res.json({ metrics: adminMetrics.snapshot({}) });
+  } catch (error) {
+    return sendError(res, 500, 'Failed to read metrics', { ref: reportError('admin.metrics', error) });
+  }
+});
+
+// The written brief. The body is the FINISHED findings the browser already
+// computed — titles, severities and numeric evidence — never raw log rows, and
+// never an email or an IP. The model restates; it does not compute. See
+// lib/services/admin-brief.js for the prompt contract and the redaction it
+// applies on the way in.
+//
+// protectLogs runs BEFORE express.json() so an unauthenticated request is
+// rejected without its body being parsed.
+router.post('/api/admin/brief', protectLogs, express.json({ limit: '256kb' }), async (req, res) => {
+  if (!adminBrief || typeof adminBrief.generateBrief !== 'function') {
+    return res.json({ summary: null, reason: 'unavailable' });
+  }
+  const findings = req.body && req.body.findings;
+  if (!Array.isArray(findings)) {
+    return sendError(res, 400, 'A findings array is required');
+  }
+  // generateBrief never throws — it reports its own failure as a reason, so a
+  // model outage reads as "no brief" rather than a 500 on the whole tab.
+  const result = await adminBrief.generateBrief(findings);
+  return res.json(result);
 });
 
 // Emails tab: the preview gallery. Returns every user-facing email (subject + HTML +

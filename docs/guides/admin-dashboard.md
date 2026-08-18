@@ -60,6 +60,7 @@ owns auth/fetch/wiring, each island owns one cohesive concern.
 | [`scripts/admin/renderers.js`](../../public/scripts/admin/renderers.js) | The table tabs (users + detail drawer, enterprise, contacts, email opens, bugs, hosting, downloads) and `effectivePlan`, which both chart islands take as a dependency. |
 | [`scripts/admin/overview.js`](../../public/scripts/admin/overview.js) | The **Overview** tab: the range selector, stat cards, the two generation charts, top users, recent signups. |
 | [`scripts/admin/insights.js`](../../public/scripts/admin/insights.js) | The **Insights** tab: the chart grid. |
+| [`scripts/admin/signals.js`](../../public/scripts/admin/signals.js) | The **Signals** tab: ranked findings + the written brief, and the Overview teaser. See [§Signals tab](#signals-tab). |
 | [`scripts/admin/analytics.js`](../../public/scripts/admin/analytics.js) | **Pure aggregation** — bucketing, distributions, deltas, render outcomes. Owns `COL`, the CSV column map. No DOM. |
 | [`scripts/admin/analytics-users.js`](../../public/scripts/admin/analytics-users.js) | **Pure per-account aggregation** — last-active, activation funnel, cohort retention. No DOM. |
 | [`scripts/admin/charts.js`](../../public/scripts/admin/charts.js) | **SVG chart primitives** — area, bar, ranked bars, donut, funnel, cohort grid, sparkline, card chrome. |
@@ -225,7 +226,7 @@ source of truth — if a writer gains a column, update `COL` and this table.
 | Endpoint | Written by | Columns |
 |---|---|---|
 | `/authstore` | `lib/data/auth-store.js` | JSON — `{users: [...]}`, **redacted** via `exportRedacted()`. Only `ADMIN_VISIBLE_USER_KEYS` are present; credentials and session/reset tokens are never sent (see the security guide). Need a new column here? Add it to that allowlist. Trial state (`lifetimeStaged`, `lastStagedAt`, `trialLifecycle`) rides along — but `trialLifecycle` is **projected** through `ADMIN_VISIBLE_TRIAL_EMAILS`, not allowlisted wholesale, so a future field parked inside that bag is not auto-exported. |
-| `/promptlogs` | `lib/services/logging.js` | `timestamp, roomType, furnitureStyle, additionalPrompt, removeFurniture, userRole, referralSource, email, ipAddress, status, durationMs, model, attempts, errorCode` |
+| `/promptlogs` | `lib/services/logging.js` | `timestamp, roomType, furnitureStyle, additionalPrompt, removeFurniture, userRole, referralSource, email, ipAddress, status, durationMs, model, attempts, errorCode, architectureDrift, seed` — the last two were appended after `COL` was written and went **unread** until the Signals tab; `architectureDrift` is `'yes' | 'no' | ''`, where empty means the question was never asked, NOT that the render was clean. |
 | `/rejectionlogs` | `lib/services/logging.js` | `timestamp, kind, code, detail, email, userId, ipAddress, userAgent` — requests refused **before** a render. Deliberately NOT rows in `prompt_logs.csv`: every row there is counted as a generation, so folding rejections in would inflate the headline volume and the success rate with work that never ran. |
 | `/chatlogs` | `lib/services/logging.js` | `timestamp, userId, userMessage, aiResponse, fileNames, fileTypes, ipAddress, userAgent` |
 | `/masklogs` | `lib/services/logging.js` | `timestamp, prompt, model, geminiModel, imageWidth, imageHeight, userId, ipAddress, userAgent` |
@@ -291,6 +292,164 @@ Three suites, all pure/DOM-stubbed — no jsdom, no browser (see
   formatters. [`test/frontend/admin/admin-grant-ui.test.js`](../../test/frontend/admin/admin-grant-ui.test.js) covers
   the grant control; [`test/routes/admin-route.test.js`](../../test/routes/admin-route.test.js) covers
   the server side.
+
+## Signals tab
+
+Everything above this section shows **what happened**. Signals is the one tab that
+says **so what** — a ranked list of findings, each a claim with the numbers behind
+it and a concrete next step, plus an optional written brief over the top.
+
+It exists because reading 24 charts and knowing which shapes are bad is work that
+was being redone on every visit. The precedent was already in the codebase, as a
+single note chip on the Insights tab: a conditional that fires only when
+`welcome > 0 && ending === 0` and then says, in words, *"No trial-ending reminders
+have EVER been sent — enable `customer.subscription.trial_will_end` on the Stripe
+webhook endpoint."* That is a rule, a threshold, evidence and an action. This tab
+generalises it to ~30 rules.
+
+### The split that makes it testable
+
+Two halves, and the separation is deliberate rather than tidy:
+
+- **A deterministic rules engine** (`scripts/admin/findings*.js`) produces every
+  finding. Pure functions, no DOM, no network — unit-tested, identical on every
+  refresh, and working with no API key at all. **This is the product.**
+- **A written brief** (`POST /api/admin/brief`) puts two to four sentences over the
+  top. It restates the findings; it never computes. No key, a timeout or an empty
+  completion all render as "no brief" with the findings untouched.
+
+The rule that keeps the second honest: **the model only ever sees conclusions, not
+data.** The request body is the finished findings — title, severity, area, numeric
+evidence — projected through an allowlist and scrubbed of anything address-shaped
+in [`lib/services/admin-brief.js`](../../lib/services/admin-brief.js). Account names
+never leave the browser.
+
+### Module map
+
+| File | Role |
+|---|---|
+| [`scripts/admin/stats.js`](../../public/scripts/admin/stats.js) | Statistical primitives: Wilson intervals, MAD/robust z, least-squares trend, Welch changepoint, projection. No domain knowledge. |
+| [`scripts/admin/findings.js`](../../public/scripts/admin/findings.js) | The registry, the `Finding` shape, severity ranking, the runner, and the suppression roll-up. |
+| `scripts/admin/findings-reliability.js` | Is staging working — proportions with intervals. |
+| `scripts/admin/findings-performance.js` | Latency, retry cost, failure timing — continuous quantities across time windows. |
+| `scripts/admin/findings-growth.js` | Direction of travel, projections, activation. |
+| `scripts/admin/findings-accounts.js` | Revenue at risk, silent state changes, storage cost. |
+| `scripts/admin/findings-quality.js` | Which numbers cannot be trusted, and why. |
+| [`scripts/admin/signals.js`](../../public/scripts/admin/signals.js) | The tab + the Overview teaser. DOM only; decides nothing. |
+| [`lib/analytics/admin-metrics.js`](../../lib/analytics/admin-metrics.js) | Read-only SQL aggregates — the numbers no CSV can give. |
+| [`lib/services/admin-brief.js`](../../lib/services/admin-brief.js) | The brief, with its redaction and its fail-open contract. |
+
+### Severities
+
+Five, mapping onto three colours because two pairs are the same kind of thing at
+different weights:
+
+| Severity | Means |
+|---|---|
+| `critical` | Money or reliability is being lost right now. |
+| `warning` | Something moved that wants an explanation. |
+| `opportunity` | Nothing is broken; something is being left on the table. |
+| `healthy` | Confirmed working. **Not filler** — without it there is no way to tell "fine" from "not measured". |
+| `quality` | A caveat about the instruments. Never an alarm: ranking these as incidents would train you to scroll past the section that explains the rest of the page. |
+
+The rail chip and the Overview teaser count the **actionable** three only. A chip
+that included the healthy cards could never read zero, and zero is the one value
+that has to mean something.
+
+### The two gates every threshold rule passes
+
+1. **A minimum sample**, and it is **not redundant with the interval below.**
+   3 failures out of 8 is an observed 37.5% whose Wilson interval still starts at
+   ~13.7% — so it *excludes* a 4% baseline and would fire as a critical built on
+   eight renders. `admin-stats.test.js` pins that number precisely so nobody
+   deletes the `n` floor as duplicated effort.
+2. **A statistical gate** — an interval that excludes the baseline (proportions),
+   or a robust z past its threshold (series).
+
+A rule that clears neither returns `suppressed(...)`, never silence.
+
+### Silence must be honest
+
+The invariant the whole tab turns on, and the reason `suppressed()` exists as a
+distinct return value from `null`:
+
+- `null` — this rule does not apply (no enterprise domains, so nothing to say
+  about enterprise usage).
+- `suppressed('…')` — it applies, and there is not enough data yet. These roll up
+  into one visible card listing what could not be checked and how much is missing.
+
+Without that card, **an empty Signals tab and a clean bill of health render
+identically** — and a brand-new deployment, a broken loader and a genuinely
+healthy product all produce an empty tab.
+
+This is the same rule the aggregators already keep: an unrecorded outcome makes
+`successRate().pct` null rather than 100, and a cohort month that has not elapsed
+renders blank rather than 0%.
+
+### Why the metrics endpoint exists
+
+The dashboard has deliberately had no backend — it downloads the CSV/JSON exports
+and aggregates in the browser. `GET /api/admin/metrics` is the exception, and it
+earns it by shipping numbers the CSVs structurally cannot:
+
+- **Attribution.** A `prompt_logs.csv` row's email comes from the request *body*
+  and is `unknown` whenever the client did not send one, which is why every funnel
+  on the Insights tab is documented as "a floor, not a count".
+  `staged_renders.user_id` comes from the **validated session**, so it is the
+  count. That is what turns `quality.attribution-gap` from a warning label into a
+  measurement.
+- **Bytes, shares and queue health** exist only in SQL: `render_blobs.bytes`,
+  `gallery_shares.view_count`, stuck `stripe_events`, the `blob_tombstones` backlog.
+
+Two rules the module keeps:
+
+- **Every statement is prepared once, at factory time.** The snapshot is a fixed
+  number of `GROUP BY` queries regardless of row count.
+  `test/analytics/admin-metrics.test.js` counts `prepare` calls across datasets
+  three orders of magnitude apart and fails if the number moves — this endpoint
+  gets pointed at the production database, so an accidental N+1 is an outage.
+- **No calendar-day bucketing.** Every window is a *duration* ("the last 30
+  days"), never a day key. Day keys here are local to whoever is reading
+  (`analytics.js#dayKeyLocal`) and the server cannot know that timezone. Series
+  that need day keys are built in the browser from the CSV exports.
+
+### Two columns this tab reads first
+
+`prompt_logs.csv` writes **16** columns; `analytics.js#COL` read 14.
+`architectureDrift` (index 14) and `seed` (index 15) were appended to the writer
+after the column map was written and went unread in production for weeks.
+
+`architectureDrift` is now `reliability.architecture-drift`: a per-render
+quality-defect rate over renders that **all logged `status: ok`**. The model
+produced an image and the quality gate passed it, but the output no longer matches
+the room in the photo — the defect a virtual-staging customer notices first, and
+one that is invisible in a success rate. `''` means the question was never asked,
+**not** that the render was clean, so those rows are excluded exactly as
+unrecorded outcomes are.
+
+### What is deliberately not wired up
+
+`rejection_logs.csv` is served at `GET /rejectionlogs` and the dashboard has never
+fetched it. It records every request turned away *before* a render — refused
+uploads, daily-cap hits, rate-limit bounces — which is the drop-off nothing else
+can see. `revenue.upgrade-candidates` is degraded without it and says so on the
+card: it can see who is at the cap *today*, but not who has been blocked on three
+separate days. Adding it is one entry in `admin.js#loadAll` and one `COL.REJECTION`
+block.
+
+### Adding a rule
+
+1. Write it as a **pure function** in the matching `findings-*.js`, exported
+   through that file's `*_RULES` array. It must return a `Finding`, an array of
+   them, `null`, or `suppressed(reason)` — and it must carry a `minSample`.
+2. Give it a namespaced `id` (`area.what-it-checks`); ids are the sort tiebreak, so
+   they must be unique and stable.
+3. Put account names in `finding.accounts`, **never** in `title`, `detail` or
+   `evidence` — `admin-findings.test.js` sweeps every rendered string for an
+   address, and `admin-brief.js` drops that field before the model sees anything.
+4. Cover it in `test/frontend/admin/admin-findings.test.js`. The table-driven
+   sweeps there (empty dataset, tiny dataset, junk input, action present) cover a
+   new rule automatically; add a case for its own behaviour.
 
 ## Emails tab
 

@@ -247,7 +247,41 @@ h1,h2 {
   --slate:#64748b;
   --slate-deep:#475569;
   --muted-light:#9ca3af;
-  --danger:#b91c1c
+  --danger:#b91c1c;
+
+  /* The CTA gradient. Five radial stops over --brand-deep; every primary and
+     secondary call to action on the site is painted with it — #hero-upload,
+     .btn-primary, .nav-link, .nav-pill, .ig-follow, .plus-cta, .qr__cta, the
+     auth profile menu, and the enterprise and Stagify+ submit buttons.
+
+     It was written out by hand TEN times across five sheets before this token
+     existed (plus FIVE more copies of the hover variant below). All fifteen are
+     converted; the stacks were character-identical, so the sweep changed no
+     pixels. What did differ between those call sites — border-radius 11/12/20px,
+     font-weight 700 vs 800, a black vs a navy shadow — is NOT in this token and
+     stays per-button on purpose: .nav-link is a pill, and .qr__cta is documented
+     in home.css as the same gradient family in an indoor voice.
+
+     Keep the two stop lists in sync with each other if you touch one. An eleventh
+     hand-written copy is a test failure — see test/frontend/css-tokens.test.js. */
+  --cta-gradient:
+    radial-gradient(circle at 20% 50%, var(--primary-light) 0, transparent 50%),
+    radial-gradient(circle at 80% 20%, var(--brand-strong) 0, transparent 50%),
+    radial-gradient(circle at 40% 80%, var(--brand) 0, transparent 50%),
+    radial-gradient(circle at 0 100%, var(--primary) 0, transparent 50%),
+    radial-gradient(circle at 100% 0, var(--brand-soft) 0, transparent 50%),
+    var(--brand-deep);
+
+  /* The hover face: the same five colours pushed to new positions with a wider
+     transparent falloff (60% vs 50%), so the gradient appears to swell under the
+     cursor. Only the sheets that paint a hover state read it. */
+  --cta-gradient-hover:
+    radial-gradient(circle at 30% 40%, var(--primary-light) 0, transparent 60%),
+    radial-gradient(circle at 70% 30%, var(--brand-strong) 0, transparent 60%),
+    radial-gradient(circle at 50% 70%, var(--brand) 0, transparent 60%),
+    radial-gradient(circle at 10% 90%, var(--primary) 0, transparent 60%),
+    radial-gradient(circle at 90% 10%, var(--brand-soft) 0, transparent 60%),
+    var(--brand-deep)
 }
 .sr-only {
   position:absolute;
@@ -927,6 +961,33 @@ main {
   align-items:start;
   min-height:0
 }
+/* The HOMEPAGE hero is one full-bleed canvas, not two columns. The base rule above still
+   serves the other pages that use `.hero`, so this overrides rather than replaces it.
+
+   `padding-bottom` drops from the base rule's 240px and `flex` from 1 to none, and both are
+   part of the same fix: the two-column hero was sized to the viewport remainder with columns
+   taller than it, so it overflowed by 187px and `.sponsors { margin-top }` in home.css
+   reserved a fixed band to catch that. A canvas of known height overflows nothing, so the
+   section can simply be as tall as its contents. Do not put `flex:1` back without re-reading
+   the `.sponsors` note.
+
+   16px, not the 40px it first landed on: this is one half of the gap under the hero card —
+   `.sponsors { padding-top }` in home.css is the other half — and 40+24 left the trust strip
+   floating rather than reading as the close of the hero. Below 768px the media query further
+   down replaces this padding wholesale (20px), so this number is desktop only. */
+.hero--canvas {
+  display:block;
+  /* `width:100%` is NOT redundant. `main` is a column flexbox and `.hero` carries
+     `margin:0 auto`; auto margins on the cross axis suppress the default stretch, so the
+     item's width becomes fit-content. The old grid had an 800px photo frame inside it and so
+     measured wide enough to hit the 1200px cap by accident. A canvas has no intrinsic width,
+     so fit-content collapsed it to 364px and the whole hero rendered as a narrow column with
+     the headline broken over four lines. This restores the definite cross-size the auto
+     margins then centre. */
+  width:100%;
+  padding:28px 48px 16px;
+  flex:none
+}
 .hero-content h1 {
   font-size:clamp(40px, 5vw, 60px);
   line-height:1.05;
@@ -976,25 +1037,25 @@ main {
     font-weight:700;
     position:relative;
     transition:.18s;
-    background:radial-gradient(circle at 20% 50%,var(--primary-light) 0,transparent 50%),radial-gradient(circle at 80% 20%,var(--brand-strong) 0,transparent 50%),radial-gradient(circle at 40% 80%,var(--brand) 0,transparent 50%),radial-gradient(circle at 0 100%,var(--primary) 0,transparent 50%),radial-gradient(circle at 100% 0,var(--brand-soft) 0,transparent 50%),var(--brand-deep);
+    background:var(--cta-gradient);
     padding:8px 16px;
     border-radius:20px;
     overflow:hidden;
     box-shadow:0 4px 15px rgba(0,0,0,.2)
   }
   .nav-link:hover {
-    background:radial-gradient(circle at 30% 40%,var(--primary-light) 0,transparent 60%),radial-gradient(circle at 70% 30%,var(--brand-strong) 0,transparent 60%),radial-gradient(circle at 50% 70%,var(--brand) 0,transparent 60%),radial-gradient(circle at 10% 90%,var(--primary) 0,transparent 60%),radial-gradient(circle at 90% 10%,var(--brand-soft) 0,transparent 60%),var(--brand-deep);
+    background:var(--cta-gradient-hover);
     transform:translateY(-1px);
     box-shadow:0 6px 20px rgba(0,0,0,.3)
   }
   .btn-primary {
-    background:radial-gradient(circle at 20% 50%,var(--primary-light) 0,transparent 50%),radial-gradient(circle at 80% 20%,var(--brand-strong) 0,transparent 50%),radial-gradient(circle at 40% 80%,var(--brand) 0,transparent 50%),radial-gradient(circle at 0 100%,var(--primary) 0,transparent 50%),radial-gradient(circle at 100% 0,var(--brand-soft) 0,transparent 50%),var(--brand-deep);
+    background:var(--cta-gradient);
     color:var(--bg-elevated);
     border-color:transparent;
     box-shadow:0 4px 15px rgba(0,0,0,.2)
   }
   .btn-primary:hover {
-    background:radial-gradient(circle at 30% 40%,var(--primary-light) 0,transparent 60%),radial-gradient(circle at 70% 30%,var(--brand-strong) 0,transparent 60%),radial-gradient(circle at 50% 70%,var(--brand) 0,transparent 60%),radial-gradient(circle at 10% 90%,var(--primary) 0,transparent 60%),radial-gradient(circle at 90% 10%,var(--brand-soft) 0,transparent 60%),var(--brand-deep);
+    background:var(--cta-gradient-hover);
     border-color:transparent;
     box-shadow:0 6px 20px rgba(0,0,0,.3)
   }
@@ -3073,7 +3134,7 @@ body:has(.stage-mask-modal.active) .language-picker-container {
     font-size:14px
   }
   #hero-upload {
-    background:radial-gradient(circle at 20% 50%,var(--primary-light) 0,transparent 50%),radial-gradient(circle at 80% 20%,var(--brand-strong) 0,transparent 50%),radial-gradient(circle at 40% 80%,var(--brand) 0,transparent 50%),radial-gradient(circle at 0 100%,var(--primary) 0,transparent 50%),radial-gradient(circle at 100% 0,var(--brand-soft) 0,transparent 50%),var(--brand-deep);
+    background:var(--cta-gradient);
     color:var(--bg-elevated);
     border-color:transparent;
     box-shadow:0 4px 15px rgba(0,0,0,.2);
@@ -3081,7 +3142,7 @@ body:has(.stage-mask-modal.active) .language-picker-container {
     overflow:hidden
   }
   #hero-upload:hover {
-    background:radial-gradient(circle at 30% 40%,var(--primary-light) 0,transparent 60%),radial-gradient(circle at 70% 30%,var(--brand-strong) 0,transparent 60%),radial-gradient(circle at 50% 70%,var(--brand) 0,transparent 60%),radial-gradient(circle at 10% 90%,var(--primary) 0,transparent 60%),radial-gradient(circle at 90% 10%,var(--brand-soft) 0,transparent 60%),var(--brand-deep);
+    background:var(--cta-gradient-hover);
     box-shadow:0 6px 20px rgba(0,0,0,.3)
   }
   #hero-upload::before {
@@ -4102,7 +4163,7 @@ html::-webkit-scrollbar-thumb {
   width:var(--pill-w,0);
   transform:translateX(var(--pill-x,0));
   border-radius:11px;
-  background:radial-gradient(circle at 20% 50%,var(--primary-light) 0,transparent 50%),radial-gradient(circle at 80% 20%,var(--brand-strong) 0,transparent 50%),radial-gradient(circle at 40% 80%,var(--brand) 0,transparent 50%),radial-gradient(circle at 0 100%,var(--primary) 0,transparent 50%),radial-gradient(circle at 100% 0,var(--brand-soft) 0,transparent 50%),var(--brand-deep);
+  background:var(--cta-gradient);
   box-shadow:0 6px 18px rgba(30,58,138,.38);
   opacity:0;
   pointer-events:none;

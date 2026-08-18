@@ -33,6 +33,80 @@
   },
   "hero": {
     "eyebrow": "Home staging virtuel gratuit",
+    "added": {
+      "title": "Ajouté dans ce rendu",
+      "item1": "Lit plateforme noyer, linge blanc",
+      "item2": "Longue commode noyer 6 tiroirs",
+      "item3": "Tapis crème quadrillé sous le lit",
+      "item4": "Fauteuil bouclé près de la fenêtre",
+      "item5": "Tirage abstrait géométrique encadré",
+      "items": {
+        "standard": {
+          "bedroom": ["Lit plateforme chêne clair, linge blanc", "Large commode chêne 6 tiroirs", "Grand tapis beige sous le lit", "Trois tirages noir et blanc encadrés", "Fauteuil crème près de la fenêtre"],
+          "livingRoom": ["Grand canapé crème 3 places", "Tapis à motifs gris et ivoire", "Meuble TV blanc et chêne", "Deux fauteuils gris piètement métal", "Figuier lyre en pot de terre cuite"],
+          "diningRoom": ["Table 6 places nappée de lin ivoire", "Six chaises tapissées crème", "Buffet chêne clair sur pieds", "Toile abstraite au-dessus du buffet", "Orchidée blanche en centre de table"],
+          "kitchen": ["Îlot blanc à retombée avec évier", "Enfilade de meubles blancs sans poignée", "Frigo inox et four encastré", "Quatre tabourets de bar gris", "Deux tirages géométriques encadrés"],
+          "office": ["Bureau rectangulaire blanc sur pieds", "Étagère ouverte en chêne", "Fauteuil de bureau résille noir", "Meuble de rangement bas gris", "Deux œuvres abstraites encadrées"],
+          "bathroom": ["Meuble-vasque blanc suspendu", "Douche à l’italienne, ciel de pluie", "WC suspendu blanc", "Tapis de bain gris anthracite", "Miroir fin encadré au mur"]
+        },
+        "modern": {
+          "bedroom": ["Lit plateforme noyer, linge blanc", "Longue commode noyer 6 tiroirs", "Tapis crème quadrillé sous le lit", "Fauteuil bouclé près de la fenêtre", "Tirage abstrait géométrique encadré"],
+          "livingRoom": ["Canapé d’angle gris en L", "Tapis géométrique bleu et gris", "Table basse en pierre blanche", "Lampadaire arc noir", "Triptyque marin en trois panneaux"],
+          "diningRoom": ["Table blanche, pieds noirs", "Six chaises tapissées grises", "Buffet en chêne clair", "Deux tirages bleu nuit et or encadrés", "Pampa séchée dans un vase"],
+          "kitchen": ["Îlot blanc, plan de travail gris", "Meubles hauts et colonnes blancs", "Trois tabourets de bar fil noir", "Fours inox encastrés superposés", "Coupe noire de pommes vertes"],
+          "office": ["Bureau blanc à pieds chromés", "Étagère ouverte à cadre noir", "Grand écran sur le bureau", "Fauteuil résille gris à roulettes", "Meuble de rangement bas blanc"],
+          "bathroom": ["Double meuble-vasque suspendu blanc", "Douche à l’italienne vitrée", "Grand strelitzia en pot", "WC suspendu blanc", "Tapis de bain gris à losanges"]
+        },
+        "scandinavian": {
+          "bedroom": ["Lit plateforme chêne clair, linge blanc", "Commode chêne 6 tiroirs contre le mur", "Tapis rond en jute sous le lit", "Chevets chêne arrondis, deux lampes", "Deux tirages abstraits encadrés"],
+          "livingRoom": ["Canapé gris 3 places sous la fenêtre", "Grand tapis en jute tressé", "Table basse chêne blond, plateau épais", "Deux fauteuils en corde tressée", "Monstera et figuier lyre en pot"],
+          "diningRoom": ["Longue table chêne, chemin en lin", "Six chaises en chêne clair", "Buffet en chêne contre le mur", "Table dressée, assiettes et verres", "Branches séchées dans une coupe"],
+          "kitchen": ["Îlot chêne, plan en pierre claire", "Enfilade de meubles hauts chêne clair", "Four blanc encastré sous le plan", "Trois tabourets de bar en chêne", "Crédence en carreaux métro blancs"],
+          "office": ["Bureau en chêne massif à la fenêtre", "Bibliothèque ouverte fine en chêne", "Fauteuil chêne à galette grise", "Caisson à tiroirs blanc à roulettes", "Lampe laiton et herbes en pot"],
+          "bathroom": ["Douche à l’italienne vitrée", "Meuble-vasque chêne suspendu", "Ciel de pluie noir mat", "Tapis de bain beige sur le parquet", "Panier à linge tressé et serviettes"]
+        },
+        "coastal": {
+          "bedroom": ["Lit plateforme blanc à lattes", "Commode en bois blanchi", "Tapis de passage rayé turquoise", "Fauteuil en rotin près de la fenêtre", "Trois tirages de coquillages encadrés"],
+          "livingRoom": ["Deux canapés blancs à housses", "Grand tapis en sisal tressé", "Table basse en bois patiné", "Deux fauteuils en osier", "Bout de canapé gainé de corde"],
+          "diningRoom": ["Longue table en bois cérusé gris", "Six chaises en jonc de mer tressé", "Buffet blanc patiné", "Banc en osier à assise rayée", "Toile encadrée d’une vague"],
+          "kitchen": ["Enfilade de meubles blancs shaker", "Îlot blanc à plan retombant", "Trois tabourets de bar tressés", "Fours inox encastrés superposés", "Planche en bois près de l’évier"],
+          "office": ["Bureau tréteaux en bois rustique", "Quatre toiles marines encadrées", "Classeur vert menthe", "Chaise de bureau en rotin tressé", "Lampe en céramique vert d’eau"],
+          "bathroom": ["Meuble-vasque simple blanc", "Grand palmier en panier", "Tapis de bain marbré turquoise", "Miroir encadré au-dessus du lavabo", "Plafonnier tambour nickel brossé"]
+        },
+        "farmhouse": {
+          "bedroom": ["Lit en planches de pin rustique", "Commode blanchie 6 tiroirs", "Courtepointe fleurie et plaid patchwork", "Rocking-chair à barreaux tressé", "Trois tirages d’animaux de ferme"],
+          "livingRoom": ["Canapé crème 3 places à housses", "Grand tapis en jute tressé", "Table basse en bois recyclé", "Deux fauteuils en lin", "Mur de planches botaniques encadrées"],
+          "diningRoom": ["Longue table en chêne patiné", "Buffet blanc patiné", "Nappe vichy rouge", "Six chaises tapissées à fleurs", "Bocaux de fleurs orange du jardin"],
+          "kitchen": ["Enfilade de meubles shaker blanchis", "Évier de ferme à tablier", "Bar en billot de boucher", "Trois tabourets de bar en bois brut", "Étagères ouvertes, pots et herbes"],
+          "office": ["Bureau massif en bois recyclé", "Haute bibliothèque en pin garnie", "Fauteuil cuir brun à roulettes", "Classeur métallique noir", "Horloge murale ronde de grange"],
+          "bathroom": ["Baignoire à pattes de lion", "Lavabo blanc sur colonne, robinet", "Douche d’angle vitrée", "Tapis ovale tressé", "Pancarte en bois peinte au mur"]
+        },
+        "luxury": {
+          "bedroom": ["Lit à tête capitonnée bleu nuit", "Commode acajou 6 tiroirs", "Deux panneaux marbre cadre doré", "Deux lampes de chevet en verre", "Coussins en velours aux tons joyaux"],
+          "livingRoom": ["Canapé d’angle velours bleu nuit", "Table basse bloc en marbre blanc", "Deux fauteuils tonneau velours crème", "Tapis abstrait bleu et or", "Triptyque en cadres dorés au mur"],
+          "diningRoom": ["Longue table nappée", "Six chaises en velours bleu", "Buffet marqueté à plateau de marbre", "Candélabre en cristal, centre de table", "Chemin de table en brocart doré"],
+          "kitchen": ["Cuisine en L en chêne clair", "Îlot quartz à plan retombant", "Deux tabourets de bar crème", "Double four inox encastré", "Orchidée blanche en vase de verre"],
+          "office": ["Bureau en marbre et or", "Bibliothèque en bois sculpté garnie", "Fauteuil cuir vert capitonné", "Figuier lyre en cache-pot laiton", "Lampe de bureau cristal cannelé"],
+          "bathroom": ["Baignoire îlot ovale", "Douche d’angle vitrée", "Double meuble-vasque bois foncé", "Robinet de baignoire au sol, laiton", "WC suspendu près de la fenêtre"]
+        },
+        "midcentury": {
+          "bedroom": ["Lit noyer, tête de lit grise", "Longue commode teck 6 tiroirs", "Fauteuil lounge en cuir noir", "Couvre-lit géométrique, plaid moutarde", "Affiches de voyage encadrées au mur"],
+          "livingRoom": ["Canapé 3 places capitonné bleu canard", "Tapis à motifs or et orange", "Deux fauteuils lounge en palissandre", "Table basse noyer surbaissée", "Grille de six tirages abstraits"],
+          "diningRoom": ["Table ronde à nappe fleurie", "Quatre chaises coque moulée", "Long buffet teck sur pieds", "Deuxième suspension tambour au-dessus", "Verres ambrés et fleurs séchées"],
+          "kitchen": ["Îlot blanc à plan retombant", "Mur de meubles hauts blancs lisses", "Trois tabourets de bar vinyle orange", "Réfrigérateur en inox", "Fougère sur sellette blanche"],
+          "office": ["Bureau noyer à caisson de tiroirs", "Fauteuil pivotant cuir fauve", "Étagère ouverte en teck", "Lampe de bureau dôme chromée", "Trois tirages abstraits encadrés"],
+          "bathroom": ["Meuble noyer à vasque blanche", "Douche d’angle vitrée", "Grande plante sur sellette", "Tapis de passage à motifs au sol", "Corbeille en bois près du meuble"]
+        },
+        "custom": {
+          "bedroom": ["Tête de lit velours vert festonnée", "Tapis géométrique vert et crème", "Commode noyer 6 tiroirs", "Chevet noir à poignées laiton", "Banc vert capitonné au pied du lit"],
+          "livingRoom": ["Canapé courbe velours émeraude", "Buffet laqué noir marqueté", "Deux fauteuils pivotants rose poudré", "Tapis à motif éventail vert", "Miroir soleil doré au mur"],
+          "diningRoom": ["Table ronde en marbre blanc", "Buffet noyer cannelé", "Six chaises en velours vert", "Tapis rond vert à médaillon", "Bouquet de roses blanches en vase"],
+          "kitchen": ["Desserte noire à plateau laiton", "Palmier en cache-pot laiton", "Tapis de passage à feuilles vertes", "Trois croquis en cadres dorés", "Boîtes en cuivre et verrerie"],
+          "office": ["Bureau bois cannelé, piètement laiton", "Haute bibliothèque noire vitrée", "Tapis à chevrons verts", "Chaise coque velours vert", "Lampe laiton, abat-jour verre vert"],
+          "bathroom": ["Baignoire îlot ovale", "Meuble-vasque noyer cannelé", "Estrade en marbre sous la baignoire", "Palmier en cache-pot laiton sur pied", "Tapis de bain à motif organique vert"]
+        }
+      }
+    },
     "title": {
       "upload": "Importez.",
       "stage": "Aménagez.",
@@ -44,8 +118,7 @@
     "freeGensUpgrade": "Essayez Stagify+ dès aujourd’hui. <a class=\"hero-free-gens-upgrade\" href=\"stagify-plus.html\">Mettre à niveau</a>",
     "stats": {
       "roomsStaged": "Pièces meublées",
-      "usersServed": "Utilisateurs servis",
-      "andCounting": "et ça continue..."
+      "usersServed": "Utilisateurs servis"
     },
     "sentence": {
       "before": "Aménagez ",
@@ -63,8 +136,7 @@
     "roomMenuLabel": "Type de pièce",
     "styleMenuLabel": "Style de mobilier",
     "seeOriginal": "Voir l’original",
-    "seeStaged": "Voir aménagé",
-    "stageNote": "Chaque style ici est un rendu réel de la même pièce vide.",
+    "seeStaged": "Voir l’aménagement",
     "stageAlt": "{room} en style {style}, aménagé virtuellement",
     "originalAlt": "La même pièce avant aménagement, vide",
     "defaultAlt": "Une chambre aménagée virtuellement en style moderne"
@@ -356,7 +428,12 @@
     },
     "instagram": {
       "title": "Voyez-le en action sur Instagram",
-      "follow": "Suivre @stagify.ai"
+      "follow": "Suivre @stagify.ai",
+      "posts": {
+        "emptyToStaged": "Publication Instagram : un salon vide à côté de la même pièce aménagée avec un canapé, un tapis et des tableaux (ouvre dans un nouvel onglet)",
+        "floorPlan": "Publication Instagram : un plan meublé au-dessus de la chambre photoréaliste générée à partir de celui-ci (ouvre dans un nouvel onglet)",
+        "fiveStyles": "Publication Instagram : un même salon vide aménagé dans cinq styles différents (ouvre dans un nouvel onglet)"
+      }
     },
     "finalCta": {
       "title": "Essayez-le sur votre propre annonce",

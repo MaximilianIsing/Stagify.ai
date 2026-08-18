@@ -250,6 +250,95 @@ test('styles.css itself uses its own tokens', () => {
   assert.deepEqual(offenders, [], offenders.join('\n'));
 });
 
+/**
+ * Whitespace- and unit-insensitive form of a declaration value, so that the two ways
+ * the stack was historically written — `circle at 0 100%` vs `circle at 0% 100%`, and
+ * one-per-line vs minified — compare equal. `%` is only dropped after a zero preceded
+ * by a non-digit, which leaves the `transparent 50%` falloffs alone.
+ */
+const normStack = (v) => v.replace(/\s+/g, '').replace(/!important/g, '').replace(/([^\d])0%/g, '$10');
+
+/**
+ * Every declaration in a sheet whose value is a multi-stop radial stack over
+ * --brand-deep — i.e. a candidate spelling of the CTA gradient. Values are read off the
+ * comment-blanked source, so the prose above --cta-gradient does not count as a copy.
+ *
+ * A gradient stack contains no semicolon, so splitting on `; { }` is enough to isolate
+ * one declaration; `prop` keeps the leading dashes, which is what lets the token's OWN
+ * definition be told apart from a consumer hard-coding the same thing.
+ */
+function ctaGradientStacks(sheet) {
+  const src = codeLines(sheet).join('\n');
+  const found = [];
+  // `[\w-]+` deliberately covers BOTH a custom property and a plain one: an early
+  // draft anchored on a leading dash, which made the guard blind to exactly the thing
+  // it exists to catch (`background: <stack>`) while still passing on the two token
+  // definitions. It reported "spelled exactly once" and meant nothing.
+  for (const m of src.matchAll(/(?:^|[;{}])\s*([\w-]+)\s*:([^;{}]*)/g)) {
+    const value = m[2];
+    const stops = (value.match(/radial-gradient\(/g) || []).length;
+    if (stops >= 3 && value.includes('var(--brand-deep)')) {
+      found.push({ prop: m[1], line: src.slice(0, m.index).split('\n').length, value });
+    }
+  }
+  return found;
+}
+
+test('the CTA gradient is spelled exactly once — as a token', () => {
+  // The finding this guards: --cta-gradient shipped with ONE consumer while the stack
+  // it replaced stayed written out by hand ten more times (plus five of the hover
+  // variant) across styles.css, home.css, stagify-plus.css, auth.css and enterprise.css.
+  // All fifteen were character-identical, so nothing looked broken — which is exactly
+  // why a sixteenth would have gone in unnoticed too. The substitution was the one-time
+  // fix; this is the part that keeps it fixed.
+  //
+  // Scoped to sheets, not pages: the token lives in styles.css's :root, and the "every
+  // var() resolves in scope" guard above already proves every page serving a consumer
+  // serves styles.css too.
+  //
+  // Matched on EXACT equality with a token's value, not on "looks like a brand gradient".
+  // The broad version flagged .home-cta__panel (home.css) and plus-welcome.css's hero
+  // button, and both are false positives: three and four stops, their own positions and
+  // falloff, one of them a 22px panel surface rather than a button. They are neighbours
+  // of the CTA stack, not copies of it, and folding them in would be a design decision
+  // this file has no business making — see the "deliberately NOT guarded" note up top.
+  const definitions = new Map(
+    ctaGradientStacks('styles.css')
+      .filter((d) => d.prop === '--cta-gradient' || d.prop === '--cta-gradient-hover')
+      .map((d) => [normStack(d.value), d.prop]),
+  );
+  const offenders = [];
+  for (const sheet of allSheets) {
+    for (const { prop, line, value } of ctaGradientStacks(sheet)) {
+      const token = definitions.get(normStack(value));
+      if (!token) continue;                                   // a different gradient
+      if (sheet === 'styles.css' && prop === token) continue;  // the definition itself
+      offenders.push(`${sheet}:${line}  ${prop} → use var(${token})`);
+    }
+  }
+  assert.deepEqual(offenders, [], `hand-written copy of the CTA gradient:\n${offenders.join('\n')}`);
+});
+
+test('both CTA gradient tokens exist and paint the same five colours in the same order', () => {
+  // Without this the guard above passes vacuously: rename or delete the tokens and
+  // "exactly once" quietly becomes "never", which is not the same thing at all. It also
+  // makes the "keep the two stop lists in sync" note on the token enforceable — the
+  // hover face is the same five colours at new positions, so a stop added to one and
+  // not the other is a hover state that changes hue rather than just geometry.
+  const defs = new Map(ctaGradientStacks('styles.css').map((d) => [d.prop, d.value]));
+  const colours = (v) => (v.match(/var\(--[\w-]+\)/g) || []).filter((c) => c !== 'var(--brand-deep)');
+
+  for (const name of ['--cta-gradient', '--cta-gradient-hover']) {
+    assert.ok(defs.has(name), `${name} is no longer defined in styles.css`);
+    assert.equal(colours(defs.get(name)).length, 5, `${name} should be a five-stop stack`);
+  }
+  assert.deepEqual(
+    colours(defs.get('--cta-gradient-hover')),
+    colours(defs.get('--cta-gradient')),
+    'the hover face must reuse the base stack\'s colours, in order — only positions and falloff differ',
+  );
+});
+
 test('the served demo-player.css is still byte-identical to its build source', () => {
   // It is excluded from tokenization for this reason: to-build/demos/ is the master
   // and the next export overwrites the served copy. Nothing guarded that before, so

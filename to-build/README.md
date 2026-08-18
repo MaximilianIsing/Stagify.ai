@@ -25,6 +25,7 @@ detail to come back.
 | `media-png/Homepage/Gallery/room-*.png` | Fal.ai `flux/dev`, WebP-first |
 | `media-png/blog/exterior-{before,after}.png` | same |
 | `media-png/background-poster.png` | a frame of `public/background.mp4` — if it ever changes, re-extract from the video rather than editing this PNG |
+| `media-png/instagram/*.png` | Instagram's CDN, via the legacy `/p/<shortcode>/media/?size=l` redirect. The posts were published before any master was kept; see that folder's README for the refetch command |
 
 `media-webp/demos/**` has no PNG at all, also by design: its masters are the `.webp` under
 `to-build/demos/assets/`. See `to-build/demos/README.md`.

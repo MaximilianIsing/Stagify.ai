@@ -6,7 +6,7 @@
 // #stage-modal, so every selector in that module resolved to null and the entire
 // graph was downloaded, parsed and executed to accomplish two things. Those two
 // things are below; everything else app.js did here was already a no-op
-// (loadHeroStats() bails at hero-stats.js:27 without a .stat-pill-number, so it
+// (loadHeroStats() bails early without a .hp-stat__num, so it
 // never even fired its /api/prompt-count + /api/contact-count requests).
 //
 // Do NOT "simplify" this into bare <script type="module"> tags pointing straight at

@@ -33,6 +33,80 @@
   },
   "hero": {
     "eyebrow": "Home staging virtual grátis",
+    "added": {
+      "title": "Adicionado neste render",
+      "item1": "Cama de nogueira, roupa de cama branca",
+      "item2": "Cômoda de nogueira, seis gavetas",
+      "item3": "Tapete creme quadriculado sob a cama",
+      "item4": "Poltrona bouclê junto à janela",
+      "item5": "Quadro abstrato geométrico",
+      "items": {
+        "standard": {
+          "bedroom": ["Cama de carvalho claro, roupa branca", "Cômoda larga de carvalho, 6 gavetas", "Tapete bege grande sob a cama", "Três quadros em preto e branco", "Poltrona creme junto à janela"],
+          "livingRoom": ["Sofá creme de três lugares", "Tapete estampado cinza e marfim", "Rack de TV branco e carvalho", "Duas poltronas cinza de estrutura metálica", "Figueira-lira em vaso de barro"],
+          "diningRoom": ["Mesa de seis lugares com toalha marfim", "Seis cadeiras estofadas em creme", "Buffet de carvalho claro com pés", "Quadro abstrato sobre o buffet", "Orquídea branca no centro da mesa"],
+          "kitchen": ["Ilha branca em cascata com cuba", "Armários brancos sem puxadores", "Geladeira e forno em inox", "Quatro banquetas cinza", "Dois quadros geométricos"],
+          "office": ["Mesa retangular branca com pés", "Estante aberta de carvalho", "Cadeira de escritório em tela preta", "Armário baixo cinza", "Dois quadros abstratos emoldurados"],
+          "bathroom": ["Gabinete suspenso branco com cuba", "Box de vidro com chuveiro de teto", "Vaso sanitário suspenso branco", "Tapete de banho cinza-chumbo", "Espelho de moldura fina na parede"]
+        },
+        "modern": {
+          "bedroom": ["Cama de nogueira, roupa de cama branca", "Cômoda de nogueira, seis gavetas", "Tapete creme quadriculado sob a cama", "Poltrona bouclê junto à janela", "Quadro abstrato geométrico"],
+          "livingRoom": ["Sofá de canto cinza em L", "Tapete geométrico azul e cinza", "Mesa de centro em pedra branca", "Luminária de piso arco preta", "Tríptico marinho de três painéis"],
+          "diningRoom": ["Mesa de jantar branca, pés pretos", "Seis cadeiras estofadas cinza", "Buffet de carvalho claro", "Dois quadros em azul-marinho e dourado", "Capim dos pampas seco em vaso"],
+          "kitchen": ["Ilha branca com tampo cinza", "Armários aéreos e torres brancos", "Três banquetas pretas de aramado", "Fornos de embutir em inox", "Fruteira preta com maçãs verdes"],
+          "office": ["Mesa branca com pés cromados", "Estante aberta de estrutura preta", "Monitor ultrawide sobre a mesa", "Cadeira cinza em tela com rodízios", "Armário baixo branco"],
+          "bathroom": ["Gabinete suspenso branco duplo", "Box de vidro para o chuveiro", "Estrelícia alta em vaso", "Vaso sanitário suspenso branco", "Tapete de banho cinza com losangos"]
+        },
+        "scandinavian": {
+          "bedroom": ["Cama de carvalho claro, roupa branca", "Cômoda de carvalho com seis gavetas", "Tapete redondo de juta sob a cama", "Criados-mudos de carvalho e luminárias", "Par de quadros abstratos"],
+          "livingRoom": ["Sofá cinza de três lugares na janela", "Tapete grande de juta trançada", "Mesa de centro baixa em carvalho claro", "Duas poltronas de corda trançada", "Costela-de-adão e figueira-lira em vasos"],
+          "diningRoom": ["Mesa de carvalho com trilho de linho", "Seis cadeiras de carvalho claro", "Buffet de carvalho junto à parede", "Mesa posta com pratos e taças", "Arranjo de galhos secos em uma tigela"],
+          "kitchen": ["Ilha de carvalho com tampo de pedra", "Armários aéreos de carvalho claro", "Forno branco embutido na bancada", "Três banquetas de carvalho", "Revestimento branco tipo metrô"],
+          "office": ["Escrivaninha de carvalho na janela", "Estante estreita de carvalho", "Cadeira de carvalho com almofada cinza", "Gaveteiro branco com rodízios", "Luminária dourada e ervas em vasos"],
+          "bathroom": ["Box de vidro para o chuveiro", "Gabinete suspenso de carvalho com cuba", "Chuveiro de teto preto fosco", "Tapete bege sobre o piso de madeira", "Cesto de palha e toalhas"]
+        },
+        "coastal": {
+          "bedroom": ["Cama branca com cabeceira ripada", "Cômoda de madeira branqueada", "Passadeira listrada em azul-piscina", "Poltrona de rattan junto à janela", "Trio de quadros de conchas"],
+          "livingRoom": ["Dois sofás brancos com capa", "Tapete grande de sisal trançado", "Mesa de centro em madeira envelhecida", "Duas poltronas de vime", "Mesa lateral revestida de corda"],
+          "diningRoom": ["Mesa de jantar em madeira acinzentada", "Seis cadeiras de fibra natural", "Buffet branco patinado", "Banco de vime com assento listrado", "Quadro de onda quebrando"],
+          "kitchen": ["Armários brancos estilo shaker", "Ilha branca com tampo em cascata", "Três banquetas de fibra trançada", "Fornos de embutir em inox", "Tábua de madeira ao lado da cuba"],
+          "office": ["Escrivaninha rústica de cavalete", "Quatro quadros com marinhas", "Arquivo verde-menta", "Cadeira de rattan trançado", "Abajur de cerâmica verde-água"],
+          "bathroom": ["Gabinete branco com uma cuba", "Palmeira alta em cesto de palha", "Tapete de banho marmorizado azul", "Espelho com moldura sobre a cuba", "Plafon de níquel escovado"]
+        },
+        "farmhouse": {
+          "bedroom": ["Cama rústica de tábuas de pinho", "Cômoda branqueada de seis gavetas", "Colcha floral e manta de retalhos", "Cadeira de balanço com palhinha", "Trio de quadros de animais da fazenda"],
+          "livingRoom": ["Sofá creme de três lugares com capa", "Tapete grande de juta trançada", "Mesa de centro em madeira de demolição", "Par de poltronas de linho", "Painel de quadros botânicos"],
+          "diningRoom": ["Mesa de jantar em carvalho envelhecido", "Buffet branco patinado", "Toalha xadrez vermelha", "Seis cadeiras estofadas em floral", "Potes com flores laranja do jardim"],
+          "kitchen": ["Armários shaker branqueados", "Cuba avental estilo fazenda", "Bancada de refeições em madeira maciça", "Três banquetas rústicas de madeira", "Prateleiras com potes e ervas"],
+          "office": ["Mesa robusta de madeira de demolição", "Estante alta de pinho com livros", "Cadeira de couro marrom com rodízios", "Arquivo de metal preto", "Relógio de parede redondo rústico"],
+          "bathroom": ["Banheira com pés de garra", "Lavatório branco de coluna", "Box de canto com paredes de vidro", "Tapete oval trançado", "Placa de madeira pintada na parede"]
+        },
+        "luxury": {
+          "bedroom": ["Cama capitonê azul-marinho", "Cômoda de mogno com seis gavetas", "Dois painéis de mármore em moldura dourada", "Par de abajures de vidro", "Almofadas de veludo em tons joia"],
+          "livingRoom": ["Sofá de canto em veludo marinho", "Mesa de centro em bloco de mármore", "Duas poltronas de veludo creme", "Tapete abstrato azul e dourado", "Tríptico com molduras douradas"],
+          "diningRoom": ["Mesa de jantar longa com toalha", "Seis cadeiras de veludo azul", "Buffet de madeira com tampo de mármore", "Candelabro de cristal ao centro", "Trilho de mesa em brocado dourado"],
+          "kitchen": ["Armários em L de carvalho claro", "Ilha de quartzo em cascata", "Duas banquetas creme", "Forno duplo de embutir em inox", "Orquídea branca em vaso de vidro"],
+          "office": ["Escrivaninha de mármore e dourado", "Estante entalhada com livros", "Cadeira de couro verde capitonê", "Figueira-lira em cachepô dourado", "Abajur de cristal canelado"],
+          "bathroom": ["Banheira oval independente", "Box de canto com paredes de vidro", "Gabinete escuro com duas cubas", "Torneira de piso dourada", "Vaso suspenso junto à janela"]
+        },
+        "midcentury": {
+          "bedroom": ["Cama de nogueira, cabeceira cinza", "Cômoda de teca com seis gavetas", "Poltrona de couro preto", "Colcha geométrica e manta mostarda", "Pôsteres de viagem emoldurados"],
+          "livingRoom": ["Sofá capitonê azul-petróleo", "Tapete estampado dourado e laranja", "Par de poltronas em jacarandá", "Mesa de centro baixa de nogueira", "Painel de seis quadros abstratos"],
+          "diningRoom": ["Mesa redonda com toalha floral", "Quatro cadeiras concha moldadas", "Buffet de teca com pés palito", "Segundo pendente cilíndrico na mesa", "Taças âmbar e flores secas"],
+          "kitchen": ["Ilha branca com tampo em cascata", "Parede de armários aéreos brancos", "Três banquetas laranja de vinil", "Geladeira de aço inox", "Samambaia em suporte branco"],
+          "office": ["Mesa de nogueira com gaveteiro", "Cadeira giratória de couro caramelo", "Estante aberta de teca", "Luminária de mesa cromada", "Trio de quadros abstratos"],
+          "bathroom": ["Gabinete de nogueira com cuba branca", "Box de canto com paredes de vidro", "Planta alta em suporte de vaso", "Passadeira estampada no piso", "Lixeira de madeira ao lado do gabinete"]
+        },
+        "custom": {
+          "bedroom": ["Cabeceira de veludo verde ondulada", "Tapete geométrico verde e creme", "Cômoda de nogueira com seis gavetas", "Criado-mudo preto com puxadores dourados", "Banco verde capitonê aos pés da cama"],
+          "livingRoom": ["Sofá curvo de veludo esmeralda", "Buffet preto laqueado com marchetaria", "Duas poltronas giratórias rosé", "Tapete verde com motivo de leque", "Espelho sol dourado na parede"],
+          "diningRoom": ["Mesa redonda de mármore branco", "Buffet canelado de nogueira", "Seis cadeiras de veludo verde", "Tapete redondo verde com medalhão", "Buquê de rosas brancas em vaso"],
+          "kitchen": ["Carrinho bar preto com tampo dourado", "Palmeira em cachepô dourado", "Passadeira verde com folhagens", "Três esboços em molduras douradas", "Potes de cobre e peças de vidro"],
+          "office": ["Mesa canelada com base dourada", "Estante alta preta com vidros", "Tapete verde com listras chevron", "Cadeira concha de veludo verde", "Luminária dourada com cúpula verde"],
+          "bathroom": ["Banheira oval independente", "Gabinete canelado de nogueira com cuba", "Base de mármore sob a banheira", "Palmeira em cachepô dourado com pés", "Tapete de banho com estampa orgânica"]
+        }
+      }
+    },
     "title": {
       "upload": "Carregue.",
       "stage": "Decore.",
@@ -44,8 +118,7 @@
     "freeGensUpgrade": "Experimente o Stagify+ hoje mesmo. <a class=\"hero-free-gens-upgrade\" href=\"stagify-plus.html\">Fazer upgrade</a>",
     "stats": {
       "roomsStaged": "Cômodos decorados",
-      "usersServed": "Usuários atendidos",
-      "andCounting": "e continua crescendo..."
+      "usersServed": "Usuários atendidos"
     },
     "sentence": {
       "before": "Decore ",
@@ -64,7 +137,6 @@
     "styleMenuLabel": "Estilo de móveis",
     "seeOriginal": "Ver original",
     "seeStaged": "Ver decorado",
-    "stageNote": "Cada estilo aqui é um render real do mesmo cômodo vazio.",
     "stageAlt": "{room} no estilo {style}, decorado virtualmente",
     "originalAlt": "O mesmo cômodo antes da decoração, vazio",
     "defaultAlt": "Um quarto decorado virtualmente em estilo moderno"
@@ -356,7 +428,12 @@
     },
     "instagram": {
       "title": "Veja em ação no Instagram",
-      "follow": "Siga @stagify.ai"
+      "follow": "Siga @stagify.ai",
+      "posts": {
+        "emptyToStaged": "Publicação do Instagram: uma sala de estar vazia ao lado do mesmo cômodo decorado com sofá, tapete e quadros (abre em uma nova aba)",
+        "floorPlan": "Publicação do Instagram: uma planta baixa mobiliada acima do quarto fotorrealista gerado a partir dela (abre em uma nova aba)",
+        "fiveStyles": "Publicação do Instagram: uma mesma sala de estar vazia decorada em cinco estilos diferentes (abre em uma nova aba)"
+      }
     },
     "finalCta": {
       "title": "Experimente no seu próprio anúncio",

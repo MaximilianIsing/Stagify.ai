@@ -57,6 +57,49 @@ Why it's built this way: `server.js` grew very large, so routes and helpers are 
 extracted piece working without turning shared state into globals. When you add a
 route, you add its dependency to the factory's `deps` at the `server.js` call site.
 
+### Some deps are grouped, most are flat — and that split is deliberate
+
+Most of the bag is **flat**: one key per name. Two entries are **grouped** — `email` and
+`hostedImages` are the `createEmail()` / `createHostedImages()` return values passed
+*whole* instead of destructured into loose names:
+
+```js
+// server.js — the group is the factory's own return value
+const email = createEmail({ resend, RESEND_FROM_EMAIL, /* … */ });
+const { forgetEmailOpenState } = email;   // a createUserDeletion FACTORY input, not a router dep
+
+app.use(createPublicRouter({ /* … */ hostedImages, email, /* … */ }));
+```
+
+Their shapes live in `lib/types/deps.d.ts`, so the five routers reference one typedef
+instead of re-declaring the same JSDoc.
+
+**Why only those two.** `routes/admin.js`, `routes/auth.js` and `routes/public.js`
+consume `deps` themselves and forward nothing onward, so grouping a name they read is a
+local change. `routes/chat.js` and `routes/staging.js` are different — they pass the
+**whole bag** to sub-factories:
+
+```js
+const { … } = createChatPipeline(deps);           // routes/chat.js
+router.post('/api/mask-edit', genLimiter, createMaskEditHandler(deps));  // routes/staging.js
+```
+
+Each sub-factory (`lib/chat/chat-dispatch.js`, `lib/staging/mask-edit.js`, …)
+destructures its own slice, so grouping a name *they* read means changing every one of
+them plus their tests — `mask-edit.js` alone is referenced by 18 test files. That is why
+the logging writers, the memory helpers and the `image-primitives.js` functions are
+still flat, even though they come from equally cohesive factories.
+
+**Before grouping anything else**, check whether the consuming router forwards `deps`.
+If it does, the change is not local and the cost is an order of magnitude larger than it
+looks. Note also that the flat shape is what lets the test harnesses
+(`test/helpers/*-app.js`) do a **shallow merge** — `mountStaging({ genAI: fake })` —
+across ~242 call sites; nesting a hot dep breaks all of them at once.
+
+> **Naming gotcha:** `routes/auth.js` and `routes/public.js` both have local `email`
+> variables holding a user's address, so they destructure the group as
+> `email: emailService` to avoid shadowing. Grep before reusing a group name.
+
 > **ESM gotcha:** the project is `"type": "module"`. There is no built-in `__dirname` —
 > modules derive it with `fileURLToPath(import.meta.url)` (or receive it via `deps`).
 > A path built from an undefined `__dirname` fails at request time, not at import, so
@@ -464,10 +507,14 @@ model. It concatenates, **in this order**:
    see below.
 5. **The global blocks** — defect-free staging, targeted-edit rule.
 6. **The priority suffix** — a non-custom `additionalPrompt`.
-7. **`INTERIOR_PRESERVATION_RULES`** from
+7. **The architecture lock** from
    [`preservation-rules.js`](../../lib/staging/preservation-rules.js) — **always last**, see
    below. Framing and aspect-ratio rules live **inside** this block, not in a section of
-   their own.
+   their own. Selected by room type via `interiorPreservationRulesFor(roomType)`: every room
+   gets `INTERIOR_PRESERVATION_RULES`, except `Bathroom`, which gets
+   `BATHROOM_PRESERVATION_RULES` — the same block with two bullets swapped, so that a room
+   with no plumbing in it can be staged as a bathroom. Both are assembled from one template;
+   they are not two maintained copies.
 
 ### The architecture lock is emitted last, and that is the mechanism
 

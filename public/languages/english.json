@@ -33,6 +33,80 @@
   },
   "hero": {
     "eyebrow": "Free virtual staging",
+    "added": {
+      "title": "Added in this render",
+      "item1": "Walnut platform bed, white linens",
+      "item2": "Long walnut six-drawer dresser",
+      "item3": "Cream grid rug under the bed",
+      "item4": "Boucle armchair by the window",
+      "item5": "Geometric abstract framed print",
+      "items": {
+        "standard": {
+          "bedroom": ["Light oak platform bed, white linens", "Wide oak six-drawer dresser", "Large beige rug under the bed", "Three framed black-and-white prints", "Cream armchair by the window"],
+          "livingRoom": ["Long cream three-seat sofa", "Patterned grey and ivory area rug", "White and oak TV console", "Two grey metal-frame armchairs", "Fiddle-leaf fig in a clay pot"],
+          "diningRoom": ["Six-seat table in ivory linen", "Six cream upholstered chairs", "Pale oak sideboard on legs", "Abstract canvas over the sideboard", "White orchid centerpiece"],
+          "kitchen": ["White waterfall island with sink", "Run of handleless white cabinets", "Stainless fridge and wall oven", "Four grey counter stools", "Two framed geometric prints"],
+          "office": ["White rectangular desk on legs", "Open oak shelving unit", "Black mesh task chair", "Grey low storage credenza", "Two abstract framed artworks"],
+          "bathroom": ["White wall-hung vanity with sink", "Glass walk-in shower, rain head", "Wall-hung white toilet", "Charcoal grey bath mat", "Slim framed mirror on the wall"]
+        },
+        "modern": {
+          "bedroom": ["Walnut platform bed, white linens", "Long walnut six-drawer dresser", "Cream grid rug under the bed", "Boucle armchair by the window", "Geometric abstract framed print"],
+          "livingRoom": ["Grey L-shaped sectional sofa", "Blue and grey geometric rug", "White stone coffee table", "Black arc floor lamp", "Three-panel seascape triptych"],
+          "diningRoom": ["White dining table, black legs", "Six grey upholstered chairs", "Pale oak sideboard credenza", "Two navy and gold framed prints", "Dried pampas in a vase"],
+          "kitchen": ["White kitchen island, grey top", "White upper and tall cabinets", "Three black wire counter stools", "Stacked stainless wall ovens", "Black bowl of green apples"],
+          "office": ["White desk on chrome legs", "Black-framed open shelving unit", "Wide monitor on the desk", "Grey mesh task chair on casters", "White low storage credenza"],
+          "bathroom": ["White floating double vanity", "Glass walk-in shower enclosure", "Tall bird of paradise in a pot", "White wall-mounted toilet", "Grey diamond-pattern bath mat"]
+        },
+        "scandinavian": {
+          "bedroom": ["Light oak platform bed, white linens", "Six-drawer oak dresser on the wall", "Round jute rug under the bed", "Rounded oak nightstands, two lamps", "Pair of framed abstract prints"],
+          "livingRoom": ["Grey three-seat sofa on the window", "Large woven jute area rug", "Blond oak coffee table, low slab", "Two woven cord lounge chairs", "Potted monstera and fiddle-leaf fig"],
+          "diningRoom": ["Long oak table, linen runner", "Six pale oak dining chairs", "Oak sideboard against the wall", "Table set with plates and glasses", "Dried branch arrangement in a bowl"],
+          "kitchen": ["Oak island with pale stone top", "Run of light oak wall cabinets", "White oven stacked under counter", "Three oak counter stools", "White subway tile backsplash"],
+          "office": ["Solid oak writing desk at the window", "Slim oak open bookcase", "Oak armchair with grey seat pad", "White rolling drawer pedestal", "Brass task lamp and potted herbs"],
+          "bathroom": ["Glass walk-in shower enclosure", "Floating oak vanity with basin", "Matte black rain shower head", "Beige bath mat on the parquet", "Woven laundry basket and towels"]
+        },
+        "coastal": {
+          "bedroom": ["White slat-back platform bed", "Whitewashed wood dresser", "Aqua striped floor runner", "Rattan armchair by the window", "Trio of framed seashell prints"],
+          "livingRoom": ["White slipcovered sofa pair", "Large woven sisal area rug", "Weathered wood coffee table", "Two wicker lounge chairs", "Rope-wrapped side table"],
+          "diningRoom": ["Long grey wash dining table", "Six woven seagrass chairs", "Distressed white sideboard", "Wicker bench with striped seat", "Framed breaking wave canvas"],
+          "kitchen": ["Full white shaker cabinet run", "White waterfall island counter", "Three woven counter stools", "Stacked stainless wall ovens", "Wood cutting board by the sink"],
+          "office": ["Rustic trestle wood desk", "Four framed ocean canvases", "Mint green filing cabinet", "Woven rattan desk chair", "Seafoam ceramic table lamp"],
+          "bathroom": ["White single sink vanity", "Tall potted palm in a basket", "Aqua marbled bath mat", "Framed mirror over the sink", "Brushed nickel ceiling drum light"]
+        },
+        "farmhouse": {
+          "bedroom": ["Rustic pine plank bed frame", "Whitewashed six-drawer dresser", "Floral quilt and patchwork throw", "Woven spindle rocking chair", "Framed farm animal print trio"],
+          "livingRoom": ["Cream slipcovered three-seat sofa", "Large woven jute area rug", "Reclaimed wood coffee table", "Pair of linen armchairs", "Botanical gallery wall grid"],
+          "diningRoom": ["Long weathered oak dining table", "Distressed white sideboard", "Red gingham tablecloth", "Six floral upholstered chairs", "Jars of orange garden blooms"],
+          "kitchen": ["Whitewashed shaker cabinet run", "Farmhouse apron front sink", "Butcher block breakfast bar", "Three rustic wood bar stools", "Open shelves with crocks and herbs"],
+          "office": ["Chunky reclaimed wood desk", "Tall pine bookcase with books", "Brown leather rolling chair", "Black metal filing cabinet", "Round barn wall clock"],
+          "bathroom": ["Clawfoot roll top bathtub", "White pedestal sink with taps", "Glass walled corner shower", "Braided oval floor rug", "Painted wooden wall sign"]
+        },
+        "luxury": {
+          "bedroom": ["Navy tufted wingback bed", "Mahogany six-drawer dresser", "Two gold-framed marble art panels", "Pair of glass bedside lamps", "Jewel-tone velvet throw pillows"],
+          "livingRoom": ["Navy velvet sectional sofa", "White marble block coffee table", "Two cream velvet barrel chairs", "Blue and gold abstract area rug", "Gilt-framed art triptych on wall"],
+          "diningRoom": ["Long draped dining table", "Six blue velvet dining chairs", "Marble-top inlaid wood sideboard", "Crystal candelabra centerpiece", "Gold brocade table runner"],
+          "kitchen": ["Pale oak L-shaped cabinetry", "Waterfall quartz island", "Two cream counter stools", "Stainless double wall ovens", "White orchid in a glass vase"],
+          "office": ["Marble and gold writing desk", "Carved wood bookcase with books", "Green tufted leather task chair", "Potted fiddle-leaf fig in brass", "Fluted crystal desk lamp"],
+          "bathroom": ["Freestanding oval soaking tub", "Glass-walled corner shower", "Dark wood double-sink vanity", "Brass floor-mounted tub filler", "Wall-hung toilet by the window"]
+        },
+        "midcentury": {
+          "bedroom": ["Walnut platform bed, grey headboard", "Long teak six-drawer dresser", "Black leather lounge chair", "Geometric quilt and mustard throw", "Framed travel posters on the wall"],
+          "livingRoom": ["Teal tufted three-seat sofa", "Patterned gold and orange area rug", "Pair of rosewood lounge chairs", "Low walnut coffee table", "Six-print grid of abstract art"],
+          "diningRoom": ["Round table with floral cloth", "Four moulded shell dining chairs", "Long teak credenza on legs", "Second drum pendant over the table", "Amber goblets and dried florals"],
+          "kitchen": ["White waterfall island counter", "Wall of flat white upper cabinets", "Three orange vinyl bar stools", "Stainless steel fridge", "Fern in a white plant stand"],
+          "office": ["Walnut desk with drawer pedestal", "Tan leather swivel task chair", "Open teak shelving unit", "Domed chrome desk lamp", "Trio of abstract framed prints"],
+          "bathroom": ["Walnut vanity with white basin", "Glass walled corner shower", "Tall potted plant on a stand", "Patterned runner rug on the floor", "Wooden waste bin by the vanity"]
+        },
+        "custom": {
+          "bedroom": ["Green velvet scalloped headboard", "Green and cream geometric rug", "Walnut six-drawer dresser", "Black nightstand with brass pulls", "Tufted green bench at bed foot"],
+          "livingRoom": ["Emerald velvet curved sofa", "Black lacquer inlaid credenza", "Two blush scalloped swivel chairs", "Green fan-motif area rug", "Gold sunburst mirror on the wall"],
+          "diningRoom": ["Round white marble dining table", "Fluted walnut sideboard", "Six green velvet dining chairs", "Round green medallion rug", "White rose bouquet in glass vase"],
+          "kitchen": ["Black bar cart with brass top", "Potted palm in a brass planter", "Green leaf-pattern floor runner", "Three framed sketches in gold", "Copper canisters and glassware"],
+          "office": ["Fluted wood desk with brass base", "Tall black glazed bookcase", "Green striped chevron rug", "Green velvet shell desk chair", "Brass lamp with green glass shade"],
+          "bathroom": ["Freestanding oval soaking tub", "Fluted walnut vanity with sink", "Marble platform under the tub", "Palm in a brass footed planter", "Green organic-print bath mat"]
+        }
+      }
+    },
     "title": {
       "upload": "Upload.",
       "stage": "Stage.",
@@ -44,13 +118,12 @@
     "freeGensUpgrade": "Try Stagify+ today. <a class=\"hero-free-gens-upgrade\" href=\"stagify-plus.html\">Upgrade</a>",
     "stats": {
       "roomsStaged": "Rooms Staged",
-      "usersServed": "Users Served",
-      "andCounting": "and counting..."
+      "usersServed": "Users Served"
     },
     "sentence": {
       "before": "Stage this ",
       "middle": " in ",
-      "after": "."
+      "after": ""
     },
     "rooms": {
       "bedroom": "bedroom",
@@ -64,7 +137,6 @@
     "styleMenuLabel": "Furniture style",
     "seeOriginal": "See original",
     "seeStaged": "See staged",
-    "stageNote": "Every look here is one real render of the same empty room.",
     "stageAlt": "{style} {room}, virtually staged",
     "originalAlt": "The same room before staging, empty",
     "defaultAlt": "A bedroom virtually staged in a modern style"
@@ -106,8 +178,8 @@
       "seeOriginal": "See original",
       "loadFailed": "That one did not load. Try again.",
       "points": {
-        "rooms": "Eight room types, from bedrooms to kitchens",
-        "browser": "Nothing to install, it runs in your browser"
+        "rooms": "8 room types, from bedrooms to kitchens",
+        "browser": "Nothing to install, just your browser"
       },
       "emptyAlt": "An empty living room before virtual staging",
       "stagedAlt": "The same living room, staged by Stagify"
@@ -134,7 +206,7 @@
       "panelBody": "No brief to write and nothing to learn. Choose the room type and the look you want, and the photo comes back staged with the walls, windows and floor untouched.",
       "points": {
         "upload": "Upload a photo and stage it in about 8 seconds.",
-        "styles": "Pick from furnishing styles for any room type.",
+        "styles": "Pick from 7 furnishing styles for any room type.",
         "restage": "Not quite right? Re-stage it as often as you like.",
         "rights": "Every image is yours, with full copyright."
       }
@@ -166,20 +238,20 @@
     },
     "exterior": {
       "title": "Fix the photo the listing opens with",
-      "subtitle": "The Exterior Studio changes the time of day, clears grey skies and takes out cars and bins. The house stays untouched. <em>(Stagify+ Exclusive)</em>",
+      "subtitle": "The Exterior Studio changes the time of day, clears gray skies and takes out cars and trash cans. The house stays untouched. <em>(Stagify+ Exclusive)</em>",
       "kicker": "Curb appeal",
       "panelTitle": "The one shot you cannot reshoot",
       "panelBody": "Every listing opens with the outside of the property, the one photo you cannot retake once the weather turns.",
       "points": {
         "light": "Shoot at noon, publish at golden hour.",
-        "sky": "Flat grey sky becomes clear blue or soft cloud.",
-        "clutter": "Cars, bins, hoses and signage come out.",
+        "sky": "Flat gray sky becomes clear blue or soft cloud.",
+        "clutter": "Cars, trash cans, hoses and signage come out.",
         "honest": "No re-laid lawn, no repaint, no new driveway."
       },
       "comparisonAria": "Before and after exterior enhancement comparison",
       "alts": {
-        "before": "A suburban house photographed under a flat grey sky, with a car on the driveway, bins at the kerb and a hose on the lawn",
-        "after": "The same house at golden hour under a clear blue sky, with the parked car, bins and hose removed"
+        "before": "A suburban house photographed under a flat gray sky, with a car on the driveway, trash cans at the curb and a hose on the lawn",
+        "after": "The same house at golden hour under a clear blue sky, with the parked car, trash cans and hose removed"
       }
     },
     "gallery": {
@@ -229,7 +301,7 @@
     },
     "info": {
       "eyebrow": "The short version",
-      "title": "What virtual staging is, and why it sells",
+      "title": "What virtual staging is and why it sells",
       "rows": {
         "why": {
           "eyebrow": "Why it works",
@@ -277,7 +349,7 @@
       "calc": {
         "question": "How many listings do you stage a year?",
         "weeks": "{n} weeks",
-        "note": "Based on $2,000 per home, the low end of the usual range, and two weeks from booking to installed."
+        "note": "Based on $2,000 per home, the low end of the usual range, and two weeks from booking to installation."
       },
       "rows": {
         "cost": {
@@ -356,7 +428,12 @@
     },
     "instagram": {
       "title": "See it in action on Instagram",
-      "follow": "Follow @stagify.ai"
+      "follow": "Follow @stagify.ai",
+      "posts": {
+        "emptyToStaged": "Instagram post: an empty living room beside the same room staged with a sofa, rug and artwork (opens in a new tab)",
+        "floorPlan": "Instagram post: a furnished floor plan above the photoreal bedroom rendered from it (opens in a new tab)",
+        "fiveStyles": "Instagram post: one empty living room staged in five different furniture styles (opens in a new tab)"
+      }
     },
     "finalCta": {
       "title": "Try it on your own listing",
@@ -691,7 +768,7 @@
       "disclosure": {
         "label": "Disclosure",
         "question": "Can I use these photos in an MLS listing?",
-        "answer": "Yes, and virtual staging is standard practice, but disclose it. Most MLSs and local rules ask that a digitally furnished photo be labelled as such, usually in the caption. Stagify can stamp “Virtually staged” onto the image for you, on any plan. Because only furniture and decor change, and never the structure of the room, the photo stays an honest representation of the space. Check your own board for the exact wording it expects."
+        "answer": "Yes, and virtual staging is standard practice, but disclose it. Most MLSs and local rules ask that a digitally furnished photo be labeled as such, usually in the caption. Stagify can stamp “Virtually staged” onto the image for you, on any plan. Because only furniture and decor change, and never the structure of the room, the photo stays an honest representation of the space. Check your own board for the exact wording it expects."
       },
       "privacy": {
         "label": "Privacy",
@@ -701,7 +778,7 @@
       "whyStagify": {
         "label": "Why Stagify",
         "question": "How is this different from other tools?",
-        "answer": "Most tools do one of these three things well. Stagify does all three: it is cheap enough to stage on a whim, conversational enough to redesign a room rather than merely decorate it, and precise enough to control the result pixel by pixel. Add the exterior and whole-listing workflows, eleven languages, full copyright on everything you generate, and no ads or per-image fees, and you get a tool you can use on every listing instead of saving for the hero shot."
+        "answer": "Most tools do one of three things well. Stagify does all three: it is cheap enough to stage on a whim, conversational enough to redesign a room rather than merely decorate it, and precise enough to control the result pixel by pixel. Add the exterior and whole-listing workflows, eleven languages, full copyright on everything you generate, and no ads or per-image fees, and you get a tool you can use on every listing instead of saving for the hero shot."
       }
     }
   },
@@ -832,7 +909,7 @@
     "passwordsNoMatch": "Passwords do not match.",
     "somethingWrong": "Something went wrong",
     "checkEmailForCode": "Check your email for a verification code.",
-    "agreeTerms": "By creating an account, you agree to <a href=\"terms.html\">Terms</a> &amp; <a href=\"privacy.html\">Privacy</a>"
+    "agreeTerms": "By creating an account, you agree to our <a href=\"terms.html\">Terms</a> &amp; <a href=\"privacy.html\">Privacy</a>"
   },
   "profile": {
     "signIn": "Sign in",

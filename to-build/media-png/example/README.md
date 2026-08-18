@@ -103,13 +103,30 @@ herringbone floor. Staging it as a bedroom, living room, dining room or office k
 that intact, so those 24 images read as one room wearing different furniture, which is what
 the hero needs.
 
-`Kitchen` and `Bathroom` push harder. A kitchen needs cabinetry and appliance walls the source
-photo does not have, so the model builds them, and in the worst draws the structural column
-disappears behind a cabinet run. Re-roll those individually until the column survives.
+`Kitchen` and `Bathroom` push harder, and since 2026-08-18 they push in different directions.
 
-Bathrooms used to be the worse of the two, and that turned out to be the **prompt**, not the
-model: every `Bathroom` entry in `lib/staging/promptMatrix.js` opened with "Add a `<style>`
-toilet" and most also asked for a shower curtain, so the model dutifully put a toilet on the
-hardwood and hung a curtain from the ceiling with nothing to attach it to. Those items were
-removed from the prompts on 2026-08-17 — see the comment above `'Bathroom'` in that file. If
-bathroom renders ever start installing plumbing again, read that comment before re-rolling.
+**Kitchen** needs cabinetry and appliance walls the source photo does not have, and it is *not*
+allowed to install them. So it stages what it can carry in — an island, stools, accessories —
+and in the worst draws the structural column disappears behind a cabinet run the model built
+anyway. Re-roll those individually until the column survives.
+
+**Bathroom** is now the one room type permitted to install fixtures. A room with no plumbing
+cannot be staged as a bathroom at all, so `lib/staging/preservation-rules.js` carries a second
+variant of the architecture lock — `BATHROOM_PRESERVATION_RULES` — that allows sanitaryware to
+be created *when the photograph has none*, and `ROOM_TYPE_CONSTRAINTS['Bathroom']` carries the
+matching keep-what-exists rule. Read the comment above `'Bathroom'` in `promptMatrix.js` before
+touching any of it: the wording is shaped around three failures that actually happened (a
+toilet on the hardwood of a room that was never a bathroom, a shower curtain hung from a
+ceiling, a walk-in shower built over a window), and each is now blocked by something specific
+rather than by a blanket ban.
+
+### Regenerating a bathroom: the gate cannot help you
+
+The architecture gate scores a render by how LITTLE it changed against the empty living room,
+so among three attempts the least bathroom-like one wins — and a render that quietly came back
+as a living room scores *better* than a correct bathroom and is accepted on the spot. Two of
+the first eight did exactly that.
+
+So judge these by eye, not by the numbers, and when one is wrong **delete its five files before
+re-rolling**. `--redo` alone keeps the incumbent unless the new attempt scores lower, and a
+living room always will.

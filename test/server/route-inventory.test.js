@@ -54,6 +54,13 @@ const CRITICAL_ROUTES = [
   ['POST', '/api/getpro'],
   ['POST', '/api/admin/grant-plus'],
   ['POST', '/api/admin/revoke-plus'],
+  // Signals tab. Both key-gated, so an unauthenticated probe stops at the guard —
+  // no SQL runs and no model call is billed. Listed because losing either one
+  // degrades the tab silently rather than visibly: findings-quality.js reports a
+  // missing metrics pack as a finding, which is right at runtime and would let a
+  // 404 here go unnoticed indefinitely.
+  ['GET', '/api/admin/metrics'],
+  ['POST', '/api/admin/brief'],
   // Referral links. Every one is key-gated, so an unauthenticated probe is rejected
   // at the guard (403) long before the handler — nothing is created or deleted here.
   ['GET', '/api/admin/referrals'],

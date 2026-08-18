@@ -52,6 +52,14 @@
             <svg class="adm-tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v16.5A1.5 1.5 0 0 0 4.5 21H21"/><path d="M7 15l4-4 3 2.5L20 7"/></svg>
             <span class="adm-tab-lbl">Insights</span>
           </button>
+          <!-- The count chip carries the ACTIONABLE findings only (critical +
+               warning + opportunity), not the total — a chip that includes the
+               “working well” cards would never read zero. -->
+          <button class="adm-tab" data-tab="signals" data-title="Signals" data-sub="What the numbers add up to, and what to do next." role="tab" aria-selected="false">
+            <svg class="adm-tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2a7 7 0 0 0-4 12.7V17a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-2.3A7 7 0 0 0 12 2Z"/><path d="M10 22h4"/></svg>
+            <span class="adm-tab-lbl">Signals</span>
+            <span class="adm-tab-count" id="tc-signals">0</span>
+          </button>
 
           <p class="adm-nav-group">Accounts</p>
           <button class="adm-tab" data-tab="users" data-title="Users" data-sub="Every account, with its plan and activity." role="tab" aria-selected="false">
@@ -139,6 +147,12 @@
         <div class="adm-content">
 
       <div class="adm-panel active" id="panel-overview">
+        <!-- Top actionable findings, written by scripts/admin/signals.js. Sits
+             ABOVE the range selector on purpose: it is the only thing on this
+             page that says what to do, and it is not scoped by the range —
+             a problem does not stop mattering because you narrowed the window.
+             Empty (and invisible) when nothing needs a decision. -->
+        <div class="adm-sig-teaser" id="adm-signals-teaser"></div>
         <!-- Range selector, built by scripts/admin/overview.js. Scopes the stat
              cards, the first chart, and both tables; the all-time chart ignores it. -->
         <div class="adm-range" id="adm-range"></div>
@@ -162,6 +176,12 @@
             <div class="adm-table-wrap adm-table-wrap--short" id="adm-recent-signups"></div>
           </div>
         </div>
+      </div>
+
+      <div class="adm-panel" id="panel-signals">
+        <!-- Built entirely by scripts/admin/signals.js from the pure rules engine
+             in scripts/admin/findings*.js. Nothing here is decided in markup. -->
+        <div class="adm-signals" id="adm-signals"></div>
       </div>
 
       <div class="adm-panel" id="panel-insights">

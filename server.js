@@ -24,6 +24,9 @@ import { createBlobTombstones, createBlobReaper } from './lib/data/blob-tombston
 import { createStagedRenders } from './lib/data/staged-renders.js';
 import { createRenderRefs } from './lib/data/render-refs.js';
 import { createGalleryShares } from './lib/data/gallery-shares.js';
+import { getDb } from './lib/data/db.js';
+import { createAdminMetrics } from './lib/analytics/admin-metrics.js';
+import { createAdminBrief } from './lib/services/admin-brief.js';
 import createGalleryRouter from './routes/gallery.js';
 import createSharePublicRouter from './routes/share-public.js';
 import { createRenderPersistence } from './lib/staging/render-persistence.js';
@@ -244,7 +247,12 @@ const { getDataLogDir, escapeCsvField, logPromptToFile, logMaskEditToFile, logCh
 // The rate limiters are module singletons built at import time, before this factory
 // exists, so they take the rejection writer through a setter rather than a dep.
 setRateLimitRejectionLogger(logRejectionToFile);
-const { logEmailOpenToFile, isConfirmedEmailClientOpen, forgetEmailOpenState, sendRegistrationVerificationEmail, sendAccountExistsNotice } = createEmail({ resend, RESEND_FROM_EMAIL, EMAIL_DEBUG_MODE, DEBUG_EMAIL, escapeCsvField, getDataLogDir });
+// Passed to the auth/public routers WHOLE (as `email`) rather than torn into loose
+// names — see docs/guides/architecture.md on the flat-vs-grouped dep split.
+// `forgetEmailOpenState` is pulled back out because it is a createUserDeletion
+// FACTORY input, not part of any router's surface.
+const email = createEmail({ resend, RESEND_FROM_EMAIL, EMAIL_DEBUG_MODE, DEBUG_EMAIL, escapeCsvField, getDataLogDir });
+const { forgetEmailOpenState } = email;
 const { loadMemories, saveMemories, exportAllMemories, resetAllMemories } = createMemory({ __dirname, DEBUG_MODE });
 // GDPR erasure. Built here (not inside a store) because it spans every store's
 // tables plus the CSV logs — see lib/data/user-deletion.js.
@@ -296,7 +304,9 @@ const { roomIsAlreadyEmpty, eraseFurniture } = createErase({ genAI, openai });
 // path while a transient provider error is still retried. That is the half of the retry
 // worth keeping, and `maxAttempts: 1` would have thrown it away with the rest.
 const { blueprintTo3D } = createCadHandling({ genAI });
-const { getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest } = createHostedImages({ getDataLogDir });
+// Passed to the admin/public routers WHOLE (as `hostedImages`), same rationale as
+// `email` above. Note `getDataLogDir` going IN stays a loose factory input.
+const hostedImages = createHostedImages({ getDataLogDir });
 const { healthHandler, protectLogs, requireEndpointKey, stagingEndpointKeyGuard } = createHttpGuards({ genAI, LOGS_ACCESS_KEY, endpointKeyMatches, adminSessions });
 
 // ---------------------------------------------------------------------------
@@ -395,10 +405,17 @@ const MAX_MASK_PROMPT_LENGTH = 1000;
 const MAX_SEGMENT_QUERY_LENGTH = 200;
 
 // auth routes (routes/auth.js)
-app.use(createAuthRouter({ authStore, googleOAuthClient, resend, LOGS_ACCESS_KEY, authLimiter, emailLimiter, RESEND_FROM_EMAIL, EMAIL_DEBUG_MODE, DEBUG_EMAIL, IS_STAGING, SHOW_STAGING_BANNER, endpointKeyMatches, setSensitiveHeaders, getAuthUserFromRequest, toPublicAuthUser, sendRegistrationVerificationEmail, sendAccountExistsNotice, __dirname, googleClientId }));
+app.use(createAuthRouter({ authStore, googleOAuthClient, resend, LOGS_ACCESS_KEY, authLimiter, emailLimiter, RESEND_FROM_EMAIL, EMAIL_DEBUG_MODE, DEBUG_EMAIL, IS_STAGING, SHOW_STAGING_BANNER, endpointKeyMatches, setSensitiveHeaders, getAuthUserFromRequest, toPublicAuthUser, email, __dirname, googleClientId }));
 
 // admin routes (routes/admin.js)
-app.use(createAdminRouter({ authStore, uptimeMonitor, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, deleteUser, getDataLogDir, getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest, protectLogs, requireEndpointKey, adminSessions, __dirname, HOSTED_IMAGE_MIME_EXT, emailCatalog, sendTestEmail, referralLinks }));
+//
+// adminMetrics is built here rather than inside the router because it prepares
+// its statements once, at construction — see the N+1 guard in
+// test/analytics/admin-metrics.test.js. It must come AFTER the gallery stores
+// above, which are what create the tables it prepares against.
+const adminMetrics = createAdminMetrics({ db: getDb(__dirname), getDataLogDir });
+const adminBrief = createAdminBrief({ openai });
+app.use(createAdminRouter({ authStore, uptimeMonitor, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, deleteUser, getDataLogDir, hostedImages, protectLogs, requireEndpointKey, adminSessions, __dirname, HOSTED_IMAGE_MIME_EXT, emailCatalog, sendTestEmail, referralLinks, adminMetrics, adminBrief }));
 
 // staging routes (routes/staging.js)
 app.use(createStagingRouter({ genAI, genLimiter, stagingProcessUpload, DEBUG_MODE, MAX_MASK_PROMPT_LENGTH, MAX_SEGMENT_QUERY_LENGTH, QUALITY_MAX_ATTEMPTS, setSensitiveHeaders, getAuthUserFromRequest, enterpriseDomainForUser, reportEnterpriseUsage, recordStagingActivity, requireProAccount, logMaskEditToFile, logRejectionToFile, downscaleImage, padBufferToAspectRatio, buildMarkedRoomImage, normalizeMaskOutputToRoom, reviewMaskEdit, compositeForReview, generateWithQualityRetry, maskReferencePromptSuffix, validateStageableImage, handleVirtualStagingMultipart, handleExteriorMultipart, handleMaskingSave, stagingEndpointKeyGuard }));
@@ -412,7 +429,7 @@ app.use(createChatRouter({ openai, genLimiter, chatUpload, DEBUG_MODE, requirePr
 app.use(createI18nRouter({ __dirname, DEBUG_MODE }));
 
 // public routes (routes/public.js)
-app.use(createPublicRouter({ authStore, uptimeMonitor, resend, LOGS_ACCESS_KEY, endpointKeyMatches, emailLimiter, RESEND_FROM_EMAIL, DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS, getHostedImagesDir, readHostedImagesManifest, logEmailOpenToFile, isConfirmedEmailClientOpen, healthHandler, getPromptCount, getContactCount, incContactCount , __dirname }));
+app.use(createPublicRouter({ authStore, uptimeMonitor, resend, LOGS_ACCESS_KEY, endpointKeyMatches, emailLimiter, RESEND_FROM_EMAIL, DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS, hostedImages, email, healthHandler, getPromptCount, getContactCount, incContactCount , __dirname }));
 
 // The owner's gallery (routes/gallery.js) and the public share page
 // (routes/share-public.js). Two routers rather than one because they answer to very

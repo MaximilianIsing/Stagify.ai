@@ -1,62 +1,66 @@
-/* The homepage hero's room/style picker. Replaces carousel.css, which served the seven-slide
-   hero carousel this supersedes.
+/* The homepage hero: one full-bleed render with the copy laid across its bottom edge, and a
+   room/style picker built into the headline. Replaces carousel.css (the seven-slide hero
+   carousel) and, since 2026-08-17, the two-column layout that followed it.
 
-   Everything here is prefixed `hp-` so none of it can collide with the `.hero-stage-*`
-   classes already in styles.css, which belong to the staging studio, not to this. */
+   WHY IT IS ONE BOX. The two-column version had a text column and a photo column that could
+   not agree on a height (353px vs 427px at 1440px), and both hung 187px below the section,
+   which `.sponsors { margin-top }` in home.css reserved space for by hand. A single box of
+   known height cannot do either thing. Nothing here may overflow `.hero`; if you add
+   something that does, you are rebuilding the problem this replaced.
+
+   Everything is prefixed `hp-` so none of it can collide with the `.hero-stage-*` classes in
+   styles.css, which belong to the staging studio, not to this. */
 
 /* ---------------------------------------------------------------- the sentence */
 
-/* styles.css sets `.hero-content h1 span { display:inline-block; margin-right:8px }` for the
-   per-word hover effects the old headline had. This headline is one sentence, not a row of
-   words, and that margin opens a visible gap before every slot and before the full stop.
-   Specificity has to beat (0,1,2), hence the class on the h1 rather than a bare `.hp-*`. */
-.hero-content h1.hp-sentence span {
-  display: inline;
-  margin-right: 0;
-}
+/* NOTE ON SPECIFICITY, because this used to be the hard part of this file. The headline was
+   inside `.hero-content`, so every rule below had to out-specify `.hero-content h1` (0,1,1)
+   and `.hero-content h1 span` (0,1,2) in styles.css, and each of those beat a bare `.hp-*`
+   class silently. Three separate bugs came out of that: a chevron that rendered as a bare
+   vertical bar, a font-size that could not be changed, and a menu that opened and then would
+   not close.
 
-/* ...but EVERY span in here that is a box rather than a word has to win it back, and that
-   rule is (0,2,2), so a bare `.hp-slot` at (0,1,0) loses. This has now bitten three times:
-   the slot (needs inline-block to be a positioning context for its menu), the chevron
-   (without a width it renders as a bare 0-wide vertical bar), and the menu itself, which
-   became a span so it could legally live inside an h1 and promptly went `display:inline`
-   and stopped opening. If you add a span to the sentence, decide which side of this it is
-   on. */
-.hero-content h1.hp-sentence .hp-slot,
-.hero-content h1.hp-sentence .hp-slot__chev {
-  display: inline-block;
-}
+   The canvas layout has no `.hero-content`, so on this page those two rules match nothing and
+   the war is over. Bare classes are enough now. Do NOT reintroduce a `.hero-content` wrapper
+   around this headline without reading the git history of this file first. */
 
-.hero-content h1.hp-sentence .hp-menu:not([hidden]),
-.hero-content h1.hp-sentence .hp-menu__list {
-  display: block;
-}
-
-/* And the closed case has to be spelled out too. `[hidden]`'s `display:none` comes from the
-   UA sheet, which loses to ANY author declaration — including the blanket `span` reset
-   above, which is why the menu opened correctly and then would not close: it was still
-   `display:inline` with the attribute set. The attribute is only a switch if both of its
-   positions are author-declared here. */
-.hero-content h1.hp-sentence .hp-menu[hidden] {
-  display: none;
-}
-
-/* The h1 has to be qualified, NOT written as a bare `.hp-sentence`. styles.css already has
-   `.hero-content h1 { font-size: clamp(40px, 5vw, 60px) }` at (0,1,1), which beats a lone
-   class at (0,1,0) — so a bare rule here is overridden and every size you try does nothing
-   at all. That cost a round of "why is changing the font-size not changing the layout".
-   Same trap as the two span rules above; this file has to out-specify styles.css or lose. */
-.hero-content h1.hp-sentence {
+.hp-sentence {
   /* Well below the 60px the old six-word headline took, and that is a layout constraint
-     rather than a type preference. This sentence is at its widest with a long room and a
-     long style in it at once, in the wordiest language: German renders "Gestalte dieses
+     rather than a type preference. The sentence is at its widest with a long room and a long
+     style in it at once, in the wordiest language: German renders "Gestalte dieses
      Schlafzimmer im Stil Skandinavisch." where English has "Stage this bedroom in Modern."
-     Each extra line it wraps to is a line the hero column overflows by, and it overflows
-     onto the sponsor logos. Re-measure the locales before raising this. */
-  font-size: clamp(26px, 2.8vw, 42px);
+     Every extra line it wraps to eats into the render behind it. Re-measure the locales
+     before raising this.
+
+     THE CLAMP IS THE CEILING, NOT THE ANSWER. fitSentence() in scripts/hero-picker.js
+     measures the locale's widest room + widest style once and, if that pair would not fit on
+     one line, writes a smaller size into --hp-sentence-fs. It is pinned to the WORST pair
+     rather than the current one, so the headline never changes size as you pick — see the
+     comment on the function. The clamp is what you get with the variable unset: no JS, or a
+     locale whose worst pair already fits (English does). */
+  font-size: var(--hp-sentence-fs, clamp(23px, 2.5vw, 38px));
   line-height: 1.14;
   letter-spacing: -0.02em;
+  margin: 0 0 18px;
+  color: var(--bg-elevated);
   text-wrap: balance;
+  text-shadow: 0 1px 14px rgba(9, 17, 45, 0.45);
+}
+
+/* ADDED BY JS, AND ONLY BY JS. fitSentence() sets this in the same tick it writes
+   --hp-sentence-fs, so the two never disagree — a `nowrap` that outlived its measurement
+   would push the sentence out through the side of the bar, and nothing here may overflow
+   `.hero` (see the file header).
+
+   That is also why it is a class rather than a plain `@media (min-width: 769px)` rule. With
+   JS off, the picker is inert and the sentence is whatever the markup shipped, but on a
+   server-rendered locale URL that is a German or Spanish default — long enough to overflow if
+   it could not wrap. No class, no nowrap, and it wraps as it does today.
+
+   `text-wrap: balance` above is left alone: it has no effect on a single line and is still
+   what shapes the wrapped line on a phone. */
+.hp-sentence.is-fitted {
+  white-space: nowrap;
 }
 
 .hp-slot {
@@ -67,20 +71,15 @@
 .hp-slot__btn {
   font: inherit;
   letter-spacing: inherit;
-  color: var(--brand);
+  /* Light, not --brand. The sentence now sits on a dark scrim over a photograph rather than
+     on the pale page background, so the whole blue ramp inverts: --brand at #2563eb lands
+     near 2:1 on the scrim and reads as dark-on-dark. --brand-pale is the step that works
+     here, and it was the unusable one before. If this ever moves off the scrim, walk it back
+     DOWN the ramp rather than guessing. */
+  color: var(--brand-pale);
   background: none;
   border: 0;
-  /* The underline is the affordance — it is what says these two words are controls and not
-     just coloured text, since the chevron on its own is 0.28em of hairline. It has to be
-     picked against the BACKGROUND VIDEO, not against white: the hero carries no panel, so
-     this composites over #b2c4f6 (styles.css) and the phone poster resolves to the same
-     tint. The blue ramp is deceptive there — --brand-pale #93c5fd lands at 1.04:1 on that
-     background and is arithmetically almost the same colour, so it was being painted and
-     not seen; even --brand-soft only reaches 1.47:1. --brand-strong is the first step that
-     clears the 3:1 a non-text indicator needs (3.9:1), which leaves --brand-deep as the
-     hover step. Do not walk either back up the ramp for subtlety — they were already up
-     there, and the result was an invisible underline. */
-  border-bottom: 0.075em solid var(--brand-strong);
+  border-bottom: 0.075em solid rgba(147, 197, 253, 0.6);
   border-radius: 2px;
   padding: 0 0.06em;
   margin: 0;
@@ -90,20 +89,17 @@
 
 .hp-slot__btn:hover,
 .hp-slot__btn[aria-expanded="true"] {
-  color: var(--brand-strong);
-  border-bottom-color: var(--brand-deep);
+  color: var(--bg-elevated);
+  border-bottom-color: var(--bg-elevated);
 }
 
-/* Same background problem as the underline: --brand-soft is 1.47:1 over the hero video, so
-   the ring was drawn but not perceivable, and a focus indicator needs 3:1. --brand-deep
-   matches the sentence text around it and clears that comfortably. */
 .hp-slot__btn:focus-visible {
-  outline: 3px solid var(--brand-deep);
+  outline: 3px solid var(--bg-elevated);
   outline-offset: 3px;
 }
 
-/* Drawn rather than typed: a glyph would inherit the headline's font-size and sit on the
-   text baseline, which at 50px is a chevron the size of a word. */
+/* Drawn rather than typed: a glyph would inherit the headline's font-size and sit on the text
+   baseline, which at 38px is a chevron the size of a word. */
 .hp-slot__chev {
   display: inline-block;
   width: 0.28em;
@@ -112,27 +108,71 @@
   vertical-align: 0.18em;
   border-right: 0.07em solid currentColor;
   border-bottom: 0.07em solid currentColor;
-  transform: rotate(45deg);
+  /* The identity `translateY(0)` is not filler. The open state below is
+     `translateY(…) rotate(…)`, and a transition only interpolates a transform PER COMPONENT
+     while both ends list the same functions in the same order. Drop this and the two ends no
+     longer match, so the browser falls back to interpolating the decomposed matrices — which
+     normalises 225deg to -135deg and spins the caret backwards through the closed position. */
+  transform: translateY(0) rotate(45deg);
   transform-origin: center;
+  /* 0.2s against the menu's 0.16s pop: the caret is still turning as the menu lands, which is
+     what makes the two read as one gesture rather than two events. The easing carries the
+     caret ~4% past the flip (measured: 232deg at the peak, against the 225deg it settles on)
+     so it eases into position instead of stopping dead on it. */
+  transition: transform 0.2s cubic-bezier(0.32, 1.35, 0.56, 1);
   opacity: 0.72;
 }
 
+/* Open: the same caret turned 180deg, and it must not appear to move.
+   The ink is only two borders, so it fills the far corner of the box rather than the middle —
+   its centre sits 0.1607 x 0.28em down and right of the box centre, which rotate(45deg) turns
+   into 0.064em BELOW it. Flipping about the box centre therefore throws the caret 0.127em
+   upwards, twice that offset, which is what read as "the up caret is way too high". The
+   translate puts it back, so this is the down caret spun in place and nothing else.
+   `vertical-align` must stay identical to the closed state — it was 0.34em here, which lifted
+   the caret a second time on top of the flip. */
 .hp-slot__btn[aria-expanded="true"] .hp-slot__chev {
-  transform: rotate(225deg);
-  vertical-align: 0.34em;
+  transform: translateY(0.127em) rotate(225deg);
 }
 
 /* -------------------------------------------------------------------- the menus */
 
-/* `hidden` is the open/closed switch, so this must not set an unconditional `display` —
-   the attribute's UA rule loses to any author declaration. */
+/* `hidden` is the open/closed switch, so this must not set an unconditional `display` — the
+   attribute's UA rule loses to any author declaration. The menu opens UPWARDS: the headline
+   sits at the bottom of the canvas, so a menu below it would open off the section. */
+/* OPEN. The entrance and the exit are two different transitions, and which one runs is decided
+   by which rule the element is moving INTO — the open state's list on the way in, the closed
+   state's list (on `.hp-menu` below) on the way out. That is the only way to give a dismissal
+   its own, faster curve; a single symmetrical transition always makes closing feel slow.
+
+   `display` is in the list because `hidden` is the switch and nothing else may be: the menu is
+   `display: none` when closed, so without `allow-discrete` the browser would apply that on
+   frame one of the exit and there would be nothing left to fade. `allow-discrete` holds
+   `display: block` until the transition finishes. */
 .hp-menu:not([hidden]) {
   display: block;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+  transition:
+    opacity 0.2s ease,
+    transform 0.26s cubic-bezier(0.22, 1.24, 0.36, 1),
+    display 0.26s allow-discrete;
+}
+
+/* The "from" half of the entrance. An element arriving from `display: none` has no previous
+   computed style to interpolate out of, so without this the open rule would simply apply and
+   the menu would pop in fully formed. @starting-style is what gives it one. */
+@starting-style {
+  .hp-menu:not([hidden]) {
+    opacity: 0;
+    transform: translateY(12px) scale(0.965);
+  }
 }
 
 .hp-menu {
   position: absolute;
-  top: calc(100% + 12px);
+  bottom: calc(100% + 12px);
   left: 0;
   z-index: 40;
   min-width: 266px;
@@ -141,17 +181,42 @@
   border: 1px solid var(--border);
   border-radius: 16px;
   box-shadow: 0 26px 60px -22px rgba(13, 26, 58, 0.5), 0 2px 8px rgba(13, 26, 58, 0.07);
-  /* The headline's type scale must not leak into the menu. */
+  /* The headline's type scale must not leak into the menu, and neither must its colour or
+     text-shadow — the menu is a light popover sitting on the dark bar. */
   font-size: 16px;
   font-weight: 400;
   letter-spacing: normal;
   line-height: 1.4;
-  animation: hp-pop 0.16s ease;
-}
+  color: var(--slate-deep);
+  text-shadow: none;
+  /* CLOSED, and also the exit. The menu hangs ABOVE its button (`bottom: 100% + 12px`), so
+     `bottom left` is the corner nearest the trigger: it grows out of the word you clicked and
+     collapses back into it, rather than scaling about its own middle.
 
-@keyframes hp-pop {
-  from { opacity: 0; transform: translateY(-6px); }
-  to { opacity: 1; transform: none; }
+     The exit is deliberately shorter than the 0.26s entrance: a dismissal that takes as long
+     as the opening reads as lag — you have already decided, and the menu is now in the way of
+     the render behind it.
+
+     WHAT MAKES A DISMISSAL FEEL SLOW IS THE FIRST 60ms, NOT THE DURATION. An `ease-in` fade
+     holds the menu at 0.91 opacity 40ms in and 0.68 at 80ms, so the click appears to do
+     nothing before anything moves; that read as sluggish at 0.16s and would still read as
+     sluggish at 0.12s. `linear` starts losing opacity on the first frame, which is what makes
+     it feel like a response.
+
+     Both ends of that are worth keeping in mind if you retune it. Front-load the fade too
+     hard — the first draft paired it with a back-loaded ease-in on the TRANSFORM — and
+     opacity is under 0.01 by 120ms with the slide only half done: you get a fade, and the
+     motion you wrote never appears on screen at all. The fade finishing 20ms before the
+     movement is the deliberate middle: the menu is gone while still travelling, which reads
+     as flicked away rather than either dragged or teleported. */
+  opacity: 0;
+  transform: translateY(8px) scale(0.985);
+  transform-origin: bottom left;
+  pointer-events: none;
+  transition:
+    opacity 0.1s linear,
+    transform 0.12s cubic-bezier(0.3, 0, 0.7, 1),
+    display 0.12s allow-discrete;
 }
 
 /* A span, not a ul: an h1 may only contain phrasing content, and role="listbox" does the
@@ -159,6 +224,30 @@
    children with no <li> between them. */
 .hp-menu__list {
   display: block;
+}
+
+/* The long menu, in two columns instead of one very tall one. applyColumns() in
+   scripts/hero-picker.js adds this class and sets --hp-menu-rows; the comment there explains
+   why the flow is column-wise (the keyboard walks DOM order) and why the row count arrives
+   from JS rather than being written in here.
+
+   `1fr` on an intrinsically-sized grid gives both columns the width of the widest row in
+   either, so the two line up instead of stepping in and out with the label lengths — which
+   in this menu run from "Modern" to "Scandinavian" to "Benutzerdefiniert".
+
+   ABOVE 768px ONLY, because below it the menu is not a popover any more but a sheet inset
+   14px from both edges of the bar (see the phone block near the foot of this file), and half
+   of a 390px phone is not a column. Once the 46px thumb, the 11px gap and the row padding
+   are taken out there is about 100px of text left, which "Scandinavian" fills exactly and
+   "Benutzerdefiniert" overruns. The phone keeps one column and caps its height instead. */
+@media (min-width: 769px) {
+  .hp-menu__list--split {
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-rows: repeat(var(--hp-menu-rows, 4), auto);
+    grid-auto-columns: 1fr;
+    column-gap: 4px;
+  }
 }
 
 .hp-menu__item {
@@ -178,16 +267,36 @@
   cursor: pointer;
 }
 
-.hp-menu__item:hover,
-.hp-menu__item:focus-visible {
+.hp-menu__item:hover {
   background: var(--brand-wash);
   color: var(--brand-deep);
-  outline: none;
 }
 
 .hp-menu__item[aria-selected="true"] {
   background: var(--brand-deep);
   color: var(--bg-elevated);
+}
+
+/* FOCUS IS AN OUTLINE, AND IT HAS TO BE — do not fold this back in with :hover.
+   It used to share that block, which meant `outline: none` plus a --brand-wash background as
+   the only focus signal. Two things were wrong with that. The wash is #eff6ff on a #ffffff
+   menu, 1.06:1 and colour-only, nowhere near the 3:1 WCAG 2.4.11 asks between a focused and
+   an unfocused control. Worse, `[aria-selected="true"]` below carries the SAME specificity
+   (0,2,0) and came later, so on the selected row it simply won — and the selected row is
+   exactly the one openMenu() focuses when the menu opens. Opening either menu from the
+   keyboard therefore showed no focus anywhere until you pressed Down.
+
+   An outline cannot be cancelled by a background rule at any specificity, which is the
+   property that fixes it. `outline-offset` is negative so the ring sits inside the row's own
+   10px radius instead of colliding with the neighbour above. Both colours are declared so the
+   ring is visible on the white row AND on the --brand-deep selected row. */
+.hp-menu__item:focus-visible {
+  outline: 2px solid var(--brand-deep);
+  outline-offset: -2px;
+}
+
+.hp-menu__item[aria-selected="true"]:focus-visible {
+  outline-color: var(--bg-elevated);
 }
 
 .hp-menu__thumb {
@@ -199,88 +308,481 @@
   background: var(--brand-tint);
 }
 
-/* --------------------------------------------------------------------- the photo */
+/* -------------------------------------------------------------------- the canvas */
 
-/* The glass frame the carousel used to sit in, at close to the same geometry. It is about
-   10px taller (the caption flows below the photo instead of eating into it), which is why
-   `.sponsors { margin-top }` in home.css went from 200px to 210px — read the note there
-   before changing anything here that affects this box's height.
+/* The one box. Its height is fixed by clamp rather than by the image's aspect ratio: the
+   renders are 16:10 and letting them drive the height is what made the old photo column
+   taller than the copy beside it. Here the image is cropped to the box, not the other way
+   round.
 
-   backdrop-filter is on THIS element and overflow:hidden is on .hp-stage inside it,
-   deliberately apart. Chrome skips painting descendant <img>s when both land on the same
-   element, and every diagnostic still reports the image as healthy, so it is an expensive
-   half hour to rediscover. The rounded clip belongs to the photo; the blur belongs to the
-   frame; they must not meet. */
-.hp-frame {
-  width: 100%;
-  max-width: 800px;
-  margin: 40px auto 0;
-  padding: 16px 16px 10px;
-  border: 1px solid var(--border);
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10px);
-}
+   THERE IS NO `overflow: hidden` HERE, and that is deliberate. The rounded corners are cut by
+   the two children that reach the edges (the photo and the bar), each carrying its own radius,
+   rather than by clipping the box. Clipping the box also clips the dropdown menus, because the
+   headline lives inside this element now and the menus are absolutely positioned off their
+   slot: at 390px wide the style menu overflowed the right edge by 1px in English, 14px in
+   German and 31px in Russian, and a clipped box eats that silently. Unclipped they simply
+   overhang, which is what a popover should do.
 
-/* aspect-ratio lives here rather than on the frame on purpose. The carousel put it on the
-   outer box and gave the caption a fixed pixel budget out of the remainder, which its own
-   stylesheet warned would truncate the caption silently the moment anything above it grew.
-   Sizing the photo and letting the note flow underneath cannot fail that way. */
-.hp-stage {
+   There is also NO backdrop-filter on this element. Chrome skips painting descendant <img>s
+   when overflow:hidden and backdrop-filter land on the same box, and every diagnostic still
+   reports the image as healthy, so it is an expensive half hour to rediscover. If you want a
+   blur inside the canvas, put it on a child that has neither. */
+.hp-canvas {
   position: relative;
-  aspect-ratio: 16 / 10;
-  overflow: hidden;
-  border-radius: 12px;
+  min-height: clamp(430px, 58vh, 555px);
+  border-radius: 22px;
   background: var(--brand-tint);
+  box-shadow: 0 24px 60px -28px rgba(13, 26, 58, 0.55);
 }
 
-.hp-stage__img {
+.hp-canvas__img {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  /* WHICH SLICE OF THE RENDER SURVIVES THE CROP. The images are 3:2 and this box is about
+     2.1:1, so ~215px of image height at 1104px wide has nowhere to go; this decides where it
+     is taken from. 0% keeps the top of the render, 100% the bottom, and each point is worth
+     roughly 2px on a desktop canvas.
+
+     It sat at 38% to protect the ceiling and window head — the half of the room that shows
+     the architecture is unchanged, which is the hero's whole argument — on the reasoning that
+     the bottom third is floor the bar covers anyway. That over-corrected badly: it spent the
+     frame on empty ceiling and pushed the furniture, which is the thing actually being sold,
+     down behind the bar.
+
+     WHAT LIMITS THIS AT THE TOP is wall-hung content, not the ceiling: the bathroom mirrors,
+     the framed art, and the open shelving and upper cabinets in the kitchens. Those are what
+     the top edge reaches first. At 84% every one of them survives across all six room types,
+     with the tallest — the sunburst mirror in custom Bathroom, the shelf run in farmhouse
+     Kitchen — close to the edge but intact.
+
+     RE-MEASURE THIS IF THE GRID IS EVER RE-RENDERED, because the limit belongs to the images
+     rather than to this box. It sat at 78% against the previous set, where the ceiling pendant
+     hung further into frame and was the binding element; the renders that replaced them sit
+     lower, and that is the whole reason there were another six points to take.
+
+     Past ~86% the mirrors and shelf tops are clipped outright and the frame fills with floor
+     the bar covers anyway — the 38% mistake inverted, spending the crop on the part of the
+     render nobody sees. */
+  object-position: center 84%;
+  /* The photo cuts its own corners; see the note on .hp-canvas for why the parent does not. */
+  border-radius: 22px;
+  /* THE OUTGOING PHOTO DOES NOT FADE. It holds at full opacity underneath and is switched off
+     in one frame, 0.42s later, once the incoming one has finished covering it — which is what
+     `0s linear 0.42s` buys: no duration, all delay.
+
+     Cross-fading both at once is what produced the white flash on "See original". Two stacked
+     layers each at 0.5 do not compose to an opaque image: coverage is 1 - (1 - 0.5)² = 0.75,
+     so a quarter of `.hp-canvas`'s pale --brand-tint came through the middle of every swap,
+     and against two photographs that reads as a flash rather than as a tint. No pair of
+     easing curves fixes it either — the shortfall is in how alpha composites, not in the
+     timing — so the layer underneath has to stay opaque instead. */
   opacity: 0;
-  transition: opacity 0.42s ease;
+  z-index: 0;
+  transition: opacity 0s linear 0.42s;
 }
 
-.hp-stage__img.is-on {
+.hp-canvas__img.is-on {
   opacity: 1;
+}
+
+/* THE LAYER IN FLIGHT, and the only one that animates. It fades up THROUGH the photo beneath,
+   which is still solid, so the composite is opaque at every frame. z-index 1 keeps it above
+   the other renders and still under .hp-bar (2), the scrim (4) and the "See original"
+   button (5).
+
+   `is-top` is deliberately NOT the same thing as `is-on`, and that is the whole fix for a
+   fast double-click. showOnly() in hero-picker.js hands this class to an incoming photo only
+   when that photo has something to fade in from; ask for the one that is already opaque
+   underneath and the class does not move, so the photo on top simply REVERSES out from
+   wherever it had got to and reveals it again. Tie the front layer to `is-on` instead and
+   the two swap places mid-flight: the requested photo arrives fully opaque on top in one
+   frame, which is the "the transition stops working" that this replaced. */
+.hp-canvas__img.is-top {
+  z-index: 1;
+  transition: opacity 0.42s ease;
 }
 
 .hp-original {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  z-index: 3;
-  padding: 7px 13px;
-  border: 0;
-  border-radius: 9px;
-  background: rgba(15, 23, 42, 0.58);
-  backdrop-filter: blur(8px);
+  top: 16px;
+  right: 18px;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 13px 7px 11px;
+  /* A hairline edge and an inset top highlight, because the pill sits on a PHOTOGRAPH and
+     has to hold its shape over both a bright window and a dark floor. A flat translucent
+     slab reads as cheap on the light renders specifically — there is nothing separating it
+     from what is behind it. The saturate() keeps the blurred photo underneath from going
+     grey, which is what makes it look like glass rather than fog. */
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(12px) saturate(150%);
+  box-shadow: 0 8px 20px -12px rgba(8, 15, 35, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.16);
   color: var(--bg-elevated);
   font-family: inherit;
   font-size: 12px;
   font-weight: 700;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition: background 0.18s, border-color 0.18s, color 0.18s, box-shadow 0.18s;
+}
+
+/* Two stacked frames, and the FILLED one is whichever photo you are looking at: bottom-right
+   for the staged render, top-left for the original. It carries the state a second way for
+   anyone who reads the control as a shape before they read the words. */
+.hp-original__icon {
+  position: relative;
+  flex: none;
+  width: 13px;
+  height: 12px;
+}
+
+.hp-original__icon::before,
+.hp-original__icon::after {
+  content: "";
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border: 1.5px solid currentColor;
+  border-radius: 2.5px;
+  transition: background 0.18s, opacity 0.18s;
+}
+
+.hp-original__icon::before {
+  top: 0;
+  left: 0;
+  opacity: 0.5;
+}
+
+.hp-original__icon::after {
+  right: 0;
+  bottom: 0;
+  background: currentColor;
 }
 
 .hp-original:hover {
-  background: rgba(15, 23, 42, 0.82);
+  background: rgba(15, 23, 42, 0.74);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 10px 24px -12px rgba(8, 15, 35, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
 
-.hp-original[aria-pressed="true"] {
-  background: var(--bg-elevated);
+/* Showing the original. A CLASS, not [aria-pressed]: the label now names the action it will
+   perform ("See staged"), and a button whose label changes must not also claim a pressed
+   state — a screen reader would read "See staged, pressed" while the ORIGINAL is on screen,
+   which is the inverse of the truth. One convention or the other, and the label is the one
+   that serves both audiences here. See paintOriginalLabel() in hero-picker.js. */
+.hp-original.is-showing-original {
+  background: var(--brand-pale);
+  border-color: rgba(37, 99, 235, 0.4);
   color: var(--brand-deep);
+  box-shadow: 0 8px 20px -12px rgba(13, 26, 58, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
-/* Sits over whichever render is currently shown, so a switch reads as "rendering" rather
-   than as a gap. Only ever visible on a pair the visitor has not opened before. */
-.hp-stage::after {
+.hp-original.is-showing-original .hp-original__icon::before {
+  background: currentColor;
+  opacity: 1;
+}
+
+.hp-original.is-showing-original .hp-original__icon::after {
+  background: none;
+  opacity: 0.5;
+}
+
+/* THE SECOND HOVER IS NOT OPTIONAL, and the reason is source order rather than taste.
+   `.hp-original:hover` and `.hp-original.is-showing-original` are both (0,2,0) — a
+   pseudo-class weighs the same as a class — so the later rule simply wins, and the pill
+   lost its hover the moment it turned pale. It has to be restated for the state, after it.
+   Mixing toward --brand-deep rather than picking a new hex keeps the darkening tied to the
+   same ramp the resting colour comes off. */
+.hp-original.is-showing-original:hover {
+  background: color-mix(in srgb, var(--brand-pale) 84%, var(--brand-deep));
+  border-color: rgba(30, 58, 138, 0.5);
+}
+
+/* ------------------------------------------------------------------ the bottom bar */
+
+/* THE SCRIM STOPS IS CALIBRATED, NOT PICKED BY EYE, and it was calibrated against all 36
+   renders rather than a sample, because which one is showing is the visitor's choice.
+
+   Method: hide every glyph, screenshot the canvas, and take the brightest painted pixel
+   inside each copy region (insetting past the rounded chip corners, where the photo shows
+   through outside the fill and no glyph ever lands). That pixel is the worst case; if it
+   clears 4.5:1 against white, the region clears it everywhere.
+
+   As tuned: worst across all 36 is 5.55:1 on the list title over coastal-bathroom, then 6.37
+   on "See original" over coastal-kitchen and 10.07 on the list items. The list title is always
+   the binding line because it is the highest piece of copy in the bar. Do not lighten these to
+   show more of the photo, and do not add anything above the title, without re-running that
+   measurement.
+
+   THOSE NUMBERS ARE STALE AS OF 2026-08-18 and have not been re-measured. The grid is now 48
+   renders rather than 36, every one was re-generated, and object-position moved from 38% to
+   84% — so a different band of a different set of images sits behind the copy. An offline
+   proxy (brightest pixel in the band behind the bar, old crop vs new, across all 48) showed
+   the worst case did not move, which is reassuring and not conclusive: it samples the full
+   width, where any blown-out pixel saturates it, while the real method insets to the copy
+   region. Re-run the procedure above before trusting the 5.55. */
+.hp-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 30px;
+  align-items: end;
+  padding: 56px 30px 26px;
+  border-radius: 0 0 22px 22px;
+  /* PIXEL STOPS, NOT PERCENTAGES, and that is the fix for a specific failure. With
+     percentage stops the ramp stretches with the bar, so when the counters moved into the
+     side column and made it 80px taller, every stop slid down with it and the list title
+     ended up sitting at 0.36 alpha instead of 0.83 — it measured 3.78:1, a fail, without a
+     single stop being edited. Pixel stops are anchored to the top of the bar, which is where
+     the content starts, so the coverage over the first line of copy is the same whatever the
+     bar ends up holding. */
+  background: linear-gradient(
+    180deg,
+    rgba(9, 17, 45, 0) 0,
+    rgba(9, 17, 45, 0.22) 20px,
+    rgba(9, 17, 45, 0.7) 70px,
+    rgba(9, 17, 45, 0.88) 170px,
+    rgba(9, 17, 45, 0.95) 100%
+  );
+}
+
+.hp-bar__main {
+  min-width: 0;
+  /* NO max-width, and the 640px that used to be here is why the headline wrapped. The grid
+     column is already `minmax(0, 1fr)`, so this block can never reach further than the side
+     column's left edge — the cap was a second, tighter bound on top of that, and it was the
+     binding one. Measured at 1707px: 778px of column free, 640px allowed, and English's
+     widest pair ("dining room" + "Scandinavian") needs 738px at the full 38px. It fits the
+     column and did not fit the cap, so it wrapped for no reason the layout required.
+
+     `min-width: 0` still matters: without it the grid's min-content floor is the longest
+     unbreakable word, and a `nowrap` sentence has no break opportunities at all, so the
+     column would refuse to shrink and push the side column off the bar. */
+}
+
+/* The eyebrow. Nothing else in the codebase styles `.catchphrase` — this element is its only
+   use — so colour and size are stated here for the scrim. It keeps the class name because
+   test/frontend/hero-eyebrow.test.js keys off it.
+
+   THE HOVER IS LOCAL CSS, NOT THE SHARED scripts/hover-glow.js EFFECT, and that is a fix
+   rather than a preference. The shared handler sets `transform` and `textShadow` as inline
+   styles on mouseover and reverts with `textShadow = 'none'` on mouseout. An inline style
+   outranks this sheet, and 'none' is a value, not a removal — so from the first hover
+   onwards the eyebrow permanently lost the `0 1px 10px` scrim shadow below, which is what
+   carries white text over a bright render. Which render is showing is the visitor's choice
+   among 36, so that shadow is not decoration. The element also had no `transition` in any
+   sheet, so both states snapped. Do not re-add `data-hover-glow` to the markup; the test
+   guards it. */
+.hp-bar .catchphrase {
+  display: inline-block;
+  /* Positioned so the underline below can be placed against this box. */
+  position: relative;
+  margin: 0 0 8px;
+  max-width: 100%;
+  font-size: clamp(0.95rem, 1.5vw, 1.15rem);
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--bg-elevated);
+  text-shadow: 0 1px 10px rgba(9, 17, 45, 0.5);
+  /* Left, not the default centre. The element is inline-block at the left edge of
+     .hp-bar__main, so anything scaled or nudged from the centre grows leftwards into the
+     bar's 30px padding — which is exactly what the old scale(1.1) did. */
+  transform-origin: left center;
+  transition: transform 0.28s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* The underline. Sits in the element's existing 8px bottom margin and is absolutely
+   positioned, so it costs no layout and the headline below it never moves. */
+.hp-bar .catchphrase::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 2px;
+  border-radius: 2px;
+  pointer-events: none;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.34s cubic-bezier(0.22, 0.61, 0.36, 1);
+  background: linear-gradient(90deg, var(--brand-pale), rgba(147, 197, 253, 0));
+  box-shadow: 0 0 10px rgba(147, 197, 253, 0.45);
+}
+
+/* Gated on a real pointer. Without this a tap on a phone latches the hover state and there
+   is nothing to move away with, so the underline would stay drawn until the next paint that
+   happens to clear it. */
+@media (hover: hover) and (pointer: fine) {
+  .hp-bar .catchphrase:hover {
+    transform: translateY(-1px);
+  }
+
+  .hp-bar .catchphrase:hover::after {
+    transform: scaleX(1);
+  }
+}
+
+.hp-bar .hero-ctas {
+  justify-content: flex-start;
+}
+
+/* The free-tier line under the button ("3 free generations left today" / "Try Stagify+ today.
+   Upgrade"). index.css colours it --brand-deep for the pale background; on the scrim that is
+   navy on a photograph. The link keeps its underline, which is now the only thing marking it
+   as a link since the colour no longer differs from the text around it. */
+.hp-bar .hero-free-gens-today,
+.hp-bar .hero-free-gens-today .hero-free-gens-upgrade {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.hp-bar .hero-free-gens-today {
+  text-align: left;
+  text-shadow: 0 1px 8px rgba(9, 17, 45, 0.6);
+}
+
+/* -------------------------------------------------------- "every render includes" */
+
+.hp-bar__side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 16px;
+  min-width: 0;
+  max-width: 300px;
+  padding-bottom: 4px;
+  /* Right-aligns the figure over its label inside each stat cell, so the two counters share a
+     right edge with the list above them. `align-items` only places the blocks; it cannot
+     reach inline content. */
+  text-align: right;
+}
+
+/* Undo the inherited right alignment: the list is a left-aligned block that happens to live
+   in a right-aligned column. */
+.hp-added {
+  width: 100%;
+  text-align: left;
+}
+
+.hp-added__title {
+  margin: 0 0 8px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.78);
+  text-shadow: 0 1px 8px rgba(9, 17, 45, 0.75);
+}
+
+.hp-added__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+.hp-added__list li {
+  padding: 5px 0;
+  font-size: 13px;
+  line-height: 1.25;
+  color: rgba(255, 255, 255, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.13);
+  /* The list sits higher in the frame than the headline does, so it gets less of the scrim.
+     The shadow is what carries it over a lit wall or a window; do not drop it without
+     re-checking against coastal-living-room, which was the brightest of the ORIGINAL 36 —
+     re-identify the worst case across the current 48 before relying on that name. */
+  text-shadow: 0 1px 8px rgba(9, 17, 45, 0.8);
+}
+
+.hp-added__list li:last-child {
+  border-bottom: 0;
+}
+
+/* ------------------------------------------------------------------- the counters */
+
+/* Rooms Staged / Users Served. These were two solid --brand pills wrapped at runtime in an
+   animated glow (star-border.js), which is a control's costume: correct on the pale page
+   background they used to sit on, wrong floating over a photograph. They are typography now
+   — figure large, label in the same small-caps as the list title above — so the bottom-right
+   corner reads as one block instead of two widgets parked on a render.
+
+   That retired star-border.js, star-border.css and the drift test that kept the pre- and
+   post-swap boxes pixel-identical. Nothing on this page loads any of them.
+
+   The reveal is the one thing kept from the old block: the figures ship blank and
+   count-up.js adds `.is-ready` once both count endpoints resolve, so the corner never shows
+   a pair of zeroes or a layout that jumps when real numbers land. */
+.hero-stats {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.35s ease, visibility 0.35s ease;
+}
+
+.hero-stats.is-ready {
+  opacity: 1;
+  visibility: visible;
+}
+
+.hp-stats {
+  display: flex;
+  gap: 22px;
+  cursor: default;
+}
+
+/* The divider is the same hairline as the list rows above, which is what ties the two blocks
+   together into one corner rather than two. */
+.hp-stat + .hp-stat {
+  padding-left: 22px;
+  border-left: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+.hp-stat__num {
+  display: block;
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--bg-elevated);
+  /* Tabular figures and a JS-driven min-width, together, are what stop the count-up from
+     reflowing the row on every frame: count-up.js writes `min-width` in ch as the number
+     grows so the box eases to its final width instead of snapping a digit at a time. */
+  font-variant-numeric: tabular-nums;
+  min-width: 1ch;
+  text-shadow: 0 1px 10px rgba(9, 17, 45, 0.6);
+  transition: min-width 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.hp-stat__label {
+  display: block;
+  margin-top: 3px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.78);
+  text-shadow: 0 1px 8px rgba(9, 17, 45, 0.75);
+}
+
+/* --------------------------------------------------------------------- the spinner */
+
+/* Sits over whichever render is currently shown, so a switch reads as "rendering" rather than
+   as a gap. Only ever visible on a pair the visitor has not opened before. Pushed above centre
+   so it is not hidden behind the bar. */
+.hp-canvas::after {
   content: "";
   position: absolute;
-  top: 50%;
+  top: 38%;
   left: 50%;
   z-index: 4;
   width: 30px;
@@ -294,7 +796,7 @@
   transition: opacity 0.2s;
 }
 
-.hp-stage.is-loading::after {
+.hp-canvas.is-loading::after {
   opacity: 1;
   animation: hp-spin 0.7s linear infinite;
 }
@@ -303,53 +805,129 @@
   to { transform: rotate(360deg); }
 }
 
-.hp-note {
-  margin: 10px 0 0;
-  text-align: center;
-  font-size: 13px;
-  color: var(--slate);
-}
-
-/* The pills moved into the left column (see the comment on the markup). index.css owns
-   everything about the pills themselves and must keep owning it — this is only the gap
-   that separates them from the call to action they now sit under. */
-.hero-content .hero-stats {
-  margin-top: 26px;
-}
-
 /* ------------------------------------------------------------------- responsive */
 
+/* The side LIST is the first thing to go. Below 1024px the bar cannot hold two columns
+   without the headline wrapping to four lines, and the headline is the control.
+
+   The counters are not part of that: they stay, and the side column simply stacks under the
+   headline as a normal row. That is why `.hp-added` and `.hero-stats` are wrapped separately
+   in the markup rather than hidden as one block. */
+@media (max-width: 1023px) {
+  .hp-bar {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .hp-added {
+    display: none;
+  }
+
+  .hp-bar__side {
+    align-items: flex-start;
+    max-width: none;
+    text-align: left;
+  }
+}
+
 @media (max-width: 768px) {
-  .hp-frame {
-    margin: 0 auto;
-    padding: 12px;
+  /* The radius is set in four places because four elements draw the corners; they have to
+     agree or the scrim squares off against a rounded photo. */
+  .hp-canvas,
+  .hp-canvas__img {
+    border-radius: 16px;
+  }
+
+  .hp-canvas {
+    min-height: clamp(400px, 66vh, 520px);
+  }
+
+  .hp-bar {
+    padding: 70px 18px 20px;
+    border-radius: 0 0 16px 16px;
+  }
+
+  /* ON A PHONE THE MENU STOPS FOLLOWING ITS SLOT and becomes a sheet inset from both edges
+     of the bar.
+
+     Anchored to the slot it cannot be made safe by width alone: `left: 0` on the slot puts a
+     268px menu off the right edge when the slot sits late in the line (7px in Russian at
+     390 wide, and the style slot is always the later of the two), while `right: 0` puts it
+     off the LEFT edge when the slot sits early. Which end overflows depends on where the
+     translated sentence happens to break, so there is no anchor that holds for 11 locales.
+
+     Making `.hp-slot` static hands the menu to the nearest positioned ancestor, which is
+     `.hp-bar` (it is absolutely positioned). Inset from both of its edges, the menu is on
+     screen by construction in every language and at every width. It overhangs the bar
+     upwards, which is fine now that nothing clips the canvas. */
+  .hp-slot {
+    position: static;
   }
 
   .hp-menu {
-    min-width: min(300px, 78vw);
-  }
-
-  /* The colour below 769px only. --slate on this caption composites against
-     rgba(255,255,255,.2) over the page background here, because #background-video is
-     display:none at this width and the paint stack resolves down to <body>. Above it the
-     video sits in the stack and the darker value is unnecessary. Same reasoning the
-     carousel's note carried; see the audit note that moved it. */
-  .hp-note {
-    color: var(--slate-deep);
-    font-size: 12px;
+    left: 14px;
+    right: 14px;
+    bottom: 14px;
+    min-width: 0;
+    max-width: none;
+    /* One column here (the split is desktop-only), so eight styles at 47px a row is a 390px
+       sheet standing in a canvas whose own floor is clamp(400px, 66vh, 520px) — it would
+       cover the photo it is meant to be choosing between. Capped and scrolled rather than
+       split: a sheet anchored to the bottom of the frame is already something a thumb
+       scrolls, and it holds for a label of any length in any of the eleven locales. */
+    max-height: 58vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hp-stage__img {
+  /* Both selectors, because the fade now lives on `.is-on` (0,2,0) and a media query adds no
+     specificity — listing only the bare class here would leave the incoming photo still
+     fading for 0.42s under reduce. Killing both transitions makes the swap instantaneous in
+     the same frame, which keeps it opaque for the same reason the fade does. */
+  .hp-canvas__img,
+  .hp-canvas__img.is-top {
     transition: none;
   }
 
-  .hp-menu {
+  /* Moved here with the counters. count-up.js already skips the animation itself under
+     reduce and writes the final figure straight in; these two kill the CSS half, which is
+     the reveal fade and the min-width ease the count used to ride on. */
+  .hero-stats,
+  .hp-stat__num {
+    transition: none;
+  }
+
+  /* Killing the transition takes `display` out of it too, so the menu goes back to appearing
+     and vanishing on the frame `hidden` flips — which is the behaviour we want here, not a
+     zero-duration version of the same animation. */
+  .hp-menu,
+  .hp-menu:not([hidden]) {
+    transition: none;
+  }
+
+  /* The caret still flips — it is the only thing telling you the menu is open. It just
+     arrives there instantly instead of spinning. */
+  .hp-slot__chev {
+    transition: none;
+  }
+
+  .hp-canvas.is-loading::after {
     animation: none;
   }
 
-  .hp-stage.is-loading::after {
-    animation: none;
+  /* The eyebrow's hover, stripped to its end state: the lift and the underline still land,
+     they just land instantly rather than easing.
+
+     IF YOU EVER SUPPRESS THE UNDERLINE OUTRIGHT HERE, USE `opacity` OR `content`, NOT
+     `display: none`. test/frontend/hero-eyebrow.test.js scans all four sheets for any rule
+     whose SELECTOR mentions .catchphrase and fails the build if its block contains
+     `display: none` — the pseudo-element selectors included. The test exists because the
+     eyebrow is the only text above the fold naming the product and indexing is mobile-first,
+     so it reads the declaration, not the intent. A `display: none` here blocks the deploy. */
+  .hp-bar .catchphrase,
+  .hp-bar .catchphrase::after {
+    transition: none;
   }
 }

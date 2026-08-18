@@ -8,6 +8,7 @@ import { stripHeader } from './analytics.js';
 import { activityIndexFrom, lastActiveMs, daysSinceActive } from './analytics-users.js';
 import { createOverview } from './overview.js';
 import { createInsights } from './insights.js';
+import { createSignals } from './signals.js';
 import { showErrorToast } from '../toast.js';
 
 /**
@@ -45,6 +46,7 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
   var grantSection=createGrantSection({apiSend:apiSend,onChanged:function(){renderUsers()}});
   var overview=createOverview({ctx:ctx,effectivePlan:effectivePlan});
   var insights=createInsights({ctx:ctx,effectivePlan:effectivePlan});
+  var signals=createSignals({ctx:ctx,apiSend:apiSend,effectivePlan:effectivePlan});
 
   // A zero still shows — it means "checked, nothing there", which is not the same
   // as a missing chip — but it is de-emphasised so six zeroes in the rail don't
@@ -62,6 +64,10 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
     setTabCount('#tc-contacts',stripHeader(ctx.data.contactRows).length);
     setTabCount('#tc-email-opens',getOpenedEmails().length);
     setTabCount('#tc-hosting',ctx.data.hostedImages.length);
+    // ACTIONABLE findings only. Including the 'working well' cards would
+    // make this chip incapable of reading zero, which is the one value that
+    // has to mean something.
+    try{setTabCount('#tc-signals',signals.actionableCount())}catch(e){setTabCount('#tc-signals',0)}
   }
 
   // ── Prompt index ──
@@ -82,7 +88,7 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
   // ── Render all ──
 
   function renderAll(){
-    [overview.render,insights.render,renderUsers,renderEnterprise,renderContacts,renderEmailOpens,renderBugs,renderHosting,renderDownloads].forEach(function(fn){
+    [overview.render,signals.render,signals.renderTeaser,insights.render,renderUsers,renderEnterprise,renderContacts,renderEmailOpens,renderBugs,renderHosting,renderDownloads].forEach(function(fn){
       try{fn()}catch(e){console.error('Admin render error in '+(fn.name||'renderer')+':',e)}
     });
   }
@@ -531,5 +537,9 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
     renderEmailOpens: renderEmailOpens,
     renderBugs: renderBugs,
     renderHosting: renderHosting,
+    // Drops the memoized findings so the next render pass recomputes. Called by
+    // admin.js once per data load and on sign-out, NOT per renderer — the rail
+    // chip, the Overview teaser and the Signals panel must share one result.
+    resetSignals: signals.reset,
   };
 }

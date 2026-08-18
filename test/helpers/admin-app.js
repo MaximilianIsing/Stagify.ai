@@ -60,6 +60,11 @@ function makeSpy(impl) {
  *   - `realKeyLimiter` (default false) → wire the SHARED endpoint-key limiter, i.e.
  *     production; by default a pass-through is injected so unrelated 403 cases in one
  *     file don't share a bucket. `endpointKeyLimiter` injects a specific one.
+ *   - `metricsSnapshot` → what the faked Signals metrics reader returns; `null`
+ *     (or `withMetrics: false`) omits the dep, which is the "unavailable" branch,
+ *   - `metricsError` → make the metrics reader throw, for the 500 branch,
+ *   - `briefResult` → what the faked brief generator resolves to; `withBrief: false`
+ *     omits the dep entirely (the no-key branch).
  * Returns { baseUrl, key, calls, getManifest, hostedImagesDir, referrals, close }.
  */
 export async function mountAdmin(options = {}) {
@@ -67,6 +72,8 @@ export async function mountAdmin(options = {}) {
     logsAccessKey = ADMIN_KEY, uploadFile, uploadError, dataLogFiles = {},
     withReferrals = true, withAdminSessions = true, realUptime = false,
     realKeyLimiter = false, endpointKeyLimiter, realUpload = false,
+    withMetrics = true, metricsSnapshot = { generatedAt: 0, renders: { total: 0 } }, metricsError,
+    withBrief = true, briefResult = { summary: 'All quiet.', model: 'gpt-4o-mini' },
     grantResult = { ok: true, userId: 'u_1', email: 'granted@example.com', expiresAt: '2026-08-22T00:00:00.000Z' },
     revokeResult = { ok: true, userId: 'u_1', email: 'granted@example.com' },
     testSendResult = { ok: true },
@@ -149,6 +156,18 @@ export async function mountAdmin(options = {}) {
   const adminSessionDir = withAdminSessions ? fs.mkdtempSync(path.join(os.tmpdir(), 'stagify-adm-sess-')) : null;
   const adminSessions = adminSessionDir ? createAdminSessions(adminSessionDir) : undefined;
 
+  // Signals tab. Both are FAKED rather than real: admin-metrics.js is covered
+  // against real SQLite in test/analytics/admin-metrics.test.js, and admin-brief.js
+  // against a stub client in test/services/admin-brief.test.js. What the ROUTE
+  // contract needs to prove is the gate, the shapes, and the degradation — so the
+  // deps are spies whose absence is itself a case (`withMetrics`/`withBrief: false`).
+  const adminMetrics = withMetrics
+    ? { snapshot: makeSpy(() => { if (metricsError) throw new Error(metricsError); return metricsSnapshot; }) }
+    : undefined;
+  const adminBrief = withBrief
+    ? { generateBrief: makeSpy(async () => briefResult) }
+    : undefined;
+
   const { protectLogs, requireEndpointKey } = createHttpGuards({
     genAI: null,
     LOGS_ACCESS_KEY: logsAccessKey,
@@ -168,9 +187,11 @@ export async function mountAdmin(options = {}) {
     resetAllMemories,
     deleteUser,
     getDataLogDir: () => dataLogDir,
-    getHostedImagesDir: () => hostedImagesDir,
-    readHostedImagesManifest,
-    writeHostedImagesManifest,
+    hostedImages: {
+      getHostedImagesDir: () => hostedImagesDir,
+      readHostedImagesManifest,
+      writeHostedImagesManifest,
+    },
     protectLogs,
     requireEndpointKey,
     adminSessions,
@@ -183,6 +204,8 @@ export async function mountAdmin(options = {}) {
     emailCatalog,
     sendTestEmail,
     referralLinks,
+    adminMetrics,
+    adminBrief,
   };
 
   const app = express();
@@ -195,7 +218,7 @@ export async function mountAdmin(options = {}) {
   return {
     baseUrl: `http://127.0.0.1:${port}`,
     key: logsAccessKey,
-    calls: { exportAllMemories, resetAllMemories, uptimeReset: uptimeMonitor.reset, authExport: authStore.exportStore, authExportRedacted: authStore.exportRedacted, enterpriseExport: enterpriseStore.exportStore, writeHostedImagesManifest, grantProMonth: authStore.grantProMonth, revokeProGrant: authStore.revokeProGrant, sendTestEmail, deleteUser },
+    calls: { exportAllMemories, resetAllMemories, uptimeReset: uptimeMonitor.reset, authExport: authStore.exportStore, authExportRedacted: authStore.exportRedacted, enterpriseExport: enterpriseStore.exportStore, writeHostedImagesManifest, grantProMonth: authStore.grantProMonth, revokeProGrant: authStore.revokeProGrant, sendTestEmail, deleteUser, metricsSnapshot: adminMetrics && adminMetrics.snapshot, generateBrief: adminBrief && adminBrief.generateBrief },
     getManifest: () => manifest,
     hostedImagesDir,
     referrals: referralLinks,

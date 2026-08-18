@@ -78,12 +78,14 @@ import { initPlusRail } from './app/plus-rail.js';
     // rail is on screen at all belongs to the plan, and auth.js owns that half.
     initPlusRail();
 
+    // The two controls that open the staging flow: the hero CTA, and the closing
+    // row's button at the foot of the page. This looked up THREE ids until 2026-08-18
+    // — `#nav-upload` and `#pricing-upload` existed in no HTML file on the site, so
+    // the array had been binding two nulls for as long as anyone can tell. Add a
+    // third entry point here; do not revive a dead id. Guard: home-outro.test.js.
     const heroUpload = $('#hero-upload');
-    const navUpload = $('#nav-upload');
-    const pricingUpload = $('#pricing-upload');
-    // Carousel is now handled by carousel.js
-    
-  
+    const outroUpload = $('#outro-upload');
+
     // Stage screen elements (only on home page)
     const modal = $('#stage-modal');
     const modalBackdrop = $('#modal-backdrop');
@@ -189,7 +191,7 @@ import { initPlusRail } from './app/plus-rail.js';
   
     // Only run modal functionality if we're on the home page (elements exist)
     if (modal && stageDropzone && stageFileInput) {
-      [heroUpload, navUpload, pricingUpload].forEach((btn) => {
+      [heroUpload, outroUpload].forEach((btn) => {
         if (btn) btn.addEventListener('click', openFilePicker);
       });
   

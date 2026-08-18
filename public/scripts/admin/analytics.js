@@ -40,9 +40,18 @@
  * CONTACT.ROLE/REFERRAL are equally inert for a different reason: nothing in
  * public/ posts to /api/log-contact at all, so contact_logs.csv has no writer.
  * Treat all four as empty until an onboarding capture actually fills them.
+ * findings-quality.js#inertColumns reports all four, so the charts built on them
+ * are labelled as decorative rather than quietly read as "no data yet".
+ *
+ * PROMPT.DRIFT (14) and PROMPT.SEED (15) were appended to the writer after this
+ * map was written and went unread for their first weeks in production — the
+ * header in lib/services/logging.js carries 16 columns, this carried 14. DRIFT
+ * is a per-render quality-defect flag ('yes' | 'no' | '' where empty means the
+ * question was never asked, NOT that the render was clean); SEED is the base
+ * generation seed, kept so a bad render can be re-run rather than charted.
  */
 export const COL = {
-  PROMPT: { TS: 0, ROOM: 1, STYLE: 2, REMOVE: 4, ROLE: 5, REFERRAL: 6, EMAIL: 7, STATUS: 9, DURATION: 10, MODEL: 11, ATTEMPTS: 12, ERROR: 13 },
+  PROMPT: { TS: 0, ROOM: 1, STYLE: 2, REMOVE: 4, ROLE: 5, REFERRAL: 6, EMAIL: 7, STATUS: 9, DURATION: 10, MODEL: 11, ATTEMPTS: 12, ERROR: 13, DRIFT: 14, SEED: 15 },
   CHAT: { TS: 0, USER_ID: 1 },
   MASK: { TS: 0, MODEL: 3, USER_ID: 6 },
   CONTACT: { TS: 0, ROLE: 1, REFERRAL: 2, EMAIL: 3 },
