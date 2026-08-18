@@ -202,23 +202,11 @@
       }
       @media (min-width: 769px) {
         .ent-submit-btn {
-          background:
-            radial-gradient(circle at 20% 50%, var(--primary-light) 0%, transparent 50%),
-            radial-gradient(circle at 80% 20%, var(--brand-strong) 0%, transparent 50%),
-            radial-gradient(circle at 40% 80%, var(--brand) 0%, transparent 50%),
-            radial-gradient(circle at 0% 100%, var(--primary) 0%, transparent 50%),
-            radial-gradient(circle at 100% 0%, var(--brand-soft) 0%, transparent 50%),
-            var(--brand-deep);
+          background: var(--cta-gradient);
           box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
         .ent-submit-btn:hover:not(:disabled) {
-          background:
-            radial-gradient(circle at 30% 40%, var(--primary-light) 0%, transparent 60%),
-            radial-gradient(circle at 70% 30%, var(--brand-strong) 0%, transparent 60%),
-            radial-gradient(circle at 50% 70%, var(--brand) 0%, transparent 60%),
-            radial-gradient(circle at 10% 90%, var(--primary) 0%, transparent 60%),
-            radial-gradient(circle at 90% 10%, var(--brand-soft) 0%, transparent 60%),
-            var(--brand-deep);
+          background: var(--cta-gradient-hover);
           box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
         }
       }

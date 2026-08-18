@@ -33,10 +33,12 @@ function isRealId(v) {
  *
  * `byEmail` / `byUserId` hold the newest activity timestamp (ms) seen under that
  * identifier; `rendersByEmail` counts attributed renders, which the funnel needs
- * to tell a one-off from a repeat user.
+ * to tell a one-off from a repeat user. `firstRenderByEmail` holds the OLDEST
+ * render instead — the only thing that can date an account's activation, which
+ * `activationLagDays` measures against its signup.
  *
  * @param {{promptRows?: string[][], chatRows?: string[][], maskRows?: string[][]}} tables Header-stripped CSV tables.
- * @returns {{byEmail: Record<string, number>, byUserId: Record<string, number>, rendersByEmail: Record<string, number>}}
+ * @returns {{byEmail: Record<string, number>, byUserId: Record<string, number>, rendersByEmail: Record<string, number>, firstRenderByEmail: Record<string, number>}}
  */
 export function buildActivityIndex(tables) {
   /** @type {Record<string, number>} */
@@ -45,6 +47,8 @@ export function buildActivityIndex(tables) {
   const byUserId = {};
   /** @type {Record<string, number>} */
   const rendersByEmail = {};
+  /** @type {Record<string, number>} */
+  const firstRenderByEmail = {};
 
   const note = (map, key, value) => {
     const d = toDate(value);
@@ -58,6 +62,10 @@ export function buildActivityIndex(tables) {
     if (!isRealId(email)) return;
     rendersByEmail[email] = (rendersByEmail[email] || 0) + 1;
     note(byEmail, email, r[COL.PROMPT.TS]);
+    const first = toDate(r[COL.PROMPT.TS]);
+    if (first && (!firstRenderByEmail[email] || first.getTime() < firstRenderByEmail[email])) {
+      firstRenderByEmail[email] = first.getTime();
+    }
   });
   (tables.chatRows || []).forEach((r) => {
     const id = String(r[COL.CHAT.USER_ID] || '').trim();
@@ -70,7 +78,7 @@ export function buildActivityIndex(tables) {
     note(byUserId, id, r[COL.MASK.TS]);
   });
 
-  return { byEmail, byUserId, rendersByEmail };
+  return { byEmail, byUserId, rendersByEmail, firstRenderByEmail };
 }
 
 /**
@@ -341,4 +349,212 @@ function monthDiff(fromKey, toKey) {
 function labelMonthKey(key) {
   const parts = String(key).split('-');
   return MONTH_LABELS[Number(parts[1]) - 1] + " '" + String(parts[0]).slice(2);
+}
+
+// ── Per-account revenue, risk and cost ──────────────────────────────────────
+//
+// Everything above this line reads the CSV activity index, and therefore
+// inherits its attribution gap: a render row's email comes from the request body
+// and is `unknown` whenever the client didn't send one.
+//
+// The functions below deliberately prefer a DIFFERENT source where one exists.
+// `lastStagedAt` / `lifetimeStaged` are stamped server-side by
+// lib/services/auth-helpers.js#recordStagingActivity from the VALIDATED session
+// account, so for a paid user they are ground truth rather than a floor. They
+// are only written for `plan === 'pro'` (a free account has no trial to
+// activate), which is exactly the population these rules are about.
+
+const DAY = 24 * 60 * 60 * 1000;
+
+/**
+ * Accounts that are paying Stripe money right now.
+ *
+ * `stripeSubscriptionId` is what separates a subscriber from a comped account:
+ * an admin grant sets `plan = 'pro'` but never writes a subscription id, and
+ * `lib/data/pro-grants.js` explicitly refuses to overwrite one. So a `pro` with
+ * no subscription id is a comp (see {@link expiringCompGrants}), and a `pro`
+ * with one is revenue.
+ *
+ * Enterprise-domain members are **not** included. They are billed against the
+ * domain's subscription, not their own, so counting them here would attribute
+ * one contract's revenue to every mailbox under it.
+ *
+ * @param {any[]} users
+ * @returns {any[]}
+ */
+export function payingAccounts(users) {
+  return (users || []).filter((u) => u && u.plan === 'pro' && u.stripeSubscriptionId);
+}
+
+/**
+ * The best available "last used the product" timestamp for one account.
+ *
+ * Takes the newest of two sources rather than choosing one, because each covers
+ * what the other misses: `lastStagedAt` is session-keyed and cannot be missing
+ * for a paid render, but is only written for `pro` accounts and only by the
+ * staging surfaces; the CSV index also sees chat and mask activity, but loses
+ * any render the client sent anonymously.
+ *
+ * @param {any} user
+ * @param {ReturnType<typeof buildActivityIndex>} index
+ * @returns {number|null} Epoch ms, or null if the account has never appeared anywhere.
+ */
+export function lastProductUseMs(user, index) {
+  if (!user) return null;
+  const stamped = toDate(user.lastStagedAt);
+  const logged = lastActiveMs(user, index);
+  const best = Math.max(stamped ? stamped.getTime() : 0, logged || 0);
+  return best > 0 ? best : null;
+}
+
+/**
+ * Paying accounts that have gone quiet — the revenue most likely to cancel next.
+ *
+ * An account that has NEVER been seen ranks above one that has merely lapsed:
+ * someone who subscribed and never rendered anything is a refund request
+ * waiting to happen, not a lull. They sort first, with `daysQuiet: null`.
+ *
+ * @param {any[]} users
+ * @param {ReturnType<typeof buildActivityIndex>} index
+ * @param {{now?: number, quietDays?: number}} [opts]
+ * @returns {{quietDays: number, paying: number, atRisk: Array<{id: string, email: string, daysQuiet: number|null, neverUsed: boolean, lifetimeStaged: number}>}}
+ */
+export function atRiskPayingAccounts(users, index, opts = {}) {
+  const now = typeof opts.now === 'number' ? opts.now : Date.now();
+  const quietDays = typeof opts.quietDays === 'number' ? opts.quietDays : 14;
+  const paying = payingAccounts(users);
+
+  const atRisk = paying
+    .map((u) => {
+      const ms = lastProductUseMs(u, index);
+      return {
+        id: String(u.id || ''),
+        email: String(u.email || ''),
+        daysQuiet: ms === null ? null : Math.max(0, Math.floor((now - ms) / DAY)),
+        neverUsed: ms === null,
+        lifetimeStaged: Number.isFinite(u.lifetimeStaged) ? u.lifetimeStaged : 0,
+      };
+    })
+    .filter((row) => row.neverUsed || /** @type {number} */ (row.daysQuiet) >= quietDays)
+    // Never-used first, then longest-quiet first.
+    .sort((a, b) => {
+      if (a.neverUsed !== b.neverUsed) return a.neverUsed ? -1 : 1;
+      return (b.daysQuiet || 0) - (a.daysQuiet || 0);
+    });
+
+  return { quietDays, paying: paying.length, atRisk };
+}
+
+/**
+ * Comped Stagify+ grants about to lapse.
+ *
+ * Worth its own rule because the expiry is applied **on read**
+ * (`lib/data/pro-grants.js#applyGrantExpiry` runs inside `rowToUser`), so
+ * nothing fires when one runs out: the account simply reads as `free` on its
+ * next request and the person discovers it by hitting the daily cap. An already
+ * expired grant is reported too, with a negative `daysLeft`, because the silent
+ * downgrade is the event worth knowing about either way.
+ *
+ * A grant that has been revoked by hand, or that sits on an account which has
+ * since bought a real subscription, is not reported — neither one is about to
+ * surprise anybody.
+ *
+ * @param {any[]} users
+ * @param {{now?: number, withinDays?: number}} [opts]
+ * @returns {Array<{id: string, email: string, expiresAt: string, daysLeft: number}>}
+ */
+export function expiringCompGrants(users, opts = {}) {
+  const now = typeof opts.now === 'number' ? opts.now : Date.now();
+  const withinDays = typeof opts.withinDays === 'number' ? opts.withinDays : 7;
+
+  return (users || [])
+    .filter((u) => u && u.proGrantExpiresAt && !u.proGrantRevokedAt && !u.stripeSubscriptionId)
+    .map((u) => {
+      const exp = toDate(u.proGrantExpiresAt);
+      return exp && {
+        id: String(u.id || ''),
+        email: String(u.email || ''),
+        expiresAt: u.proGrantExpiresAt,
+        daysLeft: Math.floor((exp.getTime() - now) / DAY),
+      };
+    })
+    .filter((row) => Boolean(row) && /** @type {any} */ (row).daysLeft <= withinDays)
+    .sort((a, b) => /** @type {any} */ (a).daysLeft - /** @type {any} */ (b).daysLeft);
+}
+
+/**
+ * How long accounts take to get their first render out, in days.
+ *
+ * Only accounts that HAVE activated are measured. Folding in the ones that never
+ * did as some large number would conflate two different problems — a slow
+ * onboarding and a dead signup — and would make the median move whenever an
+ * unrelated batch of tyre-kickers arrived. The never-activated share is its own
+ * rule.
+ *
+ * A first render dated before the account was created is dropped rather than
+ * clamped to zero: it means the email was staging anonymously (or under an
+ * earlier account) before signing up, which is not the lag being measured.
+ *
+ * @param {any[]} users
+ * @param {ReturnType<typeof buildActivityIndex>} index
+ * @returns {{median: number|null, sample: number, activated: number, accounts: number}}
+ */
+export function activationLagDays(users, index) {
+  const list = users || [];
+  const lags = [];
+  let activated = 0;
+
+  for (const u of list) {
+    const first = index.firstRenderByEmail[lc(u && u.email)];
+    if (!first) continue;
+    activated += 1;
+    const created = toDate(u.createdAt);
+    if (!created) continue;
+    const days = (first - created.getTime()) / DAY;
+    if (days < 0) continue;
+    lags.push(days);
+  }
+
+  lags.sort((a, b) => a - b);
+  const mid = Math.floor(lags.length / 2);
+  const med = !lags.length ? null : (lags.length % 2 ? lags[mid] : (lags[mid - 1] + lags[mid]) / 2);
+  return { median: med, sample: lags.length, activated, accounts: list.length };
+}
+
+/**
+ * Enterprise domains whose metered usage is far below their peers.
+ *
+ * Compared against the MEDIAN domain rather than the mean: these populations are
+ * tiny and one large customer would drag a mean high enough to mark every other
+ * contract as underused.
+ *
+ * Only `active`/`trialing` domains are considered — a cancelled domain using
+ * nothing is not a churn risk, it is a completed churn.
+ *
+ * @param {any[]} domains
+ * @param {{shareOfMedian?: number}} [opts] Fraction of the median below which a domain is flagged.
+ * @returns {{active: number, median: number|null, underused: Array<{domain: string, companyName: string, usage: number}>}}
+ */
+export function enterpriseUsageSpread(domains, opts = {}) {
+  const shareOfMedian = typeof opts.shareOfMedian === 'number' ? opts.shareOfMedian : 0.25;
+  const active = (domains || []).filter((d) => d && (d.status === 'active' || d.status === 'trialing'));
+  if (!active.length) return { active: 0, median: null, underused: [] };
+
+  const usages = active.map((d) => (Number.isFinite(d.usageCount) ? d.usageCount : 0)).sort((a, b) => a - b);
+  const mid = Math.floor(usages.length / 2);
+  const med = usages.length % 2 ? usages[mid] : (usages[mid - 1] + usages[mid]) / 2;
+
+  // With a median of zero nobody is below a share of it, and every domain would
+  // tie at the bottom. That is a "nobody is using enterprise at all" finding,
+  // which belongs to the caller, not a per-domain callout.
+  const underused = med <= 0 ? [] : active
+    .filter((d) => (Number.isFinite(d.usageCount) ? d.usageCount : 0) < med * shareOfMedian)
+    .map((d) => ({
+      domain: String(d.domain || ''),
+      companyName: String(d.companyName || ''),
+      usage: Number.isFinite(d.usageCount) ? d.usageCount : 0,
+    }))
+    .sort((a, b) => a.usage - b.usage);
+
+  return { active: active.length, median: med, underused };
 }

@@ -2436,20 +2436,31 @@ body.page-home main {
   z-index: 2;
 }
 .sponsors {
-  /* Clears the hero's overflow. `.hero` is sized to the viewport remainder and its columns
-     are taller than that, so they hang below the section box and this reservation is what
-     stops them landing on the logos. It was 200px against the old carousel; the picker's
-     frame plus its caption is ~10px taller, so it grew to match.
+  /* THIS USED TO BE 210px, AND IT WAS A SPACER, NOT A GAP.
 
-     The binding column is the PHOTO, not the text — verified at 1440px across en/de/pt/nl/
-     fr/it, where the media column bottoms out at the same y in every one and the headline
-     (2 lines in English, 3 in German) never reaches it. That is the property to preserve:
-     if the sentence ever starts overflowing further than the photo, this number stops being
-     language-independent and the hero breaks in the wordiest locale only. Re-measure rather
-     than nudging this if you raise the headline's font-size. */
-  margin-top: 210px;
+     The two-column hero was sized to the viewport remainder with columns taller than that,
+     so both of them hung 187px below the section box and this reservation was what stopped
+     them landing on the sponsor logos. It was a measured constant: 200px against the old
+     carousel, 210px against the picker's frame, and it only stayed language-independent
+     because the PHOTO column was the binding one in all six locales checked. Raise the
+     headline's font-size and the German sentence could become the binding column instead,
+     and the hero would break in one language only.
+
+     The hero is now a single canvas of known height (`.hero--canvas` in styles.css) that
+     overflows nothing, so this is an ordinary section gap again. If you ever put something
+     back in the hero that hangs below its own box, you are rebuilding that bug, not this
+     number. */
+  margin-top: 0;
   padding: 24px 0;
-  min-height: 200px; /* reserves space so logos don't overlap the next section */
+  /* The 200px floor was the second half of that same reservation: with the strip
+     pulled up into the hero's overflow, it had to be tall enough that the logos
+     could not land on the section below. Nothing overflows into it any more, so all
+     it did was hang ~54px of empty box under the logos — the strip's own content is
+     146px — which read as a gap between the logos and "Click to see what staging
+     does". `auto`, not 0, for the reason the mobile override below spells out: this
+     is a flex item in `main`'s column, and 0 lets the column shrink it into the next
+     section instead of letting it size to the logos. */
+  min-height: auto;
 }
 /* On mobile the hero carousel sits in normal flow (no downward overflow), so
    the large clearance above the sponsors becomes a huge empty gap — remove it.
@@ -2751,7 +2762,7 @@ body.page-home main {
 /* ==========================================================================
    Instagram section
    ========================================================================== */
-.ig-embeds {
+.ig-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 320px));
   gap: 24px;
@@ -2760,13 +2771,6 @@ body.page-home main {
 .ig-cta {
   text-align: center;
   margin-top: 28px;
-}
-.ig-copy__sub {
-  margin: 12px 0 26px;
-  font-size: clamp(15px, 1.6vw, 17px);
-  line-height: 1.6;
-  color: #41507a;
-  max-width: 460px;
 }
 .ig-follow {
   display: inline-flex;
@@ -2779,11 +2783,7 @@ body.page-home main {
   text-decoration: none;
   padding: 13px 24px;
   border-radius: 12px;
-  background: radial-gradient(circle at 20% 50%, var(--primary-light) 0, transparent 50%),
-    radial-gradient(circle at 80% 20%, var(--brand-strong) 0, transparent 50%),
-    radial-gradient(circle at 40% 80%, var(--brand) 0, transparent 50%),
-    radial-gradient(circle at 0 100%, var(--primary) 0, transparent 50%),
-    radial-gradient(circle at 100% 0, var(--brand-soft) 0, transparent 50%), var(--brand-deep);
+  background: var(--cta-gradient);
   box-shadow: 0 10px 26px rgba(30, 58, 138, 0.32);
   transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
@@ -2795,34 +2795,52 @@ body.page-home main {
   width: 19px;
   height: 19px;
 }
-/* Framed card that crops the Instagram embed to a tidier height.
-   The iframe is pulled up by --ig-header so Instagram's own header bar
-   (avatar / follower count / "View profile") is clipped off the top, and the
-   wrapper height is reduced to match so the bottom footer stays clipped too. */
-.ig-embed {
-  --ig-header: 54px;
+/* The whole card is the link to the post. This replaced a framed <iframe> whose only job
+   was to be cropped: --ig-header pulled Instagram's own header bar (avatar / follower
+   count / "View profile") off the top with a negative margin, and a fixed
+   `calc(452px - 54px)` wrapper height clipped the footer. The art is local now, so there
+   is no chrome to hide and no fixed height to maintain — the card is as tall as the 4:5
+   image makes it (330 x 412, against the old 330 x 398). */
+.ig-card {
   justify-self: center;
+  display: block;
   width: 100%;
   max-width: 330px;
-  height: calc(452px - var(--ig-header));
   overflow: hidden;
   border-radius: 18px;
   background: var(--bg-elevated);
   box-shadow: 0 18px 46px rgba(30, 58, 138, 0.26);
   border: 1px solid rgba(30, 58, 138, 0.08);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
-.ig-embed__frame {
-  width: 100%;
-  height: 620px;
-  margin-top: calc(-1 * var(--ig-header));
-  border: none;
+/* The lift is this codebase's signal that a card is clickable (see the note on
+   .hgal-card, which deliberately has none because it goes nowhere). These do. */
+.ig-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 24px 58px rgba(30, 58, 138, 0.34);
+}
+.ig-card:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 5px;
+}
+/* height:auto is LOAD-BEARING. The markup carries width/height attributes (they reserve
+   the box before CSS lands), and those resolve as a presentational height — with both
+   axes resolved, any aspect-ratio would be ignored outright. See .hgal-card__img, which
+   rendered 325x845 instead of 325x217 for exactly this reason.
+
+   Deliberately NO aspect-ratio and NO object-fit: the masters are already 4:5 and are
+   shown UNCROPPED, because two of the three posts have artwork flush to an edge (a title
+   bar against the top, a caption pill against the bottom) that a cover-crop would eat. */
+.ig-card__img {
   display: block;
+  width: 100%;
+  height: auto;
 }
 @media (max-width: 720px) {
-  .ig-embeds {
+  .ig-cards {
     grid-template-columns: minmax(0, 330px);
   }
-  .ig-embed:not(:first-child) {
+  .ig-card:not(:first-child) {
     display: none;
   }
 }
@@ -3036,11 +3054,7 @@ body.page-home main {
   padding: 13px 22px;
   border-radius: 11px;
   color: var(--bg-elevated);
-  background: radial-gradient(circle at 20% 50%, var(--primary-light) 0, transparent 50%),
-    radial-gradient(circle at 80% 20%, var(--brand-strong) 0, transparent 50%),
-    radial-gradient(circle at 40% 80%, var(--brand) 0, transparent 50%),
-    radial-gradient(circle at 0 100%, var(--primary) 0, transparent 50%),
-    radial-gradient(circle at 100% 0, var(--brand-soft) 0, transparent 50%), var(--brand-deep);
+  background: var(--cta-gradient);
   box-shadow: 0 10px 24px rgba(30, 58, 138, 0.28);
   transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
@@ -3608,185 +3622,268 @@ body.page-home main {
   text-decoration: underline;
 }
 
-/* Contact CTA (below FAQ) */
-/* Both outro heads drop `.home-section__head`'s 28px bottom margin — it exists to
-   separate a heading from the section body below it, and these two sections ARE
-   only a head. Left on, it padded #review-cta 28px taller than #contact-cta. */
-.home-contact-cta .home-section__head,
-.home-review-cta .home-section__head {
-  margin-bottom: 0;
-}
-.contact-cta-email {
-  display: inline-block;
-  /* 4px, not the 14px this carried when a subtitle sat above it: riding on the
-     heading's own 10px bottom margin, that totals the same 14px of air the stars
-     get in #review-cta next door, so the two outro columns keep one rhythm. */
-  margin-top: 4px;
-  font-size: clamp(1.1rem, 2.2vw, 1.35rem);
-  font-weight: 700;
-  color: var(--brand);
-  text-decoration: none;
-  letter-spacing: -0.02em;
-}
-.contact-cta-email:hover {
-  color: var(--brand-strong);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-.contact-cta-phone {
-  display: block;
-  margin-top: 6px;
-  font-size: clamp(1rem, 1.9vw, 1.15rem);
-  font-weight: 600;
-  color: var(--brand);
-  text-decoration: none;
-  letter-spacing: -0.02em;
-}
-.contact-cta-phone:hover {
-  color: var(--brand-strong);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
+/* --- The closing row (#contact-cta) ------------------------------------------
+   One rule, one line, one button. This replaced ~180 lines: `.home-outro`'s
+   two-column grid, `.contact-cta-email` / `.contact-cta-phone`, `.review-star-defs`,
+   the 34px stars with their `reviewStarGlow` idle float, and `.btn.review-cta-btn`
+   (whose whole reason for existing was out-specifying the global mobile
+   `.btn { width: 100%; max-width: 280px }` — nothing here is a `.btn`, so that
+   fight is over).
 
-/* --- The closing band: #contact-cta + #review-cta side by side ---------------
-   Both were heading-only sections stacked back to back, which read as dead space
-   at the bottom of the page. The wrapper takes over `.home-section`'s page
-   constraints; the two sections keep their own padding (including the 28px/18px
-   responsive overrides above) and their own vertical margins, so nothing inside
-   them had to change. */
-.home-outro {
-  width: 100%;
-  max-width: 1140px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  /* stretch, not start: the two sections share the row's height instead of each
-     sizing to its own content, so the band is even. Their contents stay top-aligned
-     on their own (both heads are plain blocks), so the headings still line up. */
-  align-items: stretch;
-}
-@media (max-width: 760px) {
-  .home-outro {
-    grid-template-columns: 1fr;
-  }
-}
+   THE ROW IS `space-between` OVER EXACTLY THREE CHILDREN, which is what puts the
+   line left, the ask centre and the small print right with no explicit widths. Add
+   a fourth child and the spacing silently redistributes.
 
-/* --- #review-cta stars -------------------------------------------------------
-   Lifted out of an inline <style> block in index.html — this was the only section
-   on the page carrying page-local CSS, and the button below carried ~200 chars of
-   inline style= to escape the global mobile `.btn { width:100%; max-width:280px }`.
-   `.btn.review-cta-btn` (0,2,0) outranks that rule, so the override no longer has
-   to be inline to win. */
-.review-star-defs {
-  position: absolute;
-  width: 0;
-  height: 0;
-}
-.review-cta-stars {
-  /* Block-level flex, NOT inline-flex: the button below is itself an inline-flex
-     <a>, and with the subtitle <p> that used to separate them now gone, two
-     inline-level boxes would share a line and the button would land beside the
-     stars instead of under them. A block box forces the line break. `fit-content`
-     + auto side margins keeps it centred WITHOUT stretching to the column width —
-     a full-width box would drag the :focus-visible outline out with it. */
+   It wraps rather than collapsing to a column: the three parts are deliberately
+   unequal weights, and a centred stack would give the inbox address the same
+   emphasis as the ask, which is the arrangement this section was built to end. */
+.home-outro .qr {
+  /* The border sits on this inner box, NOT on the <section>: `.home-section`'s
+     48px gutters are outside it, so a rule on the section would run 96px wider
+     than every other section's content and read as a page-width divider. */
+  border-top: 1px solid rgba(30, 58, 138, 0.2);
+  padding-top: 20px;
   display: flex;
-  width: fit-content;
-  gap: 7px;
-  /* The 4px top rides on the heading's own 10px bottom margin, for 14px of air
-     above. Bottom is 0 on purpose: the button's own 18px margin-top is the whole
-     gap below. These used to be separated by the subtitle, which absorbed both
-     margins; stacked directly they summed to 32px and read as a hole. */
-  margin: 4px auto 0;
-  border-radius: 10px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  /* `nowrap`, and the heading is the child that gives — measured, not guessed. With
+     `wrap`, English (90 chars of copy) fits on one line at the 1044px content width
+     with 118px to spare, and German (105) overflows by 72px, which drops the small
+     print onto a second row and takes the section from 63px to 102px. Four of the
+     eleven locales did that: de, nl, pt, fr. Letting the ROW break puts the shortfall
+     in the worst possible place; letting the HEADING break (see `.qr__line`) keeps the
+     three-column composition in every locale and costs 6px — 69px worst case.
+     Re-measure across en/de/nl/pt before changing any width or size here. */
+  flex-wrap: nowrap;
+  /* NO `transition` here, ever. This element carries `.reveal`, whose
+     `transition: opacity .6s, transform .6s` is (0,1,0); `.home-outro .qr` is
+     (0,2,0) and later in the file, so a transition declared here REPLACES the
+     reveal's rather than merging, and the section stops animating in. Put any
+     transition on a child or a pseudo-element, which own their own. */
+}
+.qr__line {
+  margin: 0;
+  font-size: clamp(17px, 2vw, 20px);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--brand-deep);
+  /* The one flexible child. A flex item's min-width is `auto`, i.e. its longest
+     unbreakable content, so without this the heading refuses to shrink and `nowrap`
+     would push the small print out of the row instead of wrapping the words. */
+  min-width: 0;
+}
+/* Neither of these may absorb the shortfall: a squeezed button reflows its label and
+   a squeezed small-print row breaks between the stars and their label. */
+.qr__cta,
+.qr__small {
+  flex: none;
+}
+/* This is the site's SECONDARY CTA pattern, matched deliberately rather than invented:
+   `.ig-follow` (directly above this row) and `.plus-cta` are the same five-stop radial
+   gradient, weight 800, ~13px/22px, 11-12px radius, a soft navy shadow and a -2px hover
+   lift. A flat `background: var(--primary)` shipped here first and read as bland and
+   off-pattern next to the Instagram button six rows up — correctly, because it was the
+   only CTA on the page not speaking this language.
+
+   It is still NOT `.btn.btn-primary`: that adds `text-transform: uppercase` and, via
+   index.css, `font-size: 24px !important`. Same gradient family, indoor voice.
+
+   This was `--cta-gradient`'s first consumer, back when the stack was still written
+   out by hand ten more times across four other sheets. Those ten are converted now
+   (plus five copies of the hover variant), so the token is the only spelling of it
+   left — the radius, weight and shadow above are still this row's own. */
+.qr__cta {
+  appearance: none;
+  border: 0;
+  cursor: pointer;
+  font-family: inherit;
+  background: var(--cta-gradient);
+  color: var(--bg-elevated);
+  border-radius: 11px;
+  padding: 13px 22px;
+  font-size: 15.5px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  box-shadow: 0 10px 24px rgba(30, 58, 138, 0.28);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.qr__cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 34px rgba(30, 58, 138, 0.42);
+}
+.qr__cta:focus-visible {
+  outline: 3px solid var(--brand);
+  outline-offset: 3px;
+}
+.qr__small {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  /* 15px, not the 13.5px this shipped at. "Small print" describes its ROLE in the
+     row, not the size it should be set at — at 13.5px next to a 20px heading and a
+     15.5px button it read as a disclaimer rather than as three live links. */
+  font-size: 15px;
+}
+.qr__small a {
+  color: var(--brand);
+  font-weight: 600;
   text-decoration: none;
 }
-.review-cta-stars:focus-visible {
+.qr__small a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.qr__sep {
+  width: 1px;
+  height: 14px;
+  background: rgba(30, 58, 138, 0.2);
+}
+.qr__review {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border-radius: 8px;
+}
+.qr__review:focus-visible {
   outline: 2px solid var(--brand);
-  outline-offset: 6px;
+  outline-offset: 5px;
 }
-.review-star {
-  width: 34px;
-  height: 34px;
+.qr__stars {
+  display: inline-flex;
+  gap: 3px;
+}
+/* 20px, gradient-filled from the markup, and glowing. At 15px with a flat fill these
+   read as punctuation; the gold ramp and the drop-shadow are what make them look like
+   a rating rather than a bullet. The drop-shadow PULSES on a 3.6s stagger — that is
+   the "shiny" from the section this replaced, kept.
+   What was NOT kept from it: the paired `translateY(-3px)` float. Five stars bobbing
+   inside a single-line row drags the eye off the CTA next to them, and it broke the
+   row's shared baseline. Glow without motion. */
+.qr__stars svg {
   display: block;
+  width: 20px;
+  height: 20px;
   filter: drop-shadow(0 2px 5px rgba(245, 158, 11, 0.45));
-  animation: reviewStarGlow 3.6s ease-in-out infinite;
-}
-.review-star:nth-child(2) {
-  animation-delay: 0.45s;
-}
-.review-star:nth-child(3) {
-  animation-delay: 0.9s;
-}
-.review-star:nth-child(4) {
-  animation-delay: 1.35s;
-}
-.review-star:nth-child(5) {
-  animation-delay: 1.8s;
-}
-@keyframes reviewStarGlow {
-  0%,
-  100% {
-    filter: drop-shadow(0 2px 5px rgba(245, 158, 11, 0.4));
-    transform: translateY(0);
-  }
-  50% {
-    filter: drop-shadow(0 5px 13px rgba(245, 158, 11, 0.9));
-    transform: translateY(-3px);
-  }
-}
-/* The left-to-right sweep on hover. It uses `scale`, the standalone property, NOT
-   `transform` — the idle float animation already animates `transform` and `filter`,
-   and an animation beats a plain declaration in the cascade, so a hover rule on
-   either would simply be ignored. `scale` composes with the animated transform
-   instead of fighting it. */
-.review-star {
+  animation: qrStarGlow 3.6s ease-in-out infinite;
+  /* `scale`, the standalone property, not `transform`: the glow animation above is an
+     animation, which beats a plain declaration in the cascade, so a hover rule on
+     `transform` would simply be ignored. `scale` composes with it instead of fighting
+     it. This is the one mechanic worth not rediscovering from the old star block. */
   scale: 1;
   transition: scale 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.4);
 }
-.review-cta-stars:hover .review-star,
-.review-cta-stars:focus-visible .review-star {
+.qr__stars svg:nth-child(2) { animation-delay: 0.45s; }
+.qr__stars svg:nth-child(3) { animation-delay: 0.9s; }
+.qr__stars svg:nth-child(4) { animation-delay: 1.35s; }
+.qr__stars svg:nth-child(5) { animation-delay: 1.8s; }
+@keyframes qrStarGlow {
+  0%,
+  100% {
+    filter: drop-shadow(0 2px 5px rgba(245, 158, 11, 0.4));
+  }
+  50% {
+    filter: drop-shadow(0 3px 11px rgba(245, 158, 11, 0.85));
+  }
+}
+.qr__review:hover .qr__stars svg,
+.qr__review:focus-visible .qr__stars svg {
   scale: 1.22;
 }
-.review-cta-stars:hover .review-star:nth-child(2),
-.review-cta-stars:focus-visible .review-star:nth-child(2) {
+.qr__review:hover .qr__stars svg:nth-child(2),
+.qr__review:focus-visible .qr__stars svg:nth-child(2) {
   transition-delay: 0.06s;
 }
-.review-cta-stars:hover .review-star:nth-child(3),
-.review-cta-stars:focus-visible .review-star:nth-child(3) {
+.qr__review:hover .qr__stars svg:nth-child(3),
+.qr__review:focus-visible .qr__stars svg:nth-child(3) {
   transition-delay: 0.12s;
 }
-.review-cta-stars:hover .review-star:nth-child(4),
-.review-cta-stars:focus-visible .review-star:nth-child(4) {
+.qr__review:hover .qr__stars svg:nth-child(4),
+.qr__review:focus-visible .qr__stars svg:nth-child(4) {
   transition-delay: 0.18s;
 }
-.review-cta-stars:hover .review-star:nth-child(5),
-.review-cta-stars:focus-visible .review-star:nth-child(5) {
+.qr__review:hover .qr__stars svg:nth-child(5),
+.qr__review:focus-visible .qr__stars svg:nth-child(5) {
   transition-delay: 0.24s;
 }
 @media (prefers-reduced-motion: reduce) {
-  .review-star {
-    animation: none;
+  .qr__cta,
+  .qr__stars svg {
     transition: none;
   }
-  .review-cta-stars:hover .review-star,
-  .review-cta-stars:focus-visible .review-star {
+  .qr__cta:hover {
+    transform: none;
+  }
+  /* The glow stops, but the stars keep their resting drop-shadow — the shine is the
+     look, only the pulsing is the motion. */
+  .qr__stars svg {
+    animation: none;
+  }
+  .qr__review:hover .qr__stars svg,
+  .qr__review:focus-visible .qr__stars svg {
     scale: 1;
   }
 }
-.btn.review-cta-btn {
-  /* The whole stars-to-button gap (they meet directly now that the subtitle that
-     used to sit between them is gone). 18px read as a hole under the star row. */
-  margin-top: 10px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  white-space: nowrap;
-  width: auto;
-  max-width: none;
-  padding: 12px 26px;
-  border-radius: 10px;
-  font-weight: 600;
-  text-decoration: none;
+@media (max-width: 760px) {
+  /* Below 760px wrapping is the point rather than the failure: there is no width for
+     three columns, so the row becomes line / button / small print stacked. */
+  .home-outro .qr {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 14px;
+  }
+  /* Full width so it starts its own row under the line + button, rather than
+     squeezing in beside the CTA at whatever width is left. */
+  .qr__small {
+    flex: 0 0 100%;
+    gap: 11px;
+  }
+}
+
+/* PHONE ONLY. Below 600px the three-part row stops being a row at all: the small
+   print no longer fits on one line (it needs ~571px and the content box is 564px
+   at 600 and 354px at 390), so what shipped was a left-aligned ragged stack —
+   heading, then a narrow button, then "team@stagify.ai | (929) 251-4372 |" with a
+   dangling separator at the end of the line and the stars wrapped underneath it.
+   Left alignment is also the odd one out down here: the Instagram CTA directly
+   above and the footer directly below are both centred on phones.
+
+   So: one centred column, and the small print breaks where it should — contacts on
+   one line, the review link on its own — instead of wherever the width runs out.
+   Everything in this block is inside the media query on purpose; the desktop
+   three-column composition above is unchanged. */
+@media (max-width: 600px) {
+  .home-outro .qr {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 16px;
+  }
+  /* Wide enough to read as the section's ask rather than a link-sized chip, and
+     the same 280px ceiling the global mobile `.btn` uses so it lines up with the
+     hero's upload button when both are on screen. */
+  .qr__cta {
+    width: 100%;
+    max-width: 280px;
+  }
+  /* `flex: none` re-stated because the 760px block above sets `flex: 0 0 100%`,
+     and in a COLUMN container that basis is a HEIGHT, not a width. */
+  .qr__small {
+    flex: none;
+    width: 100%;
+    justify-content: center;
+    gap: 10px 12px;
+  }
+  /* The review link takes the second line, so the separator that would have
+     preceded it has nothing to separate and would hang off the end of line one. */
+  .qr__small > .qr__sep:last-of-type {
+    display: none;
+  }
+  .qr__review {
+    flex: 0 0 100%;
+    justify-content: center;
+  }
 }
 
 /* Version carousel (arrows + dots) for the before/after staging viewer */
@@ -3910,7 +4007,7 @@ body.page-home main {
     overflow-wrap: anywhere;
   }
 
-  .ig-embeds {
+  .ig-cards {
     grid-template-columns: minmax(0, 1fr);
     justify-items: center;
   }

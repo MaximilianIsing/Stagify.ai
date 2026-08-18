@@ -89,7 +89,7 @@
          to DEFAULT_ROOM/DEFAULT_STYLE in scripts/hero-picker.js. A mismatch does not error,
          it silently buys a wasted download AND delays the element it was meant to speed up.
          test/frontend/hero-picker-lcp.test.js fails on any of the three drifting. -->
-    <link rel="preload" as="image" href="media-webp/example/modern-bedroom.webp" fetchpriority="high">
+    <link rel="preload" as="image" href="media-webp/example/modern-bedroom.webp" imagesrcset="media-webp/example/modern-bedroom-900.webp 900w, media-webp/example/modern-bedroom.webp 1248w, media-webp/example/modern-bedroom-1872.webp 1872w, media-webp/example/modern-bedroom-2496.webp 2496w" imagesizes="(min-width: 1180px) 1110px, 94vw" fetchpriority="high">
 
 
     <!-- Critical CSS — render-blocking on purpose (needed for first paint) -->
@@ -101,18 +101,14 @@
          sit below the module <script> tags, where the preload scanner reached it late
          while first paint was already waiting on it.
 
-         Cascade note: it deliberately overrides two selectors from star-border.css —
-         `.inner-content` and `.star-border-container`, both scoped under `.stats-pills`
-         so they win on specificity rather than on load order, which is what makes the
-         override safe against a lazy sheet arriving late. That is on purpose: the hero
-         stat pills' geometry has to survive first paint, and star-border.css is loaded
-         as print below. Nothing else here touches the lazy sheets. -->
+         It used to carry a cascade note about overriding star-border.css. That sheet is
+         gone from this page: the hero counters are no longer pills wrapped in an animated
+         glow, so nothing here loads or overrides it. -->
     <link rel="stylesheet" href="styles/index.css">
-    <!-- Non-critical CSS (auth modals, decorative star-border, below-fold text animations) -->
+    <!-- Non-critical CSS (auth modals, below-fold text animations, demo player, FAQ plan) -->
     <!-- Loaded as print (non-render-blocking), then promoted to all once fetched. -->
     <!-- Swap is done in JS (not an inline onload= handler) so it passes the CSP's script-src-attr 'none'. -->
     <link rel="stylesheet" href="styles/auth.css" media="print" data-lazy-css>
-    <link rel="stylesheet" href="styles/star-border.css" media="print" data-lazy-css>
     <link rel="stylesheet" href="styles/home-text-animate.css" media="print" data-lazy-css>
     <link rel="stylesheet" href="styles/demo-player.css" media="print" data-lazy-css>
     <!-- faq-plan.css is index-only ON PURPOSE: guides.html reuses .faq-accordion /
@@ -123,7 +119,6 @@
     <script type="module" src="scripts/lazy-css.js"></script>
     <noscript>
       <link rel="stylesheet" href="styles/auth.css">
-      <link rel="stylesheet" href="styles/star-border.css">
       <link rel="stylesheet" href="styles/home-text-animate.css">
       <link rel="stylesheet" href="styles/demo-player.css">
       <link rel="stylesheet" href="styles/faq-plan.css">
@@ -162,7 +157,7 @@
     <script type="module" src="scripts/count-up.js"></script>
     <!-- Everything with no hero dependency now loads from index-deferred.js, after
          `load`: demo-data, demo-player, designer-demo, staging-studio, home-reveal,
-         home-text-animate, sponsors-scroll, star-border, plus-cta-auth, index-inline,
+         home-text-animate, sponsors-scroll, plus-cta-auth, index-inline,
          hover-glow, aurora-scrollbar, card-spotlight. They were ~100 KB of source being
          parsed on a throttled CPU while the browser was trying to paint the hero.
          Add new below-fold scripts to that file’s list, NOT here — and read its header
@@ -218,7 +213,7 @@
           <div id="auth-submit-row" class="auth-actions">
             <button type="submit" class="btn btn-primary btn-lg" id="auth-submit"><strong id="auth-submit-label" data-lang="auth.createAccount">Create account</strong></button>
           </div>
-          <p id="auth-terms-notice" class="auth-terms-notice" data-lang-html="auth.agreeTerms">By creating an account, you agree to <a href="terms.html">Terms</a> &amp; <a href="privacy.html">Privacy</a></p>
+          <p id="auth-terms-notice" class="auth-terms-notice" data-lang-html="auth.agreeTerms">By creating an account, you agree to our <a href="terms.html">Terms</a> &amp; <a href="privacy.html">Privacy</a></p>
           <div id="auth-forgot-panel" class="hidden">
             <p class="auth-modal__sub auth-forgot-copy" data-lang="auth.resetCopy">We’ll email you a one-time link to set a new password. The link expires in one hour.</p>
             <div class="auth-actions">
@@ -332,8 +327,64 @@
           </div>
         </div>
       </div>
-      <section class="hero" id="home">
-        <div class="hero-content">
+      <!-- THE HERO IS ONE FULL-BLEED RENDER with the copy laid across its bottom edge.
+           It replaced a two-column layout whose columns could not agree on a height: at
+           1440px the text column ran 353px and the photo column 427px, and BOTH hung 187px
+           below the section box, which `.sponsors { margin-top: 210px }` was manually
+           reserving space for. A single fixed box cannot do that, so the reservation is
+           gone. See the note on `.sponsors` in home.css before reintroducing anything here
+           that overflows the section.
+
+           The scrim is not decoration. White copy has to stay legible over whichever of the
+           36 renders is showing, and the brightest of them is a coastal living room at
+           midday, so the gradient in `.hp-bar` is tuned for that one, not for the average. -->
+      <section class="hero hero--canvas" id="home">
+        <div class="hp-canvas" data-hp-stage>
+          <!-- The photo is STATIC, and that is load-bearing for LCP. This <img> is the
+               page’s LCP element; when the hero image was built by JS its paint was
+               chained behind 128 KB of HTML parsing, five render-blocking stylesheets,
+               and the script’s own download+execute, all while ~60 module files parsed
+               on a throttled CPU. In the markup it is found by the preload scanner in
+               the first packet and paints as soon as the CSSOM is ready.
+
+               Three rules for anyone editing this:
+               1. It must stay in agreement with TWO other places: the
+                  <link rel="preload" as="image"> in <head> (matching is by URL, so a
+                  mismatch costs a wasted download and delays this element), and
+                  DEFAULT_ROOM/DEFAULT_STYLE in scripts/hero-picker.js. If the default
+                  pair and this file disagree, the first paint shows one room and the
+                  script immediately swaps it for another. There is a drift test.
+               2. No loading="lazy" and no width/height attributes. Lazy would forfeit the
+                  preload; the attributes would override the object-fit cover sizing and
+                  letterbox the photo inside the canvas.
+               3. hero-picker.js ADOPTS this node — it appends the other renders around it
+                  and never re-creates it. Replacing it, even with an identical src, would
+                  restart the LCP candidate at the later time.
+
+               The empty "before" shot is NOT here on purpose: it is loaded on demand when
+               the visitor presses “See original”, so the first paint pays for one image. -->
+          <img class="hp-canvas__img" data-hp-img src="media-webp/example/modern-bedroom.webp" srcset="media-webp/example/modern-bedroom-900.webp 900w, media-webp/example/modern-bedroom.webp 1248w, media-webp/example/modern-bedroom-1872.webp 1872w, media-webp/example/modern-bedroom-2496.webp 2496w" sizes="(min-width: 1180px) 1110px, 94vw" alt="A bedroom virtually staged in a modern style" data-lang-attr="hero.defaultAlt|alt" fetchpriority="high">
+
+          <!-- Positioned against the canvas rather than laid out in a rail. It briefly shared
+               a flex row with the stat pills, and a pill plus a button is wider than a 326px
+               phone canvas once the label is "Показать оригинал" — the button ran off the
+               right edge. On its own, absolutely placed, it cannot. -->
+          <button type="button" class="hp-original" id="hero-original-btn"><span class="hp-original__icon" aria-hidden="true"></span><span class="hp-original__label" data-lang="hero.seeOriginal">See original</span></button>
+
+          <!-- The picker’s only announcement. Everything this hero does on a pick is visual:
+               the photo cross-fades and the list beside it rewrites, and a screen-reader user
+               got neither — the sole feedback was the trigger button’s new label happening to
+               be re-read as focus returned to it. "See original" gave not even that.
+
+               Ships EMPTY and is filled by scripts/hero-picker.js. A live region has to be in
+               the document before the text lands in it; populate it in the same breath as
+               creating it and screen readers routinely miss the change. Empty on first paint
+               also means nothing is announced for the render that was already there when the
+               page loaded, which is correct — that one was never a change. -->
+          <p class="sr-only" id="hero-live" role="status" aria-live="polite"></p>
+
+          <div class="hp-bar">
+            <div class="hp-bar__main">
           <!-- The line above the headline says what this is, because nothing else above the
                fold does: the headline is a control ("Stage this bedroom in Modern"), the
                button is an instruction, and the pills are numbers. It used to hold the
@@ -349,8 +400,15 @@
 
                It carries the same phrase as <title> and og:title on purpose. Keep it VISIBLE
                ON MOBILE (see styles/index.css) — indexing is mobile-first, so a keyword line
-               that only exists above 768px is a keyword line Google does not read. -->
-          <p class="catchphrase" style="color: #1e3a8a; font-size: clamp(1.05rem, 3.4vw, 1.6rem); font-weight: 700; margin: 0 0 1rem 0; line-height: 1.2; transition: all 0.3s ease; display: inline-block; max-width: 100%; transform-origin: center;" data-hover-glow data-lang="hero.eyebrow">Free virtual staging</p>
+               that only exists above 768px is a keyword line Google does not read.
+
+               NO `data-hover-glow` HERE, deliberately. The shared handler in
+               scripts/hover-glow.js writes `textShadow` inline on mouseover and then
+               `textShadow = 'none'` on mouseout, and an inline style outranks the sheet
+               permanently — so after one hover this line lost the scrim shadow that keeps
+               it readable over a bright render. The hover is CSS now; see
+               `.hp-bar .catchphrase` in styles/hero-picker.css. -->
+          <p class="catchphrase" data-lang="hero.eyebrow">Free virtual staging</p>
           <!-- The headline is a sentence with two holes in it, and both are dropdowns. Picking
                either one swaps the photo in .hp-stage for the matching render of the SAME
                source room, so the hero demonstrates the styles instead of listing them.
@@ -369,64 +427,77 @@
                may only contain phrasing content, and while browsers happily render a ul in
                there, it is invalid and the roles do the same job on a span. Keep it that way
                if you touch the structure. -->
-          <h1 class="hp-sentence" style="color: #1e3a8a;"><span data-lang="hero.sentence.before">Stage this </span><span class="hp-slot"><button type="button" class="hp-slot__btn" id="hero-room-btn" aria-haspopup="listbox" aria-expanded="false" aria-controls="hero-room-menu"><span id="hero-room-label" data-lang="hero.rooms.bedroom">bedroom</span><span class="hp-slot__chev" aria-hidden="true"></span></button><span class="hp-menu" id="hero-room-menu" hidden><span class="hp-menu__list" id="hero-room-list" role="listbox" aria-label="Room type" data-lang-attr="hero.roomMenuLabel|aria-label"></span></span></span><span data-lang="hero.sentence.middle"> in </span><span class="hp-slot"><button type="button" class="hp-slot__btn" id="hero-style-btn" aria-haspopup="listbox" aria-expanded="false" aria-controls="hero-style-menu"><span id="hero-style-label" data-lang="furnitureStyles.modern">Modern</span><span class="hp-slot__chev" aria-hidden="true"></span></button><span class="hp-menu" id="hero-style-menu" hidden><span class="hp-menu__list" id="hero-style-list" role="listbox" aria-label="Furniture style" data-lang-attr="hero.styleMenuLabel|aria-label"></span></span></span><span data-lang="hero.sentence.after">.</span></h1>
-          <div class="hero-ctas">
-            <div class="hero-cta-button-wrap">
-              <button id="hero-upload" class="btn btn-primary"><strong data-lang="hero.cta">Upload image for free</strong></button>
-              <p id="hero-free-gens-today" class="hero-free-gens-today hidden" aria-live="polite"></p>
-            </div>
-          </div>
-          <!-- The stat pills live in the LEFT column, under the call to action, not under the
-               photo where they used to sit. `.hero-media` deliberately overflows `.hero` (the
-               section is sized to the viewport and the photo is taller than the space left
-               over), and the sponsors band below reserves a fixed 200px to clear it. Sixty
-               more pixels of pills on the end of that column overran the reservation and
-               landed on top of the sponsor logos. They also read better here: they back up
-               the button rather than captioning the photo. -->
-          <div class="hero-stats" id="hero-stats">
-            <div class="stats-pills">
-              <div class="stat-pill">
-                <span class="stat-pill-number" data-stat="roomsStaged" aria-hidden="true">&nbsp;</span>
-                <span class="stat-pill-text" data-lang="hero.stats.roomsStaged">Rooms Staged</span>
-              </div>
-              <div class="stat-pill">
-                <span class="stat-pill-number" data-stat="usersServed" aria-hidden="true">&nbsp;</span>
-                <span class="stat-pill-text" data-lang="hero.stats.usersServed">Users Served</span>
+          <h1 class="hp-sentence"><span data-lang="hero.sentence.before">Stage this </span><span class="hp-slot"><button type="button" class="hp-slot__btn" id="hero-room-btn" aria-haspopup="listbox" aria-expanded="false" aria-controls="hero-room-menu"><span id="hero-room-label" data-lang="hero.rooms.bedroom">bedroom</span><span class="hp-slot__chev" aria-hidden="true"></span></button><span class="hp-menu" id="hero-room-menu" hidden><span class="hp-menu__list" id="hero-room-list" role="listbox" aria-label="Room type" data-lang-attr="hero.roomMenuLabel|aria-label"></span></span></span><span data-lang="hero.sentence.middle"> in </span><span class="hp-slot"><button type="button" class="hp-slot__btn" id="hero-style-btn" aria-haspopup="listbox" aria-expanded="false" aria-controls="hero-style-menu"><span id="hero-style-label" data-lang="furnitureStyles.modern">Modern</span><span class="hp-slot__chev" aria-hidden="true"></span></button><span class="hp-menu" id="hero-style-menu" hidden><span class="hp-menu__list" id="hero-style-list" role="listbox" aria-label="Furniture style" data-lang-attr="hero.styleMenuLabel|aria-label"></span></span></span><span data-lang="hero.sentence.after"></span></h1>
+              <div class="hero-ctas">
+                <div class="hero-cta-button-wrap">
+                  <button id="hero-upload" class="btn btn-primary"><strong data-lang="hero.cta">Upload image for free</strong></button>
+                  <p id="hero-free-gens-today" class="hero-free-gens-today hidden" aria-live="polite"></p>
+                </div>
               </div>
             </div>
-            <div class="stats-counting-text stats-counting-text--under-pills" data-lang="hero.stats.andCounting">and counting...</div>
-          </div>
-        </div>
-        <div class="hero-media">
-          <!-- The photo is STATIC, and that is load-bearing for LCP. This <img> is the
-               page’s LCP element; when the hero image was built by JS its paint was
-               chained behind 128 KB of HTML parsing, five render-blocking stylesheets,
-               and the script’s own download+execute, all while ~60 module files parsed
-               on a throttled CPU. In the markup it is found by the preload scanner in
-               the first packet and paints as soon as the CSSOM is ready.
+            <!-- THE FIVE ITEMS HERE ARE THE DEFAULT PAIR’S, AND ONLY THE DEFAULT PAIR’S.
+                 They are not a placeholder and not a generic "every render includes" list:
+                 they name what the AI actually put in modern-bedroom.webp, the photo this
+                 file also ships in the canvas above. Change the default pair and these five
+                 have to change with it.
 
-               Three rules for anyone editing this:
-               1. It must stay in agreement with TWO other places: the
-                  <link rel="preload" as="image"> in <head> (matching is by URL, so a
-                  mismatch costs a wasted download and delays this element), and
-                  DEFAULT_ROOM/DEFAULT_STYLE in scripts/hero-picker.js. If the default
-                  pair and this file disagree, the first paint shows one room and the
-                  script immediately swaps it for another. There is a drift test.
-               2. No loading="lazy" and no width/height attributes. Lazy would forfeit the
-                  preload; the attributes would override the aspect-ratio .hp-stage sets
-                  and letterbox the photo.
-               3. hero-picker.js ADOPTS this node — it appends the other renders around it
-                  and never re-creates it. Replacing it, even with an identical src, would
-                  restart the LCP candidate at the later time.
+                 The real per-render data lives in the language packs, at
+                 hero.added.items.<style>.<room> — 48 lists of five, one per combination the
+                 picker can reach, each written against that exact render. scripts/hero-picker.js
+                 replaces these <li> with the right list on every swap and on every language
+                 change; see paintAdded() there for what happens in the window before the pack
+                 has landed.
 
-               The empty "before" shot is NOT here on purpose: it is loaded on demand when
-               the visitor presses “See original”, so the first paint pays for one image. -->
-          <div class="hp-frame">
-            <div class="hp-stage" data-hp-stage>
-              <img class="hp-stage__img" data-hp-img src="media-webp/example/modern-bedroom.webp" alt="A bedroom virtually staged in a modern style" data-lang-attr="hero.defaultAlt|alt" style="width: 100%; height: 100%; object-fit: cover;" fetchpriority="high">
-              <button type="button" class="hp-original" id="hero-original-btn" aria-pressed="false" data-lang="hero.seeOriginal">See original</button>
+                 WHY THE MARKUP STILL CARRIES FIVE ITEMS AT ALL, rather than an empty <ul> for
+                 the script to fill: with JavaScript off, and on every server-rendered locale
+                 page before its pack resolves, this is what the visitor reads. An empty list
+                 under a live title would be a bug in exactly the cases that cannot recover
+                 from one.
+
+                 The keys stay hero.added.item1..item5 (numbered, not semantic) because they
+                 are positions in a list, not roles — nothing should come to depend on "item3"
+                 meaning lighting. They are required to be character-for-character the
+                 modern/bedroom list in every pack; test/frontend/hero-added.test.js fails the
+                 build if a translator updates one and not the other. -->
+            <div class="hp-bar__side">
+              <div class="hp-added">
+                <p class="hp-added__title" data-lang="hero.added.title">Added in this render</p>
+                <ul class="hp-added__list">
+                  <li data-lang="hero.added.item1">Walnut platform bed, white linens</li>
+                  <li data-lang="hero.added.item2">Long walnut six-drawer dresser</li>
+                  <li data-lang="hero.added.item3">Cream grid rug under the bed</li>
+                  <li data-lang="hero.added.item4">Boucle armchair by the window</li>
+                  <li data-lang="hero.added.item5">Geometric abstract framed print</li>
+                </ul>
+              </div>
+              <!-- The counters, bottom right, under the list. They used to be two solid blue
+                   pills, which was a control on a pale page background and read as a button
+                   floating on a photograph. Here they are typography: the figure large, the
+                   label in the same small-caps as the list title above them, so the corner
+                   reads as one block rather than as two widgets parked on a render.
+
+                   `#hero-stats`, `.hp-stat__num` and `data-stat` are the contract with
+                   scripts/count-up.js, which finds the numbers by that class and reveals this
+                   wrapper with `.is-ready` once both count endpoints resolve. Rename any of
+                   the three and the counters silently never appear.
+
+                   `.hp-added` above is desktop-only (the bar cannot hold two columns under
+                   1024px without the headline wrapping to four lines), but this block is NOT
+                   — it stays in the single-column bar underneath the button. So the two are
+                   wrapped separately rather than hidden together. -->
+              <div class="hero-stats" id="hero-stats">
+                <div class="hp-stats">
+                  <div class="hp-stat">
+                    <span class="hp-stat__num" data-stat="roomsStaged" aria-hidden="true">&nbsp;</span>
+                    <span class="hp-stat__label" data-lang="hero.stats.roomsStaged">Rooms Staged</span>
+                  </div>
+                  <div class="hp-stat">
+                    <span class="hp-stat__num" data-stat="usersServed" aria-hidden="true">&nbsp;</span>
+                    <span class="hp-stat__label" data-lang="hero.stats.usersServed">Users Served</span>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="hp-note" data-lang="hero.stageNote">Every look here is one real render of the same empty room.</div>
           </div>
         </div>
       </section>
@@ -442,74 +513,83 @@
                  intrinsic width until they load, which would corrupt that measurement
                  and break the loop. Native lazy-loading is also unreliable for content
                  moved only by a rAF transform. Low priority yields the bandwidth to the
-                 LCP image without touching the geometry. -->
+                 LCP image without touching the geometry.
+
+                 THE ALT IS THE BARE COMPANY NAME, and the duplicate set’s is EMPTY. Do
+                 not "restore" the old `alt="Centennial logo — Stagify.ai partner"`: the
+                 <h2> directly above already says these are agents who use Stagify, so
+                 the suffix restated the section on all eleven logos, and it was English
+                 in all eleven locales because a company name is a proper noun and the
+                 rest was never keyed. A bare name is the only part carrying information.
+                 The duplicates exist for the marquee loop and are aria-hidden, so an alt
+                 on them is text no one can reach. Guarded in home-logo-alts.test.js. -->
             <div class="sponsors-track" id="sponsors-track">
               <!-- First set of sponsors -->
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Centennial.webp" alt="Centennial logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
+                <img src="media-webp/sponsors/Centennial.webp" alt="Centennial" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/rock-solid.webp" alt="Rock Solid logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
+                <img src="media-webp/sponsors/rock-solid.webp" alt="Rock Solid" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/tahari-capital.webp" alt="Tahari Capital logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
+                <img src="media-webp/sponsors/tahari-capital.webp" alt="Tahari Capital" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/267-fifth-avenue.webp" alt="267 Fifth Avenue logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
+                <img src="media-webp/sponsors/267-fifth-avenue.webp" alt="267 Fifth Avenue" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/mid-town-loft.webp" alt="Mid Town Loft logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
+                <img src="media-webp/sponsors/mid-town-loft.webp" alt="Mid Town Loft" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/thurman-services.webp" alt="Thurman Services logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
+                <img src="media-webp/sponsors/thurman-services.webp" alt="Thurman Services" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Compass.webp" alt="Compass real estate logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
+                <img src="media-webp/sponsors/Compass.webp" alt="Compass real estate" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/ArmoxLogo.webp" alt="Armox logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
+                <img src="media-webp/sponsors/ArmoxLogo.webp" alt="Armox" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Empire.webp" alt="Empire Office logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
+                <img src="media-webp/sponsors/Empire.webp" alt="Empire Office" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/brown-harris-stevens.webp" alt="Brown Harris Stevens logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
+                <img src="media-webp/sponsors/brown-harris-stevens.webp" alt="Brown Harris Stevens" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/DouglasElliman.webp" alt="Douglas Elliman logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
+                <img src="media-webp/sponsors/DouglasElliman.webp" alt="Douglas Elliman" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>              <!-- Duplicate set for seamless loop -->
               <div class="sponsor-item sponsor-item--dup" aria-hidden="true">
-                <img src="media-webp/sponsors/Centennial.webp" alt="Centennial logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
+                <img src="media-webp/sponsors/Centennial.webp" alt="" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
               <div class="sponsor-item sponsor-item--dup" aria-hidden="true">
-                <img src="media-webp/sponsors/rock-solid.webp" alt="Rock Solid logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
+                <img src="media-webp/sponsors/rock-solid.webp" alt="" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
               <div class="sponsor-item sponsor-item--dup" aria-hidden="true">
-                <img src="media-webp/sponsors/tahari-capital.webp" alt="Tahari Capital logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
+                <img src="media-webp/sponsors/tahari-capital.webp" alt="" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
               <div class="sponsor-item sponsor-item--dup" aria-hidden="true">
-                <img src="media-webp/sponsors/267-fifth-avenue.webp" alt="267 Fifth Avenue logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
+                <img src="media-webp/sponsors/267-fifth-avenue.webp" alt="" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
               <div class="sponsor-item sponsor-item--dup" aria-hidden="true">
-                <img src="media-webp/sponsors/mid-town-loft.webp" alt="Mid Town Loft logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
+                <img src="media-webp/sponsors/mid-town-loft.webp" alt="" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
               <div class="sponsor-item sponsor-item--dup" aria-hidden="true">
-                <img src="media-webp/sponsors/thurman-services.webp" alt="Thurman Services logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
+                <img src="media-webp/sponsors/thurman-services.webp" alt="" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
               <div class="sponsor-item sponsor-item--dup" aria-hidden="true">
-                <img src="media-webp/sponsors/Compass.webp" alt="Compass real estate logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
+                <img src="media-webp/sponsors/Compass.webp" alt="" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
               <div class="sponsor-item sponsor-item--dup" aria-hidden="true">
-                <img src="media-webp/sponsors/ArmoxLogo.webp" alt="Armox logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
+                <img src="media-webp/sponsors/ArmoxLogo.webp" alt="" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
               <div class="sponsor-item sponsor-item--dup" aria-hidden="true">
-                <img src="media-webp/sponsors/Empire.webp" alt="Empire Office logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
+                <img src="media-webp/sponsors/Empire.webp" alt="" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
               <div class="sponsor-item sponsor-item--dup" aria-hidden="true">
-                <img src="media-webp/sponsors/brown-harris-stevens.webp" alt="Brown Harris Stevens logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
+                <img src="media-webp/sponsors/brown-harris-stevens.webp" alt="" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
               <div class="sponsor-item sponsor-item--dup" aria-hidden="true">
-                <img src="media-webp/sponsors/DouglasElliman.webp" alt="Douglas Elliman logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
+                <img src="media-webp/sponsors/DouglasElliman.webp" alt="" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>            </div>
           </div>
         </div>
@@ -585,8 +665,8 @@
             <ul class="home-list">
               <li data-lang="home.studio.points.speed">About 8 seconds per photo</li>
               <li data-lang="home.studio.points.restage">Re-stage in any style, as often as you like</li>
-              <li class="rs__li--wide" data-lang="home.restage.points.rooms">Eight room types, from bedrooms to kitchens</li>
-              <li class="rs__li--wide" data-lang="home.restage.points.browser">Nothing to install, it runs in your browser</li>
+              <li class="rs__li--wide" data-lang="home.restage.points.rooms">8 room types, from bedrooms to kitchens</li>
+              <li class="rs__li--wide" data-lang="home.restage.points.browser">Nothing to install, just your browser</li>
               <li data-lang="home.studio.points.rights">Every image is yours, with full copyright</li>
             </ul>
             <!-- BOTH labels ship, stacked in one grid cell (see .rs__btn in home.css).
@@ -651,7 +731,7 @@
            to land on "four readable blocks", not "four unreadable slivers". -->
       <section class="home-section home-info" id="learn" aria-labelledby="learn-title">
         <div class="home-section__head home-section__head--wide reveal">
-          <h2 class="home-section__title" id="learn-title" data-tx="rise" data-lang="home.info.title">What virtual staging is, and why it sells</h2>
+          <h2 class="home-section__title" id="learn-title" data-tx="rise" data-lang="home.info.title">What virtual staging is and why it sells</h2>
         </div>
         <div class="hstrips reveal" data-strips>
           <div class="hstrip" data-strip="0">
@@ -906,7 +986,7 @@
                         <p class="shw__aside-body" data-lang="home.staging.panelBody">No brief to write and nothing to learn. Choose the room type and the look you want, and the photo comes back staged with the walls, windows and floor untouched.</p>
                         <ul class="home-list">
                           <li data-lang="home.staging.points.upload">Upload a photo and stage it in about 8 seconds.</li>
-                          <li data-lang="home.staging.points.styles">Pick from furnishing styles for any room type.</li>
+                          <li data-lang="home.staging.points.styles">Pick from 7 furnishing styles for any room type.</li>
                           <li data-lang="home.staging.points.restage">Not quite right? Re-stage it as often as you like.</li>
                           <li data-lang="home.staging.points.rights">Every image is yours, with full copyright.</li>
                         </ul>
@@ -995,7 +1075,7 @@
 
            PROVENANCE, because it matters for what this section is allowed to claim:
            the "before" is a generated stand-in for an ordinary agent’s phone snap
-           (flat overcast sky, car on the drive, bins at the kerb, hose on the lawn).
+           (flat overcast sky, car on the drive, trash cans at the curb, hose on the lawn).
            The "after" is that exact file put through the SHIPPED Exterior Studio
            prompt — buildExteriorPrompt({timeOfDay:'goldenHour', sky:'clearBlue',
            removeVehicles:true, removeClutter:true}) from lib/staging/exterior-prompts.js
@@ -1025,7 +1105,7 @@
                 <div class="shw__panel-inner">
                   <header class="shw__panel-head">
                     <h3 class="shw__panel-title" id="exterior-title" data-lang="home.exterior.title">Fix the photo the listing opens with</h3>
-                    <p class="shw__panel-sub" data-lang-html="home.exterior.subtitle">The Exterior Studio changes the time of day, clears grey skies and takes out cars and bins. The house stays untouched. <em>(Stagify+ Exclusive)</em></p>
+                    <p class="shw__panel-sub" data-lang-html="home.exterior.subtitle">The Exterior Studio changes the time of day, clears gray skies and takes out cars and trash cans. The house stays untouched. <em>(Stagify+ Exclusive)</em></p>
                   </header>
                   <div class="shw__panel-body">
 
@@ -1038,8 +1118,8 @@
                  (width/height here would resolve as a presentational height and make
                  the container’s aspect-ratio a no-op.) Lazy and not fetchpriority=high
                  — this sits well below the hero, which owns the LCP. -->
-            <img class="ba-after" src="media-webp/Homepage/Exterior/After.webp" data-lang-attr="home.exterior.alts.after|alt" alt="The same house at golden hour under a clear blue sky, with the parked car, bins and hose removed" loading="lazy" decoding="async">
-            <img class="ba-before" src="media-webp/Homepage/Exterior/Before.webp" data-lang-attr="home.exterior.alts.before|alt" alt="A suburban house photographed under a flat grey sky, with a car on the driveway, bins at the kerb and a hose on the lawn" loading="lazy" decoding="async">
+            <img class="ba-after" src="media-webp/Homepage/Exterior/After.webp" data-lang-attr="home.exterior.alts.after|alt" alt="The same house at golden hour under a clear blue sky, with the parked car, trash cans and hose removed" loading="lazy" decoding="async">
+            <img class="ba-before" src="media-webp/Homepage/Exterior/Before.webp" data-lang-attr="home.exterior.alts.before|alt" alt="A suburban house photographed under a flat gray sky, with a car on the driveway, trash cans at the curb and a hose on the lawn" loading="lazy" decoding="async">
             <span class="ba-tag ba-tag--before" data-lang="home.studio.beforeLabel">Before</span>
             <span class="ba-tag ba-tag--after" data-lang="home.studio.afterLabel">After</span>
             <div class="ba-handle" role="slider" tabindex="0" data-lang-attr="home.studio.revealSliderAria|aria-label" aria-label="Reveal slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
@@ -1064,8 +1144,8 @@
                  the 11 packs makes the panel the taller box again. -->
             <ul class="home-list">
               <li data-lang="home.exterior.points.light">Shoot at noon, publish at golden hour.</li>
-              <li data-lang="home.exterior.points.sky">Flat grey sky becomes clear blue or soft cloud.</li>
-              <li data-lang="home.exterior.points.clutter">Cars, bins, hoses and signage come out.</li>
+              <li data-lang="home.exterior.points.sky">Flat gray sky becomes clear blue or soft cloud.</li>
+              <li data-lang="home.exterior.points.clutter">Cars, trash cans, hoses and signage come out.</li>
               <li data-lang="home.exterior.points.honest">No re-laid lawn, no repaint, no new driveway.</li>
             </ul>
           </aside>
@@ -1222,7 +1302,15 @@
              test/frontend/home-testimonials.test.js ("no placeholder testimonials
              remain") keeps the old dummy cards from coming back. Adding an eighth means a
              card here plus its four keys in all 11 language packs — the count in the
-             controls is written by JS from the real card count, so it follows. -->
+             controls is written by JS from the real card count, so it follows.
+
+             EVERY `.tw-logo` CARRIES alt="", deliberately. The brokerage sits in
+             `.tw-org` two nodes above the image and is translated in all 11 packs, so
+             an alt of "Tahari Realty logo" made a screen reader read the name twice —
+             once as content, once as an unkeyed English string. An empty alt drops the
+             image out of the accessibility tree and leaves the translated text to say
+             it. This is not a missing alt; do not fill them in.
+             Guarded in home-logo-alts.test.js. -->
         <div class="tw-deck reveal" data-deck>
           <!-- role="group" and tabindex are added by home-testimonials.js, since the
                stack is only a widget once the deck arms. The aria-label lives HERE, not
@@ -1243,7 +1331,7 @@
                   <span class="tw-org" data-lang="home.testimonials.items.justin.role">Tahari Realty</span>
                   <span class="tw-loc" data-lang="home.testimonials.items.justin.location">Manhattan, NYC</span>
                 </span>
-                <img class="tw-logo" src="media-webp/testimonials/tahari-realty-mini.webp" alt="Tahari Realty logo" width="72" height="72" decoding="async">
+                <img class="tw-logo" src="media-webp/testimonials/tahari-realty-mini.webp" alt="" width="72" height="72" decoding="async">
               </figcaption>
             </figure>
             <figure class="tw-card">
@@ -1261,7 +1349,7 @@
                   <span class="tw-org" data-lang="home.testimonials.items.andy.role">Centennial Properties</span>
                   <span class="tw-loc" data-lang="home.testimonials.items.andy.location">Manhattan, NYC</span>
                 </span>
-                <img class="tw-logo" src="media-webp/testimonials/centennial-mini.webp" alt="Centennial Properties logo" width="72" height="72" decoding="async">
+                <img class="tw-logo" src="media-webp/testimonials/centennial-mini.webp" alt="" width="72" height="72" decoding="async">
               </figcaption>
             </figure>
             <figure class="tw-card">
@@ -1279,7 +1367,7 @@
                   <span class="tw-org" data-lang="home.testimonials.items.travonte.role">Compass</span>
                   <span class="tw-loc" data-lang="home.testimonials.items.travonte.location">Brooklyn, NYC</span>
                 </span>
-                <img class="tw-logo" src="media-webp/testimonials/compass-mini.webp" alt="Compass logo" width="72" height="72" decoding="async">
+                <img class="tw-logo" src="media-webp/testimonials/compass-mini.webp" alt="" width="72" height="72" decoding="async">
               </figcaption>
             </figure>
             <figure class="tw-card">
@@ -1297,7 +1385,7 @@
                   <span class="tw-org" data-lang="home.testimonials.items.jack.role">Tahari Realty</span>
                   <span class="tw-loc" data-lang="home.testimonials.items.jack.location">Manhattan, NYC</span>
                 </span>
-                <img class="tw-logo" src="media-webp/testimonials/tahari-realty-mini.webp" alt="Tahari Realty logo" width="72" height="72" decoding="async">
+                <img class="tw-logo" src="media-webp/testimonials/tahari-realty-mini.webp" alt="" width="72" height="72" decoding="async">
               </figcaption>
             </figure>
             <figure class="tw-card">
@@ -1315,7 +1403,7 @@
                   <span class="tw-org" data-lang="home.testimonials.items.jaden.role">RockSolid Management</span>
                   <span class="tw-loc" data-lang="home.testimonials.items.jaden.location">Manhattan, NYC</span>
                 </span>
-                <img class="tw-logo" src="media-webp/testimonials/rocksolid-mini.webp" alt="RockSolid Management logo" width="72" height="72" decoding="async">
+                <img class="tw-logo" src="media-webp/testimonials/rocksolid-mini.webp" alt="" width="72" height="72" decoding="async">
               </figcaption>
             </figure>
             <figure class="tw-card">
@@ -1333,7 +1421,7 @@
                   <span class="tw-org" data-lang="home.testimonials.items.jaime.role">Douglas Elliman</span>
                   <span class="tw-loc" data-lang="home.testimonials.items.jaime.location">Miami, FL</span>
                 </span>
-                <img class="tw-logo" src="media-webp/testimonials/elliman-mini.webp" alt="Douglas Elliman logo" width="72" height="72" decoding="async">
+                <img class="tw-logo" src="media-webp/testimonials/elliman-mini.webp" alt="" width="72" height="72" decoding="async">
               </figcaption>
             </figure>
             <figure class="tw-card">
@@ -1351,7 +1439,7 @@
                   <span class="tw-org" data-lang="home.testimonials.items.thomas.role">Compass</span>
                   <span class="tw-loc" data-lang="home.testimonials.items.thomas.location">Manhattan, NYC</span>
                 </span>
-                <img class="tw-logo" src="media-webp/testimonials/compass-mini.webp" alt="Compass logo" width="72" height="72" decoding="async">
+                <img class="tw-logo" src="media-webp/testimonials/compass-mini.webp" alt="" width="72" height="72" decoding="async">
               </figcaption>
             </figure>
           </div>
@@ -1436,7 +1524,7 @@
             </div>
           </div>
 
-          <p class="calc__note" data-lang="home.compare.calc.note">Based on $2,000 per home, the low end of the usual range, and two weeks from booking to installed.</p>
+          <p class="calc__note" data-lang="home.compare.calc.note">Based on $2,000 per home, the low end of the usual range, and two weeks from booking to installation.</p>
         </div>
       </section>
 
@@ -1863,7 +1951,7 @@
               <span class="faq-room__q" data-lang="faq.rooms.disclosure.question">Can I use these photos in an MLS listing?</span>
               <span class="faq-q__caret" aria-hidden="true"></span>
             </summary>
-            <p class="faq-room__a" data-lang="faq.rooms.disclosure.answer">Yes, and virtual staging is standard practice, but disclose it. Most MLSs and local rules ask that a digitally furnished photo be labelled as such, usually in the caption. Stagify can stamp “Virtually staged” onto the image for you, on any plan. Because only furniture and decor change, and never the structure of the room, the photo stays an honest representation of the space. Check your own board for the exact wording it expects.</p>
+            <p class="faq-room__a" data-lang="faq.rooms.disclosure.answer">Yes, and virtual staging is standard practice, but disclose it. Most MLSs and local rules ask that a digitally furnished photo be labeled as such, usually in the caption. Stagify can stamp “Virtually staged” onto the image for you, on any plan. Because only furniture and decor change, and never the structure of the room, the photo stays an honest representation of the space. Check your own board for the exact wording it expects.</p>
           </details>
           <details class="faq-q faq-room" id="faq-privacy" name="faq-room" data-room="privacy" data-door="w0.50" data-no="08" style="--x:30;--y:73;--w:17;--h:17;--lt:calc(4cqh - 16px)">
             <summary>
@@ -1879,7 +1967,7 @@
               <span class="faq-room__q" data-lang="faq.rooms.whyStagify.question">How is this different from other tools?</span>
               <span class="faq-q__caret" aria-hidden="true"></span>
             </summary>
-            <p class="faq-room__a" data-lang="faq.rooms.whyStagify.answer">Most tools do one of these three things well. Stagify does all three: it is cheap enough to stage on a whim, conversational enough to redesign a room rather than merely decorate it, and precise enough to control the result pixel by pixel. Add the exterior and whole-listing workflows, eleven languages, full copyright on everything you generate, and no ads or per-image fees, and you get a tool you can use on every listing instead of saving for the hero shot.</p>
+            <p class="faq-room__a" data-lang="faq.rooms.whyStagify.answer">Most tools do one of three things well. Stagify does all three: it is cheap enough to stage on a whim, conversational enough to redesign a room rather than merely decorate it, and precise enough to control the result pixel by pixel. Add the exterior and whole-listing workflows, eleven languages, full copyright on everything you generate, and no ads or per-image fees, and you get a tool you can use on every listing instead of saving for the hero shot.</p>
           </details>
             <!-- The notes column’s only static content: the idle prompt. The open
                  room’s key, question and answer are positioned over it from inside their
@@ -1960,16 +2048,23 @@
         <div class="home-section__head home-section__head--wide reveal">
           <h2 class="home-section__title" id="ig-title" data-tx="fade" data-lang="home.instagram.title">See it in action on Instagram</h2>
         </div>
-        <div class="ig-embeds reveal">
-          <div class="ig-embed">
-            <iframe class="ig-embed__frame" src="https://www.instagram.com/p/DbMhP88TW-u/embed/" title="Stagify.ai on Instagram" loading="lazy" scrolling="no" allowtransparency="true" allow="encrypted-media; clipboard-write"></iframe>
-          </div>
-          <div class="ig-embed">
-            <iframe class="ig-embed__frame" src="https://www.instagram.com/p/Dbb5d_Hz5TF/embed/" title="Stagify.ai on Instagram" loading="lazy" scrolling="no" allowtransparency="true" allow="encrypted-media; clipboard-write"></iframe>
-          </div>
-          <div class="ig-embed">
-            <iframe class="ig-embed__frame" src="https://www.instagram.com/p/DbRw_GgxZx8/embed/" title="Stagify.ai on Instagram" loading="lazy" scrolling="no" allowtransparency="true" allow="encrypted-media; clipboard-write"></iframe>
-          </div>
+        <!-- The post art itself, served locally, linking out to the post. These were three
+             instagram.com “/p/SHORTCODE/embed/” iframes: ~607 KB of third-party HTML each, plus
+             Instagram’s own JS and fonts, of which the CSS then threw most away — it clipped
+             Instagram’s header off with a negative margin and cropped the footer with a fixed
+             wrapper height. All three covers together are now ~134 KB and the page loads no
+             Meta code. Masters + refetch command: to-build/media-png/instagram/README.md.
+             Shown UNCROPPED (no object-fit) — two of the three have artwork flush to an edge. -->
+        <div class="ig-cards reveal">
+          <a class="ig-card" href="https://www.instagram.com/p/DbMhP88TW-u/" target="_blank" rel="noopener noreferrer">
+            <img class="ig-card__img" src="media-webp/instagram/empty-to-staged.webp" width="660" height="825" loading="lazy" fetchpriority="low" decoding="async" data-lang-attr="home.instagram.posts.emptyToStaged|alt" alt="Instagram post: an empty living room beside the same room staged with a sofa, rug and artwork (opens in a new tab)">
+          </a>
+          <a class="ig-card" href="https://www.instagram.com/p/Dbb5d_Hz5TF/" target="_blank" rel="noopener noreferrer">
+            <img class="ig-card__img" src="media-webp/instagram/floor-plan-to-render.webp" width="660" height="825" loading="lazy" fetchpriority="low" decoding="async" data-lang-attr="home.instagram.posts.floorPlan|alt" alt="Instagram post: a furnished floor plan above the photoreal bedroom rendered from it (opens in a new tab)">
+          </a>
+          <a class="ig-card" href="https://www.instagram.com/p/DbRw_GgxZx8/" target="_blank" rel="noopener noreferrer">
+            <img class="ig-card__img" src="media-webp/instagram/five-styles.webp" width="660" height="825" loading="lazy" fetchpriority="low" decoding="async" data-lang-attr="home.instagram.posts.fiveStyles|alt" alt="Instagram post: one empty living room staged in five different furniture styles (opens in a new tab)">
+          </a>
         </div>
         <div class="ig-cta reveal">
           <a class="ig-follow" href="https://www.instagram.com/stagify.ai/" target="_blank" rel="noopener noreferrer">
@@ -1979,42 +2074,74 @@
         </div>
       </section>
 
-      <!-- ==================== CONTACT + REVIEW (outro) ====================
-           Two closing sections that were each just a heading, stacked, reading as
-           dead space. `.home-outro` sits them side by side as one band; below
-           760px it falls back to the stacked layout. Both stay real <section>s
-           with their own id, heading and aria-labelledby — this is a layout
-           change only, so the page’s heading outline is untouched. -->
-      <div class="home-outro">
-        <section class="home-section home-contact-cta" id="contact-cta" aria-labelledby="contact-cta-title">
-          <div class="home-section__head home-section__head--wide reveal">
-            <h2 class="home-section__title" id="contact-cta-title" data-tx="fade" data-lang="home.contactCta.title">Our inbox is always open</h2>
-            <a class="contact-cta-email" href="mailto:team@stagify.ai" data-lang="home.contactCta.email">team@stagify.ai</a>
-            <a class="contact-cta-phone" href="tel:+19292514372" data-lang="home.contactCta.phone">(929) 251-4372</a>
-          </div>
-        </section>
+      <!-- ==================== CLOSING ROW (outro) ====================
+           One rule, one line, one button. This replaced `.home-outro`, a two-up band
+           of two heading-only sections — “Our inbox is always open” and “Enjoying
+           Stagify?” — whose combined effect was that the LAST `.btn-primary` on an
+           ~8,000px page asked for a Google review. Every other CTA below the hero is
+           a demo control or an outbound link, so a visitor who read the whole page
+           had nothing to press. Contact and review are now folded onto the same row
+           as the small print they functionally are.
 
-        <section class="home-section home-review-cta" id="review-cta" aria-labelledby="review-cta-title">
-          <div class="home-section__head home-section__head--wide reveal">
-            <svg width="0" height="0" aria-hidden="true" class="review-star-defs"><defs><linearGradient id="reviewStarGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fef08a"/><stop offset="50%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#f59e0b"/></linearGradient></defs></svg>
-            <h2 class="home-section__title" id="review-cta-title" data-tx="fade" data-lang="home.reviewCta.title">Enjoying Stagify?</h2>
-            <!-- ONE link across all five stars, not five per-star buttons. A
-                 five-star picker that opens the same URL whichever star you press
-                 and records nothing would imply we captured the rating you chose;
-                 we don’t. It reuses the button’s own aria-label key, so the stars
-                 cost no new translation strings. The left-to-right sweep on hover
-                 is pure CSS (staggered transition-delay) — see home.css. -->
-            <a class="review-cta-stars" href="https://g.page/r/Cd6NiqfUAJ7bEAE/review" target="_blank" rel="noopener noreferrer" data-lang-attr="home.reviewCta.aria|aria-label" aria-label="Leave a Google review (opens in a new tab)">
-              <svg class="review-star" viewBox="0 0 24 24" aria-hidden="true"><path fill="url(#reviewStarGrad)" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-              <svg class="review-star" viewBox="0 0 24 24" aria-hidden="true"><path fill="url(#reviewStarGrad)" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-              <svg class="review-star" viewBox="0 0 24 24" aria-hidden="true"><path fill="url(#reviewStarGrad)" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-              <svg class="review-star" viewBox="0 0 24 24" aria-hidden="true"><path fill="url(#reviewStarGrad)" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-              <svg class="review-star" viewBox="0 0 24 24" aria-hidden="true"><path fill="url(#reviewStarGrad)" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+           IT COSTS ZERO NEW TRANSLATION KEYS, and that is why the copy is what it is:
+           every string here was already in all 11 packs. `home.finalCta.title` and
+           `.button` are recovered from a final CTA that was removed long ago and left
+           its namespace behind — this section is, in effect, that one returning at a
+           tenth of the height. Four keys are now orphaned rather than deleted, which
+           is how `finalCta` itself was left: `home.finalCta.subtitle`, `.note`,
+           `home.contactCta.title` and `home.reviewCta.title`.
+
+           ONE <h2> WHERE THERE WERE TWO. The heading is styled down to ~19px rather
+           than demoted to a <p>, so the page’s outline still ends on a heading and
+           the section keeps a valid `aria-labelledby`. `#contact-cta` is kept as the
+           id — nothing on the site links to either anchor, but it is the one that
+           reads correctly for a row that still carries the inbox address.
+
+           NO `data-tx` HERE, deliberately. The whole point of this section is that it
+           is quiet; an animated heading is the one thing that would undo that.
+
+           The button is `#outro-upload`, wired in scripts/app.js alongside
+           `#hero-upload`. It is NOT `.btn.btn-primary`: that class is the uppercase
+           five-stop radial-gradient blob with the shimmer sweep, which is the loudest
+           control on the site and belongs to the hero. Whether the two should be
+           unified is a separate decision — see `.qr__cta` in home.css. -->
+      <section class="home-section home-outro" id="contact-cta" aria-labelledby="outro-title">
+        <div class="qr reveal">
+          <h2 class="qr__line" id="outro-title" data-lang="home.finalCta.title">Try it on your own listing</h2>
+          <button type="button" class="qr__cta" id="outro-upload" data-lang="home.finalCta.button">Upload a photo</button>
+          <div class="qr__small">
+            <a href="mailto:team@stagify.ai" data-lang="home.contactCta.email">team@stagify.ai</a>
+            <span class="qr__sep" aria-hidden="true"></span>
+            <a href="tel:+19292514372" data-lang="home.contactCta.phone">(929) 251-4372</a>
+            <span class="qr__sep" aria-hidden="true"></span>
+            <!-- The five stars are ONE link with the label, not five controls: the old
+                 `.review-cta-stars` was a separate star link sitting above a separate
+                 button, both pointing at the same URL.
+
+                 THE GRADIENT IS THE SHINE. `#reviewStarGrad` ramps #fef08a → #fbbf24 →
+                 #f59e0b top to bottom, which reads as a highlight across the upper arms
+                 of each star; a flat fill looks dead next to it. It briefly WAS flat
+                 (`currentColor`) on the theory that a three-stop ramp is invisible at
+                 15px — true at 15px, which is why the stars are 20px now.
+
+                 The `<defs>` lives inside the FIRST star rather than in its own 0×0
+                 `<svg class="review-star-defs">` the way it used to: a gradient id is
+                 document-global, so the extra element and the CSS rule that hid it were
+                 never needed. Move the defs if you ever drop the first star. -->
+
+            <a class="qr__review" href="https://g.page/r/Cd6NiqfUAJ7bEAE/review" target="_blank" rel="noopener noreferrer" data-lang-attr="home.reviewCta.aria|aria-label" aria-label="Leave a Google review (opens in a new tab)">
+              <span class="qr__stars" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><defs><linearGradient id="reviewStarGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fef08a"/><stop offset="50%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#f59e0b"/></linearGradient></defs><path fill="url(#reviewStarGrad)" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg viewBox="0 0 24 24"><path fill="url(#reviewStarGrad)" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg viewBox="0 0 24 24"><path fill="url(#reviewStarGrad)" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg viewBox="0 0 24 24"><path fill="url(#reviewStarGrad)" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg viewBox="0 0 24 24"><path fill="url(#reviewStarGrad)" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              </span>
+              <span data-lang="home.reviewCta.button">Leave a Google review</span>
             </a>
-            <a class="btn btn-primary review-cta-btn" href="https://g.page/r/Cd6NiqfUAJ7bEAE/review" target="_blank" rel="noopener noreferrer" data-lang-attr="home.reviewCta.aria|aria-label" aria-label="Leave a Google review (opens in a new tab)" data-lang="home.reviewCta.button">Leave a Google review</a>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
 
       <div class="modal hidden" id="stage-modal">
         <div class="modal-backdrop" id="modal-backdrop"></div>
@@ -2701,6 +2828,7 @@
       "url": "https://stagify.ai/",
       "logo": "https://stagify.ai/media-webp/logo/Logo180x180.webp",
       "description": "Free AI-powered virtual staging tool for real estate professionals",
+      "slogan": "Upload. Stage. Imagine.",
       "email": "team@stagify.ai",
       "sameAs": [
         "https://www.instagram.com/stagify.ai/",
@@ -2944,7 +3072,7 @@
           "url": "https://stagify.ai/#faq-disclosure",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes, and virtual staging is standard practice, but disclose it. Most MLSs and local rules ask that a digitally furnished photo be labelled as such, usually in the caption. Stagify can stamp “Virtually staged” onto the image for you, on any plan. Because only furniture and decor change, and never the structure of the room, the photo stays an honest representation of the space. Check your own board for the exact wording it expects."
+            "text": "Yes, and virtual staging is standard practice, but disclose it. Most MLSs and local rules ask that a digitally furnished photo be labeled as such, usually in the caption. Stagify can stamp “Virtually staged” onto the image for you, on any plan. Because only furniture and decor change, and never the structure of the room, the photo stays an honest representation of the space. Check your own board for the exact wording it expects."
           }
         },
         {
@@ -2962,7 +3090,7 @@
           "url": "https://stagify.ai/#faq-whystagify",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Most tools do one of these three things well. Stagify does all three: it is cheap enough to stage on a whim, conversational enough to redesign a room rather than merely decorate it, and precise enough to control the result pixel by pixel. Add the exterior and whole-listing workflows, eleven languages, full copyright on everything you generate, and no ads or per-image fees, and you get a tool you can use on every listing instead of saving for the hero shot."
+            "text": "Most tools do one of three things well. Stagify does all three: it is cheap enough to stage on a whim, conversational enough to redesign a room rather than merely decorate it, and precise enough to control the result pixel by pixel. Add the exterior and whole-listing workflows, eleven languages, full copyright on everything you generate, and no ads or per-image fees, and you get a tool you can use on every listing instead of saving for the hero shot."
           }
         }
       ]

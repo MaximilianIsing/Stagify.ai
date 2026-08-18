@@ -29,15 +29,14 @@ import { renderPasswordResetEmail, renderPasswordChangedEmail } from '../lib/ser
  *   setSensitiveHeaders: (res: import('express').Response) => void,
  *   getAuthUserFromRequest: (req: import('express').Request) => any,
  *   toPublicAuthUser: ReturnType<typeof import('../lib/services/auth-helpers.js').createAuthHelpers>['toPublicAuthUser'],
- *   sendRegistrationVerificationEmail: Function,
- *   sendAccountExistsNotice: Function,
+ *   email: import('../lib/types/deps.js').EmailDeps,
  *   __dirname: string,
  *   googleClientId: string,
  * }} deps - Auth store, injected OAuth/email clients, rate-limit middleware,
  *   staging/email flags, and auth helpers.
  */
 export default function createAuthRouter(deps) {
-  const { authStore, googleOAuthClient, resend, LOGS_ACCESS_KEY, authLimiter, emailLimiter, RESEND_FROM_EMAIL, EMAIL_DEBUG_MODE, DEBUG_EMAIL, IS_STAGING, SHOW_STAGING_BANNER, endpointKeyMatches, setSensitiveHeaders, getAuthUserFromRequest, toPublicAuthUser, sendRegistrationVerificationEmail, sendAccountExistsNotice, __dirname, googleClientId } = deps;
+  const { authStore, googleOAuthClient, resend, LOGS_ACCESS_KEY, authLimiter, emailLimiter, RESEND_FROM_EMAIL, EMAIL_DEBUG_MODE, DEBUG_EMAIL, IS_STAGING, SHOW_STAGING_BANNER, endpointKeyMatches, setSensitiveHeaders, getAuthUserFromRequest, toPublicAuthUser, email: emailService, __dirname, googleClientId } = deps;
   const router = createAsyncRouter();
 
 router.get('/getpro', (req, res) => {
@@ -92,8 +91,8 @@ router.post('/api/auth/register', authLimiter, express.json(), async (req, res) 
     // caller can't tell which branch ran. Both hit the email provider, so the
     // dominant response latency is equalized too.
     const mail = result.alreadyExists
-      ? await sendAccountExistsNotice({ toEmail: result.toEmail })
-      : await sendRegistrationVerificationEmail({
+      ? await emailService.sendAccountExistsNotice({ toEmail: result.toEmail })
+      : await emailService.sendRegistrationVerificationEmail({
           toEmail: result.toEmail,
           code: result.code,
         });
@@ -129,7 +128,7 @@ router.post('/api/auth/register/resend', emailLimiter, express.json(), async (re
     if (!result.ok) {
       return sendError(res, 400, result.error);
     }
-    const mail = await sendRegistrationVerificationEmail({
+    const mail = await emailService.sendRegistrationVerificationEmail({
       toEmail: result.toEmail,
       code: result.code,
     });

@@ -72,6 +72,20 @@ test('the eyebrow markup and the English pack say the same thing', () => {
       'one side ships the English string to every non-English visitor.'
   );
 
+  assert.ok(
+    !/data-hover-glow/.test(tag[0]),
+    'the hero eyebrow carries data-hover-glow again.\n' +
+      'public/scripts/hover-glow.js writes the effect as INLINE styles and reverts with ' +
+      "`textShadow = 'none'` on mouseout. 'none' is a value, not a removal, and an inline " +
+      'style outranks the sheet — so from the first hover onwards the eyebrow permanently ' +
+      'loses the `0 1px 10px rgba(9,17,45,.5)` scrim shadow in hero-picker.css that carries ' +
+      'white text over a bright render. Which of the 48 renders is showing is the visitor\'s ' +
+      'choice, so that shadow is not decoration.\n' +
+      'Nothing errors and a first page view looks correct, which is why this is a test and ' +
+      'not a comment. The hover lives in `.hp-bar .catchphrase` in ' +
+      'public/styles/hero-picker.css — extend it there.'
+  );
+
   const pack = JSON.parse(read('public', 'languages', 'english.json'));
   assert.equal(
     tag[1].trim(),

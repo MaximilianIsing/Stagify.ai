@@ -43,8 +43,8 @@ test.describe('Home page — load smoke', () => {
 
     // Hero stats line renders (stat pills are populated from the mocked counts).
     await expect(page.locator('#hero-stats')).toBeVisible();
-    await expect(page.locator('.stat-pill-number[data-stat="roomsStaged"]')).toBeAttached();
-    await expect(page.locator('.stat-pill-number[data-stat="usersServed"]')).toBeAttached();
+    await expect(page.locator('.hp-stat__num[data-stat="roomsStaged"]')).toBeAttached();
+    await expect(page.locator('.hp-stat__num[data-stat="usersServed"]')).toBeAttached();
 
     // Before/After toggle and version-carousel arrows exist. They live inside
     // the (initially hidden) image viewer, so assert presence, not visibility.
@@ -74,7 +74,7 @@ test.describe('Home page — load smoke', () => {
   });
 
   test('the hero picker adopts the static LCP photo instead of re-creating it', async ({ page }) => {
-    // The homepage's LCP element is the `<img>` in `.hp-stage`, and it ships in index.html
+    // The homepage's LCP element is the `<img>` in `.hp-canvas`, and it ships in index.html
     // so it can paint without waiting for the module graph. hero-picker.js must therefore
     // APPEND the other renders around it — replacing the node, even with an identical src,
     // restarts the browser's LCP candidate at the later time and silently undoes the
@@ -87,7 +87,7 @@ test.describe('Home page — load smoke', () => {
     // unreachable branch never sets the attribute.
     await page.goto('/index.html');
 
-    const stage = page.locator('.hp-stage');
+    const stage = page.locator('.hp-canvas');
     await expect(
       stage,
       'hero-picker.js did not take the adopt path — the static photo was overwritten'
@@ -96,7 +96,7 @@ test.describe('Home page — load smoke', () => {
     // The first paint costs exactly one image: the default pair. The empty "before" shot
     // and the other 35 renders are fetched on demand, so anything more here means the
     // hero has started paying for images nobody asked to see.
-    const photo = stage.locator('img').first();
+    const photo = stage.locator('img[data-hp-img]');
     await expect(photo).toHaveAttribute('src', 'media-webp/example/modern-bedroom.webp');
     await expect(photo).toHaveClass(/is-on/);
   });
@@ -118,10 +118,96 @@ test.describe('Home page — load smoke', () => {
 
     // The new render is added and shown; the default one is still in the DOM but hidden,
     // because it is the adopted LCP node and must never be removed.
-    const shown = page.locator('.hp-stage img.is-on');
+    // `>` throughout: the headline now lives inside the canvas and each dropdown row carries
+    // a 46px thumbnail, so a descendant query counts 14 menu thumbs alongside the renders.
+    const shown = page.locator('.hp-canvas > img.is-on');
     await expect(shown).toHaveCount(1);
     await expect(shown).toHaveAttribute('src', 'media-webp/example/coastal-bedroom.webp');
-    await expect(page.locator('.hp-stage img[src*="modern-bedroom"]')).toHaveCount(1);
+    await expect(page.locator('.hp-canvas > img[src*="modern-bedroom"]')).toHaveCount(1);
+  });
+
+  test('the hero picker is usable, and visible, from the keyboard alone', async ({ page }) => {
+    // A real browser is the only place this can be checked. The focus RING in particular was
+    // invisible for a while because `:focus-visible` shared a block with `:hover` and set
+    // `outline: none` — and `[aria-selected="true"]` matched at the same specificity later in
+    // the sheet, so it won on exactly the row that receives focus when the menu opens. No
+    // source scan sees that; it needs a computed style. `test/frontend/hero-picker-a11y.test.js`
+    // guards the declarations, this guards the outcome.
+    await page.goto('/index.html');
+
+    const styleBtn = page.locator('#hero-style-btn');
+    const menu = page.locator('#hero-style-menu');
+
+    // Open with the keyboard, not a click: :focus-visible deliberately does not match a
+    // programmatic or mouse focus, so a click-driven check would report no ring and be wrong.
+    await styleBtn.focus();
+    await page.keyboard.press('Enter');
+    await expect(menu).toBeVisible();
+
+    // Arrow first, so focus-visible is unambiguously in keyboard mode.
+    await page.keyboard.press('ArrowDown');
+    const ring = await page.evaluate(() => {
+      const cs = getComputedStyle(document.activeElement);
+      return { style: cs.outlineStyle, width: parseFloat(cs.outlineWidth) };
+    });
+    expect(ring.style).not.toBe('none');
+    expect(ring.width).toBeGreaterThan(0);
+
+    // Home/End matter because the style menu is 8 rows; Left/Right because it is two columns.
+    await page.keyboard.press('End');
+    await expect(page.locator('.hp-menu__item:focus')).toHaveText(/Custom/);
+    await page.keyboard.press('Home');
+    await expect(page.locator('.hp-menu__item:focus')).toHaveText(/Standard/);
+    await page.keyboard.press('ArrowRight');
+    await expect(page.locator('.hp-menu__item:focus')).toHaveText(/Farmhouse/);
+
+    // Escape closes and hands focus back, rather than dropping it on the document.
+    await page.keyboard.press('Escape');
+    await expect(menu).toBeHidden();
+    await expect(styleBtn).toBeFocused();
+
+    // Enter on an option picks it, exactly as a click does.
+    await page.keyboard.press('Enter');
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Enter');
+    await expect(menu).toBeHidden();
+    await expect(page.locator('#hero-style-label')).not.toHaveText('Modern');
+  });
+
+  test('closing the menu never strands focus on the document', async ({ page }) => {
+    // Clicking the photo blurs the focused option on MOUSEDOWN, well before the handler that
+    // closes the menu runs — so "was focus inside the menu?" is always false by then, and the
+    // visitor was left on <body> with their next Tab restarting at the top of the page.
+    await page.goto('/index.html');
+
+    await page.locator('#hero-style-btn').click();
+    await expect(page.locator('#hero-style-menu')).toBeVisible();
+
+    // The canvas is not focusable, which is the whole point of this case.
+    await page.locator('.hp-canvas__img.is-on').click({ position: { x: 40, y: 40 } });
+
+    await expect(page.locator('#hero-style-menu')).toBeHidden();
+    await expect(page.locator('#hero-style-btn')).toBeFocused();
+  });
+
+  test('only the render on screen is exposed to assistive tech', async ({ page }) => {
+    // opacity: 0 hides a thing from the eye and from nobody else. Without aria-hidden every
+    // pair the visitor has viewed stays in the tree as a real <img> with real alt text.
+    await page.goto('/index.html');
+
+    const menu = page.locator('#hero-style-menu');
+    for (const style of ['Coastal', 'Farmhouse']) {
+      await page.locator('#hero-style-btn').click();
+      await menu.locator('.hp-menu__item', { hasText: style }).click();
+      await expect(menu).toBeHidden();
+    }
+
+    // Three renders exist by now; exactly one may be visible to a screen reader.
+    await expect(page.locator('.hp-canvas > img')).not.toHaveCount(1);
+    await expect(page.locator('.hp-canvas > img:not([aria-hidden="true"])')).toHaveCount(1);
+
+    // And the swap is announced, rather than happening in silence.
+    await expect(page.locator('#hero-live')).toHaveText(/farmhouse/i);
   });
 
   test('the hero picker reopens on the last pick, and forgets one it no longer offers', async ({ page }) => {
@@ -140,15 +226,15 @@ test.describe('Home page — load smoke', () => {
 
     await expect(page.locator('#hero-style-label')).toHaveText('Farmhouse');
     await expect(page.locator('#hero-room-label')).toHaveText('kitchen');
-    await expect(page.locator('.hp-stage img.is-on')).toHaveAttribute(
+    await expect(page.locator('.hp-canvas > img.is-on')).toHaveAttribute(
       'src',
       'media-webp/example/farmhouse-kitchen.webp',
     );
 
     // The adopted LCP node survives the restore. show() hides it, it does not remove it,
     // and removing it would break the adopt guarantee the test above pins.
-    await expect(page.locator('.hp-stage')).toHaveAttribute('data-hp-adopted', '');
-    await expect(page.locator('.hp-stage img[src*="modern-bedroom"]')).toHaveCount(1);
+    await expect(page.locator('.hp-canvas')).toHaveAttribute('data-hp-adopted', '');
+    await expect(page.locator('.hp-canvas > img[src*="modern-bedroom"]')).toHaveCount(1);
 
     // A pick naming a room or style that no longer exists must fall back to the default,
     // not build a path to a render that was never generated. That is what happens the day
@@ -159,7 +245,7 @@ test.describe('Home page — load smoke', () => {
 
     await expect(page.locator('#hero-room-label')).toHaveText('bedroom');
     await expect(page.locator('#hero-style-label')).toHaveText('Modern');
-    await expect(page.locator('.hp-stage img.is-on')).toHaveAttribute(
+    await expect(page.locator('.hp-canvas > img.is-on')).toHaveAttribute(
       'src',
       'media-webp/example/modern-bedroom.webp',
     );

@@ -31,10 +31,8 @@ import { logger } from '../lib/logger.js';
  *   STATS_DEBUG: boolean,
  *   DEBUG_ROOMS: number,
  *   DEBUG_USERS: number,
- *   getHostedImagesDir: Function,
- *   readHostedImagesManifest: Function,
- *   logEmailOpenToFile: Function,
- *   isConfirmedEmailClientOpen: Function,
+ *   hostedImages: import('../lib/types/deps.js').HostedImagesDeps,
+ *   email: import('../lib/types/deps.js').EmailDeps,
  *   healthHandler: import('express').RequestHandler,
  *   getPromptCount: typeof import('../lib/data/counters.js').getPromptCount,
  *   getContactCount: typeof import('../lib/data/counters.js').getContactCount,
@@ -46,7 +44,7 @@ import { logger } from '../lib/logger.js';
  *   shared `emailPixelLimiter`, so the open-tracking pixel is never mounted unlimited.
  */
 export default function createPublicRouter(deps) {
-  const { authStore, uptimeMonitor, resend, LOGS_ACCESS_KEY, endpointKeyMatches, emailLimiter, emailPixelLimiter, RESEND_FROM_EMAIL, DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS, getHostedImagesDir, readHostedImagesManifest, logEmailOpenToFile, isConfirmedEmailClientOpen, healthHandler, getPromptCount, getContactCount, incContactCount , __dirname } = deps;
+  const { authStore, uptimeMonitor, resend, LOGS_ACCESS_KEY, endpointKeyMatches, emailLimiter, emailPixelLimiter, RESEND_FROM_EMAIL, DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS, hostedImages, email: emailService, healthHandler, getPromptCount, getContactCount, incContactCount , __dirname } = deps;
   const router = createAsyncRouter();
   const pixelLimiter = emailPixelLimiter ?? defaultEmailPixelLimiter;
 
@@ -161,11 +159,11 @@ router.get('/i/:id', (req, res) => {
   if (!/^[a-f0-9]{16,64}$/.test(id)) {
     return res.status(404).type('text/plain').send('Not found');
   }
-  const entry = readHostedImagesManifest().find((e) => e && e.id === id);
+  const entry = hostedImages.readHostedImagesManifest().find((e) => e && e.id === id);
   if (!entry) {
     return res.status(404).type('text/plain').send('Not found');
   }
-  const filePath = path.join(getHostedImagesDir(), entry.file);
+  const filePath = path.join(hostedImages.getHostedImagesDir(), entry.file);
   if (!fs.existsSync(filePath)) {
     return res.status(404).type('text/plain').send('Not found');
   }
@@ -195,8 +193,8 @@ router.get('/email/logo.png', pixelLimiter, (req, res) => {
     // twice was also wrong on its own: '%2540' collapsed to '@', so a single
     // address could be tracked under several encodings.
     const email = rawEmail.trim().toLowerCase();
-    if (email.includes('@') && email.length <= 254 && isConfirmedEmailClientOpen(req)) {
-      logEmailOpenToFile(email, req);
+    if (email.includes('@') && email.length <= 254 && emailService.isConfirmedEmailClientOpen(req)) {
+      emailService.logEmailOpenToFile(email, req);
     }
   }
   res.setHeader('Content-Type', 'image/png');

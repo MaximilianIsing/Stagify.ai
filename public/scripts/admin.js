@@ -41,7 +41,7 @@ import { showErrorToast } from './toast.js';
   // Shared, mutable app state handed to the renderers island by reference so both
   // sides see the same data / filter / sort. signOut swaps ctx.data wholesale.
   var ctx = {
-    data: { users:[], promptRows:[], chatRows:[], bugRows:[], maskRows:[], contactRows:[], emailOpenRows:[], enterprise:[], hostedImages:[] },
+    data: { users:[], promptRows:[], chatRows:[], bugRows:[], maskRows:[], contactRows:[], emailOpenRows:[], enterprise:[], hostedImages:[], metrics:null },
     userFilter: 'all',
     userSortCol: 'created',
     userSortDir: 'desc',
@@ -128,7 +128,10 @@ import { showErrorToast } from './toast.js';
       apiFetchQ('/contactlogs').then(function(r){return r.text()}).catch(function(){return''}),
       apiFetchQ('/email-open-logs').then(function(r){return r.text()}).catch(function(){return''}),
       apiFetchQ('/enterprise-domains').then(function(r){return r.json()}).catch(function(){return{domains:[]}}),
-      apiFetchQ('/api/hosted-images').then(function(r){return r.json()}).catch(function(){return{images:[]}})
+      apiFetchQ('/api/hosted-images').then(function(r){return r.json()}).catch(function(){return{images:[]}}),
+      // Signals tab only. Its own .catch because a metrics outage must not blank
+      // the dashboard: findings-quality.js reports the null as a finding of its own.
+      apiFetchQ('/api/admin/metrics').then(function(r){return r.json()}).catch(function(){return{metrics:null}})
     ]).then(function(res){
       ctx.data.users=(res[0]&&res[0].users)||[];
       ctx.data.promptRows=parseCSV(res[1]);
@@ -139,6 +142,10 @@ import { showErrorToast } from './toast.js';
       ctx.data.emailOpenRows=parseCSV(res[6]);
       ctx.data.enterprise=(res[7]&&res[7].domains)||[];
       ctx.data.hostedImages=(res[8]&&res[8].images)||[];
+      ctx.data.metrics=(res[9]&&res[9].metrics)||null;
+      // One computation of the findings per data load, shared by the rail chip,
+      // the Overview teaser and the Signals panel so the three cannot disagree.
+      renderers.resetSignals();
       renderers.updateTabCounts();
       renderers.renderAll();
       qs('#adm-last-refresh').textContent='Updated '+new Date().toLocaleTimeString();
@@ -356,7 +363,11 @@ import { showErrorToast } from './toast.js';
     emailsPanel.reset();
     referralsPanel.reset();
     statusPanel.reset();
-    ctx.data={users:[],promptRows:[],chatRows:[],bugRows:[],maskRows:[],contactRows:[],emailOpenRows:[],enterprise:[],hostedImages:[]};
+    // The findings are derived from ctx.data, and the brief is a paid-for
+    // summary of them — both have to go with it, or the next operator to sign
+    // in sees the previous one's account names before the first fetch lands.
+    renderers.resetSignals();
+    ctx.data={users:[],promptRows:[],chatRows:[],bugRows:[],maskRows:[],contactRows:[],emailOpenRows:[],enterprise:[],hostedImages:[],metrics:null};
     qs('#adm-dash').classList.add('hidden');
     qs('#adm-login').style.display='';
     qs('#adm-key').value='';

@@ -22,6 +22,8 @@
 //     else init();
 //
 // sponsors-scroll.js, star-border.js and index-inline.js all needed exactly that fix.
+// (star-border.js is no longer injected — the hero counters stopped being pills — but the
+// note stands for anything added to the list below.)
 //
 // CSP: `script-src 'self'` restricts where scripts may come from, not how the element
 // got into the document, and there is no 'strict-dynamic'. Same-origin injected tags are
@@ -74,7 +76,6 @@ export const DEFERRED = [
   // IntersectionObserver for the same reason home-figures.js does.
   { src: 'scripts/home-faq-plan.js', module: true },
   { src: 'scripts/sponsors-scroll.js', module: true },
-  { src: 'scripts/star-border.js', module: true },
   { src: 'scripts/plus-cta-auth.js', module: true },
   { src: 'scripts/index-inline.js', module: true },
   // Pointer-only decoration; both early-return on a coarse pointer, so on the phones

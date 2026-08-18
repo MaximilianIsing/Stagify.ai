@@ -50,8 +50,8 @@ async function mountPublicEmail(sendResult) {
       DEBUG_EMAIL: 'debug@stagify.ai',
       // Unused by /api/send-email, but the factory destructures the whole bag.
       authStore: {}, uptimeMonitor: {}, STATS_DEBUG: false, DEBUG_ROOMS: 0, DEBUG_USERS: 0,
-      getHostedImagesDir: () => '', readHostedImagesManifest: () => ({}),
-      logEmailOpenToFile: () => {}, isConfirmedEmailClientOpen: () => false,
+      hostedImages: { getHostedImagesDir: () => '', readHostedImagesManifest: () => ({}) },
+      email: { logEmailOpenToFile: () => {}, isConfirmedEmailClientOpen: () => false },
       healthHandler: (req, res) => res.json({ ok: true }),
       getPromptCount: () => 0, getContactCount: () => 0, incContactCount: () => {},
       __dirname: process.cwd(),

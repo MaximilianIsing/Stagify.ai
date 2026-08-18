@@ -78,10 +78,9 @@ async function mountPixel({ realLimiter = false } = {}) {
       DEBUG_USERS: 0,
       authStore: {},
       uptimeMonitor: {},
-      getHostedImagesDir: () => '',
-      readHostedImagesManifest: () => [],
-      logEmailOpenToFile: email.logEmailOpenToFile,
-      isConfirmedEmailClientOpen: email.isConfirmedEmailClientOpen,
+      hostedImages: { getHostedImagesDir: () => '', readHostedImagesManifest: () => [] },
+      // The real createEmail() return, passed whole — the same shape server.js injects.
+      email,
       healthHandler: (req, res) => res.json({ ok: true }),
       getPromptCount: () => 0,
       getContactCount: () => 0,

@@ -33,6 +33,80 @@
   },
   "hero": {
     "eyebrow": "Home staging virtuale gratis",
+    "added": {
+      "title": "Aggiunto in questo render",
+      "item1": "Letto in noce, biancheria bianca",
+      "item2": "Comò lungo in noce, sei cassetti",
+      "item3": "Tappeto crema a griglia sotto il letto",
+      "item4": "Poltrona in bouclé alla finestra",
+      "item5": "Stampa astratta geometrica",
+      "items": {
+        "standard": {
+          "bedroom": ["Letto in rovere chiaro, lino bianco", "Comò largo in rovere, sei cassetti", "Grande tappeto beige sotto il letto", "Tre stampe in bianco e nero", "Poltrona color crema alla finestra"],
+          "livingRoom": ["Divano a tre posti color crema", "Tappeto fantasia grigio e avorio", "Mobile TV bianco e rovere", "Due poltrone grigie in metallo", "Ficus lyrata in vaso di terracotta"],
+          "diningRoom": ["Tavolo da sei con tovaglia avorio", "Sei sedie imbottite color crema", "Credenza in rovere chiaro su gambe", "Tela astratta sopra la credenza", "Centrotavola con orchidea bianca"],
+          "kitchen": ["Isola bianca con lavello a cascata", "Fila di pensili bianchi senza maniglie", "Frigo e forno a incasso in acciaio", "Quattro sgabelli grigi da bancone", "Due stampe geometriche incorniciate"],
+          "office": ["Scrivania bianca rettangolare su gambe", "Libreria a giorno in rovere", "Sedia operativa nera in rete", "Credenza bassa grigia", "Due opere astratte incorniciate"],
+          "bathroom": ["Mobile bagno sospeso con lavabo", "Doccia walk-in in vetro, soffione", "WC sospeso bianco", "Tappetino bagno grigio antracite", "Specchio sottile con cornice a parete"]
+        },
+        "modern": {
+          "bedroom": ["Letto in noce, biancheria bianca", "Comò lungo in noce, sei cassetti", "Tappeto crema a griglia sotto il letto", "Poltrona in bouclé alla finestra", "Stampa astratta geometrica"],
+          "livingRoom": ["Divano angolare grigio a L", "Tappeto geometrico blu e grigio", "Tavolino in pietra bianca", "Lampada da terra ad arco nera", "Trittico marino a tre pannelli"],
+          "diningRoom": ["Tavolo bianco con gambe nere", "Sei sedie imbottite grigie", "Credenza in rovere chiaro", "Due stampe blu e oro incorniciate", "Pampas essiccata in un vaso"],
+          "kitchen": ["Isola bianca con top grigio", "Pensili e colonne bianche", "Tre sgabelli neri in filo metallico", "Forni a incasso sovrapposti", "Coppa nera con mele verdi"],
+          "office": ["Scrivania bianca su gambe cromate", "Libreria a giorno con telaio nero", "Monitor ampio sulla scrivania", "Sedia in rete grigia su rotelle", "Credenza bassa bianca"],
+          "bathroom": ["Mobile doppio lavabo sospeso", "Box doccia walk-in in vetro", "Alta strelitzia in vaso", "WC sospeso bianco", "Tappetino bagno grigio a rombi"]
+        },
+        "scandinavian": {
+          "bedroom": ["Letto in rovere chiaro, lino bianco", "Comò in rovere a sei cassetti", "Tappeto rotondo in juta sotto il letto", "Comodini tondi in rovere, due lampade", "Due stampe astratte incorniciate"],
+          "livingRoom": ["Divano grigio a tre posti alla finestra", "Grande tappeto intrecciato in juta", "Tavolino basso in rovere biondo", "Due poltrone in corda intrecciata", "Monstera e ficus lyrata in vaso"],
+          "diningRoom": ["Tavolo lungo in rovere, runner di lino", "Sei sedie in rovere chiaro", "Credenza in rovere a parete", "Tavola apparecchiata con piatti", "Rami secchi composti in una coppa"],
+          "kitchen": ["Isola in rovere con top in pietra", "Fila di pensili in rovere chiaro", "Forno bianco sotto il piano", "Tre sgabelli in rovere da bancone", "Paraschizzi in piastrelle bianche"],
+          "office": ["Scrittoio in rovere alla finestra", "Libreria a giorno sottile in rovere", "Poltroncina in rovere, cuscino grigio", "Cassettiera bianca su rotelle", "Lampada in ottone ed erbe in vaso"],
+          "bathroom": ["Box doccia walk-in in vetro", "Mobile sospeso in rovere con lavabo", "Soffione nero opaco a pioggia", "Tappetino beige sul parquet", "Cesto intrecciato e asciugamani"]
+        },
+        "coastal": {
+          "bedroom": ["Letto bianco con testiera a doghe", "Comò in legno decapato bianco", "Passatoia a righe acquamarina", "Poltrona in rattan alla finestra", "Tre stampe di conchiglie"],
+          "livingRoom": ["Due divani bianchi sfoderabili", "Grande tappeto in sisal intrecciato", "Tavolino in legno anticato", "Due poltrone in vimini", "Tavolino rivestito in corda"],
+          "diningRoom": ["Tavolo lungo in legno grigio decapato", "Sei sedie in fibra intrecciata", "Credenza bianca anticata", "Panca in vimini con seduta a righe", "Tela incorniciata con onda"],
+          "kitchen": ["Fila di ante bianche stile shaker", "Isola bianca con top a cascata", "Tre sgabelli intrecciati da bancone", "Forni a incasso sovrapposti", "Tagliere in legno accanto al lavello"],
+          "office": ["Scrivania rustica a cavalletto", "Quattro tele marine incorniciate", "Classificatore verde menta", "Sedia da scrivania in rattan", "Lampada in ceramica verde acqua"],
+          "bathroom": ["Mobile bagno bianco con lavabo", "Palma alta in vaso di vimini", "Tappetino marmorizzato acquamarina", "Specchio con cornice sopra il lavabo", "Plafoniera cilindrica in nichel"]
+        },
+        "farmhouse": {
+          "bedroom": ["Letto rustico in assi di pino", "Comò decapato a sei cassetti", "Trapunta floreale e plaid patchwork", "Sedia a dondolo in paglia", "Tre stampe di animali da fattoria"],
+          "livingRoom": ["Divano tre posti crema sfoderabile", "Grande tappeto intrecciato in juta", "Tavolino in legno di recupero", "Due poltrone in lino", "Parete di stampe botaniche"],
+          "diningRoom": ["Tavolo lungo in rovere anticato", "Credenza bianca anticata", "Tovaglia a quadretti rossi", "Sei sedie imbottite a fiori", "Barattoli con fiori arancioni"],
+          "kitchen": ["Fila di ante shaker decapate", "Lavello rustico frontale", "Bancone colazione in legno massello", "Tre sgabelli rustici in legno", "Mensole a giorno con vasi ed erbe"],
+          "office": ["Scrivania massiccia in legno di recupero", "Alta libreria in pino con libri", "Sedia in pelle marrone su rotelle", "Classificatore in metallo nero", "Orologio da parete rotondo rustico"],
+          "bathroom": ["Vasca con piedini a zampa di leone", "Lavabo bianco a colonna", "Doccia angolare in vetro", "Tappeto ovale intrecciato", "Insegna in legno dipinto a parete"]
+        },
+        "luxury": {
+          "bedroom": ["Letto capitonné blu, testiera alta", "Comò in mogano a sei cassetti", "Due pannelli in marmo, cornice oro", "Due lampade da comodino in vetro", "Cuscini in velluto toni gioiello"],
+          "livingRoom": ["Divano angolare in velluto blu", "Tavolino monoblocco in marmo bianco", "Due poltroncine in velluto crema", "Tappeto astratto blu e oro", "Trittico con cornici dorate"],
+          "diningRoom": ["Tavolo lungo con tovaglia drappeggiata", "Sei sedie in velluto blu", "Credenza intarsiata con top in marmo", "Candelabro in cristallo al centro", "Runner in broccato oro"],
+          "kitchen": ["Cucina a L in rovere chiaro", "Isola in quarzo con top a cascata", "Due sgabelli crema da bancone", "Doppio forno a incasso in acciaio", "Orchidea bianca in vaso di vetro"],
+          "office": ["Scrittoio in marmo e oro", "Libreria in legno intagliato con libri", "Poltrona in pelle verde capitonné", "Ficus lyrata in vaso di ottone", "Lampada in cristallo rigato"],
+          "bathroom": ["Vasca ovale freestanding", "Doccia angolare in vetro", "Mobile doppio lavabo in legno scuro", "Colonna vasca in ottone a pavimento", "WC sospeso vicino alla finestra"]
+        },
+        "midcentury": {
+          "bedroom": ["Letto in noce, testiera grigia", "Comò lungo in teak a sei cassetti", "Poltrona lounge in pelle nera", "Trapunta geometrica e plaid senape", "Poster di viaggio incorniciati"],
+          "livingRoom": ["Divano tre posti capitonné petrolio", "Tappeto fantasia oro e arancione", "Due poltrone in palissandro", "Tavolino basso in noce", "Griglia di sei stampe astratte"],
+          "diningRoom": ["Tavolo rotondo con tovaglia a fiori", "Quattro sedie a scocca stampata", "Lunga credenza in teak su gambe", "Seconda sospensione sul tavolo", "Calici ambrati e fiori secchi"],
+          "kitchen": ["Isola bianca con top a cascata", "Parete di pensili bianchi lisci", "Tre sgabelli in vinile arancione", "Frigorifero in acciaio inox", "Felce su piantana bianca"],
+          "office": ["Scrivania in noce con cassettiera", "Poltrona girevole in pelle cuoio", "Libreria a giorno in teak", "Lampada cromata a cupola", "Tre stampe astratte incorniciate"],
+          "bathroom": ["Mobile in noce con lavabo bianco", "Doccia angolare in vetro", "Pianta alta in vaso su piantana", "Passatoia fantasia sul pavimento", "Cestino in legno accanto al mobile"]
+        },
+        "custom": {
+          "bedroom": ["Testiera smerlata in velluto verde", "Tappeto geometrico verde e crema", "Comò in noce a sei cassetti", "Comodino nero, maniglie in ottone", "Panca verde capitonné ai piedi del letto"],
+          "livingRoom": ["Divano curvo in velluto smeraldo", "Credenza intarsiata laccata nera", "Due poltrone girevoli smerlate rosa", "Tappeto verde a motivo ventaglio", "Specchio sole dorato a parete"],
+          "diningRoom": ["Tavolo rotondo in marmo bianco", "Credenza in noce rigato", "Sei sedie in velluto verde", "Tappeto rotondo verde a medaglione", "Rose bianche in vaso di vetro"],
+          "kitchen": ["Carrello bar nero con top in ottone", "Palma in vaso di ottone", "Passatoia verde a motivo di foglie", "Tre schizzi con cornici dorate", "Barattoli in rame e bicchieri"],
+          "office": ["Scrivania rigata con base in ottone", "Alta libreria nera con ante a vetri", "Tappeto verde a chevron", "Sedia a scocca in velluto verde", "Lampada in ottone, vetro verde"],
+          "bathroom": ["Vasca ovale freestanding", "Mobile in noce rigato con lavabo", "Pedana in marmo sotto la vasca", "Palma in vaso di ottone rialzato", "Tappetino bagno a fantasia verde"]
+        }
+      }
+    },
     "title": {
       "upload": "Carica.",
       "stage": "Arreda.",
@@ -44,8 +118,7 @@
     "freeGensUpgrade": "Prova Stagify+ oggi stesso. <a class=\"hero-free-gens-upgrade\" href=\"stagify-plus.html\">Esegui l’upgrade</a>",
     "stats": {
       "roomsStaged": "Stanze arredate",
-      "usersServed": "Utenti serviti",
-      "andCounting": "e cresce..."
+      "usersServed": "Utenti serviti"
     },
     "sentence": {
       "before": "Arreda ",
@@ -64,7 +137,6 @@
     "styleMenuLabel": "Stile d’arredo",
     "seeOriginal": "Vedi originale",
     "seeStaged": "Vedi arredato",
-    "stageNote": "Ogni stile qui è un render reale della stessa stanza vuota.",
     "stageAlt": "{room} in stile {style}, arredato virtualmente",
     "originalAlt": "La stessa stanza prima dell’arredamento, vuota",
     "defaultAlt": "Una camera da letto arredata virtualmente in stile moderno"
@@ -356,7 +428,12 @@
     },
     "instagram": {
       "title": "Guardalo in azione su Instagram",
-      "follow": "Segui @stagify.ai"
+      "follow": "Segui @stagify.ai",
+      "posts": {
+        "emptyToStaged": "Post di Instagram: un soggiorno vuoto accanto alla stessa stanza arredata con divano, tappeto e quadri (si apre in una nuova scheda)",
+        "floorPlan": "Post di Instagram: una piantina arredata sopra la camera da letto fotorealistica generata da essa (si apre in una nuova scheda)",
+        "fiveStyles": "Post di Instagram: uno stesso soggiorno vuoto arredato in cinque stili diversi (si apre in una nuova scheda)"
+      }
     },
     "finalCta": {
       "title": "Provalo sul tuo annuncio",

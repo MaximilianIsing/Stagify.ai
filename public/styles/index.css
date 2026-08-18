@@ -43,151 +43,20 @@
           font-size: 24px !important;
         }
       }
-      /* “and counting…” — same as original inline (navy, 12px italic) */
-      .stats-counting-text {
-        text-align: center;
-        font-style: italic;
-        color: var(--brand-deep);
-        font-size: 12px;
-      }
-      .stats-counting-text--under-pills {
-        margin-top: -1px;
-      }
-      /* Hero stat pills. This block is the SOLE owner of the pill rules — carousel.css
-         used to carry a near-complete second copy, which is what kept an invisible
-         backdrop-filter alive on a box that is now opaque.
+      /* THE HERO STAT PILLS USED TO LIVE HERE, and they were the most intricate block in
+         this file: two `.stat-pill` divs that star-border.js destroyed and replaced with
+         `.star-border-container > .inner-content` a second after load, kept pixel-identical
+         across that swap by a drift test so the recolour was invisible.
 
-         THE TWO-STATE PROBLEM THIS BLOCK EXISTS TO SOLVE. index.html ships two
-         `<div class="stat-pill">`. They become visible a few hundred ms in, when
-         count-up.js adds .is-ready after the two count endpoints resolve. Then
-         star-border.js — injected after `load` behind a requestIdleCallback(…,
-         {timeout:2000}) by index-deferred.js — DESTROYS each div and replaces it with
-         `.star-border-container > .inner-content`, moving the two spans across. From
-         that instant star-border.css paints the pill instead of this file.
+         All of it is gone. The hero counters are typography on a scrim now, not pills, so
+         there is no second state to match and no reason for this file to own them: their
+         rules sit with the rest of the hero in styles/hero-picker.css. star-border.js and
+         star-border.css are no longer loaded by this page.
 
-         So `.stat-pill` below is not decoration; it is a stand-in that has to be pixel-
-         and colour-identical to `.inner-content`, or the swap is a visible recolour and
-         a 14px jump a second or two after the page opens. It was: 6px/14px translucent
-         navy with a shadow and a blur, becoming 8px/16px solid --brand inside a 5px
-         ring band. The box below therefore mirrors .inner-content exactly and carries
-         NO box-shadow and NO backdrop-filter, because that element has neither.
-         Kept in step by test/frontend/hero-stat-pill-swap.test.js.
+         What replaced them keeps exactly one thing from the old block — the reveal. The
+         numbers are blank until both count endpoints resolve, and count-up.js adds
+         `.is-ready` to `#hero-stats` when they do. */
 
-         --star-pill-ring is the transparent band the animated glow lives in, and the
-         single source for both sides of the swap: .star-border-container pads by it,
-         .stat-pill reserves the same space with a MARGIN. Margin, not padding —
-         .stat-pill carries a background, and padding would paint --brand across the
-         band the glow has to show through. That is safe only because flex items never
-         collapse margins; if .stats-pills ever stops being a flex container, the band
-         halves. star-border.js no longer writes the padding inline. */
-      .hero-stats {
-        opacity: 0;
-        visibility: hidden;
-        transition: opacity 0.35s ease, visibility 0.35s ease;
-        margin-top: 1px;
-      }
-      .hero-stats.is-ready {
-        opacity: 1;
-        visibility: visible;
-      }
-      .stats-pills {
-        --star-pill-ring: 5px;
-        display: flex;
-        justify-content: center;
-        gap: 12px;
-        margin-top: 0;
-        flex-wrap: nowrap;
-        width: 100%;
-        /* Set here because `cursor` inherits, so one declaration covers both states.
-           It used to sit on .stat-pill and was silently lost the moment that element
-           was replaced, leaving an I-beam over the settled pill. */
-        cursor: default;
-      }
-      /* Lives in this sheet, not star-border.css, on purpose: that one is lazy
-         (media="print" + index-lazy-css.js) and this value has to be readable from the
-         same place as .stat-pill's margin below. Same reason `.stats-pills
-         .inner-content` is overridden here in the mobile block. */
-      .stats-pills .star-border-container {
-        padding: var(--star-pill-ring) 0;
-      }
-      .stat-pill {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        justify-content: center;
-        white-space: nowrap;
-        margin: var(--star-pill-ring) 0;
-        padding: 8px 16px;
-        border-radius: 50px;
-        background: var(--brand);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-      }
-      .stat-pill-number {
-        font-size: 1rem;
-        font-weight: 700;
-        color: var(--bg-elevated);
-        line-height: 1;
-        margin-right: 4px;
-        font-variant-numeric: tabular-nums;
-        display: inline-block;
-        min-width: 1ch;
-        text-align: left;
-        /* Optical centering: bold lining digits are all cap-height with no
-           descenders, so they read slightly high next to the x-height label.
-           Nudge them down a hair to visually center. Tunable.
-           Combined with a 1px upward shift so the numbers sit a touch higher. */
-        transform: translateY(calc(0.05em - 1px));
-        transition: min-width 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
-      }
-      .stat-pill-text {
-        font-size: 0.875rem;
-        color: var(--bg-elevated);
-        font-weight: 500;
-        line-height: 1.2;
-        text-align: center; /* carried over from the deleted carousel.css copy */
-      }
-      /* Mobile only: shrink the Rooms Staged / Users Served pills ~20% overall
-         (type, padding, gap). Each pill keeps its full content width, and the row
-         wraps to two lines when the numbers are wide, so text is never clipped. */
-      @media (max-width: 768px) {
-        .stats-pills {
-          gap: 9.6px;
-          flex-wrap: wrap; /* stack the two pills if the numbers get very wide */
-        }
-        /* The visible pill body in BOTH states: .inner-content once star-border.js has
-           run, .stat-pill before it (or if it never does). Grouped so the invariant is
-           self-evident — they must stay equal or the swap jumps on phones too. */
-        .stats-pills .inner-content,
-        .stat-pill {
-          padding: 4.8px 9.6px;
-        }
-        /* .stat-pill only. The ring band comes from `margin` on the base rule and is
-           deliberately not restated here. */
-        .stat-pill {
-          flex-shrink: 0;
-        }
-        /* .star-border-container has overflow:hidden, which zeroes its automatic
-           minimum size — so unlike .stat-pill it really can be squeezed, and it clips
-           its own nowrap content when the numbers get wide. */
-        .stats-pills .star-border-container {
-          flex-shrink: 0;
-        }
-        .stat-pill-number {
-          font-size: 0.8rem;
-          margin-right: 3.2px;
-        }
-        .stat-pill-text {
-          font-size: 0.7rem;
-        }
-      }
-      @media (prefers-reduced-motion: reduce) {
-        .hero-stats {
-          transition: none;
-        }
-        .stat-pill-number {
-          transition: none;
-        }
-      }
       /* Stack subtext under the CTA; wrap shrink-wraps to the button so only the line is centered to the button */
       .hero-cta-button-wrap {
         display: inline-flex;

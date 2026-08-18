@@ -13,7 +13,7 @@
  * and stops running early, which is the whole reason carousel.js (which this replaces) was
  * moved to the top of <head> in the first place.
  *
- * IT ADOPTS, IT DOES NOT BUILD. The <img> in `.hp-stage` is the page's LCP element and
+ * IT ADOPTS, IT DOES NOT BUILD. The <img> in `.hp-canvas` is the page's LCP element and
  * ships in public/index.html so the preload scanner finds it in the first packet. This file
  * binds to that node and never replaces it — replacing it, even with an identical src,
  * restarts the LCP candidate at the later time. Same rule that governed carousel.js.
@@ -41,10 +41,19 @@
  * A NOTE BEFORE YOU ADD ONE. The source photo is a corner living room with floor-to-ceiling
  * glass, a structural column and a herringbone floor, and the picker swaps rooms inside a
  * fixed frame, so the visitor is comparing architecture directly. Bedroom, living room,
- * dining room and office keep all of it. Kitchen and Bathroom cannot: a kitchen needs
- * cabinetry and a bathroom needs plumbing, so the model builds walls that are not in the
- * source and the column disappears. They are listed here because they were asked for; if the
- * "same room" reading ever matters more than the coverage, they are the two to cut.
+ * dining room and office keep all of it.
+ *
+ * KITCHEN IS THE ONE THAT STILL CANNOT. A kitchen needs a continuous cabinet run, the only
+ * blank wall in the source is about 275px of a 900px frame, and the runs the model builds are
+ * wider than that — so it overflows into the right-hand window bank, every time. That is
+ * geometry, not a bad roll, and no amount of re-rolling fixes it. It is listed here because
+ * it was asked for; if the "same room" reading ever matters more than the coverage, it is the
+ * one to cut.
+ *
+ * Bathroom used to be in that sentence too, for a different reason — the pipeline forbade
+ * installing plumbing, so "stage this as a bathroom" produced a decorated living room. Since
+ * 2026-08-18 Bathroom is the single room type allowed to install fixtures, so these renders
+ * are real bathrooms. See BATHROOM_PRESERVATION_RULES in lib/staging/preservation-rules.js.
  */
 const ROOMS = [
   { key: 'bedroom', slug: 'bedroom', label: 'hero.rooms.bedroom', menu: 'roomTypes.bedroom' },
@@ -55,16 +64,31 @@ const ROOMS = [
   { key: 'bathroom', slug: 'bathroom', label: 'hero.rooms.bathroom', menu: 'roomTypes.bathroom' },
 ];
 
-/* Furniture styles, in menu order. `standard` and `custom` exist in promptMatrix.js but are
- * not user-facing choices, so they are not offered here. Labels come from the shared
- * furnitureStyles pack the studios already use, so a style renamed there is renamed here. */
+/* Furniture styles, in menu order. Labels come from the shared furnitureStyles pack the
+ * studios already use, so a style renamed there is renamed here.
+ *
+ * `standard` and `custom` bookend the list because they are not peers of the six between
+ * them, and the order says so: Standard is the baseline the studio itself falls back to, and
+ * Custom is the escape hatch for everything no preset covers.
+ *
+ * THE TWO OF THEM ARE NOT ORDINARY MATRIX LOOKUPS, and the generator is where that is
+ * handled — see to-build/media-png/example/tools/generate-combos.mjs:
+ *   - `standard` is a real promptMatrix entry and renders like any other style.
+ *   - `custom` is NOT. Its matrix entry ("...the furniture and decor the user asks for") is a
+ *     null instruction, and generatePrompt() answers an empty free-text box by falling back
+ *     to `standard` — so rendered the ordinary way this menu row would be a duplicate of the
+ *     one at the top of it. The generator supplies the free text instead, which is what a
+ *     visitor picking Custom does too.
+ * Both still resolve to media-webp/example/<style>-<room>.webp like everything else here. */
 const STYLES = [
+  { key: 'standard', slug: 'standard', label: 'furnitureStyles.standard' },
   { key: 'modern', slug: 'modern', label: 'furnitureStyles.modern' },
   { key: 'scandinavian', slug: 'scandinavian', label: 'furnitureStyles.scandinavian' },
   { key: 'coastal', slug: 'coastal', label: 'furnitureStyles.coastal' },
   { key: 'farmhouse', slug: 'farmhouse', label: 'furnitureStyles.farmhouse' },
   { key: 'luxury', slug: 'luxury', label: 'furnitureStyles.luxury' },
   { key: 'midcentury', slug: 'midcentury', label: 'furnitureStyles.midcentury' },
+  { key: 'custom', slug: 'custom', label: 'furnitureStyles.custom' },
 ];
 
 /* The pair the markup ships painted. Changing either half here means changing the static
@@ -74,7 +98,55 @@ const DEFAULT_ROOM = 'bedroom';
 const DEFAULT_STYLE = 'modern';
 
 const DIR = 'media-webp/example/';
-const ORIGINAL = DIR + 'Original.webp';
+const ORIGINAL_BASE = DIR + 'Original';
+
+/* The srcset ladder, and it MUST match CANDIDATES in
+   to-build/media-png/example/tools/generate-combos.mjs — that script writes the files these
+   entries name, and `node ... --rebuild` prints the exact string this produces.
+
+   The three widths ABOVE 1248 are not extra resolution for its own sake. 1248 is the model's
+   native output, so filling a ~1104 CSS px canvas from it meant the BROWSER enlarged it
+   (1.33x at 1.5 DPR, 1.77x at 2x), and browser enlargement interpolates without sharpening —
+   which is what "blurry" was. Given a candidate wider than the box, the browser downscales
+   instead, and a downscale is crisp. Same reasoning, same numbers, as upscaleForDelivery()
+   in lib/image/image-primitives.js, which already does this for every render a real user is
+   served. The empty suffix is the native file and stays the <img src> fallback. */
+const WIDTHS = [
+  { suffix: '-900', w: 900 },
+  { suffix: '', w: 1248 },
+  { suffix: '-1872', w: 1872 },
+  { suffix: '-2496', w: 2496 },
+];
+
+/**
+ * The `srcset` for one image basename (a path with no extension).
+ * @param {string} base
+ * @returns {string}
+ */
+const srcsetFor = (base) => WIDTHS.map((c) => `${base}${c.suffix}.webp ${c.w}w`).join(', ');
+
+/* What the canvas actually measures, so the browser can pick between the 900w and 1248w
+   candidates instead of guessing. `.hp-canvas` fills the page container, which tops out just
+   over 1100px; below that it is the viewport less the page gutters.
+
+   THIS STRING IS DUPLICATED, DELIBERATELY AND UNAVOIDABLY, in the <img sizes> and the
+   <link rel="preload" imagesizes> in public/index.html — the preload scanner runs long before
+   this file does, so it cannot be handed a value from here. If you change one, change all
+   three; test/frontend/hero-picker-lcp.test.js fails the build when they drift apart, which
+   is the only thing standing between a wrong `sizes` and the preload silently fetching the
+   candidate the page then does not use. */
+const SIZES = '(min-width: 1180px) 1110px, 94vw';
+
+/* Bounds for fitSentence(). 769 is the two-column breakpoint in hero-picker.css; below it the
+ * side column stacks and there is not enough width to hold the sentence on one line at a size
+ * anyone would call a headline (a 390px phone works out to ~17px in English and ~12px in
+ * Spanish), so the phone keeps wrapping. FIT_FLOOR_PX is the same judgement applied to a
+ * narrow desktop window: below it, wrapping beats a headline smaller than the body copy. */
+const FIT_MIN_WIDTH = 769;
+const FIT_FLOOR_PX = 20;
+/* Sub-pixel slack. Layout rounds, and a sentence measured at exactly the column width is a
+ * sentence that wraps on the next reflow. */
+const FIT_SAFETY_PX = 2;
 
 /** English fallbacks, used before the language pack resolves and if a key ever goes missing. */
 const FALLBACK = {
@@ -90,14 +162,15 @@ const FALLBACK = {
   'roomTypes.kitchen': 'Kitchen',
   'roomTypes.office': 'Office',
   'roomTypes.bathroom': 'Bathroom',
+  'furnitureStyles.standard': 'Standard',
   'furnitureStyles.modern': 'Modern',
   'furnitureStyles.scandinavian': 'Scandinavian',
   'furnitureStyles.coastal': 'Coastal',
   'furnitureStyles.farmhouse': 'Farmhouse',
   'furnitureStyles.luxury': 'Luxury',
   'furnitureStyles.midcentury': 'Midcentury',
+  'furnitureStyles.custom': 'Custom',
   'hero.seeOriginal': 'See original',
-  'hero.seeStaged': 'See staged',
   'hero.stageAlt': '{style} {room}, virtually staged',
   'hero.originalAlt': 'The same room before staging, empty',
 };
@@ -111,6 +184,25 @@ function t(key) {
   const ls = /** @type {any} */ (window).LanguageSystem;
   const value = ls && typeof ls.getText === 'function' ? ls.getText(key) : null;
   return value || FALLBACK[key] || key;
+}
+
+/**
+ * The "Added in this render" list for one pair, or null if the pack cannot supply it.
+ *
+ * This is the ONE string lookup here that deliberately has no English fallback table. The
+ * other keys in FALLBACK are a handful of words; this is 48 lists of five, and duplicating
+ * them into this file would be a second copy of the data to keep in step with the packs.
+ * A miss is answered by leaving the markup alone (see paintAdded), which is the honest
+ * outcome anyway: the five <li> shipped in index.html describe the default pair.
+ *
+ * @param {object} r @param {object} s
+ * @returns {string[]|null}
+ */
+function addedFor(r, s) {
+  const ls = /** @type {any} */ (window).LanguageSystem;
+  if (!ls || typeof ls.getText !== 'function') return null;
+  const items = ls.getText('hero.added.items.' + s.key + '.' + r.key);
+  return Array.isArray(items) && items.length ? items : null;
 }
 
 const byKey = (list, key) => list.find((x) => x.key === key) || list[0];
@@ -178,6 +270,7 @@ function initHeroPicker() {
   const roomLabel = document.getElementById('hero-room-label');
   const styleLabel = document.getElementById('hero-style-label');
   const originalBtn = document.getElementById('hero-original-btn');
+  const originalLabel = originalBtn && originalBtn.querySelector('.hp-original__label');
   if (!roomMenu || !styleMenu || !roomList || !styleList || !roomLabel || !styleLabel) return;
 
   let room = byKey(ROOMS, DEFAULT_ROOM);
@@ -190,8 +283,32 @@ function initHeroPicker() {
      re-fetched and never re-created. Everything else is added on demand. */
   const cache = { [DEFAULT_STYLE + '-' + DEFAULT_ROOM]: baseImg };
 
-  const src = (r, s) => DIR + s.slug + '-' + r.slug + '.webp';
+  const base = (r, s) => DIR + s.slug + '-' + r.slug;
+  const src = (r, s) => base(r, s) + '.webp';
   const pairKey = (r, s) => s.slug + '-' + r.slug;
+
+  /**
+   * Point an <img> at a pair, as two candidates rather than one file.
+   *
+   * ORDER MATTERS: srcset and sizes are assigned BEFORE src. Set src first and the browser
+   * may commit to that URL and start the fetch before it has the candidate list, which costs
+   * a wasted request on exactly the element whose byte count is the LCP.
+   *
+   * `src` stays set as well, and stays pointed at the LARGE file. It is the fallback for
+   * anything that does not do srcset, and — more to the point here — it is the URL
+   * test/frontend/hero-picker-lcp.test.js compares against the <link rel="preload"> and the
+   * default pair, which is the three-way agreement that keeps the preload from being dead
+   * weight. The preload carries the same imagesrcset/imagesizes, so the candidate the
+   * scanner fetches is the candidate this element ends up wanting.
+   *
+   * @param {HTMLImageElement} img
+   * @param {string} imgBase - Path with no extension; every candidate is derived from it.
+   */
+  function setCandidates(img, imgBase) {
+    img.sizes = SIZES;
+    img.srcset = srcsetFor(imgBase);
+    img.src = imgBase + '.webp';
+  }
   /* Alt text takes the PLAIN room name (roomTypes.*), not the sentence form (hero.rooms.*).
      The sentence form carries a demonstrative and, in Russian, accusative case, because it
      has to slot into "Gestalte dieses Schlafzimmer ..." — none of which belongs in a
@@ -200,11 +317,99 @@ function initHeroPicker() {
     .replace('{style}', t(s.label))
     .replace('{room}', t(r.menu));
 
-  /** Every staged render in the stage, i.e. everything except a lazily-added original. */
+  /**
+   * Every staged render in the stage, i.e. everything except a lazily-added original.
+   *
+   * `:scope > img` and not `img`. The canvas layout put the headline INSIDE the stage
+   * element, and the headline contains both dropdown menus, and every menu row carries a
+   * thumbnail — so a plain descendant query returns 16 images, 14 of which are 46px menu
+   * thumbs that this function then toggles `is-on` on. It was harmless only because the
+   * class does nothing on a thumb. The renders are appended as direct children, which is
+   * the structural fact worth selecting on; it survives a class rename, which is what
+   * broke here.
+   */
   const staged = () => Array.prototype.filter.call(
-    stage.querySelectorAll('img'),
+    stage.querySelectorAll(':scope > img'),
     (im) => im !== originalImg
   );
+
+  /**
+   * Show exactly one render, to the eye AND to assistive tech.
+   *
+   * `is-on` alone was not enough: the losers are hidden with `opacity: 0`, and opacity does
+   * not remove anything from the accessibility tree. Every pair a visitor had looked at
+   * stayed there, so after browsing five styles a screen reader found five stacked images
+   * with five plausible alt strings, one of which was actually on screen. It got worse the
+   * longer someone played with the picker.
+   *
+   * `aria-hidden` rather than `display: none` or removal, because the <img> in .hp-canvas is
+   * the adopted LCP node and must survive as a live element (see the file header).
+   * @param {HTMLImageElement} img
+   * @param {boolean} on
+   */
+  function showOnly(img, on) {
+    img.classList.toggle('is-on', on);
+    if (on) {
+      img.removeAttribute('aria-hidden');
+      announce(img.alt);
+    } else {
+      img.setAttribute('aria-hidden', 'true');
+    }
+  }
+
+  /**
+   * Decide which photo animates for this swap. CALL IT FIRST, before any showOnly().
+   *
+   * Only the front layer fades — see `.hp-canvas__img.is-top` in hero-picker.css. The photo
+   * beneath holds at full opacity and is dropped in one frame once it is covered, because two
+   * half-transparent photos do not compose to an opaque image and the canvas tint comes
+   * through the gap.
+   *
+   * The winner takes the front only when it has something to fade in FROM. A photo that is
+   * already opaque IS the layer beneath, so pulling it forward would cut off whatever is
+   * fading on top of it and land it in a single frame — that was a fast double-click on
+   * "See original" swapping with no transition at all. Left where it is, the photo on top
+   * reverses out from wherever it had got to and reveals this one again: the same gesture
+   * played backwards. Computed opacity is the oracle because it is the only thing that knows
+   * how far an interrupted fade actually got.
+   *
+   * ORDER IS LOAD-BEARING, TWICE OVER. The read has to happen before any class in the swap
+   * changes, or it reports the state we are about to create rather than the one on screen.
+   * And the demotion has to happen before the outgoing photo loses `is-on`: a style recalc in
+   * between (this function's own read is one) starts a fade-out on a photo that still holds
+   * `is-top`, and changing the rule underneath a RUNNING transition does not cancel it — so
+   * both layers animate, which is exactly the flash all of this exists to avoid.
+   * @param {HTMLImageElement} winner
+   */
+  function setFrontLayer(winner) {
+    if (getComputedStyle(winner).opacity === '1') return;
+    Array.prototype.forEach.call(
+      stage.querySelectorAll(':scope > img.is-top'),
+      (other) => other.classList.remove('is-top'),
+    );
+    winner.classList.add('is-top');
+  }
+
+  /* The live region from the markup. Absent (an older cached index.html, or a locale page
+     rendered before this shipped) simply means no announcements — never a crash. */
+  const liveRegion = document.getElementById('hero-live');
+
+  /**
+   * Say what is now on screen, for assistive tech only.
+   *
+   * Reuses the alt text rather than composing a second description: the alt is already the
+   * one-line answer to "what is this photo", it is already localised through hero.stageAlt,
+   * and keeping one source means the two can never disagree.
+   *
+   * Guarded against repeats. paintAdded() and show() can both land in the same tick, and
+   * assigning identical text to a live region is a no-op in some screen readers and a second
+   * announcement in others — so do not rely on the reader to de-duplicate it.
+   * @param {string} text
+   */
+  function announce(text) {
+    if (!liveRegion || !text || liveRegion.textContent === text) return;
+    liveRegion.textContent = text;
+  }
 
   /* ------------------------------------------------------------------ the photo */
 
@@ -223,12 +428,13 @@ function initHeroPicker() {
   function show(r, s, initial) {
     const key = pairKey(r, s);
     if (cache[key]) {
-      staged().forEach((im) => im.classList.toggle('is-on', im === cache[key]));
+      setFrontLayer(cache[key]);
+      staged().forEach((im) => showOnly(im, im === cache[key]));
       stage.classList.remove('is-loading');
       return;
     }
     const img = new Image();
-    img.className = 'hp-stage__img';
+    img.className = 'hp-canvas__img';
     img.alt = altFor(r, s);
     img.decoding = 'async';
     if (initial) img.fetchPriority = 'high';
@@ -236,17 +442,24 @@ function initHeroPicker() {
     img.addEventListener('load', () => {
       stage.classList.remove('is-loading');
       if (pairKey(room, style) !== key || showingOriginal) return; // moved on already
-      staged().forEach((im) => im.classList.toggle('is-on', im === img));
+      setFrontLayer(img);
+      staged().forEach((im) => showOnly(im, im === img));
     });
     img.addEventListener('error', () => stage.classList.remove('is-loading'));
-    img.src = src(r, s);
+    setCandidates(img, base(r, s));
     stage.appendChild(img);
     cache[key] = img;
   }
 
   /** Warm the rest of the current room's row, which is where a visitor goes next. */
   function prefetchRow() {
-    STYLES.forEach((s) => { if (!cache[pairKey(room, s)]) new Image().src = src(room, s); });
+    STYLES.forEach((s) => {
+      if (cache[pairKey(room, s)]) return;
+      // Warmed through setCandidates rather than a bare .src so the prefetch resolves to the
+      // same candidate the real swap will want. Prefetching the 1248w file on a phone that
+      // then picks the 900w one is not a warm cache, it is double the bytes.
+      setCandidates(new Image(), base(room, s));
+    });
   }
 
   /* ------------------------------------------------------------------- the menus */
@@ -255,6 +468,9 @@ function initHeroPicker() {
    * One menu row. The thumbnail is the render that choice would produce, so the range is
    * visible on first open instead of having to be guessed at one pick at a time.
    */
+  /* Thumbs take the 900w candidate, never one of the big ones. Opening a menu paints fourteen 46px
+     images; at the large size that is ~800 KB of decode for a strip of postage stamps, and
+     none of it is the LCP so none of it is racing anything worth winning. */
   function rowFor(item, isSelected, thumbSrc, labelKey) {
     const btn = document.createElement('button');
     btn.type = 'button';
@@ -274,20 +490,52 @@ function initHeroPicker() {
     return btn;
   }
 
+  /* A menu longer than this stops being one tall column and becomes two.
+   *
+   * Eight styles at 47px a row is a 390px menu, and it opens UPWARDS out of a headline that
+   * already sits at the bottom of the canvas — so the style menu ran the full height of the
+   * hero and finished under the site header. Two columns of four is a little over 200px,
+   * which is shorter than the six-row room menu standing next to it.
+   *
+   * THE FLOW IS COLUMN-WISE, and that is the part that keeps the keyboard honest rather than
+   * being a visual preference. The roving-focus handler further down walks a flat NodeList in
+   * DOM order, so a row-wise grid would make Down jump sideways to the next column. Filled by
+   * column, DOM order and visual order are the same thing: Down runs to the foot of the first
+   * column and carries on at the head of the second.
+   *
+   * The row count is set from here rather than written into the stylesheet because the sheet
+   * cannot count the list — add a room or a style and a hardcoded `repeat(4, ...)` quietly
+   * strands the extra item in a third column. */
+  const SPLIT_AT = 6;
+
+  /**
+   * Lay one menu out in a single column or two, by length.
+   * @param {HTMLElement} list - The `.hp-menu__list` to lay out.
+   * @param {number} count - How many rows it just received.
+   */
+  function applyColumns(list, count) {
+    const split = count > SPLIT_AT;
+    list.classList.toggle('hp-menu__list--split', split);
+    if (split) list.style.setProperty('--hp-menu-rows', String(Math.ceil(count / 2)));
+    else list.style.removeProperty('--hp-menu-rows');
+  }
+
   /** Rebuild both menus. Cheap, and the simplest way to stay right across a language change. */
   function buildMenus() {
     roomList.textContent = '';
     styleList.textContent = '';
     ROOMS.forEach((r) => {
-      const btn = rowFor(r, r === room, src(r, style), r.menu);
+      const btn = rowFor(r, r === room, base(r, style) + '-900.webp', r.menu);
       btn.addEventListener('click', () => { pick('room', r); closeMenus(roomBtn); });
       roomList.appendChild(btn);
     });
     STYLES.forEach((s) => {
-      const btn = rowFor(s, s === style, src(room, s), s.label);
+      const btn = rowFor(s, s === style, base(room, s) + '-900.webp', s.label);
       btn.addEventListener('click', () => { pick('style', s); closeMenus(styleBtn); });
       styleList.appendChild(btn);
     });
+    applyColumns(roomList, ROOMS.length);
+    applyColumns(styleList, STYLES.length);
     menusBuilt = true;
   }
 
@@ -297,23 +545,171 @@ function initHeroPicker() {
     styleLabel.textContent = t(style.label);
   }
 
+  /* ------------------------------------------------------- added in this render */
+
+  const addedList = document.querySelector('.hp-added__list');
+
+  /**
+   * Repaint the "Added in this render" list for the current pair.
+   *
+   * THE MARKUP IS THE FLOOR, NOT A PLACEHOLDER TO CLEAR. index.html ships the five items
+   * of the default pair with `data-lang`, so the no-JS case and the server-rendered locale
+   * pages are already correct and already in the right language. This function only takes
+   * over once it has a real list to put there, and it does so by REPLACING the <li>s, which
+   * is what carries the `data-lang` attributes out of the document with them. That is the
+   * same hand-off the sentence labels make by dropping their attributes, and for the same
+   * reason: applyLanguageToElements() writes textContent straight from the key, so a
+   * data-lang left on a list the visitor has changed would reset it to the default pair's
+   * items on the next language change while the photo stayed where they put it.
+   *
+   * The three outcomes, in the order they matter:
+   *   - a list resolves        -> paint it, and own the element from here on
+   *   - no list, default pair  -> leave the markup alone (the pack has not landed yet, and
+   *                               what is on screen already describes this photo)
+   *   - no list, other pair    -> empty it. Five items about a modern bedroom sitting under
+   *                               a render of a luxury bathroom is worse than five blanks.
+   */
+  function paintAdded() {
+    if (!addedList) return;
+    const items = addedFor(room, style);
+    if (!items) {
+      if (room.key !== DEFAULT_ROOM || style.key !== DEFAULT_STYLE) addedList.textContent = '';
+      return;
+    }
+    addedList.textContent = '';
+    items.forEach((text) => {
+      const li = document.createElement('li');
+      li.textContent = text;
+      addedList.appendChild(li);
+    });
+  }
+
+  /* ---------------------------------------------------------------- one-line headline */
+
+  const sentence = /** @type {HTMLElement|null} */ (roomLabel.closest('.hp-sentence'));
+  const mainCol = sentence && /** @type {HTMLElement|null} */ (sentence.closest('.hp-bar__main'));
+
+  /* THE HEADLINE IS ONE LINE ON DESKTOP, AND THE SIZE IS PINNED TO THE LOCALE'S WORST PAIR
+   * RATHER THAN THE CURRENT ONE. That is the whole design, and the alternative is worse:
+   * sizing to what is on screen means the headline changes size every time you pick, and
+   * since picking also cross-fades the photo behind it the two reads as a glitch.
+   *
+   * Pinning costs nothing in English, where the widest pair ("dining room" + "Scandinavian")
+   * already fits the column at the full 38px — the variable stays unset there and the clamp
+   * in hero-picker.css is what applies. It costs the wordier locales some size: Spanish needs
+   * about 29px at 1707px wide for "esta sala de estar" + "Mediados de siglo".
+   *
+   * WHY WIDEST ROOM + WIDEST STYLE IS THE WIDEST PAIR, rather than 48 measurements: the two
+   * labels are separate inline elements with fixed text either side, so the sentence width is
+   * the sum of independent parts and the maximum of the sum is the sum of the maxima. There
+   * is no kerning across an element boundary to break that. The loop below leaves the widest
+   * room in place while it walks the styles, so the last measurement it takes IS the worst
+   * pair — 14 reads instead of 48.
+   *
+   * Nothing here paints. The labels flicker through every candidate inside one synchronous
+   * task, and the browser cannot paint until it ends, so none of it reaches the screen. */
+  function fitSentence() {
+    if (!sentence || !mainCol) return;
+
+    /* Cleared FIRST so the computed size read below is the clamp, not the last fit. */
+    sentence.classList.remove('is-fitted');
+    sentence.style.removeProperty('--hp-sentence-fs');
+    if (!window.matchMedia('(min-width: ' + FIT_MIN_WIDTH + 'px)').matches) return;
+
+    const avail = mainCol.clientWidth;
+    const cssFs = parseFloat(window.getComputedStyle(sentence).fontSize);
+    if (!avail || !cssFs) return;
+
+    const room0 = roomLabel.textContent;
+    const style0 = styleLabel.textContent;
+    /* `max-content` + nowrap is the natural single-line width, which is what has to fit —
+       the element's own box is still only as wide as the column. */
+    sentence.style.whiteSpace = 'nowrap';
+    sentence.style.width = 'max-content';
+
+    const widest = (el, items) => {
+      let best = el.textContent;
+      let bestW = -1;
+      items.forEach((it) => {
+        el.textContent = t(it.label);
+        const w = sentence.getBoundingClientRect().width;
+        if (w > bestW) { bestW = w; best = el.textContent; }
+      });
+      el.textContent = best;
+      return bestW;
+    };
+    widest(roomLabel, ROOMS);
+    const needed = widest(styleLabel, STYLES) + FIT_SAFETY_PX;
+
+    roomLabel.textContent = room0;
+    styleLabel.textContent = style0;
+    sentence.style.whiteSpace = '';
+    sentence.style.width = '';
+
+    if (needed <= avail) { sentence.classList.add('is-fitted'); return; }
+
+    const fitted = cssFs * (avail / needed);
+    /* Too small to read as a headline. Leave the class off and let it wrap, because the one
+       thing it must not do is keep `nowrap` and run out through the side of the bar. */
+    if (fitted < FIT_FLOOR_PX) return;
+    sentence.style.setProperty('--hp-sentence-fs', fitted.toFixed(2) + 'px');
+    sentence.classList.add('is-fitted');
+  }
+
+  /* Width-driven, so it has to re-run on resize. Coalesced to one measurement per frame: the
+     function forces layout 14 times and a drag fires resize far more often than that. */
+  let fitPending = 0;
+  window.addEventListener('resize', () => {
+    if (fitPending) return;
+    fitPending = window.requestAnimationFrame(() => { fitPending = 0; fitSentence(); });
+  }, { passive: true });
+
   function pick(which, item) {
     if (which === 'room') room = item; else style = item;
     if (showingOriginal) toggleOriginal(false);
     remember(room, style);
     paintSentence();
+    paintAdded();
     show(room, style);
     buildMenus();
   }
 
   /* ------------------------------------------------------------ open / close / keys */
 
+  /**
+   * Close both menus, and put focus somewhere deliberate.
+   *
+   * `focusBtn` is the trigger to hand focus back to, or null for "wherever the visitor is
+   * looking is fine". Null is NOT the same as "leave focus alone", though, and that was a
+   * bug: the click-outside handler passed null while the focused element was an option
+   * inside the menu it was about to hide. Most of the hero is unfocusable — the photo, the
+   * scrim — so focus fell to <body> and the next Tab restarted at the top of the document.
+   *
+   * So null now means "restore only if we are about to hide the element that has focus".
+   * A click on some other focusable thing still keeps its own focus, because in that case
+   * activeElement is not inside either menu.
+   * @param {HTMLElement | null} focusBtn
+   */
   function closeMenus(focusBtn) {
+    const active = document.activeElement;
+    /* "Focus is loose" — on <body>, or nowhere. This is the case that needed care, because
+       clicking the photo blurs the focused option on MOUSEDOWN, well before the click handler
+       that closes the menu runs. Testing "is activeElement inside the menu" therefore always
+       came back false and the visitor was left on <body>, restarting their next Tab at the
+       top of the document. So the open menu's own trigger is the fallback, not the focus
+       position. A click that lands on some OTHER focusable control leaves activeElement
+       pointing at that control, which is not loose, so its focus is left alone. */
+    const loose = !active || active === document.body;
+    const openTrigger = !roomMenu.hidden ? roomBtn : !styleMenu.hidden ? styleBtn : null;
+    const owner = focusBtn
+      || (roomMenu.contains(active) ? roomBtn
+        : styleMenu.contains(active) ? styleBtn
+          : loose ? openTrigger : null);
     [[roomBtn, roomMenu], [styleBtn, styleMenu]].forEach(([b, m]) => {
       m.hidden = true;
       b.setAttribute('aria-expanded', 'false');
     });
-    if (focusBtn) focusBtn.focus();
+    if (owner) /** @type {HTMLElement} */ (owner).focus();
   }
 
   function openMenu(btn, menu) {
@@ -334,19 +730,74 @@ function initHeroPicker() {
 
   document.addEventListener('keydown', (e) => {
     const open = roomMenu.hidden ? (styleMenu.hidden ? null : styleMenu) : roomMenu;
-    if (e.key === 'Escape' && open) {
-      closeMenus(open === roomMenu ? roomBtn : styleBtn);
+    if (!open) return;
+    const trigger = open === roomMenu ? roomBtn : styleBtn;
+
+    if (e.key === 'Escape') {
+      closeMenus(trigger);
       return;
     }
-    if (!open || (e.key !== 'ArrowDown' && e.key !== 'ArrowUp')) return;
-    e.preventDefault();
+    /* Tab closes it. Without this the options are ordinary buttons, so Tab simply walked out
+       of the menu and left an open popover behind with aria-expanded still true, while the
+       document-level arrows below went on stealing Up/Down from wherever focus had landed.
+       No preventDefault — Tab should still move on, it just should not leave a menu open. */
+    if (e.key === 'Tab') {
+      closeMenus(null);
+      return;
+    }
+
     const items = Array.prototype.slice.call(open.querySelectorAll('.hp-menu__item'));
+    if (!items.length) return;
     const at = items.indexOf(/** @type {HTMLElement} */ (document.activeElement));
-    const step = e.key === 'ArrowDown' ? 1 : items.length - 1;
-    items[(at + step + items.length) % items.length].focus();
+    /* `rows` is what applyColumns() wrote, so Left/Right step by exactly one visual column.
+       Unset (a single-column menu) means one column, and the clamp below turns those keys
+       into a no-op rather than a wrap. */
+    const list = open.querySelector('.hp-menu__list');
+    const rows = Number(list && /** @type {HTMLElement} */ (list).style.getPropertyValue('--hp-menu-rows')) || items.length;
+
+    let next = null;
+    if (e.key === 'ArrowDown') next = at < 0 ? 0 : (at + 1) % items.length;
+    /* `at < 0` — focus is not on an option, which happens after Tab used to walk out and can
+       still happen if a click lands oddly. Up must mean "the last option"; the old
+       `at + items.length - 1` arithmetic gave the SECOND to last. */
+    else if (e.key === 'ArrowUp') next = at < 0 ? items.length - 1 : (at - 1 + items.length) % items.length;
+    else if (e.key === 'Home') next = 0;
+    else if (e.key === 'End') next = items.length - 1;
+    /* The split menu is laid out column-wise, so one column is `rows` apart in DOM order.
+       Clamped rather than wrapped: at the right-hand column Right should do nothing, not
+       jump back to the left one. */
+    else if (e.key === 'ArrowRight') next = Math.min(items.length - 1, (at < 0 ? 0 : at) + rows);
+    else if (e.key === 'ArrowLeft') next = Math.max(0, (at < 0 ? 0 : at) - rows);
+    else return;
+
+    e.preventDefault();
+    items[next].focus();
   });
 
   /* -------------------------------------------------------------- see the original */
+
+  /**
+   * Paint the toggle for the photo currently on screen.
+   *
+   * THE LABEL NAMES THE ACTION, and there is deliberately no `aria-pressed` to go with it.
+   * The two conventions are mutually exclusive: a sighted visitor reads a label as the thing
+   * the button will do, assistive tech reads `aria-pressed` as the state that is already on.
+   * Ship both and a screen reader announces "See staged, pressed" at the moment the ORIGINAL
+   * is what is showing — the inverse of the truth. This button carries the action, so the
+   * state lives in the class (see `.hp-original.is-showing-original` in hero-picker.css) and
+   * nothing claims to be pressed.
+   *
+   * `data-lang` is swapped alongside the text rather than dropped, so a later language change
+   * repaints the key that matches what is on screen instead of resetting to "See original".
+   */
+  function paintOriginalLabel() {
+    if (!originalBtn) return;
+    const key = showingOriginal ? 'hero.seeStaged' : 'hero.seeOriginal';
+    originalBtn.classList.toggle('is-showing-original', showingOriginal);
+    if (!originalLabel) return;
+    originalLabel.setAttribute('data-lang', key);
+    originalLabel.textContent = t(key);
+  }
 
   /**
    * Show the empty room every render on this page was made from. Loaded on demand rather
@@ -355,25 +806,26 @@ function initHeroPicker() {
    */
   function toggleOriginal(next) {
     showingOriginal = next;
-    if (originalBtn) {
-      originalBtn.setAttribute('aria-pressed', String(next));
-      originalBtn.textContent = t(next ? 'hero.seeStaged' : 'hero.seeOriginal');
-    }
+    paintOriginalLabel();
     if (!next) {
-      if (originalImg) originalImg.classList.remove('is-on');
+      /* show() picks the front layer, and it has to do that BEFORE the original loses
+         `is-on` — see setFrontLayer(). Hiding the original first is what used to leave two
+         photos fading against each other. */
       show(room, style);
+      if (originalImg) showOnly(originalImg, false);
       return;
     }
     if (!originalImg) {
       originalImg = new Image();
-      originalImg.className = 'hp-stage__img';
+      originalImg.className = 'hp-canvas__img';
       originalImg.alt = t('hero.originalAlt');
       originalImg.decoding = 'async';
-      originalImg.src = ORIGINAL;
+      setCandidates(originalImg, ORIGINAL_BASE);
       stage.appendChild(originalImg);
     }
-    staged().forEach((im) => im.classList.remove('is-on'));
-    originalImg.classList.add('is-on');
+    setFrontLayer(originalImg);
+    staged().forEach((im) => showOnly(im, false));
+    showOnly(originalImg, true);
   }
 
   if (originalBtn) {
@@ -387,8 +839,29 @@ function initHeroPicker() {
 
   window.addEventListener('languagechange', () => {
     paintSentence();
-    if (originalBtn) originalBtn.textContent = t(showingOriginal ? 'hero.seeStaged' : 'hero.seeOriginal');
-    baseImg.alt = altFor(byKey(ROOMS, DEFAULT_ROOM), byKey(STYLES, DEFAULT_STYLE));
+    /* Also the event that lands the FIRST real list: this file runs at parse time and the
+       pack has not resolved then, so the initial call below is usually a no-op and the
+       list is still the one the markup shipped. applyLanguageToElements() fires this on
+       its first pass too, not only on a switch, which is what makes that work. */
+    paintAdded();
+    /* AFTER paintSentence, and it must stay here: the pinned size is a property of the
+       locale, so every pack swap invalidates it. English fits at 38px and Spanish does not. */
+    fitSentence();
+    paintOriginalLabel();
+    /* EVERY render that has been built, not just the first one.
+       This used to be a single line rewriting `baseImg.alt`, and it was wrong twice. It
+       pinned the alt to DEFAULT_ROOM/DEFAULT_STYLE rather than the pair actually in the
+       cache entry, so after one pick the description named a room that was no longer there;
+       and it touched only baseImg, so every OTHER render kept the alt it was created with,
+       in the language it was created under. Walking the cache fixes both, and the key is the
+       pair, so nothing has to be looked up. */
+    Object.keys(cache).forEach((k) => {
+      const [styleSlug, ...roomParts] = k.split('-');
+      const st = STYLES.find((x) => x.slug === styleSlug);
+      const rm = ROOMS.find((x) => x.slug === roomParts.join('-'));
+      if (st && rm) cache[k].alt = altFor(rm, st);
+    });
+    if (originalImg) originalImg.alt = t('hero.originalAlt');
     if (menusBuilt) buildMenus();
   });
 
@@ -402,7 +875,19 @@ function initHeroPicker() {
    * and the next language change silently resets the sentence to "bedroom"/"Modern" and the
    * toggle to "See original" while the photo stays where the visitor put it. Dropping the
    * attributes makes the languagechange handler above the only writer. */
-  [roomLabel, styleLabel, originalBtn].forEach((el) => el && el.removeAttribute('data-lang'));
+  [roomLabel, styleLabel].forEach((el) => el && el.removeAttribute('data-lang'));
+  /* The toggle is NOT on that list, and that is the whole difference between a label that
+     is rewritten and one that is swapped: paintOriginalLabel() keeps `data-lang` pointing
+     at whichever of the two keys is on screen, so applyTranslations() writing textContent
+     from it lands exactly the string this file would have written. Strip the attribute and
+     a server-rendered locale page ships a button with no key on it at all. */
+  /* baseImg belongs on that list too, and its absence was a real conflict rather than an
+     oversight of style: the markup carries data-lang-attr="hero.defaultAlt|alt", so
+     applyLanguageToElements() wrote "A bedroom virtually staged in a modern style" while the
+     languagechange handler above wrote "Modern Bedroom, virtually staged" — two writers,
+     different strings, same photo, order-dependent. altFor() is the one that stays correct
+     after a pick, so the markup's hint is the one to drop. */
+  baseImg.removeAttribute('data-lang-attr');
 
   baseImg.classList.add('is-on');
   stage.setAttribute('data-hp-adopted', '');
@@ -423,8 +908,14 @@ function initHeroPicker() {
     room = stored.room;
     style = stored.style;
     paintSentence();
+    paintAdded();
     show(room, style, true);
   }
+
+  /* After the restore, so the one measurement covers the labels actually on screen. The size
+     does not depend on the pick, but the `is-fitted` class does have to land before the first
+     paint of the adopted hero or the sentence wraps for a frame and the CTA under it jumps. */
+  fitSentence();
 
   if ('requestIdleCallback' in window) {
     /** @type {any} */ (window).requestIdleCallback(prefetchRow);

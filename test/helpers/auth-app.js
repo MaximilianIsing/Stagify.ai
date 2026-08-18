@@ -97,8 +97,7 @@ export async function mountAuth(overrides = {}) {
     setSensitiveHeaders,
     getAuthUserFromRequest: helpers.getAuthUserFromRequest,
     toPublicAuthUser: helpers.toPublicAuthUser,
-    sendRegistrationVerificationEmail,
-    sendAccountExistsNotice,
+    email: { sendRegistrationVerificationEmail, sendAccountExistsNotice },
     __dirname: path.resolve('.'),
     googleClientId: 'test-google-client-id',
   };

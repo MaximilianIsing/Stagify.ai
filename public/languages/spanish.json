@@ -33,6 +33,80 @@
   },
   "hero": {
     "eyebrow": "Escenificación virtual gratuita",
+    "added": {
+      "title": "Añadido en este render",
+      "item1": "Cama baja de nogal, ropa blanca",
+      "item2": "Cómoda larga de nogal, seis cajones",
+      "item3": "Alfombra crema de cuadrícula bajo la cama",
+      "item4": "Butaca de bouclé junto a la ventana",
+      "item5": "Lámina abstracta geométrica enmarcada",
+      "items": {
+        "standard": {
+          "bedroom": ["Cama baja de roble claro, ropa blanca", "Cómoda ancha de roble, seis cajones", "Alfombra beige grande bajo la cama", "Tres láminas en blanco y negro", "Butaca crema junto a la ventana"],
+          "livingRoom": ["Sofá de tres plazas crema", "Alfombra estampada gris y marfil", "Mueble de TV blanco y roble", "Dos butacas grises de estructura metálica", "Ficus lyrata en maceta de barro"],
+          "diningRoom": ["Mesa de seis con mantel de lino marfil", "Seis sillas tapizadas en crema", "Aparador de roble claro con patas", "Lienzo abstracto sobre el aparador", "Centro de mesa con orquídea blanca"],
+          "kitchen": ["Isla blanca en cascada con fregadero", "Frente de armarios blancos sin tiradores", "Nevera y horno de acero inoxidable", "Cuatro taburetes grises de barra", "Dos láminas geométricas enmarcadas"],
+          "office": ["Escritorio blanco rectangular con patas", "Estantería abierta de roble", "Silla de oficina negra de malla", "Mueble bajo de almacenaje gris", "Dos obras abstractas enmarcadas"],
+          "bathroom": ["Mueble de lavabo suspendido blanco", "Ducha de obra con rociador de lluvia", "Inodoro suspendido blanco", "Alfombrilla de baño gris antracita", "Espejo estrecho enmarcado en la pared"]
+        },
+        "modern": {
+          "bedroom": ["Cama baja de nogal, ropa blanca", "Cómoda larga de nogal, seis cajones", "Alfombra crema de cuadrícula bajo la cama", "Butaca de bouclé junto a la ventana", "Lámina abstracta geométrica enmarcada"],
+          "livingRoom": ["Sofá rinconero gris en forma de L", "Alfombra geométrica azul y gris", "Mesa de centro de piedra blanca", "Lámpara de pie de arco negra", "Tríptico marino de tres paneles"],
+          "diningRoom": ["Mesa de comedor blanca, patas negras", "Seis sillas tapizadas en gris", "Aparador de roble claro", "Dos láminas en azul marino y dorado", "Pampa seca en un jarrón"],
+          "kitchen": ["Isla blanca con encimera gris", "Armarios altos y superiores blancos", "Tres taburetes negros de varilla", "Hornos de acero empotrados en columna", "Bol negro con manzanas verdes"],
+          "office": ["Escritorio blanco con patas cromadas", "Estantería abierta de estructura negra", "Monitor panorámico sobre el escritorio", "Silla gris de malla con ruedas", "Mueble bajo de almacenaje blanco"],
+          "bathroom": ["Mueble doble suspendido blanco", "Ducha de obra con mampara de vidrio", "Ave del paraíso alta en maceta", "Inodoro suspendido blanco", "Alfombrilla gris de rombos"]
+        },
+        "scandinavian": {
+          "bedroom": ["Cama baja de roble claro, ropa blanca", "Cómoda de roble de seis cajones", "Alfombra redonda de yute bajo la cama", "Mesillas de roble y dos lámparas", "Par de láminas abstractas enmarcadas"],
+          "livingRoom": ["Sofá gris de tres plazas en la ventana", "Gran alfombra de yute trenzado", "Mesa de centro baja de roble claro", "Dos butacas de cuerda trenzada", "Monstera y ficus lyrata en maceta"],
+          "diningRoom": ["Mesa larga de roble con camino de lino", "Seis sillas de roble claro", "Aparador de roble contra la pared", "Mesa puesta con platos y copas", "Ramas secas en un cuenco"],
+          "kitchen": ["Isla de roble con encimera de piedra", "Frente de armarios de roble claro", "Horno blanco bajo la encimera", "Tres taburetes de roble", "Alicatado blanco tipo metro"],
+          "office": ["Escritorio de roble macizo en la ventana", "Librería abierta y estrecha de roble", "Silla de roble con cojín gris", "Cajonera blanca con ruedas", "Flexo de latón y hierbas en maceta"],
+          "bathroom": ["Ducha de obra con mampara de vidrio", "Mueble de roble suspendido con lavabo", "Rociador de lluvia negro mate", "Alfombrilla beige sobre el parqué", "Cesto de mimbre y toallas"]
+        },
+        "coastal": {
+          "bedroom": ["Cama blanca con cabecero de listones", "Cómoda de madera encalada", "Alfombra de pasillo a rayas aguamarina", "Butaca de ratán junto a la ventana", "Tres láminas de conchas enmarcadas"],
+          "livingRoom": ["Dos sofás blancos con funda", "Gran alfombra de sisal trenzado", "Mesa de centro de madera envejecida", "Dos butacas de mimbre", "Mesa auxiliar forrada de cuerda"],
+          "diningRoom": ["Mesa larga de madera gris lavada", "Seis sillas de fibra natural", "Aparador blanco envejecido", "Banco de mimbre con asiento a rayas", "Lienzo enmarcado de una ola"],
+          "kitchen": ["Frente de armarios blancos shaker", "Isla blanca con encimera en cascada", "Tres taburetes de fibra trenzada", "Hornos de acero empotrados en columna", "Tabla de madera junto al fregadero"],
+          "office": ["Escritorio rústico de caballetes", "Cuatro lienzos marinos enmarcados", "Archivador verde menta", "Silla de escritorio de ratán", "Lámpara de cerámica verde agua"],
+          "bathroom": ["Mueble de lavabo blanco individual", "Palmera alta en cesto de fibra", "Alfombrilla jaspeada aguamarina", "Espejo enmarcado sobre el lavabo", "Plafón de techo en níquel cepillado"]
+        },
+        "farmhouse": {
+          "bedroom": ["Cama rústica de tablones de pino", "Cómoda encalada de seis cajones", "Colcha floral y manta de patchwork", "Mecedora de madera con asiento trenzado", "Tres láminas de animales de granja"],
+          "livingRoom": ["Sofá de tres plazas con funda crema", "Gran alfombra de yute trenzado", "Mesa de centro de madera reciclada", "Par de butacas de lino", "Mural de láminas botánicas"],
+          "diningRoom": ["Mesa larga de roble envejecido", "Aparador blanco envejecido", "Mantel de cuadros vichy rojo", "Seis sillas tapizadas en flores", "Tarros con flores naranjas"],
+          "kitchen": ["Frente de armarios shaker encalados", "Fregadero de delantal tipo granja", "Barra de desayuno de madera maciza", "Tres taburetes rústicos de madera", "Baldas con tarros y hierbas"],
+          "office": ["Escritorio macizo de madera reciclada", "Librería alta de pino con libros", "Silla de cuero marrón con ruedas", "Archivador metálico negro", "Reloj de pared redondo de granja"],
+          "bathroom": ["Bañera exenta con patas de garra", "Lavabo blanco de pie con grifería", "Ducha de rincón con mampara", "Alfombra ovalada trenzada", "Cartel de madera pintado"]
+        },
+        "luxury": {
+          "bedroom": ["Cama con cabecero capitoné azul marino", "Cómoda de caoba de seis cajones", "Dos paneles de mármol con marco dorado", "Par de lámparas de mesilla de vidrio", "Cojines de terciopelo en tonos joya"],
+          "livingRoom": ["Sofá rinconero de terciopelo azul", "Mesa de centro de mármol blanco", "Dos butacas de terciopelo crema", "Alfombra abstracta azul y dorada", "Tríptico con marcos dorados"],
+          "diningRoom": ["Mesa larga vestida con mantel", "Seis sillas de terciopelo azul", "Aparador de madera con tapa de mármol", "Candelabro de cristal como centro", "Camino de mesa de brocado dorado"],
+          "kitchen": ["Mobiliario en L de roble claro", "Isla de cuarzo en cascada", "Dos taburetes de barra crema", "Horno doble de acero inoxidable", "Orquídea blanca en jarrón de vidrio"],
+          "office": ["Escritorio de mármol y dorado", "Librería de madera tallada con libros", "Silla de cuero verde capitoné", "Ficus lyrata en macetero de latón", "Lámpara de cristal estriado"],
+          "bathroom": ["Bañera exenta ovalada", "Ducha de rincón con mampara", "Mueble de doble lavabo en madera oscura", "Grifería de bañera de pie en latón", "Inodoro suspendido junto a la ventana"]
+        },
+        "midcentury": {
+          "bedroom": ["Cama de nogal con cabecero gris", "Cómoda larga de teca, seis cajones", "Butaca de cuero negro", "Colcha geométrica y manta mostaza", "Carteles de viaje enmarcados"],
+          "livingRoom": ["Sofá capitoné turquesa de tres plazas", "Alfombra estampada dorada y naranja", "Par de butacas de palisandro", "Mesa de centro baja de nogal", "Mural de seis láminas abstractas"],
+          "diningRoom": ["Mesa redonda con mantel floral", "Cuatro sillas de carcasa moldeada", "Aparador largo de teca con patas", "Segunda lámpara cilíndrica sobre la mesa", "Copas ámbar y flores secas"],
+          "kitchen": ["Isla blanca con encimera en cascada", "Frente de armarios altos blancos lisos", "Tres taburetes de vinilo naranja", "Nevera de acero inoxidable", "Helecho en macetero blanco"],
+          "office": ["Escritorio de nogal con cajonera", "Silla giratoria de cuero camel", "Estantería abierta de teca", "Flexo cromado de cúpula", "Tres láminas abstractas enmarcadas"],
+          "bathroom": ["Mueble de nogal con lavabo blanco", "Ducha de rincón con mampara", "Planta alta sobre un macetero", "Alfombra de pasillo estampada", "Papelera de madera junto al mueble"]
+        },
+        "custom": {
+          "bedroom": ["Cabecero ondulado de terciopelo verde", "Alfombra geométrica verde y crema", "Cómoda de nogal de seis cajones", "Mesilla negra con tiradores de latón", "Banqueta verde capitoné a los pies"],
+          "livingRoom": ["Sofá curvo de terciopelo esmeralda", "Aparador negro lacado con marquetería", "Dos butacas giratorias rosa empolvado", "Alfombra verde con motivo de abanico", "Espejo sol dorado en la pared"],
+          "diningRoom": ["Mesa redonda de mármol blanco", "Aparador de nogal estriado", "Seis sillas de terciopelo verde", "Alfombra redonda verde con medallón", "Ramo de rosas blancas en jarrón"],
+          "kitchen": ["Carrito de bar negro con tapa de latón", "Palmera en macetero de latón", "Alfombra de pasillo con hojas verdes", "Tres bocetos con marco dorado", "Botes de cobre y cristalería"],
+          "office": ["Escritorio estriado con base de latón", "Librería alta negra con vitrina", "Alfombra verde de espiga", "Silla concha de terciopelo verde", "Lámpara de latón con tulipa verde"],
+          "bathroom": ["Bañera exenta ovalada", "Mueble estriado de nogal con lavabo", "Base de mármol bajo la bañera", "Palmera en macetero de latón con pie", "Alfombrilla verde de estampado orgánico"]
+        }
+      }
+    },
     "title": {
       "upload": "Sube.",
       "stage": "Diseña.",
@@ -44,8 +118,7 @@
     "freeGensUpgrade": "Prueba Stagify+ hoy. <a class=\"hero-free-gens-upgrade\" href=\"stagify-plus.html\">Mejorar</a>",
     "stats": {
       "roomsStaged": "Habitaciones Escenificadas",
-      "usersServed": "Usuarios Atendidos",
-      "andCounting": "y contando..."
+      "usersServed": "Usuarios Atendidos"
     },
     "sentence": {
       "before": "Amuebla ",
@@ -64,7 +137,6 @@
     "styleMenuLabel": "Estilo de muebles",
     "seeOriginal": "Ver original",
     "seeStaged": "Ver amueblado",
-    "stageNote": "Cada estilo aquí es un render real de la misma habitación vacía.",
     "stageAlt": "{room} en estilo {style}, amueblado virtualmente",
     "originalAlt": "La misma habitación antes de amueblar, vacía",
     "defaultAlt": "Un dormitorio amueblado virtualmente en estilo moderno"
@@ -356,7 +428,12 @@
     },
     "instagram": {
       "title": "Míralo en acción en Instagram",
-      "follow": "Síguenos en @stagify.ai"
+      "follow": "Síguenos en @stagify.ai",
+      "posts": {
+        "emptyToStaged": "Publicación de Instagram: un salón vacío junto a la misma habitación amueblada con sofá, alfombra y cuadros (se abre en una pestaña nueva)",
+        "floorPlan": "Publicación de Instagram: un plano amueblado sobre el dormitorio fotorrealista generado a partir de él (se abre en una pestaña nueva)",
+        "fiveStyles": "Publicación de Instagram: un mismo salón vacío amueblado en cinco estilos diferentes (se abre en una pestaña nueva)"
+      }
     },
     "finalCta": {
       "title": "Pruébalo en tu propia propiedad",

@@ -1,5 +1,11 @@
 /* Stagify.ai — count-up animation for the hero stat numbers.
-   Waits for live counts from app.js, then reveals pills and animates. */
+   Waits for live counts from app.js, then reveals the block and animates.
+
+   THE SELECTORS BELOW ARE A CONTRACT WITH public/index.html: `.hero-stats` is the wrapper
+   this reveals with `.is-ready`, and `.hp-stat__num[data-stat]` are the figures it writes.
+   They were `.stat-pill-*` while the counters were pills; renaming them in the markup
+   without renaming them here leaves the hero showing two blanks forever, and nothing
+   errors. */
 // The number/width math is pure and lives at module scope so it can be unit-tested
 // directly (test/frontend/count-up.test.js). The IIFE below drives the DOM animation with
 // these; the browser API is unchanged (window.StagifyHeroStats).
@@ -93,7 +99,7 @@ export function rampValue(target, t) {
     const opts = options || {};
     const isRefresh = opts.refresh === true;
     const wrap = document.querySelector(".hero-stats");
-    const els = /** @type {HTMLElement[]} */ (Array.from(document.querySelectorAll(".stat-pill-number[data-stat]")));
+    const els = /** @type {HTMLElement[]} */ (Array.from(document.querySelectorAll(".hp-stat__num[data-stat]")));
     if (!els.length) return;
 
     const reduceMotion =
@@ -130,7 +136,7 @@ export function rampValue(target, t) {
 
   function revealWithoutCounts() {
     const wrap = document.querySelector(".hero-stats");
-    const els = /** @type {HTMLElement[]} */ (Array.from(document.querySelectorAll(".stat-pill-number[data-stat]")));
+    const els = /** @type {HTMLElement[]} */ (Array.from(document.querySelectorAll(".hp-stat__num[data-stat]")));
     els.forEach((el) => {
       el.textContent = "—";
       el.style.minWidth = "1ch";

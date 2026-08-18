@@ -22,9 +22,16 @@ export function updateHeroFreeGensLine() {
     el.classList.remove('hidden');
 }
 
-// Load hero stat pills from server, then reveal and animate to live counts
+// Load the hero stat figures from the server, then reveal and animate to live counts.
+//
+// THE GUARD BELOW IS LOad-BEARING IN TWO DIRECTIONS. It is what stops every non-homepage
+// consumer of app.js from firing /api/prompt-count and /api/contact-count (see the note at
+// the top of page-chrome.js), and it is also the thing that silently disables the counters
+// if the markup and this selector ever drift: no error, no request, two blank spaces where
+// the numbers should be. The class is the contract — it is also read in count-up.js and
+// asserted in e2e/index.spec.js.
 export function loadHeroStats(options) {
-    if (!document.querySelector('.stat-pill-number[data-stat]')) return;
+    if (!document.querySelector('.hp-stat__num[data-stat]')) return;
 
     var opts = options || {};
     var isRefresh = opts.refresh === true;
@@ -61,8 +68,8 @@ export function loadHeroStats(options) {
         }
 
         var wrap = document.getElementById('hero-stats');
-        var roomsEl = document.querySelector('.stat-pill-number[data-stat="roomsStaged"]');
-        var usersEl = document.querySelector('.stat-pill-number[data-stat="usersServed"]');
+        var roomsEl = document.querySelector('.hp-stat__num[data-stat="roomsStaged"]');
+        var usersEl = document.querySelector('.hp-stat__num[data-stat="usersServed"]');
         if (roomsEl && rooms != null && !Number.isNaN(rooms)) roomsEl.textContent = String(rooms);
         if (usersEl && users != null && !Number.isNaN(users)) usersEl.textContent = String(users);
         if (wrap) wrap.classList.add('is-ready');

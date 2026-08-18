@@ -33,6 +33,80 @@
   },
   "hero": {
     "eyebrow": "Gratis virtuele styling",
+    "added": {
+      "title": "Toegevoegd in deze render",
+      "item1": "Notenhouten bed, wit beddengoed",
+      "item2": "Lange notenhouten ladekast",
+      "item3": "Crème ruitkleed onder het bed",
+      "item4": "Bouclé fauteuil bij het raam",
+      "item5": "Ingelijste geometrische print",
+      "items": {
+        "standard": {
+          "bedroom": ["Licht eiken bed, wit beddengoed", "Brede eiken ladekast, zes lades", "Groot beige kleed onder het bed", "Drie ingelijste zwart-witprints", "Crème fauteuil bij het raam"],
+          "livingRoom": ["Lange crème driezitsbank", "Vloerkleed met grijs-ivoren dessin", "Tv-meubel in wit en eiken", "Twee grijze fauteuils, metalen frame", "Vioolbladvijg in terracotta pot"],
+          "diningRoom": ["Eettafel voor zes, ivoren linnen", "Zes crème gestoffeerde stoelen", "Licht eiken dressoir op poten", "Abstract doek boven het dressoir", "Witte orchidee als tafelstuk"],
+          "kitchen": ["Wit kookeiland met spoelbak", "Rij witte greeploze kasten", "RVS koelkast en inbouwoven", "Vier grijze barkrukken", "Twee ingelijste geometrische prints"],
+          "office": ["Wit rechthoekig bureau op poten", "Open eiken wandkast", "Zwarte bureaustoel met meshrug", "Laag grijs opbergdressoir", "Twee ingelijste abstracte werken"],
+          "bathroom": ["Wit hangend badmeubel met wastafel", "Inloopdouche met regendouchekop", "Wit hangtoilet", "Antracietgrijze badmat", "Slanke ingelijste wandspiegel"]
+        },
+        "modern": {
+          "bedroom": ["Notenhouten bed, wit beddengoed", "Lange notenhouten ladekast", "Crème ruitkleed onder het bed", "Bouclé fauteuil bij het raam", "Ingelijste geometrische print"],
+          "livingRoom": ["Grijze hoekbank in L-vorm", "Blauw-grijs geometrisch vloerkleed", "Witte stenen salontafel", "Zwarte booglamp", "Drieluik met zeegezicht"],
+          "diningRoom": ["Witte eettafel op zwarte poten", "Zes grijze gestoffeerde stoelen", "Licht eiken dressoir", "Twee prints in marineblauw en goud", "Droog pampasgras in een vaas"],
+          "kitchen": ["Wit kookeiland met grijs blad", "Witte boven- en hoge kasten", "Drie zwarte draadbarkrukken", "Twee RVS inbouwovens boven elkaar", "Zwarte schaal met groene appels"],
+          "office": ["Wit bureau op chromen poten", "Open wandkast met zwart frame", "Breed beeldscherm op het bureau", "Grijze bureaustoel op wielen", "Laag wit opbergdressoir"],
+          "bathroom": ["Wit zwevend dubbel badmeubel", "Inloopdouche met glazen wand", "Hoge paradijsvogelplant in pot", "Wit hangtoilet", "Grijze badmat met ruitmotief"]
+        },
+        "scandinavian": {
+          "bedroom": ["Licht eiken bed, wit beddengoed", "Eiken ladekast tegen de wand", "Rond jute kleed onder het bed", "Eiken nachtkastjes met twee lampen", "Twee ingelijste abstracte prints"],
+          "livingRoom": ["Grijze driezitsbank bij het raam", "Groot geweven jute vloerkleed", "Lage salontafel van blond eiken", "Twee gevlochten loungestoelen", "Monstera en vioolbladvijg in potten"],
+          "diningRoom": ["Lange eiken tafel met linnen loper", "Zes licht eiken eetkamerstoelen", "Eiken dressoir tegen de wand", "Tafel gedekt met borden en glazen", "Droogtakken in een schaal"],
+          "kitchen": ["Eiken kookeiland met stenen blad", "Rij licht eiken wandkasten", "Witte oven onder het werkblad", "Drie eiken barkrukken", "Witte metrotegels als achterwand"],
+          "office": ["Massief eiken bureau bij het raam", "Slanke open eiken boekenkast", "Eiken stoel met grijs zitkussen", "Wit verrijdbaar ladeblok", "Messing bureaulamp en kruidenpotjes"],
+          "bathroom": ["Inloopdouche met glazen wand", "Zwevend eiken badmeubel met wastafel", "Matzwarte regendouchekop", "Beige badmat op het parket", "Gevlochten wasmand en handdoeken"]
+        },
+        "coastal": {
+          "bedroom": ["Wit bed met lattenhoofdbord", "Whitewash houten ladekast", "Aquablauw gestreepte loper", "Rotan fauteuil bij het raam", "Drie ingelijste schelpenprints"],
+          "livingRoom": ["Twee witte banken met losse hoes", "Groot geweven sisal vloerkleed", "Salontafel van verweerd hout", "Twee rieten loungestoelen", "Bijzettafel met touwwikkeling"],
+          "diningRoom": ["Lange eettafel in grijswassing", "Zes stoelen van gevlochten zeegras", "Verweerd wit dressoir", "Rieten bank met gestreept kussen", "Ingelijst doek met brekende golf"],
+          "kitchen": ["Rij witte shakerkasten", "Wit kookeiland met doorlopend blad", "Drie gevlochten barkrukken", "Twee RVS inbouwovens boven elkaar", "Houten snijplank bij de spoelbak"],
+          "office": ["Rustiek houten schragenbureau", "Vier ingelijste zeedoeken", "Mintgroene archiefkast", "Gevlochten rotan bureaustoel", "Zeegroene keramische tafellamp"],
+          "bathroom": ["Wit badmeubel met één wastafel", "Hoge palm in een gevlochten mand", "Aquablauw gemarmerde badmat", "Ingelijste spiegel boven de wastafel", "Geborsteld nikkelen plafondlamp"]
+        },
+        "farmhouse": {
+          "bedroom": ["Rustiek grenen planken bed", "Whitewash ladekast met zes lades", "Bloemenquilt en patchworkplaid", "Gevlochten schommelstoel", "Drie prints met boerderijdieren"],
+          "livingRoom": ["Crème driezitsbank met losse hoes", "Groot geweven jute vloerkleed", "Salontafel van sloophout", "Twee linnen fauteuils", "Wand met botanische prints"],
+          "diningRoom": ["Lange eettafel van verweerd eiken", "Verweerd wit dressoir", "Rood geruit tafelkleed", "Zes stoelen met bloemenstof", "Potten met oranje tuinbloemen"],
+          "kitchen": ["Rij whitewash shakerkasten", "Landelijke keramische spoelbak", "Ontbijtbar met houten blad", "Drie rustieke houten barkrukken", "Open planken met potten en kruiden"],
+          "office": ["Robuust bureau van sloophout", "Hoge grenen boekenkast met boeken", "Bruinleren bureaustoel op wielen", "Zwarte metalen archiefkast", "Ronde landelijke wandklok"],
+          "bathroom": ["Vrijstaand bad op leeuwenpoten", "Witte staande wastafel met kranen", "Hoekdouche met glazen wanden", "Ovaal gevlochten vloerkleed", "Beschilderd houten wandbord"]
+        },
+        "luxury": {
+          "bedroom": ["Marineblauw gecapitonneerd bed", "Mahonie ladekast met zes lades", "Twee marmerpanelen in gouden lijst", "Twee glazen bedlampjes", "Fluwelen kussens in juweeltinten"],
+          "livingRoom": ["Marineblauwe fluwelen hoekbank", "Salontafel van wit marmer", "Twee crème fluwelen kuipstoelen", "Abstract kleed in blauw en goud", "Drieluik in verguld lijstwerk"],
+          "diningRoom": ["Lange gedrapeerde eettafel", "Zes blauwfluwelen eetkamerstoelen", "Houten dressoir met marmeren blad", "Kristallen kandelaar als tafelstuk", "Gouden brokaten tafelloper"],
+          "kitchen": ["Licht eiken keuken in L-vorm", "Kookeiland met doorlopend kwartsblad", "Twee crème barkrukken", "Twee RVS inbouwovens", "Witte orchidee in glazen vaas"],
+          "office": ["Bureau van marmer en goud", "Houtgesneden boekenkast met boeken", "Groene leren gecapitonneerde stoel", "Vioolbladvijg in messing pot", "Geribbelde kristallen bureaulamp"],
+          "bathroom": ["Vrijstaand ovaal ligbad", "Hoekdouche met glazen wanden", "Donkerhouten dubbel badmeubel", "Messing vrijstaande badkraan", "Hangtoilet bij het raam"]
+        },
+        "midcentury": {
+          "bedroom": ["Notenhouten bed, grijs hoofdbord", "Lange teakhouten ladekast", "Zwartleren loungestoel", "Geometrische quilt en okergele plaid", "Ingelijste reisposters aan de wand"],
+          "livingRoom": ["Petrol gecapitonneerde driezitsbank", "Vloerkleed in goud en oranje dessin", "Twee palissander loungestoelen", "Lage notenhouten salontafel", "Raster van zes abstracte prints"],
+          "diningRoom": ["Ronde tafel met bloementafelkleed", "Vier gegoten kuipstoelen", "Lang teakhouten dressoir op poten", "Tweede cilinderlamp boven de tafel", "Amberkleurige kelken en droogbloemen"],
+          "kitchen": ["Wit kookeiland met doorlopend blad", "Wand met vlakke witte bovenkasten", "Drie oranje vinyl barkrukken", "RVS koelkast", "Varen op een witte plantenstandaard"],
+          "office": ["Notenhouten bureau met ladeblok", "Cognac leren draaistoel", "Open teakhouten wandkast", "Chromen bureaulamp met koepelkap", "Drie ingelijste abstracte prints"],
+          "bathroom": ["Notenhouten badmeubel, witte wastafel", "Hoekdouche met glazen wanden", "Hoge plant op een standaard", "Loper met dessin op de vloer", "Houten prullenbak bij het meubel"]
+        },
+        "custom": {
+          "bedroom": ["Groen fluwelen geschulpt hoofdbord", "Geometrisch kleed in groen en crème", "Notenhouten ladekast met zes lades", "Zwart nachtkastje met messing grepen", "Groene bank aan het voeteneind"],
+          "livingRoom": ["Smaragdgroene fluwelen ronde bank", "Zwart gelakt ingelegd dressoir", "Twee roze geschulpte draaistoelen", "Groen vloerkleed met waaiermotief", "Gouden zonnespiegel aan de wand"],
+          "diningRoom": ["Ronde eettafel van wit marmer", "Geribbeld notenhouten dressoir", "Zes groenfluwelen eetkamerstoelen", "Rond groen kleed met medaillon", "Boeket witte rozen in glazen vaas"],
+          "kitchen": ["Zwarte barwagen met messing blad", "Palm in een messing plantenbak", "Loper met groen bladmotief", "Drie schetsen in gouden lijst", "Koperen voorraadbussen en glaswerk"],
+          "office": ["Geribbeld bureau op messing voet", "Hoge zwarte vitrinekast", "Groen kleed met visgraatstrepen", "Groen fluwelen kuipbureaustoel", "Messing lamp met groene glazen kap"],
+          "bathroom": ["Vrijstaand ovaal ligbad", "Geribbeld notenhouten badmeubel", "Marmeren verhoging onder het bad", "Palm in messing plantenbak op voet", "Badmat met groen organisch dessin"]
+        }
+      }
+    },
     "title": {
       "upload": "Upload.",
       "stage": "Style.",
@@ -44,8 +118,7 @@
     "freeGensUpgrade": "Probeer Stagify+ vandaag nog. <a class=\"hero-free-gens-upgrade\" href=\"stagify-plus.html\">Upgraden</a>",
     "stats": {
       "roomsStaged": "Gestylede kamers",
-      "usersServed": "Geholpen gebruikers",
-      "andCounting": "en het worden er meer..."
+      "usersServed": "Geholpen gebruikers"
     },
     "sentence": {
       "before": "Ontwerp ",
@@ -63,8 +136,7 @@
     "roomMenuLabel": "Type kamer",
     "styleMenuLabel": "Meubelstijl",
     "seeOriginal": "Origineel bekijken",
-    "seeStaged": "Ingericht bekijken",
-    "stageNote": "Elke look hier is een echte render van dezelfde lege kamer.",
+    "seeStaged": "Styling bekijken",
     "stageAlt": "{room} in stijl {style}, virtueel ingericht",
     "originalAlt": "Dezelfde kamer voor het inrichten, leeg",
     "defaultAlt": "Een slaapkamer, virtueel ingericht in moderne stijl"
@@ -356,7 +428,12 @@
     },
     "instagram": {
       "title": "Zie het in actie op Instagram",
-      "follow": "Volg @stagify.ai"
+      "follow": "Volg @stagify.ai",
+      "posts": {
+        "emptyToStaged": "Instagram-bericht: een lege woonkamer naast dezelfde kamer ingericht met een bank, vloerkleed en schilderijen (opent in een nieuw tabblad)",
+        "floorPlan": "Instagram-bericht: een ingerichte plattegrond boven de fotorealistische slaapkamer die eruit is gegenereerd (opent in een nieuw tabblad)",
+        "fiveStyles": "Instagram-bericht: dezelfde lege woonkamer ingericht in vijf verschillende stijlen (opent in een nieuw tabblad)"
+      }
     },
     "finalCta": {
       "title": "Probeer het op je eigen advertentie",

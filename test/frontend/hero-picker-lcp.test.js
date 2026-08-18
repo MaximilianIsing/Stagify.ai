@@ -9,7 +9,7 @@
 // The cost of that is a three-way agreement nothing else would notice breaking:
 //
 //   1. <link rel="preload" as="image"> in <head>   — matching is by URL
-//   2. the static <img> in .hp-stage               — the LCP element itself
+//   2. the static <img> in .hp-canvas              — the LCP element itself
 //   3. DEFAULT_ROOM / DEFAULT_STYLE in hero-picker.js — what the script thinks is showing
 //
 // Break 1-vs-2 and the preload is dead weight AND the image it was meant to accelerate
@@ -32,26 +32,41 @@ const indexHtml = fs.readFileSync(path.join(root, 'public', 'index.html'), 'utf8
 const pickerJs = fs.readFileSync(path.join(root, 'public', 'scripts', 'hero-picker.js'), 'utf8');
 const EXAMPLE_DIR = path.join(root, 'public', 'media-webp', 'example');
 
+/* The srcset ladder, read out of hero-picker.js rather than written down a third time.
+   WIDTHS there is itself a mirror of CANDIDATES in the generator, so pinning against it
+   catches the thing that actually happens: someone edits one of the two and not the other. */
+const CANDIDATE_SUFFIXES = (() => {
+  const block = pickerJs.slice(pickerJs.indexOf('const WIDTHS = ['));
+  const found = [...block.slice(0, block.indexOf('];')).matchAll(/suffix: '([^']*)'/g)].map((m) => m[1]);
+  assert.ok(found.length >= 2, 'hero-picker.js no longer declares a WIDTHS ladder');
+  return found;
+})();
+
 /** Pull one attribute out of a tag string. */
 function attr(tag, name) {
   const m = tag.match(new RegExp(`${name}="([^"]*)"`));
   return m ? m[1] : null;
 }
 
-/** The static <img> inside .hp-stage in index.html. */
+/** The static <img> inside .hp-canvas in index.html. */
 function stageImg() {
-  const stage = indexHtml.match(/<div class="hp-stage"[^>]*>([\s\S]*?)<\/div>/);
-  assert.ok(
-    stage,
-    'could not find `.hp-stage` in public/index.html. If the hero markup was restructured, ' +
+  const start = indexHtml.indexOf('<div class="hp-canvas"');
+  assert.notEqual(
+    start,
+    -1,
+    'could not find `.hp-canvas` in public/index.html. If the hero markup was restructured, ' +
       'update this test rather than deleting it: the three-way agreement it guards still exists.'
   );
-  const img = stage[1].match(/<img\b[^>]*>/);
+  // Scanned forward from the canvas rather than matched inside a balanced block: `.hp-canvas`
+  // now contains the whole hero (top rail, scrim bar, headline), so a non-greedy `</div>`
+  // stops at the first nested close and a greedy one runs past the section.
+  const img = indexHtml.slice(start).match(/<img\b[^>]*data-hp-img[^>]*>/);
   assert.ok(
     img,
-    'public/index.html no longer ships a static <img> in `.hp-stage`. That <img> is the LCP ' +
-      'element; without it the paint goes back to waiting on hero-picker.js, the five ' +
-      'render-blocking stylesheets and the whole module graph. See the comment above the markup.'
+    'public/index.html no longer ships a static <img data-hp-img> in `.hp-canvas`. That <img> ' +
+      'is the LCP element; without it the paint goes back to waiting on hero-picker.js, the ' +
+      'five render-blocking stylesheets and the whole module graph. See the comment above the ' +
+      'markup.'
   );
   return img[0];
 }
@@ -117,9 +132,9 @@ test('the static hero photo keeps the attributes that make it the LCP element', 
   );
   assert.ok(
     !/\swidth="/.test(img) && !/\sheight="/.test(img),
-    'the static hero photo has width/height attributes. `.hp-stage` sets the box via ' +
-      'aspect-ratio and the image fills it with object-fit:cover; intrinsic attributes ' +
-      'override that and letterbox the photo.'
+    'the static hero photo has width/height attributes. `.hp-canvas` sets the box height and ' +
+      'the image fills it with object-fit:cover; intrinsic attributes override that and ' +
+      'letterbox the photo inside the canvas.'
   );
 });
 
@@ -145,19 +160,78 @@ test('every room/style combination the picker offers has a render on disk', () =
 
   for (const style of styles) {
     for (const room of rooms) {
-      const file = `${style}-${room}.webp`;
-      if (!fs.existsSync(path.join(EXAMPLE_DIR, file))) missing.push(file);
+      // EVERY candidate in the ladder, because the srcset names all of them and a hole in
+      // it is the sneakiest failure here: the others still exist, so the hero looks right on
+      // whatever machine you happen to be testing on, and 404s only at the device pixel
+      // ratio that resolves to the missing one. `--rebuild` re-cuts the whole ladder from
+      // the PNG masters without calling any API.
+      for (const suffix of CANDIDATE_SUFFIXES) {
+        const file = `${style}-${room}${suffix}.webp`;
+        if (!fs.existsSync(path.join(EXAMPLE_DIR, file))) missing.push(file);
+      }
     }
   }
 
   assert.deepEqual(
     missing,
     [],
-    `${missing.length} of ${rooms.length * styles.length} hero combinations have no image in ` +
+    `${missing.length} of ${rooms.length * styles.length * CANDIDATE_SUFFIXES.length} hero image files are absent from ` +
       'public/media-webp/example/. hero-picker.js builds the path arithmetically from the ' +
       'slugs, so each of these is a hero that silently shows nothing when picked. Generate ' +
       'them with:\n' +
       '  node to-build/media-png/example/tools/generate-combos.mjs\n' +
       'and read that folder\'s README first — two room types cannot work from this source photo.'
+  );
+});
+
+test('the hero photo, its preload and hero-picker.js agree on the srcset candidates', () => {
+  // Three copies of one `sizes` string, and they cannot be collapsed into one: the preload
+  // scanner reads <head> before any script runs, so the markup cannot be handed a value from
+  // hero-picker.js, and the picker has to know the same string to set it on the elements it
+  // creates at swap time. Duplication that cannot be removed is duplication that has to be
+  // pinned — a preload whose imagesizes disagrees with the <img> resolves to a DIFFERENT
+  // candidate, which turns the preload from an accelerator into a second download.
+  const img = stageImg();
+  const preload = indexHtml.match(/<link [^>]*rel="preload"[^>]*as="image"[^>]*>/);
+  assert.ok(preload, 'public/index.html lost its <link rel="preload" as="image"> for the LCP image');
+
+  const imgSrcset = attr(img, 'srcset');
+  const imgSizes = attr(img, 'sizes');
+  assert.ok(imgSrcset, 'the static hero photo lost its srcset — every viewport now pays for the 1248w file.');
+  assert.ok(imgSizes, 'the static hero photo lost its sizes — without it the browser assumes 100vw and over-picks.');
+
+  assert.equal(
+    attr(preload[0], 'imagesrcset'),
+    imgSrcset,
+    'the preload and the <img> disagree on srcset. The scanner would fetch one candidate and ' +
+      'the layout would then ask for the other.'
+  );
+  assert.equal(
+    attr(preload[0], 'imagesizes'),
+    imgSizes,
+    'the preload and the <img> disagree on sizes, which selects the candidate — so they can ' +
+      'name identical srcsets and still resolve to different files.'
+  );
+
+  const inPicker = pickerJs.match(/const SIZES = '([^']+)'/);
+  assert.ok(inPicker, 'hero-picker.js no longer declares SIZES');
+  assert.equal(
+    inPicker[1],
+    imgSizes,
+    'hero-picker.js SIZES has drifted from the sizes in public/index.html. The first paint ' +
+      'would pick one candidate and every swap after it a different one, on the same canvas.'
+  );
+
+  // The default pair has to be the one named in the srcset, or the preload warms a file the
+  // page does not use — the same failure the href/src check above catches, one level down.
+  const expected = `media-webp/example/${constant('DEFAULT_STYLE')}-${constant('DEFAULT_ROOM')}`;
+  const widths = [...pickerJs.slice(pickerJs.indexOf('const WIDTHS = [')).matchAll(/suffix: '([^']*)', w: (\d+)/g)];
+  assert.equal(
+    imgSrcset,
+    widths.map(([, suffix, w]) => `${expected}${suffix}.webp ${w}w`).join(', '),
+    'the srcset in index.html does not match the WIDTHS ladder in hero-picker.js for the ' +
+      'default pair. The markup is what the preload scanner reads and WIDTHS is what every ' +
+      'swap after it uses, so a mismatch means the first paint and every paint after it ' +
+      'pull from different files.'
   );
 });

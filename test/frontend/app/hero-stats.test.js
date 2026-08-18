@@ -70,11 +70,16 @@ function mount({
     if (id === 'hero-stats') return wrap;
     return null;
   };
+  // These three strings are copied from hero-stats.js and that is a real weakness: a stub
+  // matches on the literal selector, so renaming the class in the module and the markup but
+  // NOT here leaves this test green while the live hero shows two blanks. It happened. The
+  // browser-level assertion in e2e/index.spec.js is what actually catches it; this stub only
+  // exercises the branching around the fetch.
   dom.doc.querySelector = (sel) => {
     if (!hasPills) return null;
-    if (sel === '.stat-pill-number[data-stat]') return roomsEl;
-    if (sel === '.stat-pill-number[data-stat="roomsStaged"]') return roomsEl;
-    if (sel === '.stat-pill-number[data-stat="usersServed"]') return usersEl;
+    if (sel === '.hp-stat__num[data-stat]') return roomsEl;
+    if (sel === '.hp-stat__num[data-stat="roomsStaged"]') return roomsEl;
+    if (sel === '.hp-stat__num[data-stat="usersServed"]') return usersEl;
     return null;
   };
 

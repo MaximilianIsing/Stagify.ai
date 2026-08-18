@@ -844,9 +844,163 @@ body.page-admin main { flex: 0 0 auto; overflow: visible; width: 100% }
   .adm-topbar { top: 57px }
 }
 
+/* ── Signals tab ─────────────────────────────────────────────────────────────
+   Findings: a claim, the numbers behind it, and a next step.
+
+   Every colour here composes the status triples already declared on .page-admin
+   (--adm-pos / -warn / -neg and their -wash / -line partners). No new colour is
+   introduced, which is enforced — test/frontend/css-tokens.test.js fails the
+   build if a value in this file duplicates a shared one.
+
+   The five severities map onto three colours on purpose. critical and warning
+   are the two urgency levels of the same "something is wrong" red/amber;
+   opportunity and healthy share the positive green, separated by weight rather
+   than hue; and `quality` (the caveats) is deliberately GREY. Giving the
+   measurement caveats a colour of their own would make them compete with the
+   findings they exist to qualify. */
+
+.adm-signals { display: flex; flex-direction: column; gap: 1.9rem }
+
+/* Cards are wider than the chart grid's: a finding is two or three sentences of
+   prose plus an evidence row, and prose at 340px wraps into a column. */
+.adm-sig-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 1rem }
+.adm-sig-grid .adm-card { margin-bottom: 0 }
+
+/* The severity is carried by a left edge rather than a filled background: a wall
+   of tinted cards is unreadable, and the edge still groups them at a glance. */
+.adm-sig-card {
+  display: flex; flex-direction: column; gap: .7rem;
+  border-left: 3px solid var(--adm-line-strong);
+}
+.adm-sig-card--critical { border-left-color: var(--adm-neg) }
+.adm-sig-card--warning { border-left-color: var(--adm-warn) }
+.adm-sig-card--opportunity { border-left-color: var(--adm-accent) }
+.adm-sig-card--healthy { border-left-color: var(--adm-pos) }
+.adm-sig-card--quality { border-left-color: var(--adm-line-strong) }
+
+.adm-sig-head { display: flex; align-items: center; gap: .55rem; flex-wrap: wrap }
+
+.adm-sig-pill {
+  padding: .15rem .5rem; border-radius: var(--adm-r-xs);
+  font-size: .625rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  border: 1px solid transparent;
+}
+.adm-sig-pill--critical { color: var(--adm-neg); background: var(--adm-neg-wash); border-color: var(--adm-neg-line) }
+.adm-sig-pill--warning { color: var(--adm-warn); background: var(--adm-warn-wash); border-color: var(--adm-warn-line) }
+.adm-sig-pill--opportunity { color: var(--adm-accent-deep); background: var(--adm-accent-wash); border-color: var(--adm-accent-tint) }
+.adm-sig-pill--healthy { color: var(--adm-pos); background: var(--adm-pos-wash); border-color: var(--adm-pos-line) }
+.adm-sig-pill--quality { color: var(--adm-muted); background: var(--adm-sunken); border-color: var(--adm-line) }
+
+.adm-sig-area { font-size: .6875rem; font-weight: 650; letter-spacing: .08em; text-transform: uppercase; color: var(--adm-muted) }
+/* Pushed to the far end and de-emphasised: it qualifies the claim, it is not
+   part of it. */
+.adm-sig-confidence { margin-left: auto; font-size: .6875rem; color: var(--adm-faint) }
+
+.adm-sig-title { margin: 0; font-size: .9375rem; font-weight: 640; line-height: 1.4; color: var(--adm-ink) }
+.adm-sig-detail { margin: 0; font-size: .8125rem; line-height: 1.6; color: var(--adm-ink-2) }
+
+/* Evidence is a definition list in spirit: label above value, so a long label
+   never squeezes the number it belongs to onto a second line. */
+.adm-sig-evidence {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: .55rem .9rem;
+  padding: .7rem .8rem; border-radius: var(--adm-r-sm);
+  background: var(--adm-sunken); border: 1px solid var(--adm-line-soft);
+}
+.adm-sig-ev { display: flex; flex-direction: column; gap: .1rem; min-width: 0 }
+.adm-sig-ev-label { font-size: .6875rem; color: var(--adm-muted) }
+.adm-sig-ev-value { font-size: .8125rem; font-weight: 620; color: var(--adm-ink); overflow-wrap: anywhere }
+
+.adm-sig-chart { margin-top: .1rem }
+
+/* Named accounts. The only place on this tab that renders an email, and the one
+   part of a finding that never leaves the browser — see signals.js. */
+.adm-sig-accounts { display: flex; flex-direction: column; gap: .3rem }
+.adm-sig-account {
+  display: flex; align-items: baseline; justify-content: space-between; gap: .8rem;
+  padding: .35rem .6rem; border-radius: var(--adm-r-xs);
+  background: var(--adm-sunken); border: 1px solid var(--adm-line-soft);
+}
+/* An address is long and must not push its note off the row. */
+.adm-sig-account-email { font-size: .78125rem; color: var(--adm-ink); overflow-wrap: anywhere; min-width: 0 }
+.adm-sig-account-note { flex: none; font-size: .6875rem; color: var(--adm-muted) }
+
+/* `margin-top: auto` pins the next step to the bottom of a stretched card, so a
+   row of cards shares one baseline — the same trick .adm-chart-notes uses. */
+.adm-sig-action {
+  margin-top: auto; padding-top: .7rem; border-top: 1px solid var(--adm-line-soft);
+}
+.adm-sig-action-label {
+  display: block; margin-bottom: .2rem;
+  font-size: .625rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--adm-accent-deep);
+}
+.adm-sig-action-text { margin: 0; font-size: .8125rem; line-height: 1.55; color: var(--adm-ink-2) }
+
+/* ── Tally bar ───────────────────────────────────────────────────────────── */
+
+.adm-sig-summary { display: flex; flex-wrap: wrap; gap: .5rem }
+.adm-sig-tally {
+  display: flex; align-items: baseline; gap: .4rem;
+  padding: .4rem .7rem; border-radius: var(--adm-r-sm);
+  background: var(--adm-surface); border: 1px solid var(--adm-line);
+}
+.adm-sig-tally-n { font-size: 1rem; font-weight: 680; color: var(--adm-ink) }
+.adm-sig-tally-label { font-size: .75rem; color: var(--adm-muted) }
+.adm-sig-tally--critical { border-color: var(--adm-neg-line); background: var(--adm-neg-wash) }
+.adm-sig-tally--critical .adm-sig-tally-n { color: var(--adm-neg) }
+.adm-sig-tally--warning { border-color: var(--adm-warn-line); background: var(--adm-warn-wash) }
+.adm-sig-tally--warning .adm-sig-tally-n { color: var(--adm-warn) }
+.adm-sig-tally--healthy { border-color: var(--adm-pos-line); background: var(--adm-pos-wash) }
+.adm-sig-tally--healthy .adm-sig-tally-n { color: var(--adm-pos) }
+
+/* ── The brief ───────────────────────────────────────────────────────────── */
+
+.adm-sig-brief {
+  padding: 1rem 1.1rem; border-radius: var(--adm-r-lg);
+  background: var(--adm-surface); border: 1px solid var(--adm-line); box-shadow: var(--adm-shadow);
+}
+.adm-sig-brief-head { display: flex; align-items: center; gap: .8rem; margin-bottom: .6rem }
+.adm-sig-brief-title {
+  margin: 0; font-size: .6875rem; font-weight: 650; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--adm-muted);
+}
+.adm-sig-brief-head .adm-sig-btn { margin-left: auto }
+/* Measured rather than full-bleed: this is the one block of running prose on the
+   page and it is unreadable at 1400px. */
+.adm-sig-brief-text { margin: 0; max-width: 68ch; font-size: .875rem; line-height: 1.65; color: var(--adm-ink) }
+.adm-sig-brief-note { margin: .5rem 0 0; max-width: 68ch; font-size: .75rem; line-height: 1.55; color: var(--adm-faint) }
+
+.adm-sig-btn {
+  padding: .4rem .8rem; font-size: .75rem; font-weight: 600; font-family: inherit;
+  color: var(--adm-ink); background: var(--adm-surface); border: 1px solid var(--adm-line-strong);
+  border-radius: var(--adm-r-sm); cursor: pointer; transition: background .16s, border-color .16s;
+}
+.adm-sig-btn:hover:not(:disabled) { background: var(--adm-sunken); border-color: var(--adm-ink-2) }
+.adm-sig-btn:disabled { opacity: .55; cursor: wait }
+.adm-sig-btn:focus-visible { outline: none; box-shadow: var(--adm-focus) }
+
+.adm-sig-empty { margin: 1.5rem 0; font-size: .8125rem; color: var(--adm-muted) }
+
+/* ── Overview teaser ─────────────────────────────────────────────────────── */
+
+/* :empty is what hides this. The island writes nothing when nothing is
+   actionable, so an all-clear Overview looks exactly as it did before the tab
+   existed — no empty panel, no "0 issues" badge to scroll past. */
+.adm-sig-teaser:empty { display: none }
+.adm-sig-teaser {
+  margin-bottom: 1.1rem; padding: .9rem 1rem; border-radius: var(--adm-r-lg);
+  background: var(--adm-surface); border: 1px solid var(--adm-line); box-shadow: var(--adm-shadow);
+}
+.adm-sig-teaser-head { display: flex; align-items: center; gap: .8rem; margin-bottom: .6rem }
+.adm-sig-teaser-title { font-size: .875rem; font-weight: 640; color: var(--adm-ink) }
+.adm-sig-teaser-head .adm-sig-btn { margin-left: auto }
+.adm-sig-teaser-list { display: flex; flex-direction: column; gap: .35rem }
+.adm-sig-teaser-row { display: flex; align-items: baseline; gap: .55rem }
+.adm-sig-teaser-text { font-size: .8125rem; line-height: 1.5; color: var(--adm-ink-2) }
+
 @media (max-width: 720px) {
   .adm-stats { grid-template-columns: 1fr 1fr }
-  .adm-chart-grid { grid-template-columns: 1fr }
+  .adm-chart-grid, .adm-sig-grid { grid-template-columns: 1fr }
   .adm-dl-grid, .adm-host-grid, .adm-email-gallery { grid-template-columns: 1fr }
   .adm-card { padding: 1rem }
   .adm-table-wrap { margin: 0 -1rem -1rem }
