@@ -14,6 +14,25 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..', '..');
 const BOOT_TIMEOUT_MS = 20_000;
 
+// Inert placeholder secrets for every spawned server.
+//
+// These specs are about ROUTING and GUARDS, not about a misconfigured deployment.
+// With no key configured, the admin-key guard answers 500 "Server configuration
+// error" and the Stripe routes answer 503 "not configured" — so a probe proves only
+// that CI has no secrets, never that the route and its guard are still there. CI has
+// no .env, which is why this passed locally and failed there.
+//
+// The values are fake and never reach a network: an unauthenticated, bodyless probe
+// is refused at the guard long before any Stripe or AI call. Real config (a local
+// .env, a secrets file, an exported var) still wins — these only fill the gaps — and
+// a spec that wants the UNCONFIGURED behaviour overrides one back to '' via extraEnv.
+const PLACEHOLDER_SECRETS = {
+  endpoint_key: 'test-endpoint-access-key',
+  STRIPE_SECRET_KEY: 'sk_test_placeholder',
+  STRIPE_WEBHOOK_SECRET: 'whsec_placeholder',
+  ENTERPRISE_PRICE_ID: 'price_placeholder',
+};
+
 // Ask the OS for a free port so tests never collide with a real dev server.
 function getFreePort() {
   return new Promise((resolve, reject) => {
@@ -32,7 +51,7 @@ export async function startServer(extraEnv = {}) {
   const port = await getFreePort();
   const child = spawn(process.execPath, ['server.js'], {
     cwd: ROOT,
-    env: { ...process.env, PORT: String(port), NODE_ENV: 'test', ...extraEnv },
+    env: { ...PLACEHOLDER_SECRETS, ...process.env, PORT: String(port), NODE_ENV: 'test', ...extraEnv },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
 
