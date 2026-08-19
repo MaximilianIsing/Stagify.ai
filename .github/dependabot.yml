@@ -8,9 +8,19 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
+    ignore:
+      # TypeScript majors only. TS 7 swapped in the native (Go) checker, whose
+      # inference differs enough to fail `npm run typecheck` with dozens of errors
+      # across lib/chat, lib/data and lib/services (`Type 'string' is not
+      # assignable to type 'null'`, `Property 'plan' does not exist on type
+      # 'never'`). typecheck is wired into `npm test`, so that is a red deploy
+      # gate, not a dependency bump — revisit it as a deliberate migration.
+      # 5.x patches and minors still come through.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
 
-  # ci.yml pins actions/checkout@v4 and actions/setup-node@v4 — without this,
-  # those versions go stale silently since nothing else bumps them.
+  # ci.yml pins actions/checkout and actions/setup-node — without this, those
+  # versions go stale silently since nothing else bumps them.
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
