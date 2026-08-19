@@ -655,6 +655,29 @@ shape means one element's rules are grouped by value rather than by element. A t
 report the cascade working as designed. The cost is readability, not correctness, and
 un-merging a 3,200-line sheet with no visual-regression coverage is not worth it.
 
+**Comments are stripped from `.html` and `.css` at serve time — write them freely.**
+[`lib/http/text-assets.js`](../../lib/http/text-assets.js) sits in front of `express.static`
+and serves those two extensions with their comments removed;
+[`lib/i18n/page-renderer.js`](../../lib/i18n/page-renderer.js) does the same to the ten SSR
+locale pages, *after* rendering so `renderLocalizedPage`'s regexes still see the document
+they were written against. The files on disk are untouched, and `DEBUG_MODE` bypasses the
+whole thing so served markup matches the source while you are debugging.
+
+This exists because the prose in `styles.css`, `home.css` and `index.html` is 60–72% of
+their weight, and those five render-blocking sheets are the only thing between the homepage
+and its first paint: **−106 KB on the wire and −287 KB of parse**, measured. So the
+documentation this codebase is built on costs visitors nothing, and there is no reason to
+write a terse comment to "keep the file small". Two consequences worth knowing:
+
+- **Do not minify or comment-strip the source files.** Several drift tests strip comments
+  themselves before scanning precisely so the prose can stay (see
+  [`source-scan-guards`](#) style guards throughout `test/frontend/`).
+- **The strippers are character scanners, not regexes,** because `/*` inside a
+  `content: "…"` or a quoted `url(data:…)` is a string, and `<!--` inside a `<script>` or
+  `<style>` body is data. `test/http/text-assets.test.js` runs them over every real sheet
+  and page in `public/` and asserts brace balance, unchanged raw-text bodies, idempotence,
+  and that string-aware stripping never deletes *more* than the naive regex would.
+
 **Non-render-blocking (lazy) CSS.** Pages split their stylesheets by criticality. On
 `index.html`, `styles.css` / `toast.css` / `hero-picker.css` / `home.css` / `index.css`
 load normally (render-blocking); the below-the-fold ones (`auth.css`, `star-border.css`,

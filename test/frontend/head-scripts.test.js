@@ -128,3 +128,45 @@ test('the allowlisted blocking scripts still exist and are still in a head', () 
     assert.ok(used, `BLOCKING_ALLOWED names ${base}, which no <head> loads any more — drop the entry`);
   }
 });
+
+test('the homepage preloads the one script it still lets block the parser', () => {
+  // BLOCKING IS ONLY HALF THE COST. session-class.js earns its place on the allowlist —
+  // it reads the stored token and sets html.has-session so the nav's Gallery tab does not
+  // pop in a round trip late — but "blocks the parser" means nothing below it is parsed
+  // and therefore NOTHING PAINTS until it has arrived. At 2 KB that should be free.
+  //
+  // It was not. The preload scanner discovers it at the same instant as ~60 module
+  // scripts, five stylesheets, two fonts and the LCP image, and at default priority it
+  // queued behind all of them: measured arriving at 508 ms on a page whose CSS was
+  // complete at 333 ms and whose hero photo had decoded at 394 ms. First paint sat at
+  // 636 ms waiting for it. Adding the preload took the homepage's LCP from a 640 ms median
+  // to 520 ms, with every after-run below every before-run.
+  //
+  // The trap this guards is that the two lines look unrelated and live 90 lines apart, so
+  // the preload reads as redundant with the tag and is the obvious thing to "tidy up".
+  const html = fs.readFileSync(path.join(publicDir, 'index.html'), 'utf8');
+  const head = headOf(html);
+
+  assert.match(
+    head,
+    /<script src="scripts\/session-class\.js"><\/script>/,
+    'session-class.js is no longer a blocking script in the homepage <head>. If it was ' +
+      'deferred or dropped, delete the preload below it too — a preload for something ' +
+      'nothing loads is pure waste.',
+  );
+  assert.match(
+    head,
+    /<link rel="preload" as="script" href="scripts\/session-class\.js">/,
+    'the homepage lost its `<link rel="preload" as="script">` for session-class.js. That ' +
+      'script blocks the parser, so first paint cannot happen before it arrives, and ' +
+      'without the preload it loses the queue to ~60 modules and costs ~120 ms of LCP.',
+  );
+
+  const preloadAt = head.indexOf('<link rel="preload" as="script" href="scripts/session-class.js">');
+  const firstSheet = head.indexOf('<link rel="stylesheet"');
+  assert.ok(
+    preloadAt !== -1 && firstSheet !== -1 && preloadAt < firstSheet,
+    'the session-class.js preload must sit ABOVE the render-blocking stylesheets, or it ' +
+      'is discovered no earlier than the tag it exists to hurry along.',
+  );
+});

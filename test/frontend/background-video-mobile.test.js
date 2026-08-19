@@ -118,6 +118,95 @@ test('every background video keeps its 769px source gate', () => {
   }
 });
 
+test('the homepage video is not autoplayed, and something still starts it', () => {
+  // THE DESKTOP HALF of the saving the media gate above gives phones. `preload` is a hint
+  // that `autoplay` overrides — an autoplaying, muted, in-viewport <video> is played, and
+  // playing it means streaming it — so `preload="metadata"` never stopped desktop from
+  // pulling all 1,281,846 B of background.mp4 inside the LCP window. That is ~1.0s of
+  // PageSpeed's 10 Mbps desktop budget spent on a z-index:-1, opacity:.8 backdrop while
+  // the hero photo is trying to arrive.
+  //
+  // All three assertions are one fact. Re-add `autoplay` and the bytes come back; leave it
+  // off without the starter and the backdrop never moves at all. The poster keeps painting
+  // throughout, which is what makes the whole trade invisible to a visitor.
+  const html = fs.readFileSync(path.join(PUBLIC, 'index.html'), 'utf8');
+  const tag = html.slice(html.indexOf('<video id="background-video"'));
+  const video = tag.slice(0, tag.indexOf('>') + 1);
+
+  assert.ok(
+    !/\bautoplay\b/.test(video),
+    'index.html\'s #background-video has `autoplay` again. That overrides `preload`, so '
+      + 'the browser streams all 1.25 MB of background.mp4 during the LCP window on every '
+      + 'desktop visit — the exact cost the phone gate above removes for mobile.',
+  );
+  assert.match(
+    video,
+    /preload="none"/,
+    'index.html\'s #background-video lost `preload="none"`. With autoplay gone this is '
+      + 'what actually keeps the fetch from starting; any other value re-arms it.',
+  );
+
+  const deferred = fs.readFileSync(path.join(PUBLIC, 'scripts', 'index-deferred.js'), 'utf8');
+  assert.match(
+    deferred,
+    /scripts\/bg-video-start\.js/,
+    'nothing starts the homepage background video any more. It ships without `autoplay` '
+      + 'on purpose, so scripts/bg-video-start.js must stay in index-deferred.js\'s list '
+      + 'or the backdrop is a still poster forever.',
+  );
+});
+
+test('the flat-colour fallback cannot fire before a play has been attempted', () => {
+  // app/background-video.js reads "still paused" as "autoplay was blocked" and responds by
+  // hiding the video and painting the body flat #b2c4f6. Both of its preconditions changed
+  // when the homepage stopped autoplaying, and each failure is silent:
+  //
+  //   - It used to ask `networkState !== 3` (NETWORK_NO_SOURCE) to mean "a source was
+  //     selected". True only under autoplay. With `preload="none"` a desktop browser HAS
+  //     selected a source but requested no bytes, so networkState is not 3, the old check
+  //     passed, and the fallback armed on a perfectly healthy backdrop.
+  //   - And "paused" is now the INTENDED state until bg-video-start.js runs, so the retry
+  //     loop must wait for its data-bg-started marker rather than counting attempts.
+  //
+  // Comment-stripped: this file's own prose names networkState and the fallback, so a raw
+  // scan would pass with every guard deleted.
+  const src = fs
+    .readFileSync(path.join(PUBLIC, 'scripts', 'app', 'background-video.js'), 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/(^|[^:])\/\/.*$/gm, '$1');
+
+  assert.match(
+    src,
+    /hasSource\s*=\s*\(\)\s*=>\s*!!video\.currentSrc/,
+    'background-video.js is not testing `currentSrc` for source selection. `networkState` '
+      + 'only answered that question while the element autoplayed; under `preload="none"` '
+      + 'it reports a not-yet-loading video as having a source, which arms fallBackToSolid '
+      + 'and replaces the desktop backdrop with a flat blue page.',
+  );
+  assert.match(
+    src,
+    /startAttempted\s*=\s*\(\)\s*=>\s*video\.autoplay\s*\|\|\s*video\.hasAttribute\('data-bg-started'\)/,
+    'background-video.js lost the startAttempted() gate. Without it, "video is paused" one '
+      + 'second after DOMContentLoaded is read as blocked autoplay on the homepage, where '
+      + 'being paused is deliberate until bg-video-start.js runs.',
+  );
+  assert.match(
+    src,
+    /if\s*\(!hasSource\(\)\s*\|\|\s*!startAttempted\(\)\)\s*return;[\s\S]{0,200}?video\.style\.display\s*=\s*'none'/,
+    'fallBackToSolid() no longer checks both hasSource() and startAttempted() before '
+      + 'hiding the video and repainting the body.',
+  );
+
+  // The marker has to exist on the other side of the contract too.
+  const starter = fs.readFileSync(path.join(PUBLIC, 'scripts', 'bg-video-start.js'), 'utf8');
+  assert.match(
+    starter,
+    /setAttribute\('data-bg-started'/,
+    'bg-video-start.js no longer sets data-bg-started, so background-video.js\'s '
+      + 'startAttempted() gate never opens and the video is never retried or recovered.',
+  );
+});
+
 test('#background-video is not rendered on phones', () => {
   const blocks = blocksFor(mobileBlock(), '#background-video');
   assert.equal(blocks.length, 1, 'expected exactly one phone `#background-video` rule');

@@ -132,6 +132,7 @@ export class FakeEl {
   removeAttribute(name) { delete this.attrs[name]; if (name === 'src') this.src = undefined; }
   setAttribute(name, value) { this.attrs[name] = String(value); }
   getAttribute(name) { return Object.prototype.hasOwnProperty.call(this.attrs, name) ? this.attrs[name] : null; }
+  hasAttribute(name) { return Object.prototype.hasOwnProperty.call(this.attrs, name); }
 
   addEventListener(type, fn) {
     if (!this.listeners.has(type)) this.listeners.set(type, []);

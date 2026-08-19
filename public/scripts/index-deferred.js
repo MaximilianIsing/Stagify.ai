@@ -37,6 +37,20 @@
  * @type {Array<{ src: string, module: boolean }>}
  */
 export const DEFERRED = [
+  // Starts the decorative background video, which index.html deliberately ships with
+  // `preload="none"` and no `autoplay` so its 1.25 MB stays out of the LCP window. First
+  // in the list because it is the only entry a visitor can SEE arrive — everything below
+  // is below-fold behaviour. Zero imports.
+  { src: 'scripts/bg-video-start.js', module: true },
+  // The main staging island: 38 modules, ~267 KB of source, ~89 KB brotli — by a wide
+  // margin the largest thing the homepage used to download before it could paint, and
+  // nothing in it is reachable until somebody starts staging. scripts/hero-cta-boot.js
+  // stays in <head> and covers the gap: a click on #hero-upload before this arrives
+  // dynamic-imports it (same module instance — the module map dedupes with the tag
+  // injected here) and then opens the picker.
+  // Second in the list, ahead of the below-fold decoration, because it is the only entry
+  // a visitor can be actively waiting on.
+  { src: 'scripts/app.js', module: true },
   // Guides walkthrough player — data, renderer, then the mount. Keep in this order.
   { src: 'scripts/demo-data.js', module: false },
   { src: 'scripts/demo-player.js', module: false },

@@ -92,6 +92,13 @@
     <link rel="preload" as="image" href="media-webp/example/modern-bedroom.webp" imagesrcset="media-webp/example/modern-bedroom-900.webp 900w, media-webp/example/modern-bedroom.webp 1248w, media-webp/example/modern-bedroom-1872.webp 1872w, media-webp/example/modern-bedroom-2496.webp 2496w" imagesizes="(min-width: 1180px) 1110px, 94vw" fetchpriority="high">
 
 
+    <!-- The one script that blocks the parser, fetched at the priority that fact deserves.
+         See the note on its <script> tag at the foot of this <head>: it is 2 KB, it gates
+         first paint, and without this it was arriving 508 ms in, behind everything else
+         the preload scanner had already queued. Sits here, below the LCP image preload and
+         above the stylesheets, so it competes with neither. -->
+    <link rel="preload" as="script" href="scripts/session-class.js">
+
     <!-- Critical CSS — render-blocking on purpose (needed for first paint) -->
     <link rel="stylesheet" href="styles/styles.css">
     <link rel="stylesheet" href="styles/toast.css">
@@ -153,7 +160,15 @@
     <script type="module" src="scripts/auth.js"></script>
     <script type="module" src="scripts/profile-menu.js"></script>
     <script type="module" src="scripts/heic-convert.js"></script>
-    <script type="module" src="scripts/app.js"></script>
+    <!-- app.js is NOT here any more; hero-cta-boot.js stands in for it. app.js is 38
+         modules and ~267 KB of source, and none of it is reachable until somebody starts
+         staging — the mask editor, the staging pipeline, the download menu, the version
+         carousel — yet all of it used to be fetched and compiled while the browser was
+         trying to paint the hero. It now loads from index-deferred.js after `load`.
+         This file is what keeps the gap honest: zero imports, and it binds #hero-upload
+         and #outro-upload so a click that lands before app.js has arrived pulls it in and
+         then opens the picker, instead of doing nothing. Do NOT defer this one too. -->
+    <script type="module" src="scripts/hero-cta-boot.js"></script>
     <script type="module" src="scripts/count-up.js"></script>
     <!-- Everything with no hero dependency now loads from index-deferred.js, after
          `load`: demo-data, demo-player, designer-demo, staging-studio, home-reveal,
@@ -166,7 +181,16 @@
     
     <!-- Sets html.has-session from the stored token BEFORE first paint, so the nav’s
          Gallery tab does not pop in a round trip late. Render-blocking on purpose, and
-         last in <head> so it never delays discovery of the CSS above it. -->
+         last in <head> so it never delays discovery of the CSS above it.
+         THE PRELOAD ABOVE IS WHY IT IS STILL AFFORDABLE THERE. Being a classic script with
+         no defer, it blocks the parser: nothing below it is parsed, and therefore nothing
+         paints, until it has arrived and run. It is 2 KB, so that ought to be free — but
+         the preload scanner discovers it at the same instant as ~60 module scripts, the
+         five stylesheets, two fonts and the LCP image, and at default priority it simply
+         queued behind them. Measured at 508 ms to arrive, holding first paint to 636 ms on
+         a page whose CSS was complete at 333 ms and whose hero photo was decoded at 394 ms.
+         Do not move this tag up to "fix" that — above the stylesheets it would delay THEM,
+         and the preload already buys the priority without moving anything. -->
     <script src="scripts/session-class.js"></script>
   </head>
   <body class="page-home">
@@ -246,7 +270,25 @@
          scripts, and this way the gate survives the SSR locale homepages
          (lib/i18n/render-page.js) for free. A browser that ignores `media` on <source>
          just behaves as it did before — it fetches the video. -->
-    <video id="background-video" autoplay muted loop playsinline webkit-playsinline preload="metadata" poster="media-webp/background-poster.webp">
+    <!-- NO `autoplay` HERE, AND THAT IS THE WHOLE POINT — this page only. `preload` is a
+         HINT that `autoplay` overrides: an autoplaying, muted, in-viewport <video> is
+         played, and playing it means streaming it, so `preload="metadata"` never once
+         stopped desktop from pulling all 1,281,846 B of background.mp4 inside the LCP
+         window. On PageSpeed’s 10 Mbps desktop link that is ~1.0s of the entire budget,
+         spent on a z-index:-1, opacity:.8 decorative layer, competing with the hero photo
+         the preload above is trying to rush.
+         Without `autoplay`, `preload="none"` is honoured and NOTHING is fetched until
+         something calls play() — which scripts/bg-video-start.js does, after `load`, from
+         index-deferred.js. The `poster` paints the backdrop from first paint either way, so
+         the only visible difference is that the motion starts a moment later.
+         The <source> media gate is UNCHANGED and must stay: it is what keeps phones off the
+         1.25 MB entirely (they select no source at all), it is what styles.css’s
+         `@media not all and (min-width:769px)` block is the exact negation of, and it is
+         pinned by test/frontend/background-video-mobile.test.js across all 11 pages.
+         The other ten pages carrying this video keep `autoplay`: bg-video-start.js is
+         injected by index-deferred.js, which is homepage-only, so dropping it there would
+         mean the video never starts at all. -->
+    <video id="background-video" muted loop playsinline webkit-playsinline preload="none" poster="media-webp/background-poster.webp">
       <source src="background.mp4" type="video/mp4" media="(min-width: 769px)">
     </video>
 
@@ -360,10 +402,23 @@
                3. hero-picker.js ADOPTS this node — it appends the other renders around it
                   and never re-creates it. Replacing it, even with an identical src, would
                   restart the LCP candidate at the later time.
+               4. `is-on` SHIPS IN THIS CLASS LIST, and it is the other half of rule 3.
+                  hero-picker.css gives .hp-canvas__img `opacity: 0` and only .is-on lifts
+                  it, because the layers this file’s script stacks have to start invisible
+                  to cross-fade. But LCP ignores an element at opacity 0 — so while the
+                  class was added by JS alone (hero-picker.js), a STATIC, preloaded,
+                  fetchpriority=high photo still could not become an LCP candidate until
+                  the whole document had parsed, all five stylesheets had arrived and the
+                  module had executed. Every word of the paragraph above was true of the
+                  DOWNLOAD and false of the PAINT. Shipping the class here is what makes
+                  it true of both; the classList.add() in hero-picker.js stays, idempotent,
+                  because it is what makes the file correct on any other adoption path.
+                  Renders created later get `hp-canvas__img` WITHOUT `is-on`, so the
+                  cross-fade contract is untouched. There is a drift test on both halves.
 
                The empty "before" shot is NOT here on purpose: it is loaded on demand when
                the visitor presses “See original”, so the first paint pays for one image. -->
-          <img class="hp-canvas__img" data-hp-img src="media-webp/example/modern-bedroom.webp" srcset="media-webp/example/modern-bedroom-900.webp 900w, media-webp/example/modern-bedroom.webp 1248w, media-webp/example/modern-bedroom-1872.webp 1872w, media-webp/example/modern-bedroom-2496.webp 2496w" sizes="(min-width: 1180px) 1110px, 94vw" alt="A bedroom virtually staged in a modern style" data-lang-attr="hero.defaultAlt|alt" fetchpriority="high">
+          <img class="hp-canvas__img is-on" data-hp-img src="media-webp/example/modern-bedroom.webp" srcset="media-webp/example/modern-bedroom-900.webp 900w, media-webp/example/modern-bedroom.webp 1248w, media-webp/example/modern-bedroom-1872.webp 1872w, media-webp/example/modern-bedroom-2496.webp 2496w" sizes="(min-width: 1180px) 1110px, 94vw" alt="A bedroom virtually staged in a modern style" data-lang-attr="hero.defaultAlt|alt" fetchpriority="high">
 
           <!-- Positioned against the canvas rather than laid out in a rail. It briefly shared
                a flex row with the stat pills, and a pill plus a button is wider than a 326px

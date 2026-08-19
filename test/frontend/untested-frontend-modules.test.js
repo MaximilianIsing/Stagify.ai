@@ -122,8 +122,16 @@ const E2E_COVERED = [
   // left here is DOM wiring and a module-load side effect, which only a browser has.
   // Driven by api-keys.spec.js.
   { module: 'api-keys-app.js', page: 'api-keys.html' },
-  { module: 'app.js', page: 'index.html' },
-  { module: 'app/stage-mask-editor.js', page: 'index.html' },
+  // app.js and app/stage-mask-editor.js WERE listed here and had to be delisted on
+  // 2026-08-19 — but NOT because anyone unit-tested them. app.js left the homepage's
+  // <head> for index-deferred.js's after-`load` list, and scripts/hero-cta-boot.js (which
+  // covers the gap that leaves at #hero-upload) reaches it with `import('./app.js')`.
+  // hero-cta-boot.js has a suite, so the reachability walk above now follows that dynamic
+  // import into app.js and its whole graph, and this ledger is asserted as exact set
+  // equality — a listed-but-reachable module fails it just as loudly as the reverse.
+  // So: their real coverage is still e2e (index.spec.js, basic-mask.spec.js, the six
+  // stage-mask-*.spec.js), exactly as the note above describes. Do not read their absence
+  // from this list as a unit suite that does not exist.
   // The Basic Mask preview page's entry point: four lines with no exports, which settle the
   // plan through the shared writer and stop. Both halves it depends on ARE unit-tested
   // (preview-access.test.js covers the writer and this page's binding of it), so what is
@@ -429,7 +437,10 @@ test('the page walk resolves a module only reachable through an entry point', ()
   // If scriptsLoadedByPage stopped following imports it would still find app.js and
   // the E2E_COVERED assertions would keep passing, so pin the transitive step here.
   const loaded = scriptsLoadedByPage('index.html');
-  assert.ok(loaded.has(`${SCRIPTS}/app.js`), 'index.html loads app.js directly');
+  // Reached through TWO dynamic hops now, not a <script src>: index.html loads
+  // hero-cta-boot.js, which `import('./app.js')`s it. That makes this a stronger check of
+  // the walk than it was when app.js had its own tag.
+  assert.ok(loaded.has(`${SCRIPTS}/app.js`), 'index.html still reaches app.js');
   assert.ok(
     loaded.has(`${SCRIPTS}/app/download-menu.js`),
     'the page walk must follow imports, not just <script src> — app.js imports this',
