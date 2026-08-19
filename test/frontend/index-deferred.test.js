@@ -54,20 +54,76 @@ test('every deferred script exists', () => {
   }
 });
 
+/**
+ * Every file a deferred entry pulls in, transitively, as public/-relative paths.
+ *
+ * THIS WALK IS THE POINT, and the test was materially weaker without it. It used to read
+ * only `public/${src}` for each entry — but an entry is a module, and a module's init is
+ * usually in its imports. app.js is the case that exposed it: app.js itself registers
+ * nothing on DOMContentLoaded, so listing it passed instantly, while
+ * app/background-video.js — one of its 30-odd imports — registered EVERYTHING on that
+ * event and would have gone silently dead the moment app.js joined the list. A test that
+ * goes green while the feature breaks is worse than no test.
+ *
+ * Static `import ... from '...'` and `export ... from '...'` only, which is all this
+ * codebase uses in these graphs (there are no dynamic `import()` calls in them). Anything
+ * non-relative is a bare specifier and cannot be a file under public/.
+ *
+ * @param {string} entry public/-relative path, e.g. 'scripts/app.js'
+ * @returns {string[]}
+ */
+function importGraph(entry) {
+  const seen = new Set();
+  const queue = [entry];
+
+  while (queue.length) {
+    const rel = queue.shift();
+    if (seen.has(rel)) continue;
+    seen.add(rel);
+
+    const abs = path.join(root, 'public', rel);
+    if (!fs.existsSync(abs)) continue;
+    const code = stripComments(fs.readFileSync(abs, 'utf8'));
+
+    for (const m of code.matchAll(/\b(?:import|export)\b[^;'"]*?from\s*['"]([^'"]+)['"]/g)) {
+      const spec = m[1];
+      if (!spec.startsWith('.')) continue;
+      queue.push(path.posix.normalize(path.posix.join(path.posix.dirname(rel), spec)));
+    }
+    // Side-effect imports: `import './x.js';`
+    for (const m of code.matchAll(/\bimport\s*['"](\.[^'"]+)['"]/g)) {
+      queue.push(path.posix.normalize(path.posix.join(path.posix.dirname(rel), m[1])));
+    }
+  }
+
+  return [...seen];
+}
+
 test('no deferred script registers its init on an event that has already fired', () => {
   const offenders = [];
 
   for (const src of deferredList()) {
-    const code = stripComments(fs.readFileSync(path.join(root, 'public', src), 'utf8'));
+    for (const file of importGraph(src)) {
+      const abs = path.join(root, 'public', file);
+      if (!fs.existsSync(abs)) continue;
+      const code = stripComments(fs.readFileSync(abs, 'utf8'));
 
-    // Does it wait on DOMContentLoaded / load at all?
-    const waits = /addEventListener\(\s*['"](?:DOMContentLoaded|load)['"]/.test(code);
-    if (!waits) continue;
+      // Does it wait on DOMContentLoaded / load at all?
+      //
+      // Anchored to `document.` / `window.`, and that is not tidiness — an unanchored
+      // match reads `stagePreview.addEventListener('load', positionCarousel)` in
+      // app/version-carousel.js as a page-lifecycle registration. That is an <img>'s own
+      // load event: it fires whenever the element's src resolves, has nothing to do with
+      // the document's lifecycle, and is perfectly correct in a deferred module. Flagging
+      // it would push the next person to "fix" working code, or to delete the assertion.
+      const waits = /\b(?:document|window)\.addEventListener\(\s*['"](?:DOMContentLoaded|load)['"]/.test(code);
+      if (!waits) continue;
 
-    // If it does, it must also branch on readyState, which is what lets it run
-    // immediately when the event is already past.
-    const guarded = /document\.readyState/.test(code);
-    if (!guarded) offenders.push(src);
+      // If it does, it must also branch on readyState, which is what lets it run
+      // immediately when the event is already past.
+      const guarded = /document\.readyState/.test(code);
+      if (!guarded) offenders.push(file === src ? file : `${file}  (imported by ${src})`);
+    }
   }
 
   assert.deepEqual(

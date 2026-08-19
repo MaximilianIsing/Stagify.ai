@@ -62,7 +62,13 @@ export default defineConfig({
     url: `${BASE_URL}/`,
     // HIDE_STAGING_BANNER keeps the staging overlay off even if the dev env/.env sets
     // IS_STAGING (the banner otherwise intercepts clicks over the studio).
-    env: { PORT, NODE_ENV: 'test', HIDE_STAGING_BANNER: '1' },
+    //
+    // DEBUG is pinned OFF for the same reason, and it is not cosmetic: lib/http/text-assets.js
+    // strips comments from .html/.css on the way out and bypasses itself entirely under
+    // DEBUG_MODE, so a developer with DEBUG=true in their .env would run every browser smoke
+    // against markup that production never serves. Render sets no DEBUG and has no debug.txt,
+    // so false is the deployed value — this makes the smokes agree with it.
+    env: { PORT, NODE_ENV: 'test', HIDE_STAGING_BANNER: '1', DEBUG: 'false' },
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
     stdout: 'pipe',

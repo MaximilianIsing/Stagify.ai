@@ -45,10 +45,35 @@ afterEach(() => {
   globalThis.setTimeout = REAL.setTimeout;
 });
 
-/** A <video> stand-in: the properties and events the island actually touches. */
-function fakeVideo({ networkState = HAS_SOURCE, paused = true, playRejects = false, duration = 30, readyState = 0 } = {}) {
+/**
+ * A <video> stand-in: the properties and events the island actually touches.
+ *
+ * TWO PROPERTIES CARRY THE WHOLE "is this a phone / has anyone asked it to play" story,
+ * and they replaced `networkState` for different reasons:
+ *
+ *  - `currentSrc` is now what hasSource() reads. networkState answered "was a source
+ *    selected?" only while the element autoplayed; the homepage now ships
+ *    `preload="none"`, where a desktop browser HAS selected a source but requested no
+ *    bytes, so networkState is not 3 and the old check wrongly reported a healthy video
+ *    as playable-and-stuck. It is derived from networkState here so the existing cases
+ *    keep reading the way they were written.
+ *  - `autoplay` gates every "playback failed" inference. It defaults TRUE because that is
+ *    what the ten non-homepage carriers still ship. The homepage is the `autoplay: false`
+ *    case, and it is covered separately below.
+ */
+function fakeVideo({
+  networkState = HAS_SOURCE,
+  currentSrc = networkState === NO_SOURCE ? '' : 'https://stagify.ai/background.mp4',
+  autoplay = true,
+  paused = true,
+  playRejects = false,
+  duration = 30,
+  readyState = 0,
+} = {}) {
   const el = new FakeEl('video');
   el.networkState = networkState;
+  el.currentSrc = currentSrc;
+  el.autoplay = autoplay;
   el.paused = paused;
   el.duration = duration;
   el.readyState = readyState;
@@ -219,6 +244,68 @@ test('a phone does not even attempt playback on interaction', () => {
   h.fireDoc('click');
 
   assert.equal(h.video.playCalls, 0);
+});
+
+// ---- the homepage: paused on purpose, which is NOT a failure ----------------------
+//
+// index.html ships #background-video with `preload="none"` and no `autoplay`, so its
+// 1,281,846 B stays out of the LCP window; scripts/bg-video-start.js starts it after
+// `load`. That makes "the video is paused a second after DOMContentLoaded" the INTENDED
+// state on the busiest page on the site, where it used to be the signal for "autoplay was
+// blocked, paint the body flat blue". These three are the difference between a working
+// backdrop and a blank #b2c4f6 homepage on every desktop visit.
+
+test('a video nobody has asked to play yet is never faulted for being paused', () => {
+  const h = mount({ video: fakeVideo({ autoplay: false, playRejects: true }) });
+  h.ready();
+
+  h.video.emit('canplay', {});
+  h.tick();
+  h.tick();
+
+  return settle().then(() => {
+    assert.equal(h.body.style.background, '', 'the backdrop must be left alone');
+    assert.equal(h.video.style.display, '', 'and the element must not be hidden');
+  });
+});
+
+test('the retry budget is not spent while waiting for the deferred starter', () => {
+  // The loop keeps waiting rather than counting attempts — otherwise the one retry it is
+  // allowed is gone before bg-video-start.js has had a chance to run at all.
+  const h = mount({ video: fakeVideo({ autoplay: false, playRejects: true }) });
+  h.ready();
+
+  h.tick();
+  h.tick();
+
+  return settle().then(() => {
+    assert.equal(h.video.playCalls, 0, 'nothing should have tried to play it yet');
+  });
+});
+
+test('once the starter marks it, the usual desktop fallback applies again', async () => {
+  // The other half: the marker is what re-arms every path above, so a homepage video that
+  // genuinely cannot start still degrades the way the other ten pages do.
+  const video = fakeVideo({ autoplay: false, playRejects: true });
+  const h = mount({ video });
+  h.ready();
+
+  video.setAttribute('data-bg-started', '');
+  h.video.emit('canplay', {});
+  await settle();
+
+  assert.equal(h.video.style.display, 'none');
+  assert.equal(h.body.style.background, '#b2c4f6');
+});
+
+test('a playing video stops the retry loop instead of ticking forever', () => {
+  const h = mount({ video: fakeVideo({ paused: false }) });
+  h.ready();
+
+  h.tick();
+
+  const retry = h.ticks.find((t) => t.ms === 1000);
+  assert.equal(retry.cleared, true, 'the happy path used to leave this waking every second');
 });
 
 // ---- desktop: autoplay really can fail -------------------------------------------

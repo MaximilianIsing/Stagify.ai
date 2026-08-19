@@ -78,13 +78,10 @@ import { initPlusRail } from './app/plus-rail.js';
     // rail is on screen at all belongs to the plan, and auth.js owns that half.
     initPlusRail();
 
-    // The two controls that open the staging flow: the hero CTA, and the closing
-    // row's button at the foot of the page. This looked up THREE ids until 2026-08-18
-    // — `#nav-upload` and `#pricing-upload` existed in no HTML file on the site, so
-    // the array had been binding two nulls for as long as anyone can tell. Add a
-    // third entry point here; do not revive a dead id. Guard: home-outro.test.js.
-    const heroUpload = $('#hero-upload');
-    const outroUpload = $('#outro-upload');
+    // #hero-upload / #outro-upload are bound in scripts/hero-cta-boot.js, NOT here: this
+    // module loads after `load`, so a click can land before it exists. Binding in both
+    // places would open the picker twice. Add new entry points THERE, and do not revive
+    // `#nav-upload` / `#pricing-upload`. Guard: home-outro.test.js.
 
     // Stage screen elements (only on home page)
     const modal = $('#stage-modal');
@@ -191,9 +188,7 @@ import { initPlusRail } from './app/plus-rail.js';
   
     // Only run modal functionality if we're on the home page (elements exist)
     if (modal && stageDropzone && stageFileInput) {
-      [heroUpload, outroUpload].forEach((btn) => {
-        if (btn) btn.addEventListener('click', openFilePicker);
-      });
+      /* Upload buttons: bound in hero-cta-boot.js now — see the note above. */
   
       // Drag and drop on stage screen. The state is a CLASS, not an inline
       // style: this used to write style.borderColor, which outranks every rule
@@ -621,8 +616,10 @@ import { initPlusRail } from './app/plus-rail.js';
   window.__stagifyUpdateHeroFreeGensLine = updateHeroFreeGensLine;
   
   
-  // Initialize on page load (all pages)
-  document.addEventListener('DOMContentLoaded', function() {
+  // GUARDED, not a bare DOMContentLoaded listener: index-deferred.js injects this after
+  // `load`, so the event is already past and a plain listener would silently never fire —
+  // hero counters stuck at zero, contact-card tilt never mounted.
+  function initOnReady() {
     loadHeroStats();
 
     
@@ -641,7 +638,12 @@ import { initPlusRail } from './app/plus-rail.js';
     if (typeof window.__stagifyUpdateHeroFreeGensLine === 'function') {
       window.__stagifyUpdateHeroFreeGensLine();
     }
-  });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initOnReady);
+  } else {
+    initOnReady();
+  }
   
   
   

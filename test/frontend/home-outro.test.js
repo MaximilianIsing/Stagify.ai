@@ -17,6 +17,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const html = readFileSync(join(root, 'public', 'index.html'), 'utf8');
 const css = readFileSync(join(root, 'public', 'styles', 'home.css'), 'utf8');
 const appJs = readFileSync(join(root, 'public', 'scripts', 'app.js'), 'utf8');
+const boot = readFileSync(join(root, 'public', 'scripts', 'hero-cta-boot.js'), 'utf8');
 
 // Bounded at the first </section>, which is this one's: the closing row contains no
 // nested <section>. An unbounded slice runs to the end of the file and silently drags
@@ -48,20 +49,46 @@ test('the closing row exists and is the last section in <main>', () => {
 // THE LOAD-BEARING ONE. A closing CTA that opens nothing is worse than no closing
 // CTA, and the wiring lives in a different file from the markup, so nothing else
 // catches a rename on either side.
-test('the closing button is wired to the staging flow in app.js', () => {
+test('the closing button is wired to the staging flow in hero-cta-boot.js', () => {
+  // THE BINDING MOVED OUT OF app.js on 2026-08-19. app.js is 38 modules and ~267 KB, and
+  // nothing in it is reachable until somebody starts staging, so it now loads from
+  // scripts/index-deferred.js after `load` instead of inside the LCP window. That leaves a
+  // window where these buttons are painted and app.js has not arrived, which is why the
+  // binding lives in a small zero-import module that IS still in <head>: a click there
+  // pulls app.js in and then calls the hook. app.js must NOT also bind them — two
+  // listeners means one click opens the picker twice.
   assert.match(
     outro,
     /<button[^>]*\bid="outro-upload"/,
     'the closing row must carry #outro-upload',
   );
   assert.match(
-    appJs,
-    /\$\('#outro-upload'\)/,
-    'app.js must look up #outro-upload',
+    boot,
+    /'hero-upload',\s*'outro-upload'/,
+    'hero-cta-boot.js must look up both #hero-upload and #outro-upload',
   );
-  const wiring = appJs.match(/\[heroUpload,[^\]]*\]\.forEach\(\(btn\) => \{\s*if \(btn\) btn\.addEventListener\('click', openFilePicker\);/);
-  assert.ok(wiring, 'the upload buttons must still be bound to openFilePicker');
-  assert.match(wiring[0], /outroUpload/, '#outro-upload must be in the bound array');
+  assert.match(
+    boot,
+    /addEventListener\('click',[\s\S]{0,80}?openStaging/,
+    'the upload buttons must still be bound to the staging opener',
+  );
+  assert.match(
+    boot,
+    /__stagifyOpenStaging/,
+    'hero-cta-boot.js must call the window.__stagifyOpenStaging hook app.js publishes — '
+      + 'that hook is also how it knows app.js has finished evaluating',
+  );
+  assert.ok(
+    !/\$\('#outro-upload'\)/.test(appJs) && !/\$\('#hero-upload'\)/.test(appJs),
+    'app.js is binding the upload buttons again as well as hero-cta-boot.js. Two click '
+      + 'listeners on the same button means one press opens the staging picker twice.',
+  );
+  assert.match(
+    html,
+    /<script type="module" src="scripts\/hero-cta-boot\.js">/,
+    'index.html must still load hero-cta-boot.js as a normal <head> module — deferring it '
+      + 'too would put the gap it exists to cover back exactly where it was',
+  );
 });
 
 // These two were bound for a long time while existing in no HTML file on the site.

@@ -138,6 +138,73 @@ test('the static hero photo keeps the attributes that make it the LCP element', 
   );
 });
 
+test('the static hero photo is visible without JavaScript having run', () => {
+  // BOTH HALVES, because either one alone is a silent regression.
+  //
+  // hero-picker.css gives every .hp-canvas__img `opacity: 0` and lifts it with `.is-on`.
+  // That is right for the layers the script stacks — they have to start invisible to
+  // cross-fade — but LCP IGNORES AN ELEMENT AT OPACITY 0. So for as long as `is-on` was
+  // added only by hero-picker.js, the static, preloaded, fetchpriority=high photo could
+  // not become an LCP candidate until the whole 254 KB document had parsed, all five
+  // render-blocking stylesheets had arrived and the module had executed — which is the
+  // exact chain the static markup exists to escape. Everything above was true of the
+  // photo's DOWNLOAD and false of its PAINT, and nothing failed.
+  //
+  // So: the markup must ship the class, AND the stylesheet must still be the thing that
+  // reads it. Delete the rule and the class here is inert; delete the class and the paint
+  // re-chains to the module graph. Neither shows up anywhere else.
+  const img = stageImg();
+  const cls = attr(img, 'class') || '';
+  assert.ok(
+    /(^|\s)is-on(\s|$)/.test(cls),
+    'the static hero photo does not ship `is-on` in its class list (found: "' + cls + '"). ' +
+      'hero-picker.css hides .hp-canvas__img at opacity 0 until that class lands, and LCP ' +
+      'skips elements at opacity 0 — so without it the LCP element cannot paint until the ' +
+      'whole module graph has executed, which is what the static <img> exists to avoid.'
+  );
+
+  const pickerCss = fs.readFileSync(
+    path.join(root, 'public', 'styles', 'hero-picker.css'),
+    'utf8'
+  );
+  assert.match(
+    pickerCss,
+    /\.hp-canvas__img\.is-on\s*\{[^}]*opacity:\s*1/,
+    'hero-picker.css no longer declares `.hp-canvas__img.is-on { opacity: 1 }`. The class ' +
+      'shipped on the static <img> in index.html is what makes the LCP element paintable ' +
+      'before hero-picker.js runs; if the rule was renamed, rename it in the markup too.'
+  );
+});
+
+test('hero-picker.js stays the first module tag on the homepage', () => {
+  // Load-bearing twice over, and neither reason is obvious from the tag itself.
+  //
+  // 1. LCP: modules execute in document order, so behind app.js's import graph this file
+  //    used to wait for ~34 other modules before it could adopt the hero.
+  // 2. CLS: fitSentence() writes `.is-fitted` (white-space: nowrap) on the headline. The
+  //    headline is only VISIBLE once language-loader.js has resolved its pack — and that
+  //    module registers its init on DOMContentLoaded and then awaits a fetch, so it is
+  //    unconditionally later than this file, which inits at module eval. That ordering is
+  //    what guarantees the sentence is never seen mid-wrap. Demote this tag and the
+  //    guarantee goes with it, silently.
+  // Not literally first: scripts/lazy-css.js sits above it, next to the <link>s it
+  // promotes, and it is 1.5 KB with zero imports — it cannot delay anything. What must
+  // not appear ahead of hero-picker.js is a module that drags an import graph behind it.
+  const ALLOWED_AHEAD = new Set(['scripts/lazy-css.js']);
+  const tags = [...indexHtml.matchAll(/<script\s+type="module"\s+src="([^"]+)"/g)].map((m) => m[1]);
+  const at = tags.indexOf('scripts/hero-picker.js');
+  assert.notEqual(at, -1, 'index.html no longer loads scripts/hero-picker.js as a module');
+  const ahead = tags.slice(0, at).filter((s) => !ALLOWED_AHEAD.has(s));
+  assert.deepEqual(
+    ahead,
+    [],
+    'these module tags now run before scripts/hero-picker.js: ' + ahead.join(', ') + '. ' +
+      'Modules run in document order, so anything ahead of it — and its whole import ' +
+      'graph — has to execute before the hero can be adopted. If the new tag genuinely ' +
+      'has no imports and must load first, add it to ALLOWED_AHEAD with the reason.'
+  );
+});
+
 test('the adopt path still publishes the marker its browser-level guard reads', () => {
   // A source scan cannot honestly prove the LCP node was adopted rather than re-created:
   // stub the branch out and every string worth grepping for is still sitting in unreachable
