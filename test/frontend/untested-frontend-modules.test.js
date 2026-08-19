@@ -117,6 +117,11 @@ const E2E_COVERED = [
   // the same story as the AI Designer's — wiring over the tested mask/* slices.
   // Driven by index.spec.js, basic-mask.spec.js, the six stage-mask-*.spec.js and
   // staging-nav.spec.js, among others.
+  // The API dashboard's composition root. Every island beneath it has a unit spec in
+  // test/frontend/api-keys/ (the three renderers and the create-key dialog); what is
+  // left here is DOM wiring and a module-load side effect, which only a browser has.
+  // Driven by api-keys.spec.js.
+  { module: 'api-keys-app.js', page: 'api-keys.html' },
   { module: 'app.js', page: 'index.html' },
   { module: 'app/stage-mask-editor.js', page: 'index.html' },
   // The Basic Mask preview page's entry point: four lines with no exports, which settle the
@@ -127,6 +132,10 @@ const E2E_COVERED = [
   { module: 'basic-mask-page.js', page: 'basic-mask.html' },
   // The Exterior Studio's composition root: wiring, and its three islands (access,
   // compare, enhance) each have their own suite. Driven by exterior-studio.spec.js.
+  // developers.html's only script: three lines that fill the pricing grid from the live
+  // pack table. The fetch+render it calls is unit-tested (api-keys/credit-packs.js);
+  // what is left is the module-load side effect. Driven by api-keys.spec.js.
+  { module: 'developers-pricing.js', page: 'developers.html' },
   { module: 'exterior-studio-app.js', page: 'exterior-studio.html' },
   // The homepage hero's room/style picker (replaced carousel.js). It runs at PARSE time
   // rather than on DOMContentLoaded because the <img> it adopts is the page's LCP element,
@@ -155,8 +164,17 @@ const E2E_COVERED = [
 const BLOCKED_CLASSIC = [
   'ai-designer-gate.js',
   'ai-designer-model-selector.js',
+  // The API dashboard's PC-only gate. Behaviourally covered by
+  // test/frontend/api-keys/api-keys-gate-mobile.test.js on the same `new Function`
+  // harness as the gates below, and here for the same structural reason.
+  'api-keys-gate.js',
   'demo-data.js',
   'demo-player.js',
+  // The docs page's PC-only gate. Behaviourally covered by
+  // test/frontend/developers/developers-gate-mobile.test.js on the same `new Function`
+  // harness as the two gates below — listed here only because an IIFE with no exports is
+  // not something node can import, which is what this list tracks.
+  'developers-gate.js',
   'faq-redirect.js',
   'gallery-gate.js',
   'gtag.js',

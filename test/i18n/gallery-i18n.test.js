@@ -178,15 +178,25 @@ test('no pack still offers to create a link or turn one off', () => {
   }
 });
 
-test('the gallery swaps language in place, and it is the only page that does', () => {
+/**
+ * Every page allowed to swap language in place instead of navigating.
+ *
+ * Adding one is a deliberate act, not an accident, so the list is explicit — but the
+ * test below is what makes it SAFE: the marker is only correct on a page that genuinely
+ * has no localized URL, and that is asserted for each entry rather than assumed.
+ */
+const IN_PLACE_PAGES = ['api-keys.html', 'gallery.html'];
+
+test('only pages with no localized URL swap language in place', () => {
   // hrefForLanguage() sends a page with no localized URL to the locale HOME
   // (i18n-routing.js:59). That is right for a link and wrong for a switcher — the
-  // visitor asked to read THIS page in another language. The gallery therefore opts out
-  // of navigating. The "only page" half is the important one: every other page carrying
-  // a switcher IS in LOCALIZED_PAGES, which is why this change cannot affect them.
+  // visitor asked to read THIS page in another language. Such pages therefore opt out
+  // of navigating. Every OTHER page carrying a switcher IS in LOCALIZED_PAGES, which is
+  // why the opt-out cannot affect them.
   const pages = fs.readdirSync(path.join(ROOT, 'public')).filter((f) => f.endsWith('.html'));
   const marked = pages.filter((f) => /data-lang-inplace/.test(fs.readFileSync(path.join(ROOT, 'public', f), 'utf8')));
-  assert.deepEqual(marked, ['gallery.html'], 'a second page opted out of localized-URL navigation');
+  assert.deepEqual(marked.sort(), [...IN_PLACE_PAGES].sort(),
+    'a page opted in or out of localized-URL navigation without updating IN_PLACE_PAGES');
 
   const loader = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'language-loader.js'), 'utf8')
     .replace(/\/\*[\s\S]*?\*\//g, '')
@@ -196,11 +206,15 @@ test('the gallery swaps language in place, and it is the only page that does', (
 });
 
 test('a page that opts out of navigating is genuinely not localizable by URL', () => {
-  // The opt-out is only correct BECAUSE the page has no localized variant. If the
-  // gallery were ever added to LOCALIZED_PAGES, in-place swapping would be the wrong
-  // behaviour and the marker would have to come back out.
-  assert.ok(!LOCALIZED_PAGES.some((p) => p.file === 'gallery.html'),
-    'gallery.html gained a localized URL — remove [data-lang-inplace] and let the switcher navigate');
+  // The opt-out is only correct BECAUSE the page has no localized variant. If one of
+  // these were ever added to LOCALIZED_PAGES, in-place swapping would be the wrong
+  // behaviour and the marker would have to come back out. This is the assertion that
+  // makes IN_PLACE_PAGES safe to grow: the list cannot be extended to a page that has a
+  // localized URL without failing here.
+  for (const file of IN_PLACE_PAGES) {
+    assert.ok(!LOCALIZED_PAGES.some((p) => p.file === file),
+      `${file} gained a localized URL — remove [data-lang-inplace] and let the switcher navigate`);
+  }
 });
 
 test('the shipped markup keeps an English fallback for every gallery data-lang key', () => {

@@ -32,6 +32,7 @@ import {
  *   trialLifecycle?: ReturnType<typeof import('../lib/services/trial-lifecycle.js').createTrialLifecycle>,
  *   stripeEvents?: ReturnType<typeof import('../lib/data/stripe-events.js').createStripeEventLog>,
  *   checkoutLimiter?: import('express').RequestHandler,
+ *   creditTopup?: ReturnType<typeof import('../lib/services/stripe-credit-topup.js').createStripeCreditTopup>,
  * }} deps - Injected Stripe client + config strings, the auth/enterprise stores,
  *   the webhook event handler, the session-user resolver, the trial-email
  *   lifecycle (fires welcome/ending/win-back off Stripe events), and the
@@ -53,6 +54,10 @@ export default function createBillingRouter(deps) {
     trialLifecycle,
     stripeEvents,
     checkoutLimiter,
+    // API credit top-ups. Optional so every existing test that builds this router
+    // without it keeps working — omitted, a paid one-time session falls through to the
+    // 'not_subscription' branch exactly as it did before credits existed.
+    creditTopup,
   } = deps;
 
   // `??` so an explicit null (a test asking for the production wiring) still gets
@@ -95,7 +100,7 @@ export default function createBillingRouter(deps) {
       return res.json({ received: true, duplicate: true });
     }
     try {
-      const out = await handleStripeEvent(event, authStore, { stripe, enterpriseStore, lifecycle: trialLifecycle });
+      const out = await handleStripeEvent(event, authStore, { stripe, enterpriseStore, lifecycle: trialLifecycle, creditTopup });
       if (!out.handled) {
         logger.info('[stripe] Unhandled event type (ok):', event.type);
       }

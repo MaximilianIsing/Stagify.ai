@@ -326,8 +326,29 @@ router.post('/api/enhance-exterior', genLimiter, requireProBeforeUpload, staging
   }
 });
 
+// DEPRECATED — superseded by POST /api/v1/renders (routes/api-v1.js).
+//
+// WHY IT IS GOING. This endpoint is an unmetered image generator, anonymous at the
+// account level, gated by LOGS_ACCESS_KEY — the SAME single static secret that also opens
+// /promptlogs, /authstore, every /api/admin/* route (comp grants, GDPR erasure, the user
+// list) and POST /api/getpro. One leaked string is therefore total compromise plus free
+// AI, and nothing here can be revoked for one caller without revoking it for the operator
+// too. The replacement fixes all three: a key belongs to one account, is revocable on its
+// own, and cannot render without a prepaid balance.
+//
+// WHAT HAPPENS NEXT. It keeps working for one deprecation window, answering with a
+// Deprecation header and logging each use so the operator can see whether anything still
+// calls it, and is then deleted along with its route-inventory entry. Do NOT convert it in
+// place — the new API has a different auth header, a different response shape and a
+// billing precondition, so an in-place change would break its callers silently instead of
+// telling them where to go.
 router.post('/api/stage-by-endpoint-key', stagingEndpointKeyGuard, stagingProcessUpload, async (req, res) => {
   try {
+    // RFC 8594 headers, so a machine caller can notice without reading a changelog.
+    // `true` rather than a date, because it is deprecated already.
+    res.setHeader('Deprecation', 'true');
+    res.setHeader('Link', '</developers.html>; rel="deprecation"; type="text/html"');
+    logger.warn('[staging] DEPRECATED /api/stage-by-endpoint-key called — migrate to POST /api/v1/renders');
     await handleVirtualStagingMultipart(req, res, {
       user: null,
       recordUsage: false,

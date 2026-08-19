@@ -111,6 +111,22 @@ export interface StagingParams {
    * [STAMP_SCALE_MIN, STAMP_SCALE_MAX]. 1 is the size the badge gets on its own.
    */
   stampScale?: number;
+  /**
+   * Which variation of how many this render is, as `"n/N"` (1-based) — written to the
+   * `variation` column of prompt_logs.csv so the architecture-drift rate can be broken
+   * down per variation instead of guessed at.
+   *
+   * The `n/N` form rather than a bare index because a row is asked two questions and
+   * one column should answer both: whether LATER variations drift more (needs n) and
+   * whether multi-variation requests drift more than single ones (needs N). Recovering
+   * N by grouping rows on timestamp+email would be guesswork.
+   *
+   * Set only by the browser staging handler, which is the only surface that fans one
+   * request out into several renders. Chat, Exterior and the v1 API leave it undefined
+   * and log blank, which reads as "not a multi-variation render" — the same way the
+   * architectureDrift column already distinguishes blank from 'no'.
+   */
+  variation?: string | null;
   [key: string]: unknown;
 }
 
@@ -121,6 +137,20 @@ export interface VirtualStagingMeta {
   user: ({ id: string; email: string; plan: string } & Record<string, unknown>) | null;
   recordUsage: boolean;
   treatAsPro: boolean;
+  /**
+   * Skip the self-check quality gate, so one delivered image costs exactly one
+   * generation. Set by the public API (routes/api-v1.js), where a credit is sold per
+   * DELIVERED image rather than per model attempt: with the gate on, one $0.15 credit
+   * could buy up to QUALITY_MAX_ATTEMPTS generations plus their vision reviews. A
+   * machine caller re-requests; it does not want us silently spending 3x on its behalf.
+   */
+  skipQualityReview?: boolean;
+  /**
+   * What produced this render, recorded on the gallery row. Defaults to 'interior' —
+   * the web studio. Without it API renders would be indistinguishable from studio ones
+   * in the owner's gallery, forever.
+   */
+  sourceTag?: string;
 }
 
 /**

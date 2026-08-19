@@ -171,7 +171,11 @@ test('every language switcher in the markup lists exactly the server locale set'
 // So these assertions are behavioural rather than textual: the real function is
 // pulled out of the source and run against every prefix the server serves.
 
-const GATE_FILES = ['ai-designer-gate.js'];
+// developers-gate.js joined the list when the docs page joined LOCALIZED_PAGES: it is
+// render-blocking (it must beat the paint it prevents), so like ai-designer-gate.js it
+// cannot import locale-data.js and has to inline the prefixes. The assertions below
+// are what keep the two copies honest.
+const GATE_FILES = ['ai-designer-gate.js', 'developers-gate.js'];
 
 /** Read a gate's source. */
 function gateSource(name) {

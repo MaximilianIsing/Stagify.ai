@@ -35,6 +35,10 @@ export function styleLabel(style) {
  * What each studio other than the interior one is called, and where its qualifier comes
  * from.
  *
+ * `namesRender` separates two things this table used to conflate: what a tool is
+ * CALLED, and whether that tool NAMES the render. They came apart the day the public
+ * API arrived — see the `api` entry.
+ *
  * The interior flow is ABSENT on purpose: it is the one surface where the owner picked both
  * halves of the name themselves, so it keeps `<Style> <Room type>` and needs no rule.
  *
@@ -47,18 +51,34 @@ export function styleLabel(style) {
  * that is never translated, and half a name in each language reads like a bug.
  */
 const SOURCE_RULES = {
-  exterior: { label: 'Exterior', qualifier: (entry) => String(entry?.qualifier ?? '').trim() },
-  masking: { label: 'Masking Studio', qualifier: (entry) => String(entry?.qualifier ?? '').trim() },
+  exterior: { label: 'Exterior', namesRender: true, qualifier: (entry) => String(entry?.qualifier ?? '').trim() },
+  masking: { label: 'Masking Studio', namesRender: true, qualifier: (entry) => String(entry?.qualifier ?? '').trim() },
   // The designer's room type is a guess the routing model made, and it defaults to "Other"
   // (lib/chat/chat-staging.js). "AI Designer — Other" is worse than "AI Designer", so an
   // unhelpful guess degrades to no qualifier at all rather than being printed.
   designer: {
     label: 'AI Designer',
+    namesRender: true,
     qualifier: (entry) => {
       const room = String(entry?.roomType ?? '').trim();
       return room.toLowerCase() === 'other' ? '' : room;
     },
   },
+  // The public API. LABEL ONLY — `namesRender` is false, and that is the whole point
+  // of the flag.
+  //
+  // The label earns its place: an API render lands in the owner's gallery beside renders
+  // a colleague made by hand, and "Made with: API" is the only thing that tells the two
+  // apart. But the NAME must not come from here, for two reasons. The API runs the
+  // interior pipeline with the caller's own room and style, so `<Style> <Room type>`
+  // already describes it better than "API" would. And `defaultName` also feeds the
+  // heading of the PUBLIC share page (public/scripts/share/view.js), where an anonymous
+  // client opening a link to their staged living room would be shown the word "API".
+  //
+  // No `qualifier`: room and style are already columns, and render-extra.js only stores
+  // what no column carries. Nothing calls it either — `defaultName` skips the whole
+  // branch when `namesRender` is falsy.
+  api: { label: 'API', namesRender: false },
 };
 
 /**
@@ -134,7 +154,9 @@ function withSourceName(name, entry) {
  */
 export function defaultName(entry, fallback = 'Staged room') {
   const rule = SOURCE_RULES[String(entry?.source ?? '')];
-  if (rule) {
+  // `namesRender`, not mere existence: a source may have a label for the "Made with"
+  // row and still want the `<Style> <Room type>` ladder below. See SOURCE_RULES.api.
+  if (rule?.namesRender) {
     const qualifier = rule.qualifier(entry);
     return withSourceName(qualifier ? `${rule.label} — ${qualifier}` : rule.label, entry);
   }

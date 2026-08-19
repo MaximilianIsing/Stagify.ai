@@ -44,7 +44,13 @@ function fakePersistence(seen) {
 
 /**
  * Build the handler with sane fakes. `processStaging` defaults to an instant
- * pass-through that echoes the variation's prompt so ordering can be asserted.
+ * pass-through that echoes the variation TAG so ordering can be asserted.
+ *
+ * Deliberately not the prompt: every variation of a request now gets a byte-identical
+ * `additionalPrompt` (the per-variation parenthetical that used to differentiate them
+ * is gone — see the handler), so a prompt-derived return value would collide across
+ * variations. `params.variation` is the real discriminator and the one the render log
+ * records, which makes it what these tests should key on anyway.
  */
 function makeHandler(overrides = {}) {
   const calls = [];
@@ -63,9 +69,11 @@ function makeHandler(overrides = {}) {
     roomIsAlreadyEmpty: async () => true,
     eraseFurniture: async () => null,
     processStaging: async (_buf, params, req) => {
-      calls.push(params.additionalPrompt);
+      // The whole params object, not just the prompt: the prompt is now identical across
+      // variations, and the tests below need to assert exactly that.
+      calls.push(params);
       if (req) req._stagingGenerations = (req._stagingGenerations || 0) + 1;
-      return `img:${params.additionalPrompt.slice(0, 16)}`;
+      return `img:${params.variation}`;
     },
     ...overrides,
   };
@@ -125,7 +133,7 @@ test('pro variations RUN CONCURRENTLY, not one after another', async () => {
       maxInFlight = Math.max(maxInFlight, inFlight);
       await new Promise((r) => setTimeout(r, 20));
       inFlight -= 1;
-      return `img:${params.additionalPrompt.slice(0, 8)}`;
+      return `img:${params.variation}`;
     },
   });
   const res = fakeRes();
@@ -142,8 +150,11 @@ test('concurrent variations still come back in variation order', async () => {
   const delays = [30, 0, 10];
   const { handleVirtualStagingMultipart } = makeHandler({
     processStaging: async (_buf, params) => {
-      const n = /variation (\d)/.exec(params.additionalPrompt);
-      const idx = n ? Number(n[1]) - 1 : 0;
+      // Keyed on the variation TAG, not on prompt text. This used to scrape the index
+      // back out of `additionalPrompt` with /variation (\d)/, which only worked while
+      // the handler differentiated the variations by prompt — the thing that was making
+      // the extra variations drift on architecture.
+      const idx = Number(params.variation.split('/')[0]) - 1;
       await new Promise((r) => setTimeout(r, delays[idx]));
       return `img${idx + 1}`;
     },
@@ -154,6 +165,78 @@ test('concurrent variations still come back in variation order', async () => {
   });
   assert.deepEqual(res.body.images, ['img1', 'img2', 'img3']);
   assert.equal(res.body.image, 'img1', 'the primary image is the first variation');
+});
+
+// THE GUARD THIS FILE EXISTS FOR NOW. Variations 2..N used to get an extra
+// "(Subtle variation n of N: ... slightly different furniture arrangement ...)"
+// parenthetical appended to the user's own free-text box. Three things were wrong with
+// it, and the first is a real bug rather than a matter of taste:
+//
+//   1. generatePrompt() promotes additionalPrompt to BE the base prompt on the 'custom'
+//      style, falling back to 'standard' only when the box is EMPTY. Appending made the
+//      box non-empty, so a Custom-with-nothing-typed request — a state the style picker
+//      lets anyone reach — lost its entire staging brief on variations 2..N while
+//      variation 1 kept it. The model was left to improvise the room, architecture and
+//      all, which is precisely what that fallback exists to prevent.
+//   2. It restated the architecture lock inside additionalPrompt, the one place
+//      lib/staging/prompts.js tells every caller not to put one: the authoritative block
+//      is appended last with override authority, and it states the rule as a COUNT of
+//      windows and doors because an abstract paraphrase is not checkable.
+//   3. It asked for a different furniture ARRANGEMENT with no spatial constraint, on the
+//      extra variations only — so those were the ones that drifted on walls.
+//
+// Asserting the prompts are IDENTICAL is what keeps all three fixed, because each of the
+// three failures required the prompts to differ. Diversity comes from the independent
+// per-render seed instead.
+test('every variation stages from the SAME prompt — no per-variation prompt text', async () => {
+  const { handleVirtualStagingMultipart, calls } = makeHandler();
+  await handleVirtualStagingMultipart(
+    fakeReq({ variationCount: '3', furnitureStyle: 'custom', additionalPrompt: '' }),
+    fakeRes(),
+    { user: PRO, recordUsage: true, treatAsPro: false },
+  );
+  assert.equal(calls.length, 3);
+  for (const params of calls) {
+    assert.equal(params.additionalPrompt, '',
+      'an empty Custom box must stay empty on EVERY variation — a non-empty one hijacks '
+      + 'the base prompt in generatePrompt() and strips the room out of the brief');
+  }
+  assert.equal(new Set(calls.map((p) => p.additionalPrompt)).size, 1,
+    'all variations share one prompt');
+});
+
+test('a typed prompt reaches every variation unchanged, with nothing appended', async () => {
+  const { handleVirtualStagingMultipart, calls } = makeHandler();
+  await handleVirtualStagingMultipart(
+    fakeReq({ variationCount: '3', additionalPrompt: 'warm oak floors, big plants' }),
+    fakeRes(),
+    { user: PRO, recordUsage: true, treatAsPro: false },
+  );
+  for (const params of calls) {
+    assert.equal(params.additionalPrompt, 'warm oak floors, big plants',
+      'the user\'s words reach the model verbatim on every variation');
+  }
+});
+
+// The render log's drift column is only worth having if the row says WHICH variation it
+// was — otherwise "do the later variations drift more?" stays a hunch, which is how the
+// prompt suffix above survived as long as it did.
+test('each render is tagged n/N so drift can be counted per variation', async () => {
+  const { handleVirtualStagingMultipart, calls } = makeHandler();
+  await handleVirtualStagingMultipart(fakeReq({ variationCount: '3' }), fakeRes(), {
+    user: PRO, recordUsage: true, treatAsPro: false,
+  });
+  assert.deepEqual(calls.map((p) => p.variation), ['1/3', '2/3', '3/3']);
+});
+
+test('a single render is tagged 1/1, not left blank', async () => {
+  // Blank is reserved for the surfaces that never fan out (chat, Exterior, the v1 API),
+  // so a studio render is always distinguishable from one of those in the log.
+  const { handleVirtualStagingMultipart, calls } = makeHandler();
+  await handleVirtualStagingMultipart(fakeReq({}), fakeRes(), {
+    user: FREE, recordUsage: true, treatAsPro: false,
+  });
+  assert.deepEqual(calls.map((p) => p.variation), ['1/1']);
 });
 
 test('one failing variation still fails the whole request (unchanged contract)', async () => {

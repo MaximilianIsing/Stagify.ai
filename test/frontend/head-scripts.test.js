@@ -33,6 +33,8 @@ const BLOCKING_ALLOWED = {
   // ai-designer-gate-mobile.test.js pins both halves.
   'ai-designer-gate.js': 'redirects a phone-sized viewport, then applies the cached-Pro shape, both before paint',
   'gallery-gate.js': 'PC-only feature — redirects a phone-sized viewport before the grid paints',
+  'api-keys-gate.js': 'PC-only page — redirects a phone-sized viewport before the inspector paints',
+  'developers-gate.js': 'PC-only page — redirects a phone-sized viewport before the three-column docs shell paints',
   'faq-redirect.js': 'meta-refresh stub — must redirect before anything renders',
   // The one that redirects NOBODY, and the reason this list is shrinking rather than
   // growing. A preview page ships in its anonymous shape, so a Stagify+ visitor used to

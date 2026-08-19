@@ -838,11 +838,18 @@
              no JS at all the bar is already fully drawn, and there is deliberately no
              entrance animation on it (see initNarChart in home-figures.js).
 
-             THE PERCENTAGES ARE PLAIN TEXT AND STAY THAT WAY. They were briefly
-             animated (counted up from 0%) and it read as nonsense — a survey share is
-             a measured fact, not a running total, so ramping it implies a process that
-             never happened. Do not re-add a counter here; #compare’s calculator ramps
-             because its numbers really are a total the visitor is building.
+             THE PERCENTAGES ARE AUTHORED TEXT AND STAY THAT WAY — the numerals below
+             are the real 2025 figures, not placeholders JS fills in. They are never
+             counted up from 0% on load: that was built, and it read as nonsense, since
+             a survey share is a measured fact rather than a running total, so ramping
+             it implies a process that never happened. Do not re-add a load-time
+             counter; #compare’s calculator ramps because its numbers really are a
+             total the visitor is building.
+
+             They ARE tweened when the visitor switches survey year with the buttons in
+             the citation row — 20% to 9% between two published figures, on a click,
+             which is the comparison the switch exists to make. That is driven entirely
+             from scripts/home-nar-years.js with no hook in this markup.
 
              The same four numbers appear in four places — the bar widths, the legend,
              the note, and the bar’s aria-label (which is all a screen reader gets,
@@ -851,7 +858,7 @@
         <div class="nar-card reveal" data-nar-chart>
           <div class="nar-usage">
             <div class="nar-usage__label" data-lang="home.nar.usageLabel">How often agents use AI tools</div>
-            <div class="nar-bar" role="img" data-lang-attr="home.nar.usageAria|aria-label" aria-label="AI usage among agents: 20% daily, 22% weekly, 27% a few times a month, 32% not yet">
+            <div class="nar-bar" role="img" data-nar-owned data-lang-attr="home.nar.usageAria|aria-label" aria-label="AI usage among agents: 20% daily, 22% weekly, 27% a few times a month, 32% not yet">
               <span class="nar-seg--daily" data-nar-seg="daily" style="--seg-w:20%"></span>
               <span class="nar-seg--weekly" data-nar-seg="weekly" style="--seg-w:22%"></span>
               <span class="nar-seg--monthly" data-nar-seg="monthly" style="--seg-w:27%"></span>
@@ -871,11 +878,11 @@
           <div class="nar-stats">
             <div class="nar-stat">
               <span class="nar-stat__num">82%</span>
-              <span class="nar-stat__txt" data-lang="home.nar.stat1">of agents say clients responded positively to technology in the buying and selling process</span>
+              <span class="nar-stat__txt nar-swap" data-nar-owned data-lang="home.nar.stat1">of agents say clients responded positively to technology in the buying and selling process</span>
             </div>
             <div class="nar-stat">
               <span class="nar-stat__num">46%</span>
-              <span class="nar-stat__txt" data-lang="home.nar.stat2">already use AI to generate listing content</span>
+              <span class="nar-stat__txt nar-swap" data-nar-owned data-lang="home.nar.stat2">already use AI to generate listing content</span>
             </div>
           </div>
           <!-- The citation belongs to the figures above it, so it sits INSIDE the card as
@@ -890,10 +897,27 @@
                  Served at 128px square — well above the 24px slot, but the file is ~1KB at
                  that size, so there is nothing to win by cutting it finer. -->
             <img class="nar-source__icon" src="media-webp/Homepage/NAR128x128.webp" alt="" width="128" height="128" loading="lazy" decoding="async">
-            <p>
-              <span data-lang="home.nar.source">Figures from the National Association of Realtors’ 2025 Technology Survey of real estate agents.</span>
-              <cite><a href="https://www.nar.realtor/press-releases/realtors-embrace-ai-digital-tools-to-enhance-client-service-nar-survey-finds" target="_blank" rel="noopener noreferrer" data-lang="home.nar.sourceCite">Source: National Association of Realtors, 2025 Technology Survey</a></cite>
+            <p data-nar-dissolve class="nar-dissolve">
+              <span data-nar-owned data-nar-source-text data-lang="home.nar.source">Figures from the National Association of Realtors’ 2025 Technology Survey of real estate agents.</span>
+              <cite><a href="https://www.nar.realtor/press-releases/realtors-embrace-ai-digital-tools-to-enhance-client-service-nar-survey-finds" target="_blank" rel="noopener noreferrer" data-nar-owned data-nar-source-link data-lang="home.nar.sourceCite">Source: National Association of Realtors, 2025 Technology Survey</a></cite>
             </p>
+            <!-- The survey-year switch. A role="group" of two aria-pressed toggles, NOT a
+                 tablist: there are no panels, just one chart whose numbers change, and tab
+                 semantics would promise a structure that is not there.
+
+                 2025 is pressed in the markup because 2025 is what the card above is
+                 authored as — the button state and the figures ship agreeing, so a reader
+                 who never loads scripts/home-nar-years.js still sees a card that is
+                 correctly labelled rather than one offering a switch that does nothing.
+                 (The buttons are inert without JS; they change no numbers on their own.)
+
+                 Digits only, so there is nothing here to translate — but the GROUP needs a
+                 name, or a screen reader announces two bare years with no idea what they
+                 select. Hence the one new i18n key on the wrapper. -->
+            <div class="nar-years" role="group" data-lang-attr="home.nar.yearsLabel|aria-label" aria-label="Survey year">
+              <button type="button" class="nar-years__btn" data-nar-year="2024" aria-pressed="false">2024</button>
+              <button type="button" class="nar-years__btn is-on" data-nar-year="2025" aria-pressed="true">2025</button>
+            </div>
           </div>
         </div>
       </section>
@@ -1722,6 +1746,28 @@
             <a class="plus-cta plus-cta--ghost" href="enterprise.html" data-lang="home.plus.ent.cta">Explore Enterprise</a>
           </article>
         </div>
+        <!-- A quiet line under the cards, NOT a third card. The API is a minority
+             surface — the same reasoning that keeps it out of the top nav and gates its
+             account-menu row on actual use (see scripts/profile-menu/api-keys-row.js).
+             Giving it a card would price it as a third plan, which it is not; a footnote
+             reaches the few people looking for it without taxing everyone else.
+
+             It points at developers.html, not api-keys.html: the latter is the signed-in
+             dashboard and shows an anonymous visitor nothing but a Sign in button, and
+             almost everyone reading the home page is anonymous. api-keys-row.js says the
+             same thing — "until then the only way in is developers.html". -->
+        <!-- desktop-only, and NOT as a style preference: developers.html loads
+             scripts/developers-gate.js, which redirects a phone-sized viewport to this
+             very page before paint. Unhidden, this line answers a tap by bouncing the
+             reader back to where they already were. The footer’s Developers link is
+             wrapped for the same reason, and test/frontend/desktop-only-gates.test.js
+             pins the pairing — hiding the link is not itself a gate, so if that page ever
+             stops turning phones away, drop the class here rather than keeping both. -->
+        <p class="plus-api reveal desktop-only" style="--reveal-delay:150ms">
+          <img class="plus-api__logo" src="media-webp/logo/Api32x32.webp" alt="" width="18" height="18" aria-hidden="true">
+          <span data-lang="home.plus.api.text">Working with your own software? Stage photos programmatically with the Stagify API.</span>
+          <a class="plus-api__link" href="developers.html" data-lang="home.plus.api.link">Read the API docs</a>
+        </p>
       </section>
 
       <!-- ========================= FAQ ========================= -->
@@ -2682,6 +2728,8 @@
       <a href="terms.html" style="color:#2563eb;text-decoration:none;" data-lang="footer.terms">Terms of Service</a>
       &nbsp;·&nbsp;
       <a href="/status" style="color:#2563eb;text-decoration:none;" data-lang="footer.status">Status</a>
+      <span class="desktop-only">&nbsp;·&nbsp;
+      <a href="developers.html" style="color:#2563eb;text-decoration:none;" data-lang="footer.developers">API</a></span>
       &nbsp;·&nbsp;
       © <span class="footer-year">2026</span> <span data-lang="footer.copyright">Stagify.ai</span>
     </footer>

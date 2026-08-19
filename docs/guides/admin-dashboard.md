@@ -63,8 +63,11 @@ owns auth/fetch/wiring, each island owns one cohesive concern.
 | [`scripts/admin/signals.js`](../../public/scripts/admin/signals.js) | The **Signals** tab: ranked findings + the written brief, and the Overview teaser. See [§Signals tab](#signals-tab). |
 | [`scripts/admin/analytics.js`](../../public/scripts/admin/analytics.js) | **Pure aggregation** — bucketing, distributions, deltas, render outcomes. Owns `COL`, the CSV column map. No DOM. |
 | [`scripts/admin/analytics-users.js`](../../public/scripts/admin/analytics-users.js) | **Pure per-account aggregation** — last-active, activation funnel, cohort retention. No DOM. |
+| [`scripts/admin/analytics-rejections.js`](../../public/scripts/admin/analytics-rejections.js) | **Pure aggregation over `rejection_logs.csv`** — the refusal mix, per-kind reasons, and repeat cap hits counted in days. No DOM. |
 | [`scripts/admin/charts.js`](../../public/scripts/admin/charts.js) | **SVG chart primitives** — area, bar, ranked bars, donut, funnel, cohort grid, sparkline, card chrome. |
 | [`scripts/admin/grant.js`](../../public/scripts/admin/grant.js) | The comp-Stagify+ control inside the user detail drawer. |
+| [`scripts/admin/renders-panel.js`](../../public/scripts/admin/renders-panel.js) | The **render strip** in that drawer — what we actually produced for this account. Lazy: fetches on every expand. See [§The render inspector](#the-render-inspector). |
+| [`scripts/admin/danger.js`](../../public/scripts/admin/danger.js) | The **danger zone** at the foot of that drawer: sign out everywhere, and delete the account. See [§The danger zone](#the-danger-zone). |
 | [`scripts/admin/emails.js`](../../public/scripts/admin/emails.js) | The **Emails** tab: the preview gallery + per-template test send. Lazy-loaded on first open. |
 | [`scripts/admin/status-panel.js`](../../public/scripts/admin/status-panel.js) | The **Server status** tab: the live monitor view and the incident composer. Lazy-loaded on first open, then polls while its tab is visible. |
 | [`scripts/admin/referrals.js`](../../public/scripts/admin/referrals.js) | The **Referrals** tab: one card per campaign short-URL. Lazy-loaded on first open; `Refresh` invalidates it. |
@@ -112,10 +115,17 @@ the shape of the whole history, so it re-buckets itself as history grows
 (`pickGranularity`: ≤70 days → daily, ≤550 → weekly, beyond → monthly), keeping the point
 count in a readable 20–90 band at every scale.
 
-**Insights** — `#adm-insights`, six labelled sections, **each with its own grid**:
+**Insights** — `#adm-insights`, seven labelled sections, **each with its own grid**:
 
 - **Reliability** — render outcomes · failed renders per day · failure reasons · render
   duration (p50/p90/p95 + histogram) · staging models.
+- **Turned away** — refusals per day · why they were turned away · rejected photo
+  reasons · who hit the daily cap on the most days · failed credential attempts.
+  Built from `rejection_logs.csv`, so this is the one section whose denominator is
+  **not** the render log; with an empty log it collapses to a single card saying
+  nothing has been recorded, never to a refusal rate of zero. The last card is a
+  *security* reading of the same file and is deliberately never added to the
+  others — see below.
 - **Lifecycle** — activation funnel · cohort retention · trials · trial emails sent
   (the first three full width).
 - **Growth** — cumulative generations · total accounts over time · new signups per bucket.
@@ -206,6 +216,134 @@ it. Paying doesn't nest: a subscriber whose renders all logged anonymously is pa
 activated, and on live data the paid count *exceeded* the activated count, drawing a step
 wider than its parent. `paidConversion` reports it separately, beside the chart.
 
+### The render inspector
+
+The one place on the console that shows a **picture**. Everything else an account
+surface can tell you is text — a prompt, a timestamp, a room type — and the
+question a bug report always opens with is what the render actually looked like.
+`staged_renders` has held the parameters and `render_blobs` the bytes since the
+gallery shipped; nothing operator-facing read them until this.
+
+Served by [`routes/admin-renders.js`](../../routes/admin-renders.js), a **sibling
+router** rather than another handler in `routes/admin.js` — that file is at its
+650-line cap, and the answer to a full file here is a sibling, not a raised
+ceiling. `GET /api/admin/renders?userId=&limit=` behind the same `protectLogs`.
+
+**It shows the rows the owner's gallery hides, and that is the point.**
+`stagedRenders.listForUser` filters to `ok AND evicted_at IS NULL` because a
+customer should never meet a broken tile. But "it failed", "it is stuck pending"
+and "it was reaped by the gallery cap" are exactly the states a support question is
+about, so the console reads `listAllForUser`, which filters nothing. That is a
+**separate statement, not a flag** on the existing one: an option would put one
+keystroke between this console and shipping a failed render into a customer's grid.
+
+**Four states, four labels.** Three of them have no image, and a bare broken tile
+would read as an outage whichever one applies — so each says which it is. An
+evicted row is the interesting case: it still carries every parameter and only its
+bytes are gone, which is what makes it worth showing rather than hiding. The route
+mints no URLs for an evicted row, because a link that 404s reads as a broken
+viewer rather than as a reaped render.
+
+**The body carries bearer credentials.** Presigned URLs are fetchable by anyone
+holding them until they expire, so the response is `no-store` behind
+`setSensitiveHeaders`, the TTL is 5 minutes (shorter than the owner gallery's — a
+drawer left open on a shared operator screen should stop working fairly quickly),
+and the panel re-fetches on every expand. Caching them on `ctx` is not an option:
+[`s3-presign.js`](../../lib/data/s3-presign.js) explains why a cached presigned URL
+is a revocation bug. Nothing in the panel draws to a `<canvas>` either — presigned
+R2 URLs taint one in **production only**, a trap that does not reproduce locally.
+
+**It names which surface made the render**, including the plain staging studio. The
+customer-facing `render-name.js` deliberately withholds a label for `interior` — the Room
+and Style rows say it better on a card — but the operator's question is the opposite one,
+"which of our five surfaces produced this", so the console labels all five. The panel
+keeps its own small `SOURCE_LABELS` map rather than importing the customer's, because the
+two answer different questions; an unrecognised id falls through to the raw value rather
+than going blank, since a retired studio's rows keep arriving long after its rule is gone.
+
+`api` is the value that separates the **paid API** from studio usage, and it is worth
+knowing why it took a fix to appear. `sourceTag: 'api'` was set from day one, but `'api'`
+was missing from `RENDER_SOURCES`, so `buildRenderExtra` rejected the whole payload and
+wrote `extra_json` NULL — which cost each render its `sourceName` as well, and bucketed
+the entire API into `unknown` in `renders.bySource` beside rows written before the column
+existed. See [§Adding a render source](#adding-a-render-source).
+
+**Two things never reach the body:** `staged_renders.user_id` and
+`render_blobs.storage_key`. `shapeAdminRender` builds its output field by field and
+never spreads a row, so the next column somebody adds is not published by accident;
+a test asserts the exact key set.
+
+**One blob read per page, never one per row** — the N+1 that `routes/gallery.js` was
+refactored away from, on an endpoint pointed at the production database. The test
+counts the store calls rather than trusting the code to stay that way.
+
+### Adding a render source
+
+Four places, and three of them are guards. The vocabulary is duplicated across the
+lib/public boundary on purpose — a browser module cannot import from `lib/` — so the
+guards are what make the copy safe.
+
+1. **`lib/data/render-extra.js#RENDER_SOURCES`.** Membership is not cosmetic: it gates
+   `buildRenderExtra` on write *and* `readRenderExtra` on read, and an unknown id makes
+   the former return `null`, which nulls the **whole** `extra_json` column and takes
+   `sourceName` down with the source.
+2. **`public/scripts/render-name.js#SOURCE_RULES`** — optional, and the choice matters.
+   A rule with `namesRender: true` takes over the render's NAME. A rule with
+   `namesRender: false` supplies only a label for the owner's "Made with" row. No rule at
+   all (`interior`) means neither.
+   **`defaultName` also feeds the heading of the public share page**, so a source whose
+   renders are client-facing must not name them — that is exactly why `api` is label-only
+   rather than a fourth naming studio.
+3. **`test/data/render-extra.test.js`** — the set equality
+   (`[...NAMED_SOURCES, 'interior']` vs `RENDER_SOURCES`) plus two sweeps over the writers.
+   A `source:` that is an expression rather than a literal must have its file listed in
+   `DYNAMIC_SOURCE_WRITERS`, and every quoted id inside it still has to be known. That
+   clause is a repair, not a nicety: the sweep used to skip the membership check whenever
+   its regex failed to match, which is precisely how `source: meta.sourceTag || 'interior'`
+   shipped an unregistered id while the guard stayed green. A separate sweep checks every
+   `sourceTag:` literal, because the API sets the tag and never calls `recordPending` at
+   all — it was invisible to the first guard by construction.
+4. **`routes/admin-renders.js` + `public/scripts/admin/renders-panel.js`** — add the label
+   to `SOURCE_LABELS` so the console can name it.
+
+### The danger zone
+
+The last section of the user detail drawer, and the only place on the dashboard
+that can destroy something. Two actions, deliberately weighted differently.
+
+**Sign out everywhere** (`POST /api/admin/revoke-sessions`) drops every session row
+for the account and nothing else. It is reversible — they sign in again — so a
+plain `confirm()` is proportionate, the same as the grant controls above it. Two
+things it deliberately does *not* do: it does not change the password, because
+forcing a reset locks the real owner out of an account they are still using; and
+it does not invalidate a live password-reset token, because that link is the
+owner's way back in and an operator clearing a stranger's stolen session must not
+break the mail the owner is holding. The response carries the **count**, and the
+panel prints it — revoking zero sessions is a legitimate outcome and reads
+identically to success without that number.
+
+**Delete account** wires the long-existing `POST /api/admin/delete-user`, which had
+no button anywhere until this shipped. Erasure has no undo, no tombstone, and no
+recovery short of restoring the database, so `confirm()` is not enough: the
+operator has to **type the account's own address**, and the button stays disabled
+until it matches (trimmed and case-folded — they are copying out of a table, not
+proving they can type). That is what makes "I clicked the row above" impossible.
+
+**The `force` step is never automatic.** The server refuses an account with a live
+Stripe subscription. Retrying that refusal with `force: true` would make the guard
+decorative, so it becomes a second, separately-confirmed control carrying the
+server's own sentence — deleting a paying customer's account leaves a subscription
+billing against nobody, and the operator should cancel it in Stripe first.
+
+`apiSend` was extended to carry the server's `code` and `status` on the thrown
+Error for this. Additive: every existing caller still reads only `.message`, which
+is why referrals — which shows create rejections verbatim — needed no change.
+
+The store half lives in [`lib/data/session-revocation.js`](../../lib/data/session-revocation.js),
+its own module for the same reason `pro-grants.js` is: `auth-store.js` sits at an
+800-line cap with two lines of headroom, and the answer to that here is a sibling,
+not a raised ceiling.
+
 ### Adding a chart
 
 1. Add the aggregation as a **pure function** — `analytics.js` for time series and
@@ -226,8 +364,8 @@ source of truth — if a writer gains a column, update `COL` and this table.
 | Endpoint | Written by | Columns |
 |---|---|---|
 | `/authstore` | `lib/data/auth-store.js` | JSON — `{users: [...]}`, **redacted** via `exportRedacted()`. Only `ADMIN_VISIBLE_USER_KEYS` are present; credentials and session/reset tokens are never sent (see the security guide). Need a new column here? Add it to that allowlist. Trial state (`lifetimeStaged`, `lastStagedAt`, `trialLifecycle`) rides along — but `trialLifecycle` is **projected** through `ADMIN_VISIBLE_TRIAL_EMAILS`, not allowlisted wholesale, so a future field parked inside that bag is not auto-exported. |
-| `/promptlogs` | `lib/services/logging.js` | `timestamp, roomType, furnitureStyle, additionalPrompt, removeFurniture, userRole, referralSource, email, ipAddress, status, durationMs, model, attempts, errorCode, architectureDrift, seed` — the last two were appended after `COL` was written and went **unread** until the Signals tab; `architectureDrift` is `'yes' | 'no' | ''`, where empty means the question was never asked, NOT that the render was clean. |
-| `/rejectionlogs` | `lib/services/logging.js` | `timestamp, kind, code, detail, email, userId, ipAddress, userAgent` — requests refused **before** a render. Deliberately NOT rows in `prompt_logs.csv`: every row there is counted as a generation, so folding rejections in would inflate the headline volume and the success rate with work that never ran. |
+| `/promptlogs` | `lib/services/logging.js` | `timestamp, roomType, furnitureStyle, additionalPrompt, removeFurniture, userRole, referralSource, email, ipAddress, status, durationMs, model, attempts, errorCode, architectureDrift, seed, variation` — `architectureDrift` and `seed` were appended after `COL` was written and went **unread** until the Signals tab; `architectureDrift` is `'yes' | 'no' | ''`, where empty means the question was never asked, NOT that the render was clean. `variation` is `"n/N"` for a studio render (`"1/1"` when only one was asked for) and empty for chat / Exterior / v1-API renders, which never fan out. |
+| `/rejectionlogs` | `lib/services/logging.js` | `timestamp, kind, code, detail, email, userId, ipAddress, userAgent` — requests refused **before** a render. Deliberately NOT rows in `prompt_logs.csv`: every row there is counted as a generation, so folding rejections in would inflate the headline volume and the success rate with work that never ran. `kind` is one of `unstageable`, `daily_limit`, `rate_limit`, `api_concurrency`, `file_too_large`; aggregated by `analytics-rejections.js`, never by `analytics.js`, which is at its line cap. |
 | `/chatlogs` | `lib/services/logging.js` | `timestamp, userId, userMessage, aiResponse, fileNames, fileTypes, ipAddress, userAgent` |
 | `/masklogs` | `lib/services/logging.js` | `timestamp, prompt, model, geminiModel, imageWidth, imageHeight, userId, ipAddress, userAgent` |
 | `/contactlogs` | `routes/public.js` | `timestamp, userRole, referralSource, email, userAgent, ipAddress` |
@@ -415,9 +553,12 @@ Two rules the module keeps:
 
 ### Two columns this tab reads first
 
-`prompt_logs.csv` writes **16** columns; `analytics.js#COL` read 14.
+`prompt_logs.csv` writes **17** columns; `analytics.js#COL` read 14.
 `architectureDrift` (index 14) and `seed` (index 15) were appended to the writer
 after the column map was written and went unread in production for weeks.
+`variation` (index 16) was appended later still, to make the drift rate splittable
+by which variation of a multi-render request produced the row — see
+"Drift by variation" below.
 
 `architectureDrift` is now `reliability.architecture-drift`: a per-render
 quality-defect rate over renders that **all logged `status: ok`**. The model
@@ -427,15 +568,73 @@ one that is invisible in a success rate. `''` means the question was never asked
 **not** that the render was clean, so those rows are excluded exactly as
 unrecorded outcomes are.
 
-### What is deliberately not wired up
+### Drift by variation
 
-`rejection_logs.csv` is served at `GET /rejectionlogs` and the dashboard has never
-fetched it. It records every request turned away *before* a render — refused
-uploads, daily-cap hits, rate-limit bounces — which is the drop-off nothing else
-can see. `revenue.upgrade-candidates` is degraded without it and says so on the
-card: it can see who is at the cap *today*, but not who has been blocked on three
-separate days. Adding it is one entry in `admin.js#loadAll` and one `COL.REJECTION`
-block.
+`variation` (index 16) exists so `architectureDrift` can be split by *which* render
+of a multi-render request produced the row. The Stagify+ "Image Generations" slider
+fans one request out into up to three renders, and those extra renders used to be
+prompted differently from the first: variations 2..N carried an appended
+`"(Subtle variation n of N: … slightly different furniture arrangement …)"` inside
+the user's own free-text box. That did three things wrong — it hijacked the base
+prompt on the `custom` style when the box was empty, it paraphrased the architecture
+lock in the one place `lib/staging/prompts.js` forbids one, and it asked for
+furniture to be moved with no spatial constraint on the extra renders only. All N
+now share one prompt and differ only by their independent per-render seed.
+
+The column is what turns "the extra variations look worse" into a query:
+group rows on `variation`, exclude the `''` architecture verdicts as always, and
+compare drift rates across `1/N`, `2/N`, `3/N`. Rows written **before** the column
+existed are still classifiable — variations 2..N are exactly the rows whose
+`additionalPrompt` contains `Subtle variation` — so the pre-change baseline stays
+recoverable and the before/after comparison is real.
+
+### A failed secret is not a lost customer
+
+The **first** thing this section does is split the file in two. `endpoint_key` and
+`api_key_reject` are the buckets a *valid* credential never touches — the admin
+console's own key guard and the API-key guard — so a hit there is someone guessing
+or an operator fat-fingering their own key, not a customer being turned away.
+
+This is not a tidiness argument. On the first live dataset the tab was pointed at,
+**1,682 of 1,699 recorded refusals were `endpoint_key` bounces.** Charted together
+they drew a donut that was 99% "Rate limited", which hid both the thirteen real
+photo rejections underneath and the fact that something was hammering the key.
+`customerRefusals()` and `credentialGuardHits()` are the two readings, they
+partition the file exactly, and the cards never add them together.
+
+The classification is scoped to `kind === 'rate_limit'` on purpose, so a future
+writer reusing one of those strings in a different bucket is not swept into the
+security reading on the strength of its code alone.
+
+### Cap refusals: days, not hits
+
+`rejection_logs.csv` is loaded like every other feed and read through
+`COL.REJECTION`. It records every request turned away *before* a render — refused
+uploads, daily-cap hits, rate-limit bounces, API concurrency — which is the
+drop-off nothing else can see.
+
+`revenue.upgrade-candidates` ranks on it, and the unit is **separate days
+blocked, never hits**. Someone who retried eight times in one evening met the cap
+once and learnt where it was; someone stopped on four different days keeps coming
+back and keeps being turned away, and only the second is a buying signal. Counting
+hits would rank one frustrated session above four real ones.
+
+The rule keeps a **degraded branch** for the case where the file is empty, and so
+does the Insights section. That is not defensive clutter: a deploy that has never
+refused anything 404s this feed forever, and "no refusals recorded" must not
+render as "nobody is hitting the cap". The empty case gets a sentence; only a
+non-empty file gets a chart.
+
+Two smaller rules the aggregators depend on:
+
+- **`CODE` means something different in each `KIND`.** For an `unstageable` row it
+  is a rejection category from `lib/staging/unstageable.js`; for a `rate_limit`
+  row it is the *limiter name*. `topReasons` is therefore scoped to one kind —
+  charting them together would put two vocabularies on one axis.
+- **Cap hits are counted per person, and the anonymous share is printed.** A
+  refusal with neither an email nor a userId cannot be attributed to anyone, so
+  `capHitCoverage` reports how many those were and the ranking is labelled a
+  floor — the same discipline the activation funnel follows.
 
 ### Adding a rule
 

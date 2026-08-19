@@ -4,6 +4,192 @@
     "description": "Verwandeln Sie leere Räume mit KI-Staging. Laden Sie Fotos hoch und erhalten Sie in Sekunden professionell eingerichtete Ergebnisse. Kostenloses KI-Home-Staging für Immobilienmakler, Verkäufer und Käufer.",
     "keywords": "KI-Staging, Home Staging, Immobilien-Staging, virtuelles Staging, KI-Home-Staging, Immobilienaufbereitung, Immobilienfotografie, Staging-Tool, virtuelle Möbel"
   },
+    "apiKeys": {
+      "title": "API-Schlüssel & Guthaben",
+      "docs": "Dokumentation",
+      "searchLabel": "Schlüssel suchen",
+      "searchPlaceholder": "Schlüssel suchen…",
+      "listLabel": "Konto und Schlüssel",
+      "createKey": "Schlüssel erstellen",
+      "gone": "Dieser Schlüssel gehört nicht mehr zu diesem Konto.",
+      "signedOut": {
+        "title": "Melden Sie sich an, um API-Schlüssel zu verwalten",
+        "body": "Ihre Schlüssel und Ihr Guthaben liegen in Ihrem Stagify-Konto.",
+        "cta": "Anmelden"
+      },
+      "group": {
+        "account": "Konto",
+        "keys": "Schlüssel · {count} aktiv"
+      },
+      "nav": {
+        "usage": "Nutzung",
+        "billing": "Guthaben & Abrechnung"
+      },
+      "list": {
+        "credits": {
+          "one": "{count} Guthaben",
+          "other": "{count} Guthaben"
+        },
+        "rendersWeek": {
+          "one": "{count} Bild diese Woche",
+          "other": "{count} Bilder diese Woche"
+        },
+        "thisWeek": "{count} diese Woche",
+        "none": "Noch keine Schlüssel.",
+        "noMatch": "Kein Schlüssel passt zu „{query}“."
+      },
+      "status": {
+        "live": "aktiv",
+        "idle": "ruhend",
+        "revoked": "widerrufen"
+      },
+      "ago": {
+        "never": "nie",
+        "justNow": "gerade eben",
+        "minutes": {
+          "one": "vor {count} Minute",
+          "other": "vor {count} Minuten"
+        },
+        "hours": {
+          "one": "vor {count} Stunde",
+          "other": "vor {count} Stunden"
+        },
+        "days": {
+          "one": "vor {count} Tag",
+          "other": "vor {count} Tagen"
+        }
+      },
+      "value": {
+        "never": "Nie",
+        "none": "k. A."
+      },
+      "unit": {
+        "seconds": "{value} s",
+        "minutes": "{value} min",
+        "percent": "{value} %"
+      },
+      "key": {
+        "fallbackName": "API-Schlüssel",
+        "lastUsed": "zuletzt benutzt {ago}",
+        "rename": "Umbenennen",
+        "nameLabel": "Schlüsselname",
+        "save": "Speichern",
+        "cancel": "Abbrechen",
+        "chart": {
+          "one": "Bilder · letzter Tag",
+          "other": "Bilder · letzte {count} Tage"
+        },
+        "prefix": "Schlüsselpräfix",
+        "created": "Erstellt",
+        "lastUsedField": "Zuletzt benutzt",
+        "revokedField": "Widerrufen",
+        "revokedNote": "Widerrufen am {when}. Die Zeile bleibt hier, damit dieser Schlüssel in einem Zugriffsprotokoll weiterhin einem Namen zuzuordnen ist.",
+        "danger": {
+          "title": "Diesen Schlüssel widerrufen",
+          "body": "Alles, was ihn verwendet, funktioniert sofort nicht mehr, und das lässt sich nicht rückgängig machen. Der Schlüssel bleibt danach aufgelistet, damit Sie ihn in einem Zugriffsprotokoll wiedererkennen.",
+          "cta": "Schlüssel widerrufen"
+        },
+        "confirm": "Diesen Schlüssel widerrufen? Alles, was ihn verwendet, funktioniert sofort nicht mehr."
+      },
+      "stat": {
+        "renders": "Bilder · {days} T",
+        "delivered": "Geliefert",
+        "median": "Median pro Bild",
+        "creditsSpent": "Verbrauchtes Guthaben",
+        "balance": "Guthaben",
+        "purchased": "Gekauft",
+        "spent": "Verbraucht",
+        "runway": "Reichweite"
+      },
+      "note": {
+        "lastSeven": "{count} in den letzten 7 Tagen",
+        "usageUnavailable": "Nutzung nicht verfügbar",
+        "refunded": "{count} erstattet",
+        "refundedAuto": "{count} automatisch erstattet",
+        "noFailures": "keine fehlgeschlagenen Bilder",
+        "nothingYet": "noch nichts erstellt",
+        "inFlight": "{count} gerade in Arbeit",
+        "endToEnd": "von Anfang bis Ende",
+        "throughKey": "über diesen Schlüssel",
+        "inWindow": "in diesem Zeitraum",
+        "allTime": "insgesamt",
+        "images": {
+          "one": "Bild",
+          "other": "Bilder"
+        },
+        "runwayDays": {
+          "one": "≈ {count} Tag",
+          "other": "≈ {count} Tage"
+        },
+        "weekPace": "beim Tempo dieser Woche",
+        "noBurn": "keine Bilder in der letzten Woche"
+      },
+      "usage": {
+        "title": "Nutzung",
+        "lede": {
+          "one": "Letzter Tag, über alle Schlüssel des Kontos.",
+          "other": "Letzte {count} Tage, über alle Schlüssel des Kontos."
+        },
+        "failedTitle": "Nutzungsdaten konnten gerade nicht geladen werden.",
+        "failedBody": "Ihre Schlüssel und Ihr Guthaben sind davon nicht betroffen. Dieser Bereich zählt Anfragen, und nur diese Zählung fehlt. Laden Sie die Seite neu, um es erneut zu versuchen.",
+        "perDay": "Bilder pro Tag",
+        "byKey": "Nach Schlüssel",
+        "thKey": "Schlüssel",
+        "thRefunded": "Erstattet",
+        "thMedian": "Median",
+        "thCredits": "Guthaben",
+        "deletedKey": "Gelöschter Schlüssel",
+        "empty": "Keine Anfragen in diesem Zeitraum.",
+        "sampleNote": "Median gemessen an den letzten {count} gelieferten Bildern. Tage in UTC."
+      },
+      "billing": {
+        "title": "Guthaben & Abrechnung",
+        "lede": "Vorausbezahlt. Ein Guthaben ist ein geliefertes Bild, und ein fehlgeschlagenes Bild wird automatisch erstattet.",
+        "suspended": "Dieses Konto ist gesperrt und kann keine Bilder erstellen. Wenden Sie sich an <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a>.",
+        "buy": "Guthaben kaufen",
+        "buyCta": "Kaufen",
+        "activity": "Letzte Aktivität",
+        "thWhen": "Wann",
+        "thWhat": "Was",
+        "thChange": "Änderung",
+        "empty": "Noch nichts."
+      },
+      "ledger": {
+        "purchase": "Guthaben gekauft",
+        "debit": "Bild",
+        "refund": "Bild fehlgeschlagen, erstattet",
+        "clawback": "Zahlung rückgängig gemacht",
+        "grant": "Guthaben gutgeschrieben",
+        "adjustment": "Korrektur",
+        "activity": "Aktivität"
+      },
+      "chart": {
+        "empty": "Noch keine Anfragen.",
+        "tip": {
+          "one": "{day} UTC · {count} Anfrage",
+          "other": "{day} UTC · {count} Anfragen"
+        },
+        "tipRefunded": "{day} UTC · {count} Anfragen · {refunded} erstattet"
+      },
+      "dialog": {
+        "title": "Einen API-Schlüssel erstellen",
+        "label": "Geben Sie ihm einen Namen, damit Sie Ihre Schlüssel auseinanderhalten",
+        "placeholder": "Produktionsserver",
+        "revealTitle": "Kopieren Sie Ihren Schlüssel jetzt",
+        "revealWarn": "Dies ist das einzige Mal, dass er angezeigt wird. Wir speichern einen Hash, nicht den Schlüssel – wenn Sie ihn verlieren, müssen Sie einen neuen erstellen.",
+        "copy": "Kopieren",
+        "copied": "Kopiert",
+        "copyFallback": "Markieren und kopieren",
+        "done": "Ich habe ihn gespeichert",
+        "close": "Schließen",
+        "error": "Der Schlüssel konnte nicht erstellt werden. Bitte versuchen Sie es erneut."
+      },
+      "error": {
+        "checkout": "Der Bezahlvorgang konnte nicht gestartet werden. Bitte versuchen Sie es erneut.",
+        "billing": "Der Abrechnungsdienst ist nicht erreichbar. Bitte versuchen Sie es erneut.",
+        "server": "Der Server ist nicht erreichbar. Bitte versuchen Sie es erneut."
+      }
+    },
   "navigation": {
     "home": "Startseite",
     "about": "Über uns",
@@ -42,68 +228,356 @@
       "item5": "Gerahmter geometrischer Print",
       "items": {
         "standard": {
-          "bedroom": ["Eichenbett, weiße Bettwäsche", "Breite Eichenkommode, sechs Schübe", "Großer beiger Teppich unterm Bett", "Drei gerahmte Schwarz-Weiß-Prints", "Cremefarbener Sessel am Fenster"],
-          "livingRoom": ["Langes Dreisitzer-Sofa in Creme", "Gemusterter Teppich in Grau und Creme", "TV-Board in Weiß und Eiche", "Zwei graue Sessel mit Metallgestell", "Geigenfeige im Tontopf"],
-          "diningRoom": ["Sechsertisch mit Leinendecke", "Sechs cremefarbene Polsterstühle", "Sideboard aus heller Eiche", "Abstraktes Bild über dem Sideboard", "Weiße Orchidee als Tischdeko"],
-          "kitchen": ["Weiße Kücheninsel mit Spüle", "Grifflose weiße Küchenzeile", "Edelstahl-Kühlschrank und Backofen", "Vier graue Barhocker", "Zwei gerahmte geometrische Prints"],
-          "office": ["Weißer rechteckiger Schreibtisch", "Offenes Eichenregal", "Schwarzer Bürostuhl mit Netzrücken", "Graues niedriges Sideboard", "Zwei gerahmte abstrakte Bilder"],
-          "bathroom": ["Weißer Waschtisch, wandhängend", "Glasdusche mit Regenbrause", "Wandhängendes weißes WC", "Anthrazitfarbener Badvorleger", "Schmaler gerahmter Wandspiegel"]
+          "bedroom": [
+            "Eichenbett, weiße Bettwäsche",
+            "Breite Eichenkommode, sechs Schübe",
+            "Großer beiger Teppich unterm Bett",
+            "Drei gerahmte Schwarz-Weiß-Prints",
+            "Cremefarbener Sessel am Fenster"
+          ],
+          "livingRoom": [
+            "Langes Dreisitzer-Sofa in Creme",
+            "Gemusterter Teppich in Grau und Creme",
+            "TV-Board in Weiß und Eiche",
+            "Zwei graue Sessel mit Metallgestell",
+            "Geigenfeige im Tontopf"
+          ],
+          "diningRoom": [
+            "Sechsertisch mit Leinendecke",
+            "Sechs cremefarbene Polsterstühle",
+            "Sideboard aus heller Eiche",
+            "Abstraktes Bild über dem Sideboard",
+            "Weiße Orchidee als Tischdeko"
+          ],
+          "kitchen": [
+            "Weiße Kücheninsel mit Spüle",
+            "Grifflose weiße Küchenzeile",
+            "Edelstahl-Kühlschrank und Backofen",
+            "Vier graue Barhocker",
+            "Zwei gerahmte geometrische Prints"
+          ],
+          "office": [
+            "Weißer rechteckiger Schreibtisch",
+            "Offenes Eichenregal",
+            "Schwarzer Bürostuhl mit Netzrücken",
+            "Graues niedriges Sideboard",
+            "Zwei gerahmte abstrakte Bilder"
+          ],
+          "bathroom": [
+            "Weißer Waschtisch, wandhängend",
+            "Glasdusche mit Regenbrause",
+            "Wandhängendes weißes WC",
+            "Anthrazitfarbener Badvorleger",
+            "Schmaler gerahmter Wandspiegel"
+          ]
         },
         "modern": {
-          "bedroom": ["Nussbaumbett, weiße Bettwäsche", "Lange Nussbaumkommode, sechs Schübe", "Teppich mit Rastermuster in Creme", "Bouclé-Sessel am Fenster", "Gerahmter geometrischer Print"],
-          "livingRoom": ["Graues L-förmiges Ecksofa", "Geometrischer Teppich in Blau-Grau", "Couchtisch aus weißem Stein", "Schwarze Bogenstehlampe", "Dreiteiliges Meer-Triptychon"],
-          "diningRoom": ["Weißer Esstisch, schwarze Beine", "Sechs graue Polsterstühle", "Sideboard aus heller Eiche", "Zwei gerahmte Prints in Navy-Gold", "Trockenes Pampasgras in der Vase"],
-          "kitchen": ["Weiße Kücheninsel, graue Platte", "Weiße Hänge- und Hochschränke", "Drei schwarze Draht-Barhocker", "Zwei Edelstahl-Einbaubacköfen", "Schwarze Schale mit grünen Äpfeln"],
-          "office": ["Weißer Schreibtisch, Chrombeine", "Offenes Regal mit schwarzem Rahmen", "Breiter Monitor auf dem Tisch", "Grauer Bürostuhl auf Rollen", "Weißes niedriges Sideboard"],
-          "bathroom": ["Weißer Doppelwaschtisch, hängend", "Begehbare Glasdusche", "Große Strelitzie im Topf", "Weißes wandhängendes WC", "Grauer Badvorleger mit Rautenmuster"]
+          "bedroom": [
+            "Nussbaumbett, weiße Bettwäsche",
+            "Lange Nussbaumkommode, sechs Schübe",
+            "Teppich mit Rastermuster in Creme",
+            "Bouclé-Sessel am Fenster",
+            "Gerahmter geometrischer Print"
+          ],
+          "livingRoom": [
+            "Graues L-förmiges Ecksofa",
+            "Geometrischer Teppich in Blau-Grau",
+            "Couchtisch aus weißem Stein",
+            "Schwarze Bogenstehlampe",
+            "Dreiteiliges Meer-Triptychon"
+          ],
+          "diningRoom": [
+            "Weißer Esstisch, schwarze Beine",
+            "Sechs graue Polsterstühle",
+            "Sideboard aus heller Eiche",
+            "Zwei gerahmte Prints in Navy-Gold",
+            "Trockenes Pampasgras in der Vase"
+          ],
+          "kitchen": [
+            "Weiße Kücheninsel, graue Platte",
+            "Weiße Hänge- und Hochschränke",
+            "Drei schwarze Draht-Barhocker",
+            "Zwei Edelstahl-Einbaubacköfen",
+            "Schwarze Schale mit grünen Äpfeln"
+          ],
+          "office": [
+            "Weißer Schreibtisch, Chrombeine",
+            "Offenes Regal mit schwarzem Rahmen",
+            "Breiter Monitor auf dem Tisch",
+            "Grauer Bürostuhl auf Rollen",
+            "Weißes niedriges Sideboard"
+          ],
+          "bathroom": [
+            "Weißer Doppelwaschtisch, hängend",
+            "Begehbare Glasdusche",
+            "Große Strelitzie im Topf",
+            "Weißes wandhängendes WC",
+            "Grauer Badvorleger mit Rautenmuster"
+          ]
         },
         "scandinavian": {
-          "bedroom": ["Helles Eichenbett, weiße Wäsche", "Eichenkommode mit sechs Schüben", "Runder Juteteppich unterm Bett", "Zwei Eichen-Nachttische mit Lampen", "Zwei gerahmte abstrakte Prints"],
-          "livingRoom": ["Graues Dreisitzer-Sofa am Fenster", "Großer geflochtener Juteteppich", "Niedriger Couchtisch aus Eiche", "Zwei Loungesessel mit Geflecht", "Monstera und Geigenfeige im Topf"],
-          "diningRoom": ["Langer Eichentisch mit Leinenläufer", "Sechs Stühle aus heller Eiche", "Eichen-Sideboard an der Wand", "Gedeckter Tisch mit Tellern, Gläsern", "Trockenzweige in einer Schale"],
-          "kitchen": ["Eicheninsel mit heller Steinplatte", "Hängeschränke aus heller Eiche", "Weißer Backofen unter der Platte", "Drei Barhocker aus Eiche", "Weiße Metrofliesen als Spritzschutz"],
-          "office": ["Eichenschreibtisch am Fenster", "Schmales offenes Eichenregal", "Eichenstuhl mit grauem Sitzkissen", "Weißer Rollcontainer", "Messinglampe und Kräuter im Topf"],
-          "bathroom": ["Begehbare Glasdusche", "Hängender Eichen-Waschtisch", "Mattschwarze Regenbrause", "Beiger Badvorleger auf Parkett", "Wäschekorb aus Geflecht, Handtücher"]
+          "bedroom": [
+            "Helles Eichenbett, weiße Wäsche",
+            "Eichenkommode mit sechs Schüben",
+            "Runder Juteteppich unterm Bett",
+            "Zwei Eichen-Nachttische mit Lampen",
+            "Zwei gerahmte abstrakte Prints"
+          ],
+          "livingRoom": [
+            "Graues Dreisitzer-Sofa am Fenster",
+            "Großer geflochtener Juteteppich",
+            "Niedriger Couchtisch aus Eiche",
+            "Zwei Loungesessel mit Geflecht",
+            "Monstera und Geigenfeige im Topf"
+          ],
+          "diningRoom": [
+            "Langer Eichentisch mit Leinenläufer",
+            "Sechs Stühle aus heller Eiche",
+            "Eichen-Sideboard an der Wand",
+            "Gedeckter Tisch mit Tellern, Gläsern",
+            "Trockenzweige in einer Schale"
+          ],
+          "kitchen": [
+            "Eicheninsel mit heller Steinplatte",
+            "Hängeschränke aus heller Eiche",
+            "Weißer Backofen unter der Platte",
+            "Drei Barhocker aus Eiche",
+            "Weiße Metrofliesen als Spritzschutz"
+          ],
+          "office": [
+            "Eichenschreibtisch am Fenster",
+            "Schmales offenes Eichenregal",
+            "Eichenstuhl mit grauem Sitzkissen",
+            "Weißer Rollcontainer",
+            "Messinglampe und Kräuter im Topf"
+          ],
+          "bathroom": [
+            "Begehbare Glasdusche",
+            "Hängender Eichen-Waschtisch",
+            "Mattschwarze Regenbrause",
+            "Beiger Badvorleger auf Parkett",
+            "Wäschekorb aus Geflecht, Handtücher"
+          ]
         },
         "coastal": {
-          "bedroom": ["Weißes Bett mit Lattenkopfteil", "Kommode aus weiß gekalktem Holz", "Aquafarbener Streifenläufer", "Rattansessel am Fenster", "Drei gerahmte Muschel-Prints"],
-          "livingRoom": ["Zwei weiße Sofas mit Husse", "Großer Sisalteppich, geflochten", "Couchtisch aus verwittertem Holz", "Zwei Loungesessel aus Korbgeflecht", "Beistelltisch mit Tauumwicklung"],
-          "diningRoom": ["Langer Esstisch, grau gekalkt", "Sechs Stühle aus Seegrasgeflecht", "Weiß patiniertes Sideboard", "Korbbank mit gestreiftem Sitzkissen", "Gerahmtes Bild einer Meereswelle"],
-          "kitchen": ["Weiße Küchenzeile im Shaker-Stil", "Weiße Kücheninsel mit Steinplatte", "Drei Barhocker aus Geflecht", "Zwei Edelstahl-Einbaubacköfen", "Holzbrett neben der Spüle"],
-          "office": ["Rustikaler Schreibtisch mit Böcken", "Vier gerahmte Meeresbilder", "Aktenschrank in Mintgrün", "Schreibtischstuhl aus Rattan", "Tischlampe in Meergrün, Keramik"],
-          "bathroom": ["Weißer Waschtisch mit Becken", "Große Palme im Korb", "Badvorleger in Aqua, marmoriert", "Gerahmter Spiegel über dem Becken", "Deckenleuchte in gebürstetem Nickel"]
+          "bedroom": [
+            "Weißes Bett mit Lattenkopfteil",
+            "Kommode aus weiß gekalktem Holz",
+            "Aquafarbener Streifenläufer",
+            "Rattansessel am Fenster",
+            "Drei gerahmte Muschel-Prints"
+          ],
+          "livingRoom": [
+            "Zwei weiße Sofas mit Husse",
+            "Großer Sisalteppich, geflochten",
+            "Couchtisch aus verwittertem Holz",
+            "Zwei Loungesessel aus Korbgeflecht",
+            "Beistelltisch mit Tauumwicklung"
+          ],
+          "diningRoom": [
+            "Langer Esstisch, grau gekalkt",
+            "Sechs Stühle aus Seegrasgeflecht",
+            "Weiß patiniertes Sideboard",
+            "Korbbank mit gestreiftem Sitzkissen",
+            "Gerahmtes Bild einer Meereswelle"
+          ],
+          "kitchen": [
+            "Weiße Küchenzeile im Shaker-Stil",
+            "Weiße Kücheninsel mit Steinplatte",
+            "Drei Barhocker aus Geflecht",
+            "Zwei Edelstahl-Einbaubacköfen",
+            "Holzbrett neben der Spüle"
+          ],
+          "office": [
+            "Rustikaler Schreibtisch mit Böcken",
+            "Vier gerahmte Meeresbilder",
+            "Aktenschrank in Mintgrün",
+            "Schreibtischstuhl aus Rattan",
+            "Tischlampe in Meergrün, Keramik"
+          ],
+          "bathroom": [
+            "Weißer Waschtisch mit Becken",
+            "Große Palme im Korb",
+            "Badvorleger in Aqua, marmoriert",
+            "Gerahmter Spiegel über dem Becken",
+            "Deckenleuchte in gebürstetem Nickel"
+          ]
         },
         "farmhouse": {
-          "bedroom": ["Rustikales Bettgestell aus Kiefer", "Weiß gekalkte Kommode, sechs Schübe", "Blumenquilt und Patchwork-Decke", "Schaukelstuhl mit Geflechtsitz", "Drei gerahmte Bauernhof-Prints"],
-          "livingRoom": ["Cremefarbenes Dreisitzer-Sofa", "Großer geflochtener Juteteppich", "Couchtisch aus Altholz", "Zwei Sessel mit Leinenbezug", "Bilderwand mit Pflanzendrucken"],
-          "diningRoom": ["Langer Esstisch aus alter Eiche", "Weiß patiniertes Sideboard", "Rot karierte Tischdecke", "Sechs Polsterstühle mit Blumenmuster", "Gläser mit orangenen Gartenblumen"],
-          "kitchen": ["Weiß gekalkte Shaker-Küchenzeile", "Landhausspüle mit Frontschürze", "Frühstückstresen aus Massivholz", "Drei rustikale Holz-Barhocker", "Offene Regale mit Töpfen und Kräutern"],
-          "office": ["Massiver Schreibtisch aus Altholz", "Hohes Kiefernregal mit Büchern", "Brauner Lederdrehstuhl auf Rollen", "Schwarzer Aktenschrank aus Metall", "Runde Wanduhr im Landhausstil"],
-          "bathroom": ["Freistehende Wanne mit Löwenfüßen", "Weißes Standwaschbecken mit Armatur", "Eckdusche mit Glaswänden", "Ovaler geflochtener Teppich", "Bemaltes Holzschild an der Wand"]
+          "bedroom": [
+            "Rustikales Bettgestell aus Kiefer",
+            "Weiß gekalkte Kommode, sechs Schübe",
+            "Blumenquilt und Patchwork-Decke",
+            "Schaukelstuhl mit Geflechtsitz",
+            "Drei gerahmte Bauernhof-Prints"
+          ],
+          "livingRoom": [
+            "Cremefarbenes Dreisitzer-Sofa",
+            "Großer geflochtener Juteteppich",
+            "Couchtisch aus Altholz",
+            "Zwei Sessel mit Leinenbezug",
+            "Bilderwand mit Pflanzendrucken"
+          ],
+          "diningRoom": [
+            "Langer Esstisch aus alter Eiche",
+            "Weiß patiniertes Sideboard",
+            "Rot karierte Tischdecke",
+            "Sechs Polsterstühle mit Blumenmuster",
+            "Gläser mit orangenen Gartenblumen"
+          ],
+          "kitchen": [
+            "Weiß gekalkte Shaker-Küchenzeile",
+            "Landhausspüle mit Frontschürze",
+            "Frühstückstresen aus Massivholz",
+            "Drei rustikale Holz-Barhocker",
+            "Offene Regale mit Töpfen und Kräutern"
+          ],
+          "office": [
+            "Massiver Schreibtisch aus Altholz",
+            "Hohes Kiefernregal mit Büchern",
+            "Brauner Lederdrehstuhl auf Rollen",
+            "Schwarzer Aktenschrank aus Metall",
+            "Runde Wanduhr im Landhausstil"
+          ],
+          "bathroom": [
+            "Freistehende Wanne mit Löwenfüßen",
+            "Weißes Standwaschbecken mit Armatur",
+            "Eckdusche mit Glaswänden",
+            "Ovaler geflochtener Teppich",
+            "Bemaltes Holzschild an der Wand"
+          ]
         },
         "luxury": {
-          "bedroom": ["Gestepptes Bett in Navyblau", "Mahagoni-Kommode, sechs Schübe", "Zwei Marmorbilder in Goldrahmen", "Zwei Nachttischlampen aus Glas", "Samtkissen in Juwelentönen"],
-          "livingRoom": ["Ecksofa aus navyblauem Samt", "Couchtisch aus weißem Marmor", "Zwei Samtsessel in Creme", "Abstrakter Teppich in Blau und Gold", "Triptychon in Goldrahmen an der Wand"],
-          "diningRoom": ["Langer Esstisch mit Tischdecke", "Sechs blaue Samtstühle", "Holz-Sideboard mit Marmorplatte", "Kristallleuchter als Tischmitte", "Tischläufer aus Goldbrokat"],
-          "kitchen": ["L-Küchenzeile aus heller Eiche", "Kücheninsel aus Quarzstein", "Zwei cremefarbene Barhocker", "Zwei Edelstahl-Einbaubacköfen", "Weiße Orchidee in der Glasvase"],
-          "office": ["Schreibtisch aus Marmor und Gold", "Geschnitztes Bücherregal aus Holz", "Grüner Bürostuhl aus Steppleder", "Geigenfeige im Messingtopf", "Kannelierte Kristall-Tischlampe"],
-          "bathroom": ["Freistehende ovale Badewanne", "Eckdusche mit Glaswänden", "Doppelwaschtisch aus dunklem Holz", "Stand-Wannenarmatur in Messing", "Wandhängendes WC am Fenster"]
+          "bedroom": [
+            "Gestepptes Bett in Navyblau",
+            "Mahagoni-Kommode, sechs Schübe",
+            "Zwei Marmorbilder in Goldrahmen",
+            "Zwei Nachttischlampen aus Glas",
+            "Samtkissen in Juwelentönen"
+          ],
+          "livingRoom": [
+            "Ecksofa aus navyblauem Samt",
+            "Couchtisch aus weißem Marmor",
+            "Zwei Samtsessel in Creme",
+            "Abstrakter Teppich in Blau und Gold",
+            "Triptychon in Goldrahmen an der Wand"
+          ],
+          "diningRoom": [
+            "Langer Esstisch mit Tischdecke",
+            "Sechs blaue Samtstühle",
+            "Holz-Sideboard mit Marmorplatte",
+            "Kristallleuchter als Tischmitte",
+            "Tischläufer aus Goldbrokat"
+          ],
+          "kitchen": [
+            "L-Küchenzeile aus heller Eiche",
+            "Kücheninsel aus Quarzstein",
+            "Zwei cremefarbene Barhocker",
+            "Zwei Edelstahl-Einbaubacköfen",
+            "Weiße Orchidee in der Glasvase"
+          ],
+          "office": [
+            "Schreibtisch aus Marmor und Gold",
+            "Geschnitztes Bücherregal aus Holz",
+            "Grüner Bürostuhl aus Steppleder",
+            "Geigenfeige im Messingtopf",
+            "Kannelierte Kristall-Tischlampe"
+          ],
+          "bathroom": [
+            "Freistehende ovale Badewanne",
+            "Eckdusche mit Glaswänden",
+            "Doppelwaschtisch aus dunklem Holz",
+            "Stand-Wannenarmatur in Messing",
+            "Wandhängendes WC am Fenster"
+          ]
         },
         "midcentury": {
-          "bedroom": ["Nussbaumbett, graues Kopfteil", "Lange Teakkommode, sechs Schübe", "Schwarzer Loungesessel aus Leder", "Geometrischer Quilt, senfgelbe Decke", "Gerahmte Reiseposter an der Wand"],
-          "livingRoom": ["Petrolfarbenes Dreisitzer-Sofa", "Teppich mit Muster in Gold und Orange", "Zwei Loungesessel aus Palisander", "Niedriger Couchtisch aus Nussbaum", "Sechs abstrakte Prints als Raster"],
-          "diningRoom": ["Runder Tisch mit Blumendecke", "Vier Schalenstühle aus Kunststoff", "Langes Teak-Sideboard auf Beinen", "Zweite Pendelleuchte über dem Tisch", "Bernsteingläser und Trockenblumen"],
-          "kitchen": ["Weiße Kücheninsel mit Steinplatte", "Wand aus weißen Hängeschränken", "Drei orange Barhocker aus Vinyl", "Kühlschrank aus Edelstahl", "Farn auf weißem Pflanzenständer"],
-          "office": ["Nussbaum-Schreibtisch mit Container", "Drehstuhl aus hellbraunem Leder", "Offenes Teakregal", "Chrom-Tischlampe mit Kuppelschirm", "Drei gerahmte abstrakte Prints"],
-          "bathroom": ["Nussbaum-Waschtisch, weißes Becken", "Eckdusche mit Glaswänden", "Große Topfpflanze auf dem Ständer", "Gemusterter Läufer auf dem Boden", "Holz-Abfalleimer am Waschtisch"]
+          "bedroom": [
+            "Nussbaumbett, graues Kopfteil",
+            "Lange Teakkommode, sechs Schübe",
+            "Schwarzer Loungesessel aus Leder",
+            "Geometrischer Quilt, senfgelbe Decke",
+            "Gerahmte Reiseposter an der Wand"
+          ],
+          "livingRoom": [
+            "Petrolfarbenes Dreisitzer-Sofa",
+            "Teppich mit Muster in Gold und Orange",
+            "Zwei Loungesessel aus Palisander",
+            "Niedriger Couchtisch aus Nussbaum",
+            "Sechs abstrakte Prints als Raster"
+          ],
+          "diningRoom": [
+            "Runder Tisch mit Blumendecke",
+            "Vier Schalenstühle aus Kunststoff",
+            "Langes Teak-Sideboard auf Beinen",
+            "Zweite Pendelleuchte über dem Tisch",
+            "Bernsteingläser und Trockenblumen"
+          ],
+          "kitchen": [
+            "Weiße Kücheninsel mit Steinplatte",
+            "Wand aus weißen Hängeschränken",
+            "Drei orange Barhocker aus Vinyl",
+            "Kühlschrank aus Edelstahl",
+            "Farn auf weißem Pflanzenständer"
+          ],
+          "office": [
+            "Nussbaum-Schreibtisch mit Container",
+            "Drehstuhl aus hellbraunem Leder",
+            "Offenes Teakregal",
+            "Chrom-Tischlampe mit Kuppelschirm",
+            "Drei gerahmte abstrakte Prints"
+          ],
+          "bathroom": [
+            "Nussbaum-Waschtisch, weißes Becken",
+            "Eckdusche mit Glaswänden",
+            "Große Topfpflanze auf dem Ständer",
+            "Gemusterter Läufer auf dem Boden",
+            "Holz-Abfalleimer am Waschtisch"
+          ]
         },
         "custom": {
-          "bedroom": ["Grünes Samt-Kopfteil, wellenförmig", "Geometrischer Teppich, grün-creme", "Nussbaumkommode, sechs Schübe", "Schwarzer Nachttisch, Messinggriffe", "Grüne Polsterbank am Bettende"],
-          "livingRoom": ["Geschwungenes Sofa in Smaragdsamt", "Sideboard in Schwarzlack, Intarsien", "Zwei Drehsessel in Rosé", "Teppich mit grünem Fächermuster", "Goldener Sonnenspiegel an der Wand"],
-          "diningRoom": ["Runder Esstisch aus weißem Marmor", "Kanneliertes Nussbaum-Sideboard", "Sechs grüne Samtstühle", "Runder grüner Medaillonteppich", "Weiße Rosen in der Glasvase"],
-          "kitchen": ["Schwarzer Barwagen mit Messingplatte", "Palme im Messing-Übertopf", "Läufer mit grünem Blattmuster", "Drei Skizzen in Goldrahmen", "Kupferdosen und Gläser"],
-          "office": ["Kannelierter Tisch mit Messingfuß", "Hoher schwarzer Vitrinenschrank", "Grüner Teppich im Zickzackmuster", "Grüner Schalenstuhl aus Samt", "Messinglampe, grüner Glasschirm"],
-          "bathroom": ["Freistehende ovale Badewanne", "Kannelierter Nussbaum-Waschtisch", "Marmorpodest unter der Wanne", "Palme im Messing-Übertopf auf Fuß", "Badvorleger mit grünem Muster"]
+          "bedroom": [
+            "Grünes Samt-Kopfteil, wellenförmig",
+            "Geometrischer Teppich, grün-creme",
+            "Nussbaumkommode, sechs Schübe",
+            "Schwarzer Nachttisch, Messinggriffe",
+            "Grüne Polsterbank am Bettende"
+          ],
+          "livingRoom": [
+            "Geschwungenes Sofa in Smaragdsamt",
+            "Sideboard in Schwarzlack, Intarsien",
+            "Zwei Drehsessel in Rosé",
+            "Teppich mit grünem Fächermuster",
+            "Goldener Sonnenspiegel an der Wand"
+          ],
+          "diningRoom": [
+            "Runder Esstisch aus weißem Marmor",
+            "Kanneliertes Nussbaum-Sideboard",
+            "Sechs grüne Samtstühle",
+            "Runder grüner Medaillonteppich",
+            "Weiße Rosen in der Glasvase"
+          ],
+          "kitchen": [
+            "Schwarzer Barwagen mit Messingplatte",
+            "Palme im Messing-Übertopf",
+            "Läufer mit grünem Blattmuster",
+            "Drei Skizzen in Goldrahmen",
+            "Kupferdosen und Gläser"
+          ],
+          "office": [
+            "Kannelierter Tisch mit Messingfuß",
+            "Hoher schwarzer Vitrinenschrank",
+            "Grüner Teppich im Zickzackmuster",
+            "Grüner Schalenstuhl aus Samt",
+            "Messinglampe, grüner Glasschirm"
+          ],
+          "bathroom": [
+            "Freistehende ovale Badewanne",
+            "Kannelierter Nussbaum-Waschtisch",
+            "Marmorpodest unter der Wanne",
+            "Palme im Messing-Übertopf auf Fuß",
+            "Badvorleger mit grünem Muster"
+          ]
         }
       }
     },
@@ -398,9 +872,19 @@
       "stat2": "nutzen KI bereits, um Angebotsinhalte zu erstellen",
       "source": "Zahlen aus der Technologieumfrage 2025 der National Association of Realtors unter Immobilienmaklern.",
       "sourceCite": "Quelle: National Association of Realtors, Technologieumfrage 2025",
-      "usageAria": "KI-Nutzung unter Maklern: 20 % täglich, 22 % wöchentlich, 27 % ein paar Mal im Monat, 32 % noch nicht"
+      "usageAria": "KI-Nutzung unter Maklern: 20 % täglich, 22 % wöchentlich, 27 % ein paar Mal im Monat, 32 % noch nicht",
+      "yearsLabel": "Erhebungsjahr",
+      "y2024": {
+        "stat1": "der Makler haben ChatGPT in den letzten 12 Monaten genutzt",
+        "stat2": "nutzen KI- und Machine-Learning-Tools in ihrem Geschäft",
+        "usageAria": "KI-Nutzung unter Maklern: 9 % täglich, 17 % wöchentlich, 30 % ein paar Mal im Monat, 45 % noch nicht"
+      }
     },
     "plus": {
+      "api": {
+        "text": "Sie arbeiten mit eigener Software? Stagen Sie Fotos programmatisch über die Stagify-API.",
+        "link": "Zur API-Dokumentation"
+      },
       "title": "Gehen Sie weiter mit Stagify+",
       "pro": {
         "name": "Stagify+",
@@ -860,6 +1344,7 @@
     "terms": "Nutzungsbedingungen",
     "contact": "Kontakt",
     "status": "Status",
+    "developers": "API",
     "copyright": "Stagify.ai"
   },
   "auth": {
@@ -920,6 +1405,8 @@
     "signOut": "Abmelden",
     "manageBillingAria": "Abrechnung in Stripe verwalten",
     "stripeHelp": "Stripe-Hilfecenter",
+    "apiKeys": "API-Schlüssel & Guthaben",
+    "stagifyApi": "Stagify API",
     "reportIssue": "Problem melden",
     "report": {
       "title": "Problem melden",
@@ -1259,11 +1746,11 @@
       "description": "Kontaktieren Sie das Stagify.ai-Team für Support, Partnerschaften oder Fragen zu unserem kostenlosen KI-Home-Staging-Tool."
     },
     "stagifyPlus": {
-      "title": "Stagify+ – Tarife & Preise | Stagify.ai",
+      "title": "Stagify+ Tarife & Preise | Stagify.ai",
       "description": "Stagify+: Möbel entfernen, der KI-Designer, das Masking Studio, hochwertigere Modelle und unbegrenztes Staging. Pläne und Preise ansehen."
     },
     "enterprise": {
-      "title": "Stagify Enterprise – Nutzungsbasiertes KI-Staging für Teams",
+      "title": "Stagify Enterprise | Nutzungsbasiertes KI-Staging für Teams",
       "description": "Geben Sie Ihrem ganzen Team unbegrenztes KI-Staging mit nutzungsbasierter Abrechnung für 0,15 $ pro Generierung. Eine Rechnung, keine Gebühren pro Platz."
     },
     "maskingStudio": {
@@ -1275,6 +1762,10 @@
       "title": "Außen-Studio | Stagify.ai - KI-Bildoptimierung für Fassaden",
       "description": "Machen Sie aus einem grauen, vollgestellten Außenfoto die Aufnahme, die das Exposé verdient. Tageszeit ändern, Himmel aufklaren, Autos und Mülltonnen entfernen — während die Immobilie selbst genau so bleibt, wie sie fotografiert wurde.",
       "keywords": "Außenwirkung, Außenfoto bearbeiten, Immobilienfoto optimieren, Himmel ersetzen, Autos entfernen, Dämmerungsaufnahme Immobilien, goldene Stunde, KI-Bildbearbeitung, Fassade, Stagify"
+    },
+    "developers": {
+      "title": "Stagify API für Entwickler | Stagify.ai",
+      "description": "Inszenieren Sie Immobilienfotos aus Ihrem eigenen Code. Ein HTTP-Aufruf pro Bild, Guthaben im Voraus zu 0,15 $ pro Bild, ohne Abo und ohne Mindestmenge."
     }
   },
   "basicMask": {
@@ -1797,5 +2288,100 @@
     "heading": "Diese Seite existiert nicht",
     "body": "Der Link ist möglicherweise defekt, oder die Seite wurde verschoben. Alles andere ist noch genau dort, wo Sie es verlassen haben.",
     "homeCta": "Zurück zur Startseite"
+  },
+  "developers": {
+    "crumb": "API-Dokumentation",
+    "lede": "Inszenieren Sie ein Immobilienfoto aus Ihrem eigenen Code. Ein HTTP-Aufruf liefert ein möbliertes Bild zurück. Guthaben im Voraus zu 0,15 $ pro Bild, ohne Abo, ohne Mindestmenge und ohne Rechnung, die aus dem Ruder läuft.",
+    "toc": "Auf dieser Seite",
+    "contact": "Fragen, höhere Limits oder eine Rechnung statt Karte: <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a>.",
+    "facts": {
+      "baseUrl": "Basis-URL",
+      "auth": "Authentifizierung",
+      "contentType": "Inhaltstyp"
+    },
+    "intro": {
+      "h2": "Einführung",
+      "p1": "Die API stellt genau eine Sache bereit: die Staging-Pipeline hinter der Web-App. Sie senden ein Foto eines Raums, nennen einen Raumtyp und einen Möbelstil und erhalten das möblierte Bild in derselben Antwort. Es gibt keine Job-Warteschlange und auf dem normalen Weg nichts abzufragen.",
+      "p2": "Guthaben sind ganze Bilder. Sie kaufen sie im Voraus, und jedes erfolgreiche Rendering verbraucht eines. Ein fehlgeschlagenes Rendering wird automatisch erstattet, Sie zahlen also nur für ein Foto, das Sie erhalten haben. Und da das Guthaben vorausbezahlt ist, kostet ein gestohlener Schlüssel Sie höchstens das, was noch darauf ist. Keine Rechnung am Monatsende.",
+      "note": "Schlüssel sind für die Server-zu-Server-Nutzung gedacht. Die API sendet keine CORS-Header, ein Browser kann sie also nicht direkt aufrufen; das ist Absicht, und ein aus Browser-JavaScript erreichbarer Schlüssel ist ein geleakter Schlüssel. Wir zeigen einen Schlüssel einmal, speichern nur einen Hash und widerrufen sofort."
+    },
+    "quickstart": {
+      "h2": "Schnellstart",
+      "p1": "Erstellen Sie einen Schlüssel auf Ihrer <a href=\"api-keys.html\">API-Schlüssel-Seite</a>, kaufen Sie ein Guthabenpaket und senden Sie ein Foto. Die Antwort enthält das möblierte Bild als Data-URL.",
+      "note": "Ein Rendering dauert bis zu ein paar Minuten. Stellen Sie das Lese-Timeout Ihres Clients auf <strong>300 Sekunden</strong> und wiederholen Sie mit <em>demselben</em> <code>Idempotency-Key</code>. Genau das garantiert, dass Ihnen ein Foto nie zweimal berechnet wird.",
+      "packs": "Guthabenpakete"
+    },
+    "packs": {
+      "loading": "Preise werden geladen…",
+      "images": "Bilder",
+      "each": "pro Bild",
+      "empty": "Guthabenpakete sind derzeit nicht verfügbar. <a href=\"contact.html\">Melden Sie sich</a>, wir kümmern uns darum."
+    },
+    "params": {
+      "h2": "Anfrageparameter",
+      "lede": "<code>POST /api/v1/renders</code>, gesendet als <code>multipart/form-data</code>. Alle unten aufgeführten zulässigen Werte werden auch als JSON von <code>GET /api/v1/options</code> ausgeliefert, das keinen API-Schlüssel benötigt, ein Client kann damit eigene Auswahllisten füllen, statt diese Tabelle fest zu verdrahten.",
+      "thField": "Feld",
+      "thType": "Typ",
+      "thNotes": "Hinweise",
+      "image": "<strong>Erforderlich.</strong> Das Foto des Raums. JPEG, PNG oder WebP, bis 25 MB. Geprüft wird der MIME-Typ, nicht die Dateiendung.",
+      "roomType": "<code>Bedroom</code>, <code>Living room</code>, <code>Dining room</code>, <code>Kitchen</code>, <code>Office</code>, <code>Bathroom</code>, <code>Outdoors</code>, <code>Dorm</code>. Standard <code>Living room</code>. <strong>Groß-/Kleinschreibung und Leerzeichen zählen</strong>, und ein unbekannter Wert wird <strong>nicht abgelehnt</strong>. Er wird als freier Text in den Prompt geschrieben, <code>Living Room</code> ist also nicht <code>Living room</code>.",
+      "furnitureStyle": "<code>standard</code>, <code>modern</code>, <code>midcentury</code>, <code>scandinavian</code>, <code>luxury</code>, <code>coastal</code>, <code>farmhouse</code>, <code>custom</code>. Standard <code>standard</code>, wozu ein unbekannter Wert auch stillschweigend wird. <code>custom</code> verwendet Ihren <code>additionalPrompt</code> anstelle des eingebauten Stiltexts.",
+      "additionalPrompt": "Freitext-Vorgaben für dieses Rendering.",
+      "removeFurniture": "Den Raum vor dem Staging leeren. Senden Sie <code>true</code> oder <code>on</code>; alles andere, auch <code>1</code> und <code>yes</code>, gilt als falsch.",
+      "keepFurniture": "Freitext, der benennt, was stehen bleiben soll, z. B. <code>keep the dining table and the built-in shelves</code>. Wird nur gelesen, wenn <code>removeFurniture</code> gesetzt ist. 500 Zeichen.",
+      "furnitureImage": "Bis zu 5 Referenzfotos von Möbeln, denen nachempfunden werden soll. Gleiche Formate und Größenbeschränkung wie <code>image</code>.",
+      "labelVirtuallyStaged": "Brennt den Hinweis „Virtually staged“ in das Ergebnisbild.",
+      "stampStyle": "<code>dark</code>, <code>light</code>, <code>minimal</code>, <code>banner</code>. Standard <code>dark</code>. Groß-/Kleinschreibung egal; ein unbekannter Wert fällt auf den Standard zurück.",
+      "stampScale": "<code>0.7</code> bis <code>1.6</code>, Standard <code>1</code>. Werte außerhalb des Bereichs werden begrenzt statt abgelehnt.",
+      "stampLang": "Die Sprache des Hinweises: <code>english</code>, <code>spanish</code>, <code>french</code>, <code>german</code>, <code>chinese</code>, <code>korean</code>, <code>portuguese</code>, <code>russian</code>, <code>italian</code>, <code>japanese</code>, <code>dutch</code>. Standard <code>english</code>.",
+      "variations": "Nur <code>1</code> wird akzeptiert. Für mehr senden Sie parallele Anfragen."
+    },
+    "idem": {
+      "h2": "Idempotenz",
+      "p1": "Ein Rendering hält die Verbindung minutenlang offen. Der Fehler, der Sie wirklich trifft, ist deshalb ein abgebrochener Socket, nachdem die Arbeit fertig war: bezahlt und ohne Ergebnis. Senden Sie bei jeder Anfrage einen <code>Idempotency-Key</code>-Header und wiederholen Sie mit <em>demselben</em> Wert.",
+      "thHave": "Was bei uns gespeichert ist",
+      "thRetry": "Was ein erneuter Versuch bewirkt",
+      "r1a": "Eine erfolgreiche Anfrage, gleiche Parameter",
+      "r1b": "Liefert das gespeicherte Ergebnis mit <code>X-Stagify-Replayed: true</code>. Keine zweite Abbuchung.",
+      "r2a": "Eine noch laufende Anfrage",
+      "r2b": "<code>409 REQUEST_IN_FLIGHT</code>. Warten, dann erneut versuchen.",
+      "r3a": "Eine mitten im Rendering abgebrochene Anfrage",
+      "r3b": "Läuft auf der bestehenden Abbuchung erneut, bis zu drei Versuche.",
+      "r4a": "Derselbe Schlüssel mit anderen Parametern",
+      "r4b": "<code>422 IDEMPOTENCY_KEY_REUSED</code>. Nehmen Sie einen neuen Schlüssel.",
+      "note": "Den Header wegzulassen ist erlaubt und bedeutet keinen Wiederholungsschutz, das ist der ehrliche Standard. Wir leiten keinen Schlüssel aus Ihrem Foto ab: zwei wirklich getrennte Renderings desselben Raums würden kollidieren, und der zweite Aufrufer bekäme das Bild des ersten."
+    },
+    "disclosure": {
+      "h2": "Kennzeichnungshinweise",
+      "p1": "Viele MLS- und NAR-Regeln verlangen, dass ein virtuell möbliertes Foto dies auch angibt. <code>labelVirtuallyStaged</code> brennt diesen Hinweis in die Pixel, statt ihn als Metadatum anzuhängen, das ein nachgelagertes Werkzeug entfernen kann.",
+      "note": "Kann der Hinweis nicht angebracht werden, wird das Bild <strong>zurückgehalten statt unmarkiert ausgeliefert</strong>, der Aufruf antwortet <code>500 DISCLOSURE_STAMP_FAILED</code> und Ihr Guthaben wird erstattet. Dieses Verhalten lässt sich nicht abschalten, und es gibt keinen Standard pro Schlüssel, der es still deaktiviert."
+    },
+    "errors": {
+      "h2": "Fehler",
+      "lede": "Jeder Fehlschlag antwortet mit <code>{ \"error\": \"…\", \"code\": \"…\" }</code>. Verzweigen Sie über <code>code</code>, nie über die Meldung. Meldungen ändern sich, Codes nicht.",
+      "thStatus": "Status",
+      "thCode": "Code",
+      "thAction": "Was zu tun ist",
+      "keyMissing": "Prüfen Sie den <code>Authorization</code>-Header oder erstellen Sie einen neuen Schlüssel.",
+      "noCredits": "Guthaben aufladen. Der Body enthält <code>credits_remaining</code>.",
+      "suspended": "Wenden Sie sich an den Support.",
+      "variations": "Diese API rendert ein Bild pro Anfrage. Senden Sie stattdessen parallele Anfragen.",
+      "inFlight": "Dieser Idempotenzschlüssel läuft noch. Warten, dann erneut versuchen.",
+      "concurrency": "Zu viele Renderings gleichzeitig. In ein paar Sekunden erneut versuchen.",
+      "keyReused": "Sie haben einen Schlüssel mit anderen Parametern wiederverwendet. Nehmen Sie einen neuen.",
+      "noImage": "Das Modell hat nichts geliefert. Erstattet; erneut versuchen oder ein anderes Foto nehmen.",
+      "rateLimited": "Drosseln und erneut versuchen.",
+      "stampFailed": "Der Hinweis konnte nicht angebracht werden, das Bild wurde zurückgehalten. Erstattet.",
+      "renderFailed": "Erstattet. Nennen Sie die <code>ref</code>, wenn Sie den Support kontaktieren."
+    },
+    "other": {
+      "h2": "Weitere Endpunkte",
+      "options": "<code>GET /api/v1/options</code>: die zulässigen Werte jeder Aufzählung oben. Kein API-Schlüssel nötig.",
+      "me": "<code>GET /api/v1/me</code>: funktioniert mein Schlüssel? Liefert Konto und Guthaben.",
+      "credits": "<code>GET /api/v1/credits</code>: Guthaben und Gesamtsummen.",
+      "render": "<code>GET /api/v1/renders/{id}</code>: der Status eines Renderings.",
+      "note": "Jede Antwort trägt <code>X-Stagify-Credits-Remaining</code>, sodass Sie das Guthaben sinken sehen, ohne es abzufragen."
+    },
+    "dashboard": "API-Dashboard"
   }
 }

@@ -41,6 +41,31 @@ or re-exported at a different quality later.
 If deploy/clone weight ever becomes a concern, move these to Git LFS or a
 separate `stagify-assets` repo — do **not** simply delete them.
 
+### The logo marks export at quality 90, not 78
+
+`media-png/logo/*.png` are the product marks — the badge beside a plan name (`Pro64x64` on
+the Stagify+ card, `Enterprise64x64` on the enterprise hero, `Api64x64` for the developer
+API) and the favicons. They ship as `public/media-webp/logo/<same name>.webp`:
+
+```
+sharp(src).webp({ quality: 90 }).toFile(out)
+```
+
+**90, deliberately.** The two build scripts below use 78, which is right for a 1600px
+photo and wrong here: these are painted at 18–64 px, where lossy ringing around the mark's
+edge is visible at a glance. 90 lands each file within a few percent of its siblings
+(`Enterprise32x32` is 1026 B, `Api32x32` is 1018 B), and lossless is roughly 60% larger for
+no visible gain. Keep the alpha — the marks sit on coloured cards.
+
+`*-full.png` is the full-resolution artwork the sized marks are cut from, and is **not**
+served; there is no `-full.webp` and there should not be one.
+
+`test/frontend/logo-marks.test.js` fails the build if a sized master has no WebP beside it,
+if a served mark has no master to re-export from, or if a file's pixels disagree with the
+size in its name. That guard exists because a master added without its export is otherwise
+invisible — nothing references `to-build/`, so a grep finds nothing either way, and the gap
+only shows up as a broken image the day someone wires the mark into a page.
+
 ### Masters with a scripted export
 
 Most of these are exported by hand. One set has a build script, so re-run it rather

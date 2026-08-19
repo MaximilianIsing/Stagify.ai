@@ -164,7 +164,7 @@ test('a correct key signs in, loads every dashboard feed, and reveals the dashbo
   const urls = calls.map((c) => c.url);
   assert.ok(urls.includes('/api/admin/session'), 'the key is spent minting a session, which is also what validates it');
   assert.ok(!urls.includes('/api/admin/ping'), 'and no separate probe is needed on top of the mint');
-  for (const feed of ['/authstore', '/promptlogs', '/chatlogs', '/bugreports', '/masklogs', '/contactlogs', '/email-open-logs', '/enterprise-domains', '/api/hosted-images']) {
+  for (const feed of ['/authstore', '/promptlogs', '/chatlogs', '/bugreports', '/masklogs', '/contactlogs', '/email-open-logs', '/enterprise-domains', '/api/hosted-images', '/rejectionlogs']) {
     assert.ok(urls.includes(feed), `loadAll() must fetch ${feed}`);
   }
   assert.equal($('adm-dash').classList.contains('hidden'), false, 'dashboard revealed');
@@ -226,6 +226,24 @@ test('one failing log feed does not blank the dashboard — the others still ren
 
   assert.ok(calls.some((c) => c.url === '/authstore'), 'the other feeds were still fetched');
   assert.match($('adm-last-refresh').textContent, /^Updated /, 'the render completed despite the failure');
+});
+
+test('a 404 on /rejectionlogs is the NORMAL state and must not blank the dashboard', () => {
+  // Nothing writes rejection_logs.csv until something is actually refused, so a
+  // fresh deploy 404s this feed forever and that is not an error. The cards
+  // built on it are responsible for saying "none recorded" rather than drawing a
+  // refusal rate of zero; what this pins is that the load still completes.
+  calls = [];
+  handler = (url) => {
+    if (url.startsWith('/rejectionlogs')) return { ok: false, status: 404, json: async () => ({}), text: async () => '' };
+    return serveAll(url);
+  };
+  $('adm-refresh').dispatch('click');
+  return settle().then(() => {
+    assert.ok(calls.some((c) => c.url === '/rejectionlogs'), 'it is still requested');
+    assert.ok(calls.some((c) => c.url === '/authstore'), 'the other feeds were still fetched');
+    assert.match($('adm-last-refresh').textContent, /^Updated /, 'the render completed');
+  });
 });
 
 // ===========================================================================

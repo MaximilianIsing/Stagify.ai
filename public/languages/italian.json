@@ -4,6 +4,192 @@
     "description": "Trasforma stanze vuote con lo staging IA. Carica le foto e ottieni risultati arredati professionalmente in pochi secondi. Home staging IA gratuito per agenti immobiliari, venditori e acquirenti.",
     "keywords": "staging IA, home staging, staging immobiliare, staging virtuale, home staging IA, valorizzazione immobiliare, fotografia immobiliare, strumento di staging, arredamento virtuale"
   },
+    "apiKeys": {
+      "title": "Chiavi API e crediti",
+      "docs": "Documentazione",
+      "searchLabel": "Cerca chiavi",
+      "searchPlaceholder": "Cerca chiavi…",
+      "listLabel": "Account e chiavi",
+      "createKey": "Crea chiave",
+      "gone": "Quella chiave non appartiene più a questo account.",
+      "signedOut": {
+        "title": "Accedi per gestire le tue chiavi API",
+        "body": "Le tue chiavi e il tuo saldo di crediti sono nel tuo account Stagify.",
+        "cta": "Accedi"
+      },
+      "group": {
+        "account": "Account",
+        "keys": "Chiavi · {count} attive"
+      },
+      "nav": {
+        "usage": "Utilizzo",
+        "billing": "Crediti e fatturazione"
+      },
+      "list": {
+        "credits": {
+          "one": "{count} credito",
+          "other": "{count} crediti"
+        },
+        "rendersWeek": {
+          "one": "{count} immagine questa settimana",
+          "other": "{count} immagini questa settimana"
+        },
+        "thisWeek": "{count} questa settimana",
+        "none": "Ancora nessuna chiave.",
+        "noMatch": "Nessuna chiave corrisponde a «{query}»."
+      },
+      "status": {
+        "live": "attiva",
+        "idle": "inattiva",
+        "revoked": "revocata"
+      },
+      "ago": {
+        "never": "mai",
+        "justNow": "proprio ora",
+        "minutes": {
+          "one": "{count} minuto fa",
+          "other": "{count} minuti fa"
+        },
+        "hours": {
+          "one": "{count} ora fa",
+          "other": "{count} ore fa"
+        },
+        "days": {
+          "one": "{count} giorno fa",
+          "other": "{count} giorni fa"
+        }
+      },
+      "value": {
+        "never": "Mai",
+        "none": "n/d"
+      },
+      "unit": {
+        "seconds": "{value} s",
+        "minutes": "{value} min",
+        "percent": "{value} %"
+      },
+      "key": {
+        "fallbackName": "Chiave API",
+        "lastUsed": "ultimo utilizzo {ago}",
+        "rename": "Rinomina",
+        "nameLabel": "Nome della chiave",
+        "save": "Salva",
+        "cancel": "Annulla",
+        "chart": {
+          "one": "Immagini · ultimo giorno",
+          "other": "Immagini · ultimi {count} giorni"
+        },
+        "prefix": "Prefisso della chiave",
+        "created": "Creata",
+        "lastUsedField": "Ultimo utilizzo",
+        "revokedField": "Revocata",
+        "revokedNote": "Revocata il {when}. La riga resta qui perché questa chiave corrisponda ancora a un nome in un registro di accesso.",
+        "danger": {
+          "title": "Revoca questa chiave",
+          "body": "Tutto ciò che la usa smetterà di funzionare immediatamente, e non si può annullare. La chiave resterà comunque in elenco, così puoi riconoscerla in un registro di accesso.",
+          "cta": "Revoca chiave"
+        },
+        "confirm": "Revocare questa chiave? Tutto ciò che la usa smetterà di funzionare immediatamente."
+      },
+      "stat": {
+        "renders": "Immagini · {days} g",
+        "delivered": "Consegnate",
+        "median": "Mediana per immagine",
+        "creditsSpent": "Crediti spesi",
+        "balance": "Saldo",
+        "purchased": "Acquistati",
+        "spent": "Spesi",
+        "runway": "Autonomia"
+      },
+      "note": {
+        "lastSeven": "{count} negli ultimi 7 giorni",
+        "usageUnavailable": "utilizzo non disponibile",
+        "refunded": "{count} rimborsate",
+        "refundedAuto": "{count} rimborsate automaticamente",
+        "noFailures": "nessuna immagine fallita",
+        "nothingYet": "ancora niente generato",
+        "inFlight": "{count} in corso adesso",
+        "endToEnd": "dall’inizio alla fine",
+        "throughKey": "tramite questa chiave",
+        "inWindow": "in questo periodo",
+        "allTime": "in totale",
+        "images": {
+          "one": "immagine",
+          "other": "immagini"
+        },
+        "runwayDays": {
+          "one": "≈ {count} giorno",
+          "other": "≈ {count} giorni"
+        },
+        "weekPace": "al ritmo di questa settimana",
+        "noBurn": "nessuna immagine nell’ultima settimana"
+      },
+      "usage": {
+        "title": "Utilizzo",
+        "lede": {
+          "one": "Ultimo giorno, su tutte le chiavi dell’account.",
+          "other": "Ultimi {count} giorni, su tutte le chiavi dell’account."
+        },
+        "failedTitle": "Non è stato possibile caricare l’utilizzo in questo momento.",
+        "failedBody": "Le tue chiavi e il tuo saldo non sono coinvolti. Questo riquadro conta le richieste, ed è solo quel conteggio a mancare. Ricarica la pagina per riprovare.",
+        "perDay": "Immagini al giorno",
+        "byKey": "Per chiave",
+        "thKey": "Chiave",
+        "thRefunded": "Rimborsate",
+        "thMedian": "Mediana",
+        "thCredits": "Crediti",
+        "deletedKey": "Chiave eliminata",
+        "empty": "Nessuna richiesta in questo periodo.",
+        "sampleNote": "Mediana misurata sulle {count} immagini consegnate più recenti. I giorni sono in UTC."
+      },
+      "billing": {
+        "title": "Crediti e fatturazione",
+        "lede": "Prepagato. Un credito è un’immagine consegnata, e un’immagine che fallisce viene rimborsata automaticamente.",
+        "suspended": "Questo account è sospeso e non può generare immagini. Scrivi a <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a>.",
+        "buy": "Acquista crediti",
+        "buyCta": "Acquista",
+        "activity": "Attività recente",
+        "thWhen": "Quando",
+        "thWhat": "Cosa",
+        "thChange": "Variazione",
+        "empty": "Ancora niente."
+      },
+      "ledger": {
+        "purchase": "Crediti acquistati",
+        "debit": "Immagine",
+        "refund": "Immagine fallita, rimborsata",
+        "clawback": "Pagamento stornato",
+        "grant": "Crediti concessi",
+        "adjustment": "Rettifica",
+        "activity": "Attività"
+      },
+      "chart": {
+        "empty": "Ancora nessuna richiesta.",
+        "tip": {
+          "one": "{day} UTC · {count} richiesta",
+          "other": "{day} UTC · {count} richieste"
+        },
+        "tipRefunded": "{day} UTC · {count} richieste · {refunded} rimborsate"
+      },
+      "dialog": {
+        "title": "Crea una chiave API",
+        "label": "Dalle un nome, così distingui le tue chiavi",
+        "placeholder": "Server di produzione",
+        "revealTitle": "Copia subito la tua chiave",
+        "revealWarn": "Questa è l’unica volta in cui verrà mostrata. Conserviamo un hash, non la chiave, quindi se la perdi dovrai crearne un’altra.",
+        "copy": "Copia",
+        "copied": "Copiata",
+        "copyFallback": "Seleziona e copia",
+        "done": "L’ho salvata",
+        "close": "Chiudi",
+        "error": "Non è stato possibile creare la chiave. Riprova."
+      },
+      "error": {
+        "checkout": "Non è stato possibile avviare il pagamento. Riprova.",
+        "billing": "Il servizio di fatturazione non è raggiungibile. Riprova.",
+        "server": "Il server non è raggiungibile. Riprova."
+      }
+    },
   "navigation": {
     "home": "Home",
     "about": "Chi siamo",
@@ -42,68 +228,356 @@
       "item5": "Stampa astratta geometrica",
       "items": {
         "standard": {
-          "bedroom": ["Letto in rovere chiaro, lino bianco", "Comò largo in rovere, sei cassetti", "Grande tappeto beige sotto il letto", "Tre stampe in bianco e nero", "Poltrona color crema alla finestra"],
-          "livingRoom": ["Divano a tre posti color crema", "Tappeto fantasia grigio e avorio", "Mobile TV bianco e rovere", "Due poltrone grigie in metallo", "Ficus lyrata in vaso di terracotta"],
-          "diningRoom": ["Tavolo da sei con tovaglia avorio", "Sei sedie imbottite color crema", "Credenza in rovere chiaro su gambe", "Tela astratta sopra la credenza", "Centrotavola con orchidea bianca"],
-          "kitchen": ["Isola bianca con lavello a cascata", "Fila di pensili bianchi senza maniglie", "Frigo e forno a incasso in acciaio", "Quattro sgabelli grigi da bancone", "Due stampe geometriche incorniciate"],
-          "office": ["Scrivania bianca rettangolare su gambe", "Libreria a giorno in rovere", "Sedia operativa nera in rete", "Credenza bassa grigia", "Due opere astratte incorniciate"],
-          "bathroom": ["Mobile bagno sospeso con lavabo", "Doccia walk-in in vetro, soffione", "WC sospeso bianco", "Tappetino bagno grigio antracite", "Specchio sottile con cornice a parete"]
+          "bedroom": [
+            "Letto in rovere chiaro, lino bianco",
+            "Comò largo in rovere, sei cassetti",
+            "Grande tappeto beige sotto il letto",
+            "Tre stampe in bianco e nero",
+            "Poltrona color crema alla finestra"
+          ],
+          "livingRoom": [
+            "Divano a tre posti color crema",
+            "Tappeto fantasia grigio e avorio",
+            "Mobile TV bianco e rovere",
+            "Due poltrone grigie in metallo",
+            "Ficus lyrata in vaso di terracotta"
+          ],
+          "diningRoom": [
+            "Tavolo da sei con tovaglia avorio",
+            "Sei sedie imbottite color crema",
+            "Credenza in rovere chiaro su gambe",
+            "Tela astratta sopra la credenza",
+            "Centrotavola con orchidea bianca"
+          ],
+          "kitchen": [
+            "Isola bianca con lavello a cascata",
+            "Fila di pensili bianchi senza maniglie",
+            "Frigo e forno a incasso in acciaio",
+            "Quattro sgabelli grigi da bancone",
+            "Due stampe geometriche incorniciate"
+          ],
+          "office": [
+            "Scrivania bianca rettangolare su gambe",
+            "Libreria a giorno in rovere",
+            "Sedia operativa nera in rete",
+            "Credenza bassa grigia",
+            "Due opere astratte incorniciate"
+          ],
+          "bathroom": [
+            "Mobile bagno sospeso con lavabo",
+            "Doccia walk-in in vetro, soffione",
+            "WC sospeso bianco",
+            "Tappetino bagno grigio antracite",
+            "Specchio sottile con cornice a parete"
+          ]
         },
         "modern": {
-          "bedroom": ["Letto in noce, biancheria bianca", "Comò lungo in noce, sei cassetti", "Tappeto crema a griglia sotto il letto", "Poltrona in bouclé alla finestra", "Stampa astratta geometrica"],
-          "livingRoom": ["Divano angolare grigio a L", "Tappeto geometrico blu e grigio", "Tavolino in pietra bianca", "Lampada da terra ad arco nera", "Trittico marino a tre pannelli"],
-          "diningRoom": ["Tavolo bianco con gambe nere", "Sei sedie imbottite grigie", "Credenza in rovere chiaro", "Due stampe blu e oro incorniciate", "Pampas essiccata in un vaso"],
-          "kitchen": ["Isola bianca con top grigio", "Pensili e colonne bianche", "Tre sgabelli neri in filo metallico", "Forni a incasso sovrapposti", "Coppa nera con mele verdi"],
-          "office": ["Scrivania bianca su gambe cromate", "Libreria a giorno con telaio nero", "Monitor ampio sulla scrivania", "Sedia in rete grigia su rotelle", "Credenza bassa bianca"],
-          "bathroom": ["Mobile doppio lavabo sospeso", "Box doccia walk-in in vetro", "Alta strelitzia in vaso", "WC sospeso bianco", "Tappetino bagno grigio a rombi"]
+          "bedroom": [
+            "Letto in noce, biancheria bianca",
+            "Comò lungo in noce, sei cassetti",
+            "Tappeto crema a griglia sotto il letto",
+            "Poltrona in bouclé alla finestra",
+            "Stampa astratta geometrica"
+          ],
+          "livingRoom": [
+            "Divano angolare grigio a L",
+            "Tappeto geometrico blu e grigio",
+            "Tavolino in pietra bianca",
+            "Lampada da terra ad arco nera",
+            "Trittico marino a tre pannelli"
+          ],
+          "diningRoom": [
+            "Tavolo bianco con gambe nere",
+            "Sei sedie imbottite grigie",
+            "Credenza in rovere chiaro",
+            "Due stampe blu e oro incorniciate",
+            "Pampas essiccata in un vaso"
+          ],
+          "kitchen": [
+            "Isola bianca con top grigio",
+            "Pensili e colonne bianche",
+            "Tre sgabelli neri in filo metallico",
+            "Forni a incasso sovrapposti",
+            "Coppa nera con mele verdi"
+          ],
+          "office": [
+            "Scrivania bianca su gambe cromate",
+            "Libreria a giorno con telaio nero",
+            "Monitor ampio sulla scrivania",
+            "Sedia in rete grigia su rotelle",
+            "Credenza bassa bianca"
+          ],
+          "bathroom": [
+            "Mobile doppio lavabo sospeso",
+            "Box doccia walk-in in vetro",
+            "Alta strelitzia in vaso",
+            "WC sospeso bianco",
+            "Tappetino bagno grigio a rombi"
+          ]
         },
         "scandinavian": {
-          "bedroom": ["Letto in rovere chiaro, lino bianco", "Comò in rovere a sei cassetti", "Tappeto rotondo in juta sotto il letto", "Comodini tondi in rovere, due lampade", "Due stampe astratte incorniciate"],
-          "livingRoom": ["Divano grigio a tre posti alla finestra", "Grande tappeto intrecciato in juta", "Tavolino basso in rovere biondo", "Due poltrone in corda intrecciata", "Monstera e ficus lyrata in vaso"],
-          "diningRoom": ["Tavolo lungo in rovere, runner di lino", "Sei sedie in rovere chiaro", "Credenza in rovere a parete", "Tavola apparecchiata con piatti", "Rami secchi composti in una coppa"],
-          "kitchen": ["Isola in rovere con top in pietra", "Fila di pensili in rovere chiaro", "Forno bianco sotto il piano", "Tre sgabelli in rovere da bancone", "Paraschizzi in piastrelle bianche"],
-          "office": ["Scrittoio in rovere alla finestra", "Libreria a giorno sottile in rovere", "Poltroncina in rovere, cuscino grigio", "Cassettiera bianca su rotelle", "Lampada in ottone ed erbe in vaso"],
-          "bathroom": ["Box doccia walk-in in vetro", "Mobile sospeso in rovere con lavabo", "Soffione nero opaco a pioggia", "Tappetino beige sul parquet", "Cesto intrecciato e asciugamani"]
+          "bedroom": [
+            "Letto in rovere chiaro, lino bianco",
+            "Comò in rovere a sei cassetti",
+            "Tappeto rotondo in juta sotto il letto",
+            "Comodini tondi in rovere, due lampade",
+            "Due stampe astratte incorniciate"
+          ],
+          "livingRoom": [
+            "Divano grigio a tre posti alla finestra",
+            "Grande tappeto intrecciato in juta",
+            "Tavolino basso in rovere biondo",
+            "Due poltrone in corda intrecciata",
+            "Monstera e ficus lyrata in vaso"
+          ],
+          "diningRoom": [
+            "Tavolo lungo in rovere, runner di lino",
+            "Sei sedie in rovere chiaro",
+            "Credenza in rovere a parete",
+            "Tavola apparecchiata con piatti",
+            "Rami secchi composti in una coppa"
+          ],
+          "kitchen": [
+            "Isola in rovere con top in pietra",
+            "Fila di pensili in rovere chiaro",
+            "Forno bianco sotto il piano",
+            "Tre sgabelli in rovere da bancone",
+            "Paraschizzi in piastrelle bianche"
+          ],
+          "office": [
+            "Scrittoio in rovere alla finestra",
+            "Libreria a giorno sottile in rovere",
+            "Poltroncina in rovere, cuscino grigio",
+            "Cassettiera bianca su rotelle",
+            "Lampada in ottone ed erbe in vaso"
+          ],
+          "bathroom": [
+            "Box doccia walk-in in vetro",
+            "Mobile sospeso in rovere con lavabo",
+            "Soffione nero opaco a pioggia",
+            "Tappetino beige sul parquet",
+            "Cesto intrecciato e asciugamani"
+          ]
         },
         "coastal": {
-          "bedroom": ["Letto bianco con testiera a doghe", "Comò in legno decapato bianco", "Passatoia a righe acquamarina", "Poltrona in rattan alla finestra", "Tre stampe di conchiglie"],
-          "livingRoom": ["Due divani bianchi sfoderabili", "Grande tappeto in sisal intrecciato", "Tavolino in legno anticato", "Due poltrone in vimini", "Tavolino rivestito in corda"],
-          "diningRoom": ["Tavolo lungo in legno grigio decapato", "Sei sedie in fibra intrecciata", "Credenza bianca anticata", "Panca in vimini con seduta a righe", "Tela incorniciata con onda"],
-          "kitchen": ["Fila di ante bianche stile shaker", "Isola bianca con top a cascata", "Tre sgabelli intrecciati da bancone", "Forni a incasso sovrapposti", "Tagliere in legno accanto al lavello"],
-          "office": ["Scrivania rustica a cavalletto", "Quattro tele marine incorniciate", "Classificatore verde menta", "Sedia da scrivania in rattan", "Lampada in ceramica verde acqua"],
-          "bathroom": ["Mobile bagno bianco con lavabo", "Palma alta in vaso di vimini", "Tappetino marmorizzato acquamarina", "Specchio con cornice sopra il lavabo", "Plafoniera cilindrica in nichel"]
+          "bedroom": [
+            "Letto bianco con testiera a doghe",
+            "Comò in legno decapato bianco",
+            "Passatoia a righe acquamarina",
+            "Poltrona in rattan alla finestra",
+            "Tre stampe di conchiglie"
+          ],
+          "livingRoom": [
+            "Due divani bianchi sfoderabili",
+            "Grande tappeto in sisal intrecciato",
+            "Tavolino in legno anticato",
+            "Due poltrone in vimini",
+            "Tavolino rivestito in corda"
+          ],
+          "diningRoom": [
+            "Tavolo lungo in legno grigio decapato",
+            "Sei sedie in fibra intrecciata",
+            "Credenza bianca anticata",
+            "Panca in vimini con seduta a righe",
+            "Tela incorniciata con onda"
+          ],
+          "kitchen": [
+            "Fila di ante bianche stile shaker",
+            "Isola bianca con top a cascata",
+            "Tre sgabelli intrecciati da bancone",
+            "Forni a incasso sovrapposti",
+            "Tagliere in legno accanto al lavello"
+          ],
+          "office": [
+            "Scrivania rustica a cavalletto",
+            "Quattro tele marine incorniciate",
+            "Classificatore verde menta",
+            "Sedia da scrivania in rattan",
+            "Lampada in ceramica verde acqua"
+          ],
+          "bathroom": [
+            "Mobile bagno bianco con lavabo",
+            "Palma alta in vaso di vimini",
+            "Tappetino marmorizzato acquamarina",
+            "Specchio con cornice sopra il lavabo",
+            "Plafoniera cilindrica in nichel"
+          ]
         },
         "farmhouse": {
-          "bedroom": ["Letto rustico in assi di pino", "Comò decapato a sei cassetti", "Trapunta floreale e plaid patchwork", "Sedia a dondolo in paglia", "Tre stampe di animali da fattoria"],
-          "livingRoom": ["Divano tre posti crema sfoderabile", "Grande tappeto intrecciato in juta", "Tavolino in legno di recupero", "Due poltrone in lino", "Parete di stampe botaniche"],
-          "diningRoom": ["Tavolo lungo in rovere anticato", "Credenza bianca anticata", "Tovaglia a quadretti rossi", "Sei sedie imbottite a fiori", "Barattoli con fiori arancioni"],
-          "kitchen": ["Fila di ante shaker decapate", "Lavello rustico frontale", "Bancone colazione in legno massello", "Tre sgabelli rustici in legno", "Mensole a giorno con vasi ed erbe"],
-          "office": ["Scrivania massiccia in legno di recupero", "Alta libreria in pino con libri", "Sedia in pelle marrone su rotelle", "Classificatore in metallo nero", "Orologio da parete rotondo rustico"],
-          "bathroom": ["Vasca con piedini a zampa di leone", "Lavabo bianco a colonna", "Doccia angolare in vetro", "Tappeto ovale intrecciato", "Insegna in legno dipinto a parete"]
+          "bedroom": [
+            "Letto rustico in assi di pino",
+            "Comò decapato a sei cassetti",
+            "Trapunta floreale e plaid patchwork",
+            "Sedia a dondolo in paglia",
+            "Tre stampe di animali da fattoria"
+          ],
+          "livingRoom": [
+            "Divano tre posti crema sfoderabile",
+            "Grande tappeto intrecciato in juta",
+            "Tavolino in legno di recupero",
+            "Due poltrone in lino",
+            "Parete di stampe botaniche"
+          ],
+          "diningRoom": [
+            "Tavolo lungo in rovere anticato",
+            "Credenza bianca anticata",
+            "Tovaglia a quadretti rossi",
+            "Sei sedie imbottite a fiori",
+            "Barattoli con fiori arancioni"
+          ],
+          "kitchen": [
+            "Fila di ante shaker decapate",
+            "Lavello rustico frontale",
+            "Bancone colazione in legno massello",
+            "Tre sgabelli rustici in legno",
+            "Mensole a giorno con vasi ed erbe"
+          ],
+          "office": [
+            "Scrivania massiccia in legno di recupero",
+            "Alta libreria in pino con libri",
+            "Sedia in pelle marrone su rotelle",
+            "Classificatore in metallo nero",
+            "Orologio da parete rotondo rustico"
+          ],
+          "bathroom": [
+            "Vasca con piedini a zampa di leone",
+            "Lavabo bianco a colonna",
+            "Doccia angolare in vetro",
+            "Tappeto ovale intrecciato",
+            "Insegna in legno dipinto a parete"
+          ]
         },
         "luxury": {
-          "bedroom": ["Letto capitonné blu, testiera alta", "Comò in mogano a sei cassetti", "Due pannelli in marmo, cornice oro", "Due lampade da comodino in vetro", "Cuscini in velluto toni gioiello"],
-          "livingRoom": ["Divano angolare in velluto blu", "Tavolino monoblocco in marmo bianco", "Due poltroncine in velluto crema", "Tappeto astratto blu e oro", "Trittico con cornici dorate"],
-          "diningRoom": ["Tavolo lungo con tovaglia drappeggiata", "Sei sedie in velluto blu", "Credenza intarsiata con top in marmo", "Candelabro in cristallo al centro", "Runner in broccato oro"],
-          "kitchen": ["Cucina a L in rovere chiaro", "Isola in quarzo con top a cascata", "Due sgabelli crema da bancone", "Doppio forno a incasso in acciaio", "Orchidea bianca in vaso di vetro"],
-          "office": ["Scrittoio in marmo e oro", "Libreria in legno intagliato con libri", "Poltrona in pelle verde capitonné", "Ficus lyrata in vaso di ottone", "Lampada in cristallo rigato"],
-          "bathroom": ["Vasca ovale freestanding", "Doccia angolare in vetro", "Mobile doppio lavabo in legno scuro", "Colonna vasca in ottone a pavimento", "WC sospeso vicino alla finestra"]
+          "bedroom": [
+            "Letto capitonné blu, testiera alta",
+            "Comò in mogano a sei cassetti",
+            "Due pannelli in marmo, cornice oro",
+            "Due lampade da comodino in vetro",
+            "Cuscini in velluto toni gioiello"
+          ],
+          "livingRoom": [
+            "Divano angolare in velluto blu",
+            "Tavolino monoblocco in marmo bianco",
+            "Due poltroncine in velluto crema",
+            "Tappeto astratto blu e oro",
+            "Trittico con cornici dorate"
+          ],
+          "diningRoom": [
+            "Tavolo lungo con tovaglia drappeggiata",
+            "Sei sedie in velluto blu",
+            "Credenza intarsiata con top in marmo",
+            "Candelabro in cristallo al centro",
+            "Runner in broccato oro"
+          ],
+          "kitchen": [
+            "Cucina a L in rovere chiaro",
+            "Isola in quarzo con top a cascata",
+            "Due sgabelli crema da bancone",
+            "Doppio forno a incasso in acciaio",
+            "Orchidea bianca in vaso di vetro"
+          ],
+          "office": [
+            "Scrittoio in marmo e oro",
+            "Libreria in legno intagliato con libri",
+            "Poltrona in pelle verde capitonné",
+            "Ficus lyrata in vaso di ottone",
+            "Lampada in cristallo rigato"
+          ],
+          "bathroom": [
+            "Vasca ovale freestanding",
+            "Doccia angolare in vetro",
+            "Mobile doppio lavabo in legno scuro",
+            "Colonna vasca in ottone a pavimento",
+            "WC sospeso vicino alla finestra"
+          ]
         },
         "midcentury": {
-          "bedroom": ["Letto in noce, testiera grigia", "Comò lungo in teak a sei cassetti", "Poltrona lounge in pelle nera", "Trapunta geometrica e plaid senape", "Poster di viaggio incorniciati"],
-          "livingRoom": ["Divano tre posti capitonné petrolio", "Tappeto fantasia oro e arancione", "Due poltrone in palissandro", "Tavolino basso in noce", "Griglia di sei stampe astratte"],
-          "diningRoom": ["Tavolo rotondo con tovaglia a fiori", "Quattro sedie a scocca stampata", "Lunga credenza in teak su gambe", "Seconda sospensione sul tavolo", "Calici ambrati e fiori secchi"],
-          "kitchen": ["Isola bianca con top a cascata", "Parete di pensili bianchi lisci", "Tre sgabelli in vinile arancione", "Frigorifero in acciaio inox", "Felce su piantana bianca"],
-          "office": ["Scrivania in noce con cassettiera", "Poltrona girevole in pelle cuoio", "Libreria a giorno in teak", "Lampada cromata a cupola", "Tre stampe astratte incorniciate"],
-          "bathroom": ["Mobile in noce con lavabo bianco", "Doccia angolare in vetro", "Pianta alta in vaso su piantana", "Passatoia fantasia sul pavimento", "Cestino in legno accanto al mobile"]
+          "bedroom": [
+            "Letto in noce, testiera grigia",
+            "Comò lungo in teak a sei cassetti",
+            "Poltrona lounge in pelle nera",
+            "Trapunta geometrica e plaid senape",
+            "Poster di viaggio incorniciati"
+          ],
+          "livingRoom": [
+            "Divano tre posti capitonné petrolio",
+            "Tappeto fantasia oro e arancione",
+            "Due poltrone in palissandro",
+            "Tavolino basso in noce",
+            "Griglia di sei stampe astratte"
+          ],
+          "diningRoom": [
+            "Tavolo rotondo con tovaglia a fiori",
+            "Quattro sedie a scocca stampata",
+            "Lunga credenza in teak su gambe",
+            "Seconda sospensione sul tavolo",
+            "Calici ambrati e fiori secchi"
+          ],
+          "kitchen": [
+            "Isola bianca con top a cascata",
+            "Parete di pensili bianchi lisci",
+            "Tre sgabelli in vinile arancione",
+            "Frigorifero in acciaio inox",
+            "Felce su piantana bianca"
+          ],
+          "office": [
+            "Scrivania in noce con cassettiera",
+            "Poltrona girevole in pelle cuoio",
+            "Libreria a giorno in teak",
+            "Lampada cromata a cupola",
+            "Tre stampe astratte incorniciate"
+          ],
+          "bathroom": [
+            "Mobile in noce con lavabo bianco",
+            "Doccia angolare in vetro",
+            "Pianta alta in vaso su piantana",
+            "Passatoia fantasia sul pavimento",
+            "Cestino in legno accanto al mobile"
+          ]
         },
         "custom": {
-          "bedroom": ["Testiera smerlata in velluto verde", "Tappeto geometrico verde e crema", "Comò in noce a sei cassetti", "Comodino nero, maniglie in ottone", "Panca verde capitonné ai piedi del letto"],
-          "livingRoom": ["Divano curvo in velluto smeraldo", "Credenza intarsiata laccata nera", "Due poltrone girevoli smerlate rosa", "Tappeto verde a motivo ventaglio", "Specchio sole dorato a parete"],
-          "diningRoom": ["Tavolo rotondo in marmo bianco", "Credenza in noce rigato", "Sei sedie in velluto verde", "Tappeto rotondo verde a medaglione", "Rose bianche in vaso di vetro"],
-          "kitchen": ["Carrello bar nero con top in ottone", "Palma in vaso di ottone", "Passatoia verde a motivo di foglie", "Tre schizzi con cornici dorate", "Barattoli in rame e bicchieri"],
-          "office": ["Scrivania rigata con base in ottone", "Alta libreria nera con ante a vetri", "Tappeto verde a chevron", "Sedia a scocca in velluto verde", "Lampada in ottone, vetro verde"],
-          "bathroom": ["Vasca ovale freestanding", "Mobile in noce rigato con lavabo", "Pedana in marmo sotto la vasca", "Palma in vaso di ottone rialzato", "Tappetino bagno a fantasia verde"]
+          "bedroom": [
+            "Testiera smerlata in velluto verde",
+            "Tappeto geometrico verde e crema",
+            "Comò in noce a sei cassetti",
+            "Comodino nero, maniglie in ottone",
+            "Panca verde capitonné ai piedi del letto"
+          ],
+          "livingRoom": [
+            "Divano curvo in velluto smeraldo",
+            "Credenza intarsiata laccata nera",
+            "Due poltrone girevoli smerlate rosa",
+            "Tappeto verde a motivo ventaglio",
+            "Specchio sole dorato a parete"
+          ],
+          "diningRoom": [
+            "Tavolo rotondo in marmo bianco",
+            "Credenza in noce rigato",
+            "Sei sedie in velluto verde",
+            "Tappeto rotondo verde a medaglione",
+            "Rose bianche in vaso di vetro"
+          ],
+          "kitchen": [
+            "Carrello bar nero con top in ottone",
+            "Palma in vaso di ottone",
+            "Passatoia verde a motivo di foglie",
+            "Tre schizzi con cornici dorate",
+            "Barattoli in rame e bicchieri"
+          ],
+          "office": [
+            "Scrivania rigata con base in ottone",
+            "Alta libreria nera con ante a vetri",
+            "Tappeto verde a chevron",
+            "Sedia a scocca in velluto verde",
+            "Lampada in ottone, vetro verde"
+          ],
+          "bathroom": [
+            "Vasca ovale freestanding",
+            "Mobile in noce rigato con lavabo",
+            "Pedana in marmo sotto la vasca",
+            "Palma in vaso di ottone rialzato",
+            "Tappetino bagno a fantasia verde"
+          ]
         }
       }
     },
@@ -398,9 +872,19 @@
       "stat2": "usa già l’IA per generare i contenuti degli annunci",
       "source": "Dati dal sondaggio tecnologico 2025 della National Association of Realtors tra gli agenti immobiliari.",
       "sourceCite": "Fonte: National Association of Realtors, sondaggio tecnologico 2025",
-      "usageAria": "Uso dell’IA tra gli agenti: 20% ogni giorno, 22% ogni settimana, 27% qualche volta al mese, 32% non ancora"
+      "usageAria": "Uso dell’IA tra gli agenti: 20% ogni giorno, 22% ogni settimana, 27% qualche volta al mese, 32% non ancora",
+      "yearsLabel": "Anno dell’indagine",
+      "y2024": {
+        "stat1": "degli agenti ha usato ChatGPT negli ultimi 12 mesi",
+        "stat2": "usa strumenti di IA e machine learning nella propria attività",
+        "usageAria": "Uso dell’IA tra gli agenti: 9% ogni giorno, 17% ogni settimana, 30% qualche volta al mese, 45% non ancora"
+      }
     },
     "plus": {
+      "api": {
+        "text": "Lavori con un software tuo? Fai staging delle foto in modo programmatico con l’API di Stagify.",
+        "link": "Leggi la documentazione dell’API"
+      },
       "title": "Vai oltre con Stagify+",
       "pro": {
         "name": "Stagify+",
@@ -860,6 +1344,7 @@
     "terms": "Termini di servizio",
     "contact": "Contatti",
     "status": "Stato",
+    "developers": "API",
     "copyright": "Stagify.ai"
   },
   "auth": {
@@ -920,6 +1405,8 @@
     "signOut": "Esci",
     "manageBillingAria": "Gestisci la fatturazione in Stripe",
     "stripeHelp": "Centro assistenza Stripe",
+    "apiKeys": "Chiavi API e crediti",
+    "stagifyApi": "Stagify API",
     "reportIssue": "Segnala un problema",
     "report": {
       "title": "Segnala un problema",
@@ -1259,11 +1746,11 @@
       "description": "Contatta il team di Stagify.ai per supporto, partnership o domande sul nostro strumento gratuito di home staging IA."
     },
     "stagifyPlus": {
-      "title": "Stagify+ – Piani e prezzi | Stagify.ai",
+      "title": "Stagify+ Piani e prezzi | Stagify.ai",
       "description": "Stagify+: rimozione dei mobili, l’AI Designer, il Masking Studio, modelli di qualità superiore e staging illimitato. Scopri piani e prezzi."
     },
     "enterprise": {
-      "title": "Stagify Enterprise – Staging IA a consumo per i team",
+      "title": "Stagify Enterprise | Staging IA a consumo per i team",
       "description": "Dai a tutto il tuo team uno staging IA illimitato con fatturazione a consumo a 0,15 $ per generazione. Una sola fattura, senza costi per postazione."
     },
     "maskingStudio": {
@@ -1275,6 +1762,10 @@
       "title": "Studio Esterni | Stagify.ai - Miglioramento foto di facciata con IA",
       "description": "Trasforma una foto esterna grigia e disordinata nello scatto che l’annuncio merita. Cambia l’ora del giorno, schiarisci il cielo e rimuovi auto e bidoni, mentre l’immobile resta esattamente come è stato fotografato.",
       "keywords": "appeal esterno, editing foto esterni, miglioramento foto immobiliari, sostituzione cielo, rimuovere auto dalle foto, foto al crepuscolo immobiliare, ora dorata, editor foto IA, facciata, Stagify"
+    },
+    "developers": {
+      "title": "API Stagify per sviluppatori | Stagify.ai",
+      "description": "Arreda foto immobiliari dal tuo codice. Una chiamata HTTP per immagine, crediti prepagati a 0,15 $ per immagine, senza abbonamento né minimi."
     }
   },
   "basicMask": {
@@ -1797,5 +2288,100 @@
     "heading": "Questa pagina non esiste",
     "body": "Il link potrebbe essere errato, oppure la pagina è stata spostata. Tutto il resto è rimasto dove l’hai lasciato.",
     "homeCta": "Torna alla home"
+  },
+  "developers": {
+    "crumb": "Documentazione dell’API",
+    "lede": "Arreda una foto immobiliare dal tuo codice. Una chiamata HTTP restituisce un’immagine arredata. Crediti prepagati a 0,15 $ per immagine, senza abbonamento, senza minimi e senza fatture fuori controllo.",
+    "toc": "In questa pagina",
+    "contact": "Domande, limiti più alti o fattura invece della carta: <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a>.",
+    "facts": {
+      "baseUrl": "URL di base",
+      "auth": "Autenticazione",
+      "contentType": "Tipo di contenuto"
+    },
+    "intro": {
+      "h2": "Introduzione",
+      "p1": "L’API espone una cosa sola: la pipeline di arredamento dietro l’app web. Invii la foto di una stanza, indichi un tipo di ambiente e uno stile di arredo e ricevi l’immagine arredata nella stessa risposta. Non c’è coda di lavori né nulla da interrogare sul percorso normale.",
+      "p2": "I crediti sono immagini intere. Li compri in anticipo e ogni render riuscito ne consuma uno. Un render fallito viene rimborsato automaticamente, quindi paghi solo per una foto che hai ricevuto. E poiché il saldo è prepagato, una chiave rubata ti costa al massimo quello che resta. Nessuna fattura a fine mese.",
+      "note": "Le chiavi sono pensate per l’uso da server a server. L’API non invia header CORS, quindi un browser non può chiamarla direttamente; è voluto, e una chiave raggiungibile dal JavaScript del browser è una chiave compromessa. Mostriamo la chiave una sola volta, ne conserviamo solo un hash e la revochiamo subito."
+    },
+    "quickstart": {
+      "h2": "Avvio rapido",
+      "p1": "Crea una chiave nella tua <a href=\"api-keys.html\">pagina delle chiavi API</a>, acquista un pacchetto di crediti e invia una foto. La risposta contiene l’immagine arredata come data URL.",
+      "note": "Un render può richiedere un paio di minuti. Imposta il timeout di lettura del tuo client a <strong>300 secondi</strong> e riprova con la <em>stessa</em> <code>Idempotency-Key</code>. È questo che garantisce che non ti venga mai addebitata due volte la stessa foto.",
+      "packs": "Pacchetti di crediti"
+    },
+    "packs": {
+      "loading": "Caricamento prezzi…",
+      "images": "immagini",
+      "each": "per immagine",
+      "empty": "I pacchetti di crediti non sono disponibili al momento. <a href=\"contact.html\">Scrivici</a> e sistemiamo tutto."
+    },
+    "params": {
+      "h2": "Parametri della richiesta",
+      "lede": "<code>POST /api/v1/renders</code>, inviato come <code>multipart/form-data</code>. Tutti i valori accettati elencati sotto sono serviti anche in JSON da <code>GET /api/v1/options</code>, che non richiede una chiave API: un client può così popolare i propri menu a tendina invece di fissare questa tabella nel codice.",
+      "thField": "Campo",
+      "thType": "Tipo",
+      "thNotes": "Note",
+      "image": "<strong>Obbligatorio.</strong> La foto della stanza. JPEG, PNG o WebP, fino a 25 MB. Viene controllato il tipo MIME, non l’estensione del file.",
+      "roomType": "<code>Bedroom</code>, <code>Living room</code>, <code>Dining room</code>, <code>Kitchen</code>, <code>Office</code>, <code>Bathroom</code>, <code>Outdoors</code>, <code>Dorm</code>. Predefinito <code>Living room</code>. <strong>Distingue maiuscole e spazi</strong>, e un valore non riconosciuto <strong>non viene rifiutato</strong>. Viene scritto nel prompt come testo libero, quindi <code>Living Room</code> non è <code>Living room</code>.",
+      "furnitureStyle": "<code>standard</code>, <code>modern</code>, <code>midcentury</code>, <code>scandinavian</code>, <code>luxury</code>, <code>coastal</code>, <code>farmhouse</code>, <code>custom</code>. Predefinito <code>standard</code>, che è anche ciò in cui si trasforma silenziosamente un valore non riconosciuto. <code>custom</code> usa il tuo <code>additionalPrompt</code> al posto del testo di stile integrato.",
+      "additionalPrompt": "Indicazioni in testo libero per questo render.",
+      "removeFurniture": "Svuota la stanza prima di arredarla. Invia <code>true</code> oppure <code>on</code>; qualsiasi altra cosa, compresi <code>1</code> e <code>yes</code>, vale falso.",
+      "keepFurniture": "Testo libero che indica cosa lasciare, ad es. <code>keep the dining table and the built-in shelves</code>. Letto solo quando <code>removeFurniture</code> è attivo. 500 caratteri.",
+      "furnitureImage": "Fino a 5 foto di riferimento dell’arredo da imitare. Stessi formati e stesso limite di dimensione di <code>image</code>.",
+      "labelVirtuallyStaged": "Imprime la dicitura “Virtually staged” sull’immagine prodotta.",
+      "stampStyle": "<code>dark</code>, <code>light</code>, <code>minimal</code>, <code>banner</code>. Predefinito <code>dark</code>. Non distingue maiuscole; un valore non riconosciuto torna al predefinito.",
+      "stampScale": "Da <code>0.7</code> a <code>1.6</code>, predefinito <code>1</code>. I valori fuori intervallo vengono limitati anziché rifiutati.",
+      "stampLang": "La lingua della dicitura: <code>english</code>, <code>spanish</code>, <code>french</code>, <code>german</code>, <code>chinese</code>, <code>korean</code>, <code>portuguese</code>, <code>russian</code>, <code>italian</code>, <code>japanese</code>, <code>dutch</code>. Predefinito <code>english</code>.",
+      "variations": "È accettato solo <code>1</code>. Per averne di più, invia richieste in parallelo."
+    },
+    "idem": {
+      "h2": "Idempotenza",
+      "p1": "Un render tiene aperta la connessione per minuti, quindi il guasto che ti colpirà davvero è un socket caduto dopo che il lavoro era già finito: addebitato e senza nulla in mano. Invia un header <code>Idempotency-Key</code> a ogni richiesta e riprova con lo <em>stesso</em> valore.",
+      "thHave": "Cosa risulta a noi",
+      "thRetry": "Cosa fa un nuovo tentativo",
+      "r1a": "Una richiesta riuscita, stessi parametri",
+      "r1b": "Restituisce il risultato salvato con <code>X-Stagify-Replayed: true</code>. Nessun secondo addebito.",
+      "r2a": "Una richiesta ancora in corso",
+      "r2b": "<code>409 REQUEST_IN_FLIGHT</code>. Attendi, poi riprova.",
+      "r3a": "Una richiesta abbandonata a metà render",
+      "r3b": "Viene rieseguita sull’addebito esistente, fino a tre tentativi.",
+      "r4a": "La stessa chiave con parametri diversi",
+      "r4b": "<code>422 IDEMPOTENCY_KEY_REUSED</code>. Usa una chiave nuova.",
+      "note": "Omettere l’header è consentito e significa nessuna protezione dai replay, che è il comportamento predefinito più onesto. Non ricaviamo una chiave dalla tua foto: due render davvero distinti della stessa stanza collidereb­bero e il secondo chiamante riceverebbe l’immagine del primo."
+    },
+    "disclosure": {
+      "h2": "Diciture di arredamento virtuale",
+      "p1": "Molte regole MLS e NAR richiedono che una foto arredata virtualmente lo dichiari. <code>labelVirtuallyStaged</code> imprime quella dicitura nei pixel invece di allegarla come metadato che uno strumento a valle può rimuovere.",
+      "note": "Se la dicitura non può essere applicata, l’immagine viene <strong>trattenuta anziché consegnata senza etichetta</strong>, la chiamata risponde <code>500 DISCLOSURE_STAMP_FAILED</code> e il tuo credito viene rimborsato. Non c’è modo di disattivare questo comportamento, né un valore predefinito per chiave che lo annulli in silenzio."
+    },
+    "errors": {
+      "h2": "Errori",
+      "lede": "Ogni errore risponde <code>{ \"error\": \"…\", \"code\": \"…\" }</code>. Ramifica su <code>code</code>, mai sul messaggio. I messaggi cambiano, i codici no.",
+      "thStatus": "Stato",
+      "thCode": "Codice",
+      "thAction": "Cosa fare",
+      "keyMissing": "Controlla l’header <code>Authorization</code>, oppure crea una nuova chiave.",
+      "noCredits": "Ricarica. Il corpo contiene <code>credits_remaining</code>.",
+      "suspended": "Contatta l’assistenza.",
+      "variations": "Questa API produce un’immagine per richiesta. Invia invece richieste in parallelo.",
+      "inFlight": "Quella chiave di idempotenza è ancora in esecuzione. Attendi, poi riprova.",
+      "concurrency": "Troppi render insieme. Riprova tra qualche secondo.",
+      "keyReused": "Hai riutilizzato una chiave con parametri diversi. Usane una nuova.",
+      "noImage": "Il modello non ha restituito nulla. Rimborsato; riprova o cambia foto.",
+      "rateLimited": "Rallenta e riprova.",
+      "stampFailed": "Non è stato possibile applicare la dicitura, quindi l’immagine è stata trattenuta. Rimborsato.",
+      "renderFailed": "Rimborsato. Cita il <code>ref</code> se contatti l’assistenza."
+    },
+    "other": {
+      "h2": "Altri endpoint",
+      "options": "<code>GET /api/v1/options</code>: i valori accettati di ogni enumerazione qui sopra. Nessuna chiave API richiesta.",
+      "me": "<code>GET /api/v1/me</code>: la mia chiave funziona? Restituisce account e saldo.",
+      "credits": "<code>GET /api/v1/credits</code>: saldo e totali complessivi.",
+      "render": "<code>GET /api/v1/renders/{id}</code>: lo stato di un render.",
+      "note": "Ogni risposta porta <code>X-Stagify-Credits-Remaining</code>, così puoi vedere il saldo scendere senza interrogarlo."
+    },
+    "dashboard": "Pannello API"
   }
 }

@@ -4,6 +4,8 @@ import {
   copyToClipboard, isStrictEmailClientProxyUa,
 } from './helpers.js';
 import { createGrantSection, grantActive } from './grant.js';
+import { createDangerSection } from './danger.js';
+import { createRendersPanel } from './renders-panel.js';
 import { stripHeader } from './analytics.js';
 import { activityIndexFrom, lastActiveMs, daysSinceActive } from './analytics-users.js';
 import { createOverview } from './overview.js';
@@ -43,7 +45,16 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
     return u.plan||'free';
   }
 
+  var rendersSection=createRendersPanel({apiSend:apiSend});
   var grantSection=createGrantSection({apiSend:apiSend,onChanged:function(){renderUsers()}});
+  // Erasure has no undo, so the row goes from the in-memory list immediately
+  // rather than waiting for a refresh — leaving a deleted account on screen
+  // invites a second click on an account that no longer exists.
+  var dangerSection=createDangerSection({apiSend:apiSend,onDeleted:function(u){
+    ctx.data.users=(ctx.data.users||[]).filter(function(x){return x.id!==u.id});
+    updateTabCounts();
+    renderUsers();
+  }});
   var overview=createOverview({ctx:ctx,effectivePlan:effectivePlan});
   var insights=createInsights({ctx:ctx,effectivePlan:effectivePlan});
   var signals=createSignals({ctx:ctx,apiSend:apiSend,effectivePlan:effectivePlan});
@@ -232,6 +243,13 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
         ig.appendChild(grid);det.appendChild(ig);
         det.appendChild(grantSection(u,effectivePlan(u)));
 
+        // The pictures come before the text histories below: "what did it look
+        // like" is the question a support thread actually opens with, and the
+        // prompt list underneath is the same information without the answer.
+        // Fetches on every expand — the URLs it gets back are short-lived
+        // credentials and must not be cached (lib/data/s3-presign.js).
+        det.appendChild(rendersSection(u));
+
         // generations
         var gs=el('div',{className:'adm-detail-section'});
         gs.appendChild(el('h3',{textContent:'Generation History ('+allR.length+' total)'}));
@@ -285,6 +303,12 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
           mt.appendChild(mb);ms.appendChild(mt);
         }
         det.appendChild(ms);
+
+        // Last on purpose: everything above is information, and an operator
+        // scrolling to read a user's history should not pass a delete button on
+        // the way. Same separation the referrals panel keeps between Retire and
+        // Delete permanently.
+        det.appendChild(dangerSection(u));
 
         td.appendChild(det);
         var dr=el('tr',{className:'adm-detail-row'},[td]);
@@ -503,6 +527,7 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
       {label:'Chat Logs',url:'/chatlogs',file:'chat_logs.csv'},
       {label:'Bug Reports',url:'/bugreports',file:'bug_reports.csv'},
       {label:'Mask Logs',url:'/masklogs',file:'mask_logs.csv'},
+      {label:'Rejection Logs',url:'/rejectionlogs',file:'rejection_logs.csv'},
       // No "Auth Store" entry: /authstore is now a redacted user list, not a
       // backup. The real backup is the SQLite file (Litestream → R2) — offering a
       // credential dump as a browser download is what made one leaked key fatal.

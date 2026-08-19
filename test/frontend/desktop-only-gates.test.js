@@ -41,19 +41,76 @@ function cssBreakpoint() {
   return Number(m[1]);
 }
 
-/** Every `<a … class="… desktop-only …" href="X">` in the shared site header, by href. */
+/**
+ * Every link the site hides below the mobile breakpoint, by href.
+ *
+ * TWO shapes, because the site uses both and only one of them is obvious:
+ *   1. the class ON the anchor — `<a class="nav-link desktop-only" href="gallery.html">`;
+ *   2. the class on a WRAPPER — the footer's Developers link is
+ *      `<span class="desktop-only"> · <a href="developers.html">…</a></span>`, wrapped
+ *      that way so hiding the link takes its separator with it and the footer does not
+ *      show an orphan "·". The home page's API footnote is the same shape on a `<p>`:
+ *      there the sentence AROUND the link has to go too, not just the link.
+ *
+ * Shape 2 was invisible to this sweep for a while, which meant a footer link could be
+ * hidden on phones while its page happily loaded on one — exactly the hole the whole
+ * file exists to close, in the one place nobody thought to look.
+ */
 function hiddenNavTargets() {
   /** @type {Set<string>} */
   const targets = new Set();
+  const add = (href) => { if (href) targets.add(href.split('#')[0]); };
+
   for (const name of fs.readdirSync(PUBLIC).filter((f) => f.endsWith('.html'))) {
     const html = fs.readFileSync(path.join(PUBLIC, name), 'utf8');
     if (!html.includes('<header class="site-header">')) continue;
+
     for (const tag of html.match(/<a\b[^>]*\bdesktop-only\b[^>]*>/g) || []) {
       const href = /\bhref="([^"]+)"/.exec(tag);
-      if (href) targets.add(href[1].split('#')[0]);
+      if (href) add(href[1]);
+    }
+    // Non-greedy to the first matching close tag, which is enough: these wrappers hold a
+    // separator or a sentence and a single anchor, never a nested wrapper of the same tag.
+    // <p> is here for the home page's API footnote; keep the alternation narrow so a
+    // sprawling <div class="desktop-only"> section cannot silently claim every link in it.
+    for (const m of html.matchAll(/<(span|p)\b[^>]*\bdesktop-only\b[^>]*>([\s\S]*?)<\/\1>/g)) {
+      for (const a of m[2].matchAll(/\bhref="([^"]+)"/g)) add(a[1]);
     }
   }
+
+  for (const [href] of jsBuiltHiddenRows()) add(href);
   return targets;
+}
+
+/**
+ * Shape 3: the entry that is BUILT IN JAVASCRIPT and so has no tag to find.
+ *
+ * The account menu's dropdown has no static markup — profile-menu.js assembles it on
+ * open — so the "API keys & credits" row exists only as a string literal in
+ * scripts/profile-menu/api-keys-row.js. It is the entrance to the API dashboard, which
+ * is PC-only, and without this branch the pairing below would pass vacuously for the
+ * one hidden entry that is not a tag in an HTML file.
+ * @returns {[string, string][]} `[href, source file]` for every hidden JS-built row.
+ */
+function jsBuiltHiddenRows() {
+  /** @type {[string, string][]} */
+  const rows = [];
+  /** @param {string} dir @returns {void} */
+  const walk = (dir) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) { walk(full); continue; }
+      if (!entry.name.endsWith('.js')) continue;
+      // One string literal per row, which is how every JS-built anchor on this site is
+      // written. A row split across concatenated fragments would be missed — the
+      // sanity test below is what would catch that, by going red.
+      for (const m of fs.readFileSync(full, 'utf8').matchAll(/<a href="([^"#]+)[^"]*"[^>]*\bdesktop-only\b/g)) {
+        rows.push([m[1], path.relative(PUBLIC, full)]);
+      }
+    }
+  };
+  walk(SCRIPTS);
+  return rows;
 }
 
 /** The gate script a page loads in <head>, or null. */
@@ -69,6 +126,32 @@ test('sanity: the sweep finds the PC-only nav entries it is meant to guard', () 
   const targets = hiddenNavTargets();
   assert.ok(targets.has('ai-designer.html'), 'the AI Designer row must be desktop-only');
   assert.ok(targets.has('gallery.html'), 'the Gallery tab must be desktop-only');
+  // The wrapper shape. Without this the span branch above could stop matching and every
+  // assertion below would still pass, having quietly dropped a page from the sweep.
+  assert.ok(targets.has('developers.html'), 'the footer Developers link must be desktop-only');
+  // The JS-built shape, same reasoning: the account menu's API row is a string literal,
+  // and if it stops carrying `desktop-only` the dashboard is advertised on a phone that
+  // its own gate then bounces.
+  assert.ok(
+    targets.has('api-keys.html'),
+    'the account menu’s "API keys & credits" row must be desktop-only — see api-keys-row.js',
+  );
+});
+
+test('the home page’s API footnote is hidden on phones', () => {
+  // Pinned on its own rather than via hiddenNavTargets(), which cannot see this: the
+  // footer's Developers link already puts developers.html in that set, so the footnote
+  // could lose `desktop-only` without changing it by one element. developers-gate.js
+  // redirects a phone straight back to the home page, so unhidden this line answers a
+  // tap by returning the reader to where they already were.
+  const html = fs.readFileSync(path.join(PUBLIC, 'index.html'), 'utf8');
+  const note = /<p\b[^>]*\bclass="([^"]*\bplus-api\b[^"]*)"[^>]*>/.exec(html);
+  assert.ok(note, 'index.html no longer has a <p class="plus-api"> — delist this test if the note is gone');
+  assert.match(
+    note[1],
+    /\bdesktop-only\b/,
+    'the home page API footnote must carry desktop-only — developers.html bounces phones back to this page',
+  );
 });
 
 test('every nav entry hidden on phones points at a page that turns phones away', () => {

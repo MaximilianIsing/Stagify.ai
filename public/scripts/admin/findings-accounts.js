@@ -35,6 +35,7 @@ import {
 import { trialOutcomes, trialEmailsSent } from './analytics-users.js';
 import { ratio } from './stats.js';
 import { finding, suppressed, fmtCount, fmtPct, fmtBytes } from './findings.js';
+import { capHitDaysByPerson, capHitCoverage } from './analytics-rejections.js';
 
 const AREA = 'Revenue';
 
@@ -384,17 +385,23 @@ const enterpriseUnderuse = {
 /**
  * C7 · Free accounts pressing against the daily cap.
  *
- * DELIBERATELY WEAKER THAN IT SHOULD BE, and the card says so. The strong version
- * of this question — "who hit the cap on more than one day" — is answered exactly
- * by `rejection_logs.csv`, which records every `daily_limit` refusal with the
- * account and a `used/limit` detail. That file is served at GET /rejectionlogs and
- * the dashboard has never fetched it.
+ * TWO STRENGTHS, AND THE CARD SAYS WHICH ONE IT IS RUNNING AT.
  *
- * What is available instead is `usageCount`, which is TODAY's counter and resets
- * on the UTC day rollover, plus lifetime volume. So this can see who is at the cap
- * right now and who renders a lot, but not who has been blocked repeatedly. It is
- * reported anyway, with the limitation stated, because the alternative is silence
- * about the clearest upgrade signal the product has.
+ * `usageCount` is TODAY's counter and resets on the day rollover, so on its own
+ * this rule can only see who is at the cap right now and who renders a lot —
+ * someone blocked on three separate days looks identical to someone never
+ * blocked at all. That was the only version available while the dashboard did
+ * not load `rejection_logs.csv`.
+ *
+ * With that file loaded, `daily_limit` rows carry the account and the date, so
+ * repeat blocking becomes measurable and leads the ranking. **Days, not hits:**
+ * someone who retried eight times in one evening met the cap once and learnt
+ * where it was; someone stopped on four separate days keeps coming back and
+ * keeps being turned away, which is the actual buying signal.
+ *
+ * The degraded branch is kept rather than deleted because the file may legitimately
+ * be empty — a fresh deploy has refused nothing — and "no refusals recorded"
+ * must not be reported as "nobody is hitting the cap".
  */
 const upgradeCandidates = {
   id: 'revenue.upgrade-candidates',
@@ -407,41 +414,81 @@ const upgradeCandidates = {
     const free = users.filter((u) => planOf(u) === 'free');
     if (free.length < 5) return null;
 
+    // Days blocked per account, keyed by whichever identity the refusal carried.
+    const rejectionRows = input.rejectionRows || [];
+    const blocked = capHitDaysByPerson(rejectionRows, { top: 0 });
+    /** @type {Record<string, {days: number, hits: number}>} */
+    const blockedBy = {};
+    blocked.forEach((b) => { blockedBy[String(b.identity).toLowerCase()] = { days: b.days, hits: b.hits }; });
+    const measured = blocked.length > 0;
+
     const candidates = free
       .map((u) => {
         const limit = Number(u.dailyGenerationLimit) || 50;
         const used = Number(u.usageCount) || 0;
-        const renders = index.rendersByEmail[String(u.email || '').toLowerCase()] || 0;
-        return { user: u, used, limit, renders, atCap: used >= limit * 0.8 };
+        const email = String(u.email || '').toLowerCase();
+        const renders = index.rendersByEmail[email] || 0;
+        const hit = blockedBy[email] || blockedBy[String(u.id || '').toLowerCase()] || null;
+        return {
+          user: u, used, limit, renders,
+          atCap: used >= limit * 0.8,
+          blockedDays: hit ? hit.days : 0,
+        };
       })
-      .filter((c) => c.atCap || c.renders >= 25)
-      .sort((a, b) => (b.used / b.limit) - (a.used / a.limit) || b.renders - a.renders);
+      .filter((c) => c.atCap || c.renders >= 25 || c.blockedDays > 0)
+      // Repeat blocking outranks everything else: it is the only one of the three
+      // that says the cap actually cost this person work, more than once.
+      .sort((a, b) => b.blockedDays - a.blockedDays
+        || (b.used / b.limit) - (a.used / a.limit)
+        || b.renders - a.renders);
 
     if (!candidates.length) return null;
+
+    const repeat = candidates.filter((c) => c.blockedDays >= 2).length;
+    const cov = capHitCoverage(rejectionRows);
 
     return finding({
       id: 'revenue.upgrade-candidates',
       severity: 'opportunity',
       area: AREA,
       title: `${fmtCount(candidates.length)} free account${candidates.length === 1 ? '' : 's'} using the product heavily`,
-      detail: 'These are at or near the daily cap today, or have a high lifetime render count. This is a '
-        + 'PARTIAL view: rejection_logs.csv records every account that actually hit the cap, with the date, '
-        + 'and the dashboard does not load it — so someone blocked on three separate days looks identical '
-        + 'here to someone who has never been blocked at all.',
+      detail: measured
+        ? 'Ranked by how many SEPARATE DAYS the account was actually turned away at the daily cap, then by '
+          + 'today’s usage and lifetime volume. A day blocked is a day this person wanted to work and '
+          + 'could not, so an account blocked repeatedly has already demonstrated the demand a paid plan '
+          + 'would serve.'
+        : 'These are at or near the daily cap today, or have a high lifetime render count. This is a '
+          + 'PARTIAL view: no cap refusals have been recorded yet, so someone blocked on three separate '
+          + 'days would look identical here to someone who has never been blocked at all.',
       evidence: [
         { label: 'Free accounts', value: fmtCount(free.length) },
         { label: 'Heavy users', value: fmtCount(candidates.length) },
-        { label: 'Blind spot', value: 'repeat cap hits (needs rejection_logs.csv)' },
-      ],
+        measured
+          ? { label: 'Blocked 2+ days', value: fmtCount(repeat) }
+          : { label: 'Cap refusals recorded', value: 'none yet' },
+        // An anonymous refusal is real usage this ranking structurally cannot
+        // attribute, so the gap is printed rather than quietly absorbed — same
+        // rule the activation funnel follows about its own coverage.
+        measured && cov.ratio !== null && cov.ratio < 1
+          ? { label: 'Unattributed refusals', value: `${fmtCount(cov.total - cov.attributed)} of ${fmtCount(cov.total)}` }
+          : null,
+      ].filter(Boolean),
       accounts: candidates.slice(0, 10).map((c) => ({
         email: String(c.user.email || ''),
         id: String(c.user.id || ''),
-        note: c.atCap ? `${c.used}/${c.limit} today` : `${fmtCount(c.renders)} renders logged`,
+        note: c.blockedDays > 0
+          ? `blocked on ${fmtCount(c.blockedDays)} day${c.blockedDays === 1 ? '' : 's'}`
+          : c.atCap ? `${c.used}/${c.limit} today` : `${fmtCount(c.renders)} renders logged`,
       })),
-      action: 'Add /rejectionlogs to the dashboard’s loader to turn this into a real signal — it is already '
-        + 'served and already recording. Until then, treat this list as a shortlist rather than a count.',
+      action: measured
+        ? 'Reach out to the accounts blocked on more than one day first — they have hit the ceiling, come '
+          + 'back, and hit it again.'
+        : 'Treat this list as a shortlist rather than a count until cap refusals accumulate in the '
+          + 'rejection log.',
       sample: free.length,
-      confidence: 'low',
+      // A ranking built on recorded refusals is evidence; one inferred from a
+      // counter that resets every day is a guess, and must not read as more.
+      confidence: measured ? 'high' : 'low',
     });
   },
 };

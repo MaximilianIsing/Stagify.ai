@@ -88,14 +88,14 @@ test('logPromptToFile: first call writes header + row; the fields land in column
   const { logging, dataDir } = freshLogging();
   const req = { ip: '203.0.113.9' };
   logging.logPromptToFile('the prompt', 'Living Room', 'Modern', 'extra note', false, 'realtor', 'google', 'u@x.com', req,
-    { status: 'ok', durationMs: 8421.7, model: 'gemini-2.5-flash-image', attempts: 2, errorCode: '', architectureDrift: false, seed: 12345 });
+    { status: 'ok', durationMs: 8421.7, model: 'gemini-2.5-flash-image', attempts: 2, errorCode: '', architectureDrift: false, seed: 12345, variation: '2/3' });
 
   const file = path.join(dataDir, 'prompt_logs.csv');
   const l = lines(file);
   assert.equal(l.length, 2, 'header + exactly one data row (synchronous first write)');
   assert.equal(
     l[0],
-    'timestamp,roomType,furnitureStyle,additionalPrompt,removeFurniture,userRole,referralSource,email,ipAddress,status,durationMs,model,attempts,errorCode,architectureDrift,seed',
+    'timestamp,roomType,furnitureStyle,additionalPrompt,removeFurniture,userRole,referralSource,email,ipAddress,status,durationMs,model,attempts,errorCode,architectureDrift,seed,variation',
   );
   const cols = l[1].split(',');
   // cols[0] is the ISO timestamp; assert the stable, positioned fields.
@@ -116,6 +116,7 @@ test('logPromptToFile: first call writes header + row; the fields land in column
   assert.equal(cols[13], '');
   assert.equal(cols[14], 'no', 'the architecture verdict is recorded, so the drift rate is countable');
   assert.equal(cols[15], '12345', 'the seed is recorded, so a bad render can be re-run');
+  assert.equal(cols[16], '2/3', 'which variation of how many, so drift is countable per variation');
 });
 
 test('logPromptToFile: an unasked architecture question logs empty, NOT "no"', () => {
@@ -128,6 +129,7 @@ test('logPromptToFile: an unasked architecture question logs empty, NOT "no"', (
   const cols = lines(path.join(dataDir, 'prompt_logs.csv'))[1].split(',');
   assert.equal(cols[14], '', 'unknown is not the same as clean');
   assert.equal(cols[15], '', 'no seed invented');
+  assert.equal(cols[16], '', 'a render that was not one of a set is blank, not "1/1"');
 });
 
 test('logPromptToFile: an omitted outcome writes unknown/empty, never a fake success', () => {
@@ -162,7 +164,7 @@ test('logPromptToFile: a legacy-header file is upgraded in place, keeping every 
 
   await waitForLineCount(file, 3);
   const l = lines(file);
-  assert.equal(l[0], 'timestamp,roomType,furnitureStyle,additionalPrompt,removeFurniture,userRole,referralSource,email,ipAddress,status,durationMs,model,attempts,errorCode,architectureDrift,seed');
+  assert.equal(l[0], 'timestamp,roomType,furnitureStyle,additionalPrompt,removeFurniture,userRole,referralSource,email,ipAddress,status,durationMs,model,attempts,errorCode,architectureDrift,seed,variation');
   assert.ok(l[1].includes('Old Room'), 'the pre-existing row survives the header rewrite');
   assert.ok(l[2].includes('New Room'));
   assert.equal(fs.existsSync(file + '.tmp'), false, 'the temp file is renamed away, not left behind');
@@ -172,10 +174,16 @@ test('logPromptToFile: EVERY historical header upgrades, not just the most recen
   // The upgrade used to compare against a single legacy string. The second time a column
   // was appended, that check would have silently no-opped on any log still carrying the
   // FIRST-generation header — leaving the oldest files mislabelled forever, which is the
-  // one case the upgrade exists for. Each entry in PROMPT_LOG_HEADERS_LEGACY is exercised.
+  // one case the upgrade exists for. Every entry in PROMPT_LOG_HEADERS_LEGACY is exercised.
+  //
+  // This list is a hand-maintained mirror of that constant and had already fallen a
+  // generation behind (the architectureDrift header was missing), so a log carrying it
+  // was upgrading untested. Append here whenever a column is appended there.
   const historical = [
     'timestamp,roomType,furnitureStyle,additionalPrompt,removeFurniture,userRole,referralSource,email,ipAddress',
     'timestamp,roomType,furnitureStyle,additionalPrompt,removeFurniture,userRole,referralSource,email,ipAddress,status,durationMs,model,attempts,errorCode',
+    'timestamp,roomType,furnitureStyle,additionalPrompt,removeFurniture,userRole,referralSource,email,ipAddress,status,durationMs,model,attempts,errorCode,architectureDrift',
+    'timestamp,roomType,furnitureStyle,additionalPrompt,removeFurniture,userRole,referralSource,email,ipAddress,status,durationMs,model,attempts,errorCode,architectureDrift,seed',
   ];
   for (const legacy of historical) {
     const { logging, dataDir } = freshLogging();
@@ -187,7 +195,7 @@ test('logPromptToFile: EVERY historical header upgrades, not just the most recen
 
     const header = lines(file)[0];
     assert.ok(
-      header.endsWith(',architectureDrift,seed'),
+      header.endsWith(',architectureDrift,seed,variation'),
       `a log written with the ${legacy.split(',').length}-column header upgrades to the current one`,
     );
     assert.ok(lines(file)[1].includes('Old Room'), 'and its data rows survive');

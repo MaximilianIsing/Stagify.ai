@@ -210,8 +210,9 @@ import { LANGUAGES } from './locale-data.js';
     // locale HOME (i18n-routing.js:59), which is right for a link but wrong for a
     // switcher: the visitor asked to read THIS page in another language and would be
     // silently moved off it. Such a page opts out with [data-lang-inplace] and gets the
-    // pack swapped underneath it instead. Only the gallery does this today; every other
-    // page carrying a switcher is in LOCALIZED_PAGES, so none of them change behaviour.
+    // pack swapped underneath it instead. Two pages do this — the gallery and the API
+    // dashboard, both noindex and behind a session; every other page carrying a switcher
+    // is in LOCALIZED_PAGES, so none of them change behaviour.
     const inPlace = !!document.querySelector('[data-lang-inplace]');
     select.addEventListener('change', (e) => {
       const lang = /** @type {HTMLSelectElement} */ (e.target).value;

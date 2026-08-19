@@ -234,20 +234,39 @@ test('the old comparison table is gone but its citation block survives', () => {
 // Markup drift — the chart's four representations of the same four numbers
 // --------------------------------------------------------------------------
 
-test('the chart percentages are static text, never animated', () => {
-  // A survey share is a measured fact, not a running total, so counting it up from 0%
-  // implies a process that never happened — and paints six wrong figures on the way to
-  // the right one. This was built, judged nonsense, and removed; the guard stops it
-  // coming back by the usual route (a ramp needs a target attribute to ramp toward).
+test('the chart percentages are authored text, never counted up from zero', () => {
+  // THE DISTINCTION THIS GUARD DRAWS, because the two look alike and only one is a bug:
+  //
+  //   BANNED — a count-up on LOAD, ramping 0% → 68%. A survey share is a measured fact,
+  //   not a running total, so ramping it implies a process that never happened and
+  //   paints six wrong figures on the way to the right one. Built, judged nonsense,
+  //   removed. A ramp needs a target attribute to ramp toward, so the markup hooks
+  //   below are the route it would come back by, and they stay banned.
+  //
+  //   ALLOWED — the year switch's tween, 20% → 9%, in home-nar-years.js. Both endpoints
+  //   are real published figures, the visitor asked for the change by clicking, and it
+  //   never runs on load (only the click path passes `animate`). That is a comparison
+  //   being shown, not a fake accumulation. It is driven from the module with no markup
+  //   hook at all, which is why this test still passes with it shipped.
+  //
+  // So: authored text in the HTML, animated only between two real years on demand.
   assert.ok(
     !INDEX.includes('data-nar-count'),
-    'data-nar-count is back — the chart numerals are being animated again'
+    'data-nar-count is back — the chart numerals are being ramped from zero again'
   );
   const chart = (INDEX.match(/<div class="nar-card[^"]*"[^>]*>[\s\S]*?<\/div>\s*<\/div>/) || [])[0] || '';
   assert.ok(chart, 'the NAR card is still there');
   assert.ok(
     !/data-count|data-ramp|data-countup/i.test(chart),
-    'no count-up hook of any name belongs on the chart'
+    'no load-time count-up hook of any name belongs on the chart'
+  );
+  // The four bar widths and the seven numerals are still AUTHORED, not injected — the
+  // card is complete and correct with no JS, which is the property the year switch
+  // enhances rather than replaces.
+  assert.equal(
+    (INDEX.match(/style="--seg-w:\d+%"/g) || []).length,
+    4,
+    'the bar still ships its widths in the markup'
   );
 });
 

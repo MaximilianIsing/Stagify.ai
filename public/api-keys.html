@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
+    <!-- Google tag (gtag.js) — Google Ads. Config + async loader in scripts/gtag.js. -->
+    <script src="scripts/gtag.js" defer></script>
+    <link rel="icon" type="image/webp" sizes="32x32" href="media-webp/logo/Logo32x32.webp">
+    <link rel="icon" type="image/webp" sizes="64x64" href="media-webp/logo/Logo64x64.webp">
+    <link rel="apple-touch-icon" sizes="180x180" href="media-webp/logo/Logo180x180.webp">
+    <link rel="manifest" href="manifest.json">
+    <title>API keys &amp; credits | Stagify.ai</title>
+    <meta name="description" content="Manage your Stagify API keys and credit balance.">
+
+    <!-- A signed-in account page: nothing here is meaningful to a crawler, and the URL
+         is a dead end for search. Same posture as gallery.html and admin.html; the
+         entry in test/seo/robots-meta.test.js pins it. -->
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="canonical" href="https://stagify.ai/api-keys.html">
+    <meta name="author" content="Stagify.ai">
+    <meta name="theme-color" content="#2563eb">
+
+    <link rel="stylesheet" href="styles/styles.css">
+    <link rel="stylesheet" href="styles/developers.css">
+    <!-- auth.css styles the sign-in modal only, which nothing on this page opens
+         until a user clicks. Shipped as print (non-render-blocking) and promoted to
+         all by lazy-css.js once fetched — the same pattern index.html uses. The swap
+         is JS, not an inline onload= handler, so it passes the CSP’s
+         script-src-attr 'none'. -->
+    <link rel="stylesheet" href="styles/auth.css" media="print" data-lazy-css>
+    <script type="module" src="scripts/lazy-css.js"></script>
+    <noscript>
+      <!-- The promotion above is the only thing that ever loads this sheet, so
+           without this the modal is unstyled with JS off. -->
+      <link rel="stylesheet" href="styles/auth.css">
+    </noscript>
+    <link rel="preload" href="languages/english.json" as="fetch" crossorigin>
+    <script type="module" src="scripts/language-detect.js"></script>
+    <script type="module" src="scripts/language-loader.js"></script>
+    <script type="module" src="scripts/language-switcher.js"></script>
+    <script type="module" src="scripts/nav-pill.js"></script>
+    <!-- auth.js defines window.StagifyAuth, which api-keys-app.js reads for the session
+         token, and profile-menu.js is what makes the account button in the shared header
+         do anything. Both are needed by the chrome, not just by this page. -->
+    <script type="module" src="scripts/auth.js"></script>
+    <script type="module" src="scripts/profile-menu.js"></script>
+    <style>
+      /* Hide AI Designer link on mobile */
+      @media (max-width: 768px) {
+        .desktop-only {
+          display: none !important;
+        }
+      }
+    </style>
+    <!-- PC-only. A phone-sized viewport is sent to the home page before the body paints
+         — see scripts/api-keys-gate.js for why this page refuses them, and note that it
+         reads the LAYOUT viewport, so it only works below the viewport <meta> above. -->
+    <script src="scripts/api-keys-gate.js"></script>
+    <!-- Sets html.has-session from the stored token BEFORE first paint, so the nav’s
+         Gallery tab does not pop in a round trip late. Render-blocking on purpose, and
+         last in <head> so it never delays discovery of the CSS above it. -->
+    <script src="scripts/session-class.js"></script>
+  </head>
+  <!-- page-docs is the documentation shell’s body class: an opaque sheet, a white
+       footer instead of the site gradient, and the pinned language pill. It is not
+       "the docs page" as an identity, it is that SURFACE, and this page now uses it. -->
+  <body class="page-docs">
+    <!-- Background Video -->
+    <video id="background-video" autoplay muted loop playsinline webkit-playsinline preload="metadata" poster="media-webp/background-poster.webp">
+      <source src="background.mp4" type="video/mp4" media="(min-width: 769px)">
+    </video>
+
+    <header class="site-header">
+      <nav class="nav">
+        <a href="index.html" class="brand"><img src="media-webp/logo/Logo64x64.webp" data-lang-attr="navigation.logoAlt|alt" alt="Stagify.ai logo — go to homepage" class="brand-logo" fetchpriority="high"><span class="brand-strong" data-lang="navigation.brand">Stagify</span><span class="brand-light" data-lang="navigation.brandSuffix">.ai</span></a>
+        <div class="nav-center">
+          <a href="index.html" class="nav-link" data-lang="navigation.home">Home</a>
+          <div class="staging-menu" data-staging-menu data-nav-group>
+            <button type="button" class="nav-link staging-menu__trigger" aria-haspopup="true" aria-expanded="false"><span data-lang="navigation.staging">Staging</span><svg class="staging-menu__chevron" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+            <div class="staging-menu__panel" role="menu">
+              <a class="staging-menu__item" href="index.html#stage" role="menuitem" aria-describedby="staging-menu-tip-stage" data-staging-open="stage"><span class="staging-menu__label" data-lang="navigation.imageStaging">Image Staging</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-stage" aria-hidden="true" data-lang="navigation.tips.imageStaging">Stages a whole room from one photo: pick a room type and a furniture style and the AI furnishes it. Best for empty or nearly empty rooms when you want a fast, complete result.</span></a>
+              <a class="staging-menu__item is-locked" href="index.html#basic-mask" role="menuitem" aria-describedby="staging-menu-tip-basic-mask" data-staging-open="basic-mask" data-staging-pro data-staging-preview data-staging-preview-page="basic-mask.html"><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" data-lang-attr="navigation.plusBadge|aria-label" aria-label="Stagify+"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang="navigation.basicMask">Basic Mask</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-basic-mask" aria-hidden="true" data-lang="navigation.tips.basicMask">Paint over one part of a photo, then describe the change you want. Best for small fixes (swap a sofa, clear a countertop) when the rest of the shot is already right.</span></a>
+              <a class="staging-menu__item is-locked desktop-only" href="ai-designer.html" role="menuitem" aria-describedby="staging-menu-tip-designer" data-staging-pro data-staging-preview><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" data-lang-attr="navigation.plusBadge|aria-label" aria-label="Stagify+"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang-html="navigation.pdfTo3d">AI Designer</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-designer" aria-hidden="true" data-lang="navigation.tips.pdfTo3d">Chat with an AI designer that stages, redesigns and keeps iterating on a room with you. Best when you are exploring looks rather than finishing one photo. Desktop only.</span></a>
+              <a class="staging-menu__item is-locked" href="masking-studio.html" role="menuitem" aria-describedby="staging-menu-tip-masking" data-staging-pro data-staging-preview><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" data-lang-attr="navigation.plusBadge|aria-label" aria-label="Stagify+"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang="navigation.maskingStudio">Masking Studio</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-masking" aria-hidden="true" data-lang="navigation.tips.maskingStudio">Highlight several areas in different colors and give each its own furniture photo or prompt, then stage them all at once. Best when you need exact control, since everything outside your highlights stays pixel-perfect.</span></a>
+              <a class="staging-menu__item is-locked" href="exterior-studio.html" role="menuitem" aria-describedby="staging-menu-tip-exterior" data-staging-pro data-staging-preview><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" data-lang-attr="navigation.plusBadge|aria-label" aria-label="Stagify+"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang="navigation.exteriorStudio">Exterior Studio</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-exterior" aria-hidden="true" data-lang="navigation.tips.exteriorStudio">Cleans up an exterior photo of a property: change the time of day, clear the sky, and remove parked cars and clutter. Best for the front elevation, yard and street shots, the ones the staging tools deliberately never touch.</span></a>
+            </div>
+          </div>
+          <a href="gallery.html" class="nav-link desktop-only hidden" data-nav-gallery data-lang="navigation.gallery">Gallery</a>
+          <a href="guides.html" class="nav-link" data-lang="navigation.guides">Guides</a>
+          <a href="contact.html" class="nav-link" data-lang="navigation.contactUs">Contact</a>
+          <div class="profile-menu-wrap">
+            <button type="button" id="profile-menu-btn" class="profile-menu-btn" aria-expanded="false" aria-haspopup="true" data-lang-attr="auth.accountMenu|aria-label" aria-label="Account menu">
+              <svg class="profile-menu-btn__icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </button>
+            <div id="profile-menu-dropdown" class="profile-menu-dropdown hidden" role="menu" aria-hidden="true"></div>
+          </div>
+        </div>
+        <div class="nav-trailing">
+          <div class="mobile-test-text" data-hover-glow>
+            <div data-lang="hero.title.upload">Upload.</div>
+            <div data-lang="hero.title.stage">Stage.</div>
+            <div data-lang="hero.title.imagine">Imagine.</div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <!-- The language picker, and the marker that changes what it DOES.
+
+         language-loader.js normally answers a language change by NAVIGATING to that
+         language’s URL. This page has none: it is noindex, behind a session, and
+         deliberately absent from LOCALIZED_PAGES in lib/i18n/locales.js — so
+         hrefForLanguage() would resolve to the locale HOME and silently move a
+         visitor who asked to read THIS page in Spanish onto the Spanish marketing
+         page. [data-lang-inplace] swaps the pack underneath instead. gallery.html
+         is the only other page that needs this, for exactly the same reasons. -->
+  <div class="language-picker-container" data-lang-inplace>
+    <div class="language-selector">
+      <label for="language-select" class="sr-only" data-lang="common.selectLanguage">Select language</label>
+      <select id="language-select" class="language-dropdown lang-native-select" tabindex="-1" aria-hidden="true">
+        <option value="english" selected>EN</option>
+        <option value="german">DE</option>
+        <option value="dutch">NL</option>
+        <option value="spanish">ES</option>
+        <option value="french">FR</option>
+        <option value="italian">IT</option>
+        <option value="portuguese">PT</option>
+        <option value="russian">RU</option>
+        <option value="chinese">中文</option>
+        <option value="japanese">日本語</option>
+        <option value="korean">한국어</option>
+      </select>
+      <div class="lang-switch" data-lang-switch>
+        <button type="button" class="lang-switch__trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="Select language" data-lang-attr="common.selectLanguage|aria-label">
+          <img class="lang-switch__flag" src="media-webp/flags/US.svg" alt="" width="20" height="14" />
+          <span class="lang-switch__label">English</span>
+          <svg class="lang-switch__chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </button>
+        <ul class="lang-switch__menu" role="listbox" aria-label="Select language" data-lang-attr="common.selectLanguage|aria-label">
+          <li class="lang-switch__option" role="option" tabindex="-1" data-value="english"><img loading="lazy" decoding="async" src="media-webp/flags/US.svg" alt="" width="20" height="14" /><span>English</span></li>
+          <li class="lang-switch__option" role="option" tabindex="-1" data-value="german"><img loading="lazy" decoding="async" src="media-webp/flags/Germany.svg" alt="" width="20" height="14" /><span>Deutsch</span></li>
+          <li class="lang-switch__option" role="option" tabindex="-1" data-value="dutch"><img loading="lazy" decoding="async" src="media-webp/flags/Netherlands.svg" alt="" width="20" height="14" /><span>Nederlands</span></li>
+          <li class="lang-switch__option" role="option" tabindex="-1" data-value="spanish"><img loading="lazy" decoding="async" src="media-webp/flags/Spain.svg" alt="" width="20" height="14" /><span>Español</span></li>
+          <li class="lang-switch__option" role="option" tabindex="-1" data-value="french"><img loading="lazy" decoding="async" src="media-webp/flags/France.svg" alt="" width="20" height="14" /><span>Français</span></li>
+          <li class="lang-switch__option" role="option" tabindex="-1" data-value="italian"><img loading="lazy" decoding="async" src="media-webp/flags/Italy.svg" alt="" width="20" height="14" /><span>Italiano</span></li>
+          <li class="lang-switch__option" role="option" tabindex="-1" data-value="portuguese"><img loading="lazy" decoding="async" src="media-webp/flags/Brazil.svg" alt="" width="20" height="14" /><span>Português</span></li>
+          <li class="lang-switch__option" role="option" tabindex="-1" data-value="russian"><img loading="lazy" decoding="async" src="media-webp/flags/Russia.svg" alt="" width="20" height="14" /><span>Русский</span></li>
+          <li class="lang-switch__option" role="option" tabindex="-1" data-value="chinese"><img loading="lazy" decoding="async" src="media-webp/flags/China.svg" alt="" width="20" height="14" /><span>中文</span></li>
+          <li class="lang-switch__option" role="option" tabindex="-1" data-value="japanese"><img loading="lazy" decoding="async" src="media-webp/flags/Japan.svg" alt="" width="20" height="14" /><span>日本語</span></li>
+          <li class="lang-switch__option" role="option" tabindex="-1" data-value="korean"><img loading="lazy" decoding="async" src="media-webp/flags/Korea.svg" alt="" width="20" height="14" /><span>한국어</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+    <main>
+      <!-- THE SAME SHELL AS developers.html: one opaque sheet, hairline rules, a sticky
+           left rail, and no floating cards on the site gradient. The two pages are the
+           same surface seen from two sides, so they now read as one product rather than
+           as a document and an app that happen to share a palette. `.docs-sheet`,
+           `.docs`, `.docs-nav` and `.docs-main` are that page’s classes, reused here
+           rather than copied — see the `.docs--app` block in developers.css for the one
+           thing that differs (two columns instead of three). -->
+      <div class="docs-sheet">
+        <!-- Above the grid, so it is the page’s title rather than the detail pane’s, and
+             so it survives the signed-out state below without a second copy. -->
+        <header class="ak-head">
+          <h1 data-lang="apiKeys.title">API keys &amp; credits</h1>
+          <!-- A link, not a sentence. The page below already explains itself, and a lede
+               that pitched the API to somebody who has already signed in and come here
+               was answering a question nobody on this page is asking. -->
+          <p class="ak-head__link"><a href="developers.html" data-lang="apiKeys.docs">Documentation</a></p>
+        </header>
+
+        <!-- Signed-out state. Shown before anything is fetched, so a visitor who
+             follows a link here without a session is told what to do rather than
+             being shown an empty dashboard that looks broken. This is also why
+             api-keys-gate.js turns away phones but NOT signed-out visitors: there is
+             something here for them. -->
+        <section class="ak-signin hidden" id="ak-signedout">
+          <h2 data-lang="apiKeys.signedOut.title">Sign in to manage API keys</h2>
+          <p data-lang="apiKeys.signedOut.body">Your keys and credit balance live on your Stagify account.</p>
+          <button type="button" class="dev-btn dev-btn--primary" id="ak-signin" data-lang="apiKeys.signedOut.cta">Sign in</button>
+        </section>
+
+        <!-- The inspector: everything the account owns in the rail, the selected one in
+             the column beside it. Both halves are rendered by scripts/api-keys-app.js
+             from one state object — the markup here is only the two hosts and the chrome
+             around them, so the list and the pane can never disagree about the
+             selection. -->
+        <div id="ak-app" class="docs docs--app hidden">
+          <aside class="docs-nav ak-rail">
+            <div class="ak-rail__search">
+              <label class="sr-only" for="ak-search" data-lang="apiKeys.searchLabel">Search keys</label>
+              <input class="dev-input" type="search" id="ak-search" placeholder="Search keys…" data-lang-attr="apiKeys.searchPlaceholder|placeholder" autocomplete="off">
+            </div>
+            <!-- aria-live so a filtered list announces what is left. The pane is not
+                 live: it is what the click was for, and announcing a whole screen of
+                 numbers on every selection is noise, not help. -->
+            <nav class="ak-list" id="ak-list" aria-label="Account and keys" data-lang-attr="apiKeys.listLabel|aria-label" aria-live="polite"></nav>
+            <div class="ak-rail__foot">
+              <button type="button" class="dev-btn dev-btn--primary" id="ak-create" data-lang="apiKeys.createKey">Create key</button>
+            </div>
+          </aside>
+
+          <!-- A div, not a second <main>: developers.html nests one, this page already
+               has the outer one, and two mains is a landmark a screen reader has to
+               disambiguate for no gain. -->
+          <div class="docs-main">
+            <section class="ak-detail" id="ak-detail" aria-labelledby="ak-detail-title"></section>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Create-key dialog. The plaintext key appears in here ONCE and is never
+         retrievable again — the server stores only a digest — so the copy says so
+         plainly and the dialog does not close on a stray backdrop click. -->
+    <div class="dev-modal hidden" id="ak-modal" role="dialog" aria-modal="true" aria-labelledby="ak-modal-title">
+      <div class="dev-modal__panel">
+        <button type="button" class="close-x" id="ak-modal-close" aria-label="Close" data-lang-attr="apiKeys.dialog.close|aria-label"></button>
+
+        <div id="ak-modal-form">
+          <h2 id="ak-modal-title" data-lang="apiKeys.dialog.title">Create an API key</h2>
+          <label class="dev-label" for="ak-name" data-lang="apiKeys.dialog.label">Name it, so you can tell your keys apart</label>
+          <input class="dev-input" type="text" id="ak-name" maxlength="60" placeholder="Production server" data-lang-attr="apiKeys.dialog.placeholder|placeholder" autocomplete="off">
+          <p class="dev-error hidden" id="ak-modal-error"></p>
+          <div class="dev-modal__actions">
+            <button type="button" class="dev-btn" id="ak-cancel" data-lang="apiKeys.key.cancel">Cancel</button>
+            <button type="button" class="dev-btn dev-btn--primary" id="ak-confirm" data-lang="apiKeys.createKey">Create key</button>
+          </div>
+        </div>
+
+        <div id="ak-modal-reveal" class="hidden">
+          <h2 data-lang="apiKeys.dialog.revealTitle">Copy your key now</h2>
+          <p class="dev-warn" data-lang="apiKeys.dialog.revealWarn">
+            This is the only time it will ever be shown. We store a hash, not the key,
+            so if you lose it you will have to create another.
+          </p>
+          <div class="dev-reveal">
+            <code id="ak-reveal-key"></code>
+            <button type="button" class="dev-btn" id="ak-copy" data-lang="apiKeys.dialog.copy">Copy</button>
+          </div>
+          <div class="dev-modal__actions">
+            <button type="button" class="dev-btn dev-btn--primary" id="ak-done" data-lang="apiKeys.dialog.done">I’ve saved it</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer style="text-align:center;padding:20px 16px 28px;font-size:13px;color:#374151;">
+      <a href="privacy.html" style="color:#2563eb;text-decoration:none;" data-lang="footer.privacy">Privacy Policy</a>
+      &nbsp;·&nbsp;
+      <a href="terms.html" style="color:#2563eb;text-decoration:none;" data-lang="footer.terms">Terms of Service</a>
+      &nbsp;·&nbsp;
+      <a href="/status" style="color:#2563eb;text-decoration:none;" data-lang="footer.status">Status</a>
+      <span class="desktop-only">&nbsp;·&nbsp;
+      <a href="developers.html" style="color:#2563eb;text-decoration:none;" data-lang="footer.developers">API</a></span>
+      &nbsp;·&nbsp;
+      © <span class="footer-year">2026</span> <span data-lang="footer.copyright">Stagify.ai</span>
+    </footer>
+
+    <!-- NOT app.js — see scripts/page-chrome.js for why. -->
+    <script type="module" src="scripts/page-chrome.js"></script>
+    <!-- No aurora-scrollbar.js, exactly as on developers.html: that script sets
+         html.aurora-on, which is what hides the native scrollbar behind the animated
+         gradient overlay. A document surface gets the plain bar. -->
+    <script type="module" src="scripts/hover-glow.js"></script>
+    <script type="module" src="scripts/footer-year.js"></script>
+    <script type="module" src="scripts/api-keys-app.js"></script>
+</body>
+</html>

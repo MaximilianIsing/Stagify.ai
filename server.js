@@ -40,6 +40,7 @@ import createObjectLocalRouter from './routes/object-local.js';
 import createChatRouter from './routes/chat.js';
 import createStagingRouter from './routes/staging.js';
 import createAdminRouter from './routes/admin.js';
+import { createAdminRendersRouter } from './routes/admin-renders.js';
 import createAuthRouter from './routes/auth.js';
 import { DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, IS_STAGING, HIDE_STAGING_BANNER, SHOW_STAGING_BANNER, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS } from './lib/config/runtime-flags.js';
 import createNotFoundHandler from './lib/http/not-found.js';
@@ -68,10 +69,19 @@ import { createTrialLifecycle } from './lib/services/trial-lifecycle.js';
 import { createEmailCatalog } from './lib/services/email-catalog.js';
 import { createReferralLinks } from './lib/data/referral-links.js';
 import { createAdminSessions } from './lib/data/admin-sessions.js';
+import { createApiKeys } from './lib/data/api-keys.js';
+import { createApiBilling } from './lib/data/api-billing.js';
+import { createApiKeyAuth } from './lib/http/api-key-auth.js';
+import { createConcurrencyGate } from './lib/http/api-concurrency.js';
+import { createApiRenderBilling } from './lib/staging/api-render-billing.js';
+import createApiV1Router from './routes/api-v1.js';
+import createApiKeysRouter from './routes/api-keys.js';
+import { createCreditPacks } from './lib/data/credit-packs.js';
+import { createStripeCreditTopup } from './lib/services/stripe-credit-topup.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const { readStripeSecretKey, readStripeWebhookSecret, readStripePublishableKey, readEnterprisePriceId, readGoogleClientId, readGoogleClientSecret, readEndpointAccessKey, endpointKeyMatches, readEnterpriseMeterEventName } = createConfig({ __dirname });
+const { readStripeSecretKey, readStripeWebhookSecret, readStripePublishableKey, readEnterprisePriceId, readGoogleClientId, readGoogleClientSecret, readEndpointAccessKey, endpointKeyMatches, readEnterpriseMeterEventName, readApiCreditPriceIds } = createConfig({ __dirname });
 
 const authStore = createAuthStore(__dirname);
 const enterpriseStore = createEnterpriseStore(__dirname);
@@ -87,6 +97,12 @@ const referralLinks = createReferralLinks(__dirname);
 // expiring, revocable token once, instead of retyping the key on every page load.
 // See lib/data/admin-sessions.js for why the key itself is never persisted.
 const adminSessions = createAdminSessions(__dirname);
+// The public API: per-account keys and the prepaid credit balance they spend.
+// Both are plain stores over the shared connection; nothing here reaches the network,
+// so an unconfigured Stripe only means credits cannot be BOUGHT, not that the API
+// breaks — an account with a balance keeps rendering.
+const apiKeys = createApiKeys(__dirname);
+const apiBilling = createApiBilling(__dirname);
 // Where the gallery's BYTES live — R2 in production, the local disk in dev/CI, and
 // deliberately DISABLED on Render when R2 is not configured rather than falling back
 // to the app volume (see lib/data/object-store.js for why that branch exists).
@@ -200,6 +216,12 @@ async function sendTestEmail({ id, toEmail }) {
   }
 }
 
+// API credit packs and the Stripe events that move a balance. Built here so the
+// billing router below can dispatch a paid one-time session into it — credits are the
+// one thing the webhook grants that is not a subscription.
+const creditPacks = createCreditPacks(readApiCreditPriceIds());
+const creditTopup = createStripeCreditTopup({ apiBilling, creditPacks, authStore });
+
 // Billing & enterprise routes (routes/billing.js). Mounted BEFORE express.json
 // below so the Stripe webhook can read the RAW request body for signature
 // verification; the other billing routes carry their own inline express.json.
@@ -215,6 +237,7 @@ app.use(
     getAuthUserFromRequest,
     trialLifecycle,
     stripeEvents,
+    creditTopup,
   })
 );
 
@@ -415,10 +438,44 @@ app.use(createAuthRouter({ authStore, googleOAuthClient, resend, LOGS_ACCESS_KEY
 // above, which are what create the tables it prepares against.
 const adminMetrics = createAdminMetrics({ db: getDb(__dirname), getDataLogDir });
 const adminBrief = createAdminBrief({ openai });
+// The render inspector rides beside the admin router rather than inside it —
+// routes/admin.js is at its line cap. Same guard, same tab, separate file.
+app.use(createAdminRendersRouter({ stagedRenders, objectStore, protectLogs, setSensitiveHeaders }));
 app.use(createAdminRouter({ authStore, uptimeMonitor, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, deleteUser, getDataLogDir, hostedImages, protectLogs, requireEndpointKey, adminSessions, __dirname, HOSTED_IMAGE_MIME_EXT, emailCatalog, sendTestEmail, referralLinks, adminMetrics, adminBrief }));
 
 // staging routes (routes/staging.js)
 app.use(createStagingRouter({ genAI, genLimiter, stagingProcessUpload, DEBUG_MODE, MAX_MASK_PROMPT_LENGTH, MAX_SEGMENT_QUERY_LENGTH, QUALITY_MAX_ATTEMPTS, setSensitiveHeaders, getAuthUserFromRequest, enterpriseDomainForUser, reportEnterpriseUsage, recordStagingActivity, requireProAccount, logMaskEditToFile, logRejectionToFile, downscaleImage, padBufferToAspectRatio, buildMarkedRoomImage, normalizeMaskOutputToRoom, reviewMaskEdit, compositeForReview, generateWithQualityRetry, maskReferencePromptSuffix, validateStageableImage, handleVirtualStagingMultipart, handleExteriorMultipart, handleMaskingSave, stagingEndpointKeyGuard }));
+
+// public developer API (routes/api-v1.js)
+//
+// Constructed HERE rather than inside the router because the billing band wraps
+// handleVirtualStagingMultipart, which is itself built above — the same ordering
+// constraint createVirtualStagingHandler has against processStaging.
+const { requireApiKey } = createApiKeyAuth({ apiKeys, authStore, apiBilling });
+// 3 per key / 12 per process. The per-key figure is what stops one customer's batch
+// script monopolising the box; the global one is what stops twelve customers doing it
+// collectively. Both are far below what a queue would allow, which is the trade a
+// synchronous API makes on purpose.
+const { gate: apiConcurrencyGate } = createConcurrencyGate({
+  limit: Number(process.env.API_CONCURRENCY_PER_KEY || 3),
+  globalLimit: Number(process.env.API_CONCURRENCY_GLOBAL || 12),
+  onReject: (req, scope) => logRejectionToFile('api_concurrency', 'CONCURRENCY_LIMIT', scope, { req }),
+});
+const { runBilledRender } = createApiRenderBilling({ apiBilling, handleVirtualStagingMultipart });
+app.use(createApiKeysRouter({
+  apiKeys,
+  apiBilling,
+  creditPacks,
+  stripe,
+  getAuthUserFromRequest,
+}));
+app.use(createApiV1Router({
+  apiBilling,
+  requireApiKey,
+  concurrencyGate: apiConcurrencyGate,
+  stagingProcessUpload,
+  runBilledRender,
+}));
 
 // chat routes (routes/chat.js)
 app.use(createChatRouter({ openai, genLimiter, chatUpload, DEBUG_MODE, requireProAccount, recordStagingActivity, loadMemories, saveMemories, getTemperatureForModel, getGeminiImageModel, annotateImage, downscaleImageForGPT, processImageGeneration, processStaging, logChatToFile, blueprintTo3D, incPromptCount, renderPersistence }));

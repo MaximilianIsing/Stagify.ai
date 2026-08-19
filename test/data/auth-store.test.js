@@ -397,3 +397,80 @@ test('recordMobileIpGeneration increments a separate counter per IP', () => {
   assert.equal(store.recordMobileIpGeneration('203.0.113.7').used, 2);
   assert.equal(store.recordMobileIpGeneration('198.51.100.9').used, 1, 'a different IP counts separately');
 });
+
+// ── Operator session revocation (lib/data/session-revocation.js) ───────────
+
+test('revokeUserSessions kills every live session for one account and counts them', () => {
+  const store = freshStore();
+  const u = registerVerifiedUser(store, 'many@example.com');
+  // Three devices.
+  const a = store.login(u.email, u.password);
+  const b = store.login(u.email, u.password);
+  const c = store.login(u.email, u.password);
+  for (const s of [a, b, c]) assert.equal(store.validateSession(s.token)?.id, u.id);
+
+  const res = store.revokeUserSessions(u.id);
+  assert.equal(res.ok, true);
+  assert.equal(res.email, 'many@example.com');
+  // The registration token counts too — completeRegistration signs them in.
+  assert.ok(res.revoked >= 3, `expected at least the three logins, got ${res.revoked}`);
+
+  for (const s of [a, b, c]) {
+    assert.equal(store.validateSession(s.token), null, 'every device is signed out');
+  }
+});
+
+test('revokeUserSessions leaves the password alone — they can sign straight back in', () => {
+  // This is the whole reason it is not just "force a password reset": the owner
+  // of a shared laptop wants the other devices gone, not to be locked out.
+  const store = freshStore();
+  const u = registerVerifiedUser(store, 'again@example.com');
+  store.login(u.email, u.password);
+
+  store.revokeUserSessions(u.id);
+
+  const back = store.login(u.email, u.password);
+  assert.equal(back.ok, true, 'the password still works');
+  assert.equal(store.validateSession(back.token)?.id, u.id, 'and the new session is live');
+});
+
+test('revokeUserSessions does NOT invalidate a live password-reset link', () => {
+  // A reset link is the account owner's way back in. An operator clearing a
+  // stranger's stolen session must not also break the mail the owner is holding.
+  const store = freshStore();
+  const u = registerVerifiedUser(store, 'reset@example.com');
+  const started = store.startPasswordReset(u.email);
+  assert.ok(started.token, 'a reset token was issued');
+
+  store.revokeUserSessions(u.id);
+
+  const done = store.completePasswordReset(started.token, 'BrandNewPass9!');
+  assert.equal(done.ok, true, 'the reset link still works after a session revocation');
+});
+
+test('revokeUserSessions touches only the account it was given', () => {
+  const store = freshStore();
+  const a = registerVerifiedUser(store, 'a@example.com');
+  const b = registerVerifiedUser(store, 'b@example.com');
+  const bSession = store.login(b.email, b.password);
+
+  store.revokeUserSessions(a.id);
+
+  assert.equal(store.validateSession(bSession.token)?.id, b.id, 'the other account is untouched');
+});
+
+test('revokeUserSessions reports zero rather than pretending, and refuses a bad id', () => {
+  const store = freshStore();
+  const u = registerVerifiedUser(store, 'quiet@example.com');
+  store.revokeUserSessions(u.id); // clear the registration session first
+
+  const again = store.revokeUserSessions(u.id);
+  assert.equal(again.ok, true);
+  assert.equal(again.revoked, 0, 'nothing to revoke is a real answer, not a failure');
+
+  assert.deepEqual(
+    store.revokeUserSessions(''),
+    { ok: false, error: 'A userId is required', code: 'NO_IDENTIFIER' },
+  );
+  assert.equal(store.revokeUserSessions('u_nope').code, 'NOT_FOUND');
+});

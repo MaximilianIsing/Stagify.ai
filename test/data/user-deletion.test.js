@@ -26,6 +26,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { createAuthStore } from '../../lib/data/auth-store.js';
 import { createMemory } from '../../lib/data/memory.js';
+import { createApiKeys } from '../../lib/data/api-keys.js';
+import { createApiBilling } from '../../lib/data/api-billing.js';
 import { getDb, closeDb } from '../../lib/data/db.js';
 import { resolveDataDir } from '../../lib/data/data-dir.js';
 import {
@@ -107,6 +109,39 @@ test('deleting a user removes the account row AND everything keyed to it', () =>
   // The bystander is intact.
   assert.equal(countFor('memories', 'user_id', other.user.id), 1, 'another user keeps their memories');
   assert.ok(authStore.findUserByEmail('stays@example.com'), 'another user keeps their account');
+});
+
+test('erasure kills the API keys and the credit rows, so an erased account cannot still call', () => {
+  const { authStore, deleteUser, db, dir } = setup();
+  const { user } = makeUser(authStore);
+  const other = makeUser(authStore, 'stays@example.com');
+
+  const keys = createApiKeys(dir);
+  const billing = createApiBilling(dir);
+  const mine = keys.mintKey({ userId: user.id, name: 'CI' });
+  const theirs = keys.mintKey({ userId: other.user.id, name: 'theirs' });
+  billing.creditPurchase({ userId: user.id, credits: 10, sessionId: 'cs_erase' });
+  billing.creditPurchase({ userId: other.user.id, credits: 4, sessionId: 'cs_keep' });
+  const spent = billing.claimAndDebit({
+    keyId: mine.record.id, userId: user.id, idempotencyKey: 'i', fingerprint: 'f', cost: 1,
+  });
+  assert.equal(spent.ok, true, 'precondition: the account has spent a credit');
+
+  assert.equal(deleteUser({ userId: user.id }).ok, true);
+
+  // The credential is gone, not merely orphaned — this is the row that would otherwise
+  // keep an erased account authenticating against /api/v1/*.
+  assert.equal(keys.findByKey(mine.key), null, 'a live API key outlived the account');
+  assert.equal(billing.getBalance(user.id).balance, 0);
+  assert.equal(billing.listLedger(user.id).length, 0, 'the per-request activity trail is gone too');
+  assert.equal(
+    db.prepare('SELECT COUNT(*) AS n FROM api_requests WHERE user_id = ?').get(user.id).n,
+    0,
+  );
+
+  // The bystander keeps everything.
+  assert.ok(keys.findByKey(theirs.key), "another account's key must survive");
+  assert.equal(billing.getBalance(other.user.id).balance, 4);
 });
 
 test('an unverified signup can be erased by address alone', () => {

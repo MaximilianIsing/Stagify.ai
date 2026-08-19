@@ -49,6 +49,7 @@ function makeSpy(impl) {
  *   - `uploadError` → make the upload middleware fail (400 branch),
  *   - `dataLogFiles` → { 'prompt_logs.csv': 'contents' } seeded into the data-log dir,
  *   - `grantResult` / `revokeResult` → what the faked comp-grant store calls return,
+ *   - `revokeSessionsResult` → what the faked session revocation returns,
  *   - `deleteUserResult` → what the faked GDPR-erasure helper returns,
  *   - `withReferrals` (default true) → mount a REAL referral store on a temp data
  *     dir; `false` omits the dep entirely to hit the "not configured" 500 branch,
@@ -76,6 +77,7 @@ export async function mountAdmin(options = {}) {
     withBrief = true, briefResult = { summary: 'All quiet.', model: 'gpt-4o-mini' },
     grantResult = { ok: true, userId: 'u_1', email: 'granted@example.com', expiresAt: '2026-08-22T00:00:00.000Z' },
     revokeResult = { ok: true, userId: 'u_1', email: 'granted@example.com' },
+    revokeSessionsResult = { ok: true, userId: 'u_1', email: 'granted@example.com', revoked: 2 },
     testSendResult = { ok: true },
     deleteUserResult = { ok: true, userId: 'u_1', email: 'gone@example.com', rows: { users: 1, sessions: 2, memories: 1 }, logs: [] },
   } = options;
@@ -128,6 +130,7 @@ export async function mountAdmin(options = {}) {
     exportRedacted: makeSpy(() => ({ users: [] })),
     grantProMonth: makeSpy(() => grantResult),
     revokeProGrant: makeSpy(() => revokeResult),
+    revokeUserSessions: makeSpy(() => revokeSessionsResult),
   };
   const enterpriseStore = { exportStore: makeSpy(() => ({ domains: [] })) };
 
@@ -218,7 +221,7 @@ export async function mountAdmin(options = {}) {
   return {
     baseUrl: `http://127.0.0.1:${port}`,
     key: logsAccessKey,
-    calls: { exportAllMemories, resetAllMemories, uptimeReset: uptimeMonitor.reset, authExport: authStore.exportStore, authExportRedacted: authStore.exportRedacted, enterpriseExport: enterpriseStore.exportStore, writeHostedImagesManifest, grantProMonth: authStore.grantProMonth, revokeProGrant: authStore.revokeProGrant, sendTestEmail, deleteUser, metricsSnapshot: adminMetrics && adminMetrics.snapshot, generateBrief: adminBrief && adminBrief.generateBrief },
+    calls: { exportAllMemories, resetAllMemories, uptimeReset: uptimeMonitor.reset, authExport: authStore.exportStore, authExportRedacted: authStore.exportRedacted, enterpriseExport: enterpriseStore.exportStore, writeHostedImagesManifest, grantProMonth: authStore.grantProMonth, revokeProGrant: authStore.revokeProGrant, revokeUserSessions: authStore.revokeUserSessions, sendTestEmail, deleteUser, metricsSnapshot: adminMetrics && adminMetrics.snapshot, generateBrief: adminBrief && adminBrief.generateBrief },
     getManifest: () => manifest,
     hostedImagesDir,
     referrals: referralLinks,

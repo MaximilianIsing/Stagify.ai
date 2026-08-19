@@ -251,6 +251,138 @@ test.describe('Home page — load smoke', () => {
     );
   });
 
+
+  test('the NAR tile sentence holds two lines in English', async ({ page }) => {
+    // A LAYOUT ASSERTION THAT ONLY A REAL BROWSER CAN MAKE. The card's column split
+    // (.nar-card grid-template-columns) is tuned to a measurement: English's longest
+    // tile sentence needs 285px of text column to wrap to two lines, and it gets 299.
+    // node --test has no layout engine, so nothing in the deploy-gating suite can
+    // notice the day someone retunes that ratio and the sentence silently runs to
+    // three lines — taller than the tile beside it, and taller than the 2024 wording
+    // it swaps with, so the whole card jumps height when the year switch is used.
+    // Desktop only, and not incidentally: below 900px `.nar-card` collapses to a single
+    // column, so the tile spans the full card and the ratio this guards is not even in
+    // play. Asserting a line count there would be pinning a different layout.
+    const vw = page.viewportSize()?.width ?? 0;
+    test.skip(vw <= 900, 'the two-column split only applies above the 900px breakpoint');
+
+    await page.goto('/');
+    const txt = page.locator('.nar-stat__txt').first();
+    await expect(txt).toBeVisible();
+
+    const box = await txt.evaluate((el) => {
+      const cs = getComputedStyle(el);
+      return {
+        lines: Math.round(el.getBoundingClientRect().height / parseFloat(cs.lineHeight)),
+        width: el.getBoundingClientRect().width,
+      };
+    });
+    expect(box.lines).toBe(2);
+    // The margin, not just the outcome: at 285px it flips to three lines, so a change
+    // that leaves this barely passing is a change that will break on another machine.
+    expect(box.width).toBeGreaterThanOrEqual(292);
+  });
+
+
+  test('the citation dissolve clone lays out identically to the live text', async ({ page }) => {
+    // A SUB-PIXEL LAYOUT BUG THAT LOOKED LIKE A DESIGN FAULT. Switching years dissolves
+    // the citation by parking a clone of the old paragraph over the new one. The
+    // paragraph is a flex item sized to its own content, so the sentence sits EXACTLY on
+    // its wrap boundary with no slack — and `offsetWidth` rounds to an integer. The
+    // clone was handed 640px for text needing 640.21px, wrapped to a second line, and
+    // dropped its "Source: …" line 21.7px below the real one for the length of the fade.
+    // (The years are not even the same width: "2024" is ~0.5px wider than "2025".)
+    //
+    // Only a real browser can see this, so it lives here rather than in the unit suite.
+    await page.goto('/');
+    await expect(page.locator('[data-nar-dissolve]')).toBeVisible();
+    // The citation is in the static HTML, so its visibility says nothing about whether
+    // the switch is wired — index-deferred.js injects home-figures.js after `load`, and
+    // a click before that lands on an inert button and produces no clone at all.
+    // initNarYears() takes the year-dependent nodes off language-loader.js as its first
+    // act, so their hooks disappearing is the precise "ready" signal.
+    await page.waitForFunction(
+      () => document.querySelectorAll('[data-nar-owned][data-lang], [data-nar-owned][data-lang-attr]').length === 0,
+    );
+
+    for (const year of ['2024', '2025']) {
+      const m = await page.evaluate((y) => {
+        const card = document.querySelector('[data-nar-chart]');
+        card.querySelector(`[data-nar-year="${y}"]`).click();
+        const ghost = card.querySelector('.nar-ghost');
+        const live = card.querySelector('[data-nar-dissolve]');
+        if (!ghost || !live) return null;
+        const gc = ghost.querySelector('cite').getBoundingClientRect();
+        const lc = live.querySelector('cite').getBoundingClientRect();
+        return {
+          citeDelta: Math.abs(gc.top - lc.top),
+          heightDelta: Math.abs(ghost.getBoundingClientRect().height - live.getBoundingClientRect().height),
+        };
+      }, year);
+
+      expect(m, `switching to ${year} produced no dissolve clone`).not.toBeNull();
+      // One line-height of drift is the failure mode; anything above a rounding wobble
+      // means the clone is wrapping differently from the text it is copying.
+      expect(m.citeDelta, `the ${year} clone's Source line is offset from the live one`).toBeLessThan(2);
+      expect(m.heightDelta, `the ${year} clone is a different height from the live text`).toBeLessThan(2);
+      await page.waitForTimeout(500);
+    }
+  });
+
+
+  test('pressing the year already selected does nothing at all', async ({ page }) => {
+    // Re-pressing the active year used to repaint the whole card: a dissolve clone over
+    // an identical citation, the tiles crossfading to the wording they already had, and
+    // seven numerals tweening from each value to itself. Half a second of flicker to
+    // land exactly where it started.
+    //
+    // Asserted in a browser rather than by reading the source because the thing that
+    // must not happen is a DOM side effect, and the clone is created synchronously on
+    // click — so its absence is checkable the instant the handler returns.
+    await page.goto('/');
+    await page.waitForFunction(
+      () => document.querySelectorAll('[data-nar-owned][data-lang], [data-nar-owned][data-lang-attr]').length === 0,
+    );
+
+    const snapshot = () => page.evaluate(() => {
+      const card = document.querySelector('[data-nar-chart]');
+      return {
+        numerals: [...card.querySelectorAll('.nar-stat__num, .nar-legend .pct, .nar-usage__note strong')].map((n) => n.textContent),
+        cite: card.querySelector('[data-nar-source-link]').textContent,
+        pressed: [...card.querySelectorAll('[data-nar-year]')].map((b) => b.getAttribute('aria-pressed')).join(','),
+        ghosts: card.querySelectorAll('.nar-ghost').length,
+        swapping: card.querySelectorAll('.nar-swap.is-swapping').length,
+      };
+    });
+
+    const before = await snapshot();
+    expect(before.pressed, '2025 ships selected').toBe('false,true');
+
+    // Press the ALREADY-SELECTED year, then look immediately — before any timer could
+    // have tidied a clone away, so a repaint could not hide behind its own cleanup.
+    const during = await page.evaluate(() => {
+      const card = document.querySelector('[data-nar-chart]');
+      card.querySelector('[data-nar-year="2025"]').click();
+      return {
+        ghosts: card.querySelectorAll('.nar-ghost').length,
+        swapping: card.querySelectorAll('.nar-swap.is-swapping').length,
+      };
+    });
+    expect(during.ghosts, 'a dissolve clone was built for a year change that did not happen').toBe(0);
+    expect(during.swapping, 'the tiles started a crossfade to the wording they already had').toBe(0);
+
+    await page.waitForTimeout(400);
+    expect(await snapshot()).toEqual(before);
+
+    // The button is still a live control for the OTHER year — a no-op must not have
+    // been implemented by deadening the group.
+    await page.evaluate(() => document.querySelector('[data-nar-year="2024"]').click());
+    await page.waitForTimeout(900);
+    const after = await snapshot();
+    expect(after.pressed).toBe('true,false');
+    expect(after.cite).toContain('2024');
+  });
+
   test('the deferred Google Ads tag still initializes', async ({ page }) => {
     // scripts/gtag.js is `defer` so it stops blocking the parser ahead of every
     // stylesheet. The risk of that change is silent: the tag would simply stop
