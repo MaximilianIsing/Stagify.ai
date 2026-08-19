@@ -1,6 +1,7 @@
 import { createAuthModal } from './profile-menu/auth-modal.js';
 import { createReportIssueModal } from './profile-menu/report-issue-modal.js';
 import { lang, esc } from './profile-menu/dom-utils.js';
+import { stagifyApiRowHtml } from './profile-menu/api-keys-row.js';
 
 (function () {
   let dropdownOpen = false;
@@ -19,6 +20,13 @@ import { lang, esc } from './profile-menu/dom-utils.js';
   // the Masking Studio — had nowhere to go. Its own island; this file only opens it.
   const reportIssue = createReportIssueModal({ onCloseDropdown: closeDropdown });
 
+  // The API row used to be gated on an answer only the server has (does this account
+  // actually have a key or credits?), fetched lazily on first open. That gating is gone:
+  // the single "Stagify API" row below goes to the dashboard for every signed-in visitor,
+  // so there is nothing left for the summary to decide and the request would be spent
+  // per menu-open on an answer nobody reads. createApiSummary is still exported from
+  // api-keys-row.js — see the note there.
+
   function closeDropdown() {
     const dd = document.getElementById('profile-menu-dropdown');
     const btn = document.getElementById('profile-menu-btn');
@@ -34,6 +42,9 @@ import { lang, esc } from './profile-menu/dom-utils.js';
     const dd = document.getElementById('profile-menu-dropdown');
     const btn = document.getElementById('profile-menu-btn');
     if (!dd || !btn) return;
+    // One synchronous render, and no second pass: every row the menu builds is decided
+    // from state already in hand. The API row used to force a re-render here once
+    // /api/api-credits answered, which is why this used to be two steps.
     refresh();
     dd.classList.remove('hidden');
     dd.setAttribute('aria-hidden', 'false');
@@ -138,6 +149,10 @@ import { lang, esc } from './profile-menu/dom-utils.js';
         '<button type="button" class="profile-menu__item" data-profile-action="report-issue">' +
         esc(lang('profile.reportIssue', 'Report an issue')) +
         '</button>' +
+        // The ONE API row, and it goes to the dashboard (api-keys.html) for every
+        // signed-in visitor. There used to be a second, use-gated "API keys & credits"
+        // row above; both would now point at the same page, so it is no longer rendered.
+        stagifyApiRowHtml(lang, esc) +
         '<button type="button" class="profile-menu__item profile-menu__item--danger" data-profile-action="signout">' +
         esc(lang('profile.signOut', 'Sign out')) +
         '</button>' +

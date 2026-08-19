@@ -21,6 +21,7 @@
  */
 
 import { rampValue } from "./count-up.js";
+import { initNarYears } from "./home-nar-years.js";
 
 /** The calculator's one-time intro ramp. Dragging never ramps — see initCalculator. */
 const CALC_INTRO_MS = 1200;
@@ -437,10 +438,13 @@ function initNarChart() {
   const card = /** @type {HTMLElement|null} */ (document.querySelector("[data-nar-chart]"));
   if (!card) return;
 
-  // The highlight is direct manipulation, not motion — it stays on under reduced motion,
-  // and it is the ONLY thing this function does. The chart itself is finished markup:
-  // `--seg-w` carries the four final widths and the percentages are authored text.
+  // Both of these are direct manipulation, not motion — they stay on under reduced
+  // motion. The chart still ships as finished markup: `--seg-w` carries the four final
+  // widths and the percentages are authored text, for the default 2025 year.
   wireNarLegend(card);
+  // The year switch only ever writes off a click, so the 2025 card above is untouched
+  // until the visitor asks for 2024. See the header note in home-nar-years.js.
+  initNarYears(card, tx);
 
   // THE BAR HAS NO ENTRANCE ANIMATION, and re-adding one is the bug, not the feature.
   // It used to wipe in from a collapsed clip-path (`is-narm` → `is-ncharted`), but the
@@ -453,12 +457,16 @@ function initNarChart() {
   // trigger point was retuned three times chasing a middle ground that does not exist.
   // The card's shared `.reveal` fade is the section's entrance; the bar is just there.
   //
-  // THE PERCENTAGES ARE NEVER ANIMATED EITHER, for a different reason. They were
-  // counted up from 0% at first, and it read as nonsense: a survey share is a fixed
-  // measured fact, not a quantity accumulating, so ramping "68%" up from "0%" implies a
-  // process that never happened and shows six wrong figures on the way to the right
-  // one. (The calculator in #compare ramps because its numbers ARE a running total the
-  // visitor is building.)
+  // THE PERCENTAGES ARE NEVER COUNTED UP FROM ZERO, for a different reason. They were
+  // at first, and it read as nonsense: a survey share is a fixed measured fact, not a
+  // quantity accumulating, so ramping "68%" up from "0%" implies a process that never
+  // happened and shows six wrong figures on the way to the right one. (The calculator
+  // in #compare ramps because its numbers ARE a running total the visitor is building.)
+  //
+  // The year switch tweening 68% to 55% is NOT that and is deliberate: both ends are
+  // published figures, the visitor asked for it, and it cannot fire on load because
+  // only the click path passes `animate`. The distinction is spelled out in
+  // test/frontend/home-figures.test.js, which still bans the load-time hooks.
 }
 
 /* ==========================================================================

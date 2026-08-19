@@ -4,6 +4,192 @@
     "description": "Transforme cômodos vazios com staging por IA. Envie fotos e receba resultados decorados profissionalmente em segundos. Home staging por IA gratuito para corretores, vendedores e compradores.",
     "keywords": "staging por IA, home staging, staging imobiliário, staging virtual, home staging por IA, valorização de imóveis, fotografia imobiliária, ferramenta de staging, móveis virtuais"
   },
+    "apiKeys": {
+      "title": "Chaves de API e créditos",
+      "docs": "Documentação",
+      "searchLabel": "Buscar chaves",
+      "searchPlaceholder": "Buscar chaves…",
+      "listLabel": "Conta e chaves",
+      "createKey": "Criar chave",
+      "gone": "Essa chave não pertence mais a esta conta.",
+      "signedOut": {
+        "title": "Entre para gerenciar suas chaves de API",
+        "body": "Suas chaves e seu saldo de créditos ficam na sua conta Stagify.",
+        "cta": "Entrar"
+      },
+      "group": {
+        "account": "Conta",
+        "keys": "Chaves · {count} ativas"
+      },
+      "nav": {
+        "usage": "Uso",
+        "billing": "Créditos e cobrança"
+      },
+      "list": {
+        "credits": {
+          "one": "{count} crédito",
+          "other": "{count} créditos"
+        },
+        "rendersWeek": {
+          "one": "{count} imagem esta semana",
+          "other": "{count} imagens esta semana"
+        },
+        "thisWeek": "{count} esta semana",
+        "none": "Ainda não há chaves.",
+        "noMatch": "Nenhuma chave corresponde a “{query}”."
+      },
+      "status": {
+        "live": "ativa",
+        "idle": "parada",
+        "revoked": "revogada"
+      },
+      "ago": {
+        "never": "nunca",
+        "justNow": "agora mesmo",
+        "minutes": {
+          "one": "há {count} minuto",
+          "other": "há {count} minutos"
+        },
+        "hours": {
+          "one": "há {count} hora",
+          "other": "há {count} horas"
+        },
+        "days": {
+          "one": "há {count} dia",
+          "other": "há {count} dias"
+        }
+      },
+      "value": {
+        "never": "Nunca",
+        "none": "n/d"
+      },
+      "unit": {
+        "seconds": "{value} s",
+        "minutes": "{value} min",
+        "percent": "{value} %"
+      },
+      "key": {
+        "fallbackName": "Chave de API",
+        "lastUsed": "último uso {ago}",
+        "rename": "Renomear",
+        "nameLabel": "Nome da chave",
+        "save": "Salvar",
+        "cancel": "Cancelar",
+        "chart": {
+          "one": "Imagens · último dia",
+          "other": "Imagens · últimos {count} dias"
+        },
+        "prefix": "Prefixo da chave",
+        "created": "Criada",
+        "lastUsedField": "Último uso",
+        "revokedField": "Revogada",
+        "revokedNote": "Revogada em {when}. A linha permanece aqui para que esta chave ainda corresponda a um nome em um registro de acesso.",
+        "danger": {
+          "title": "Revogar esta chave",
+          "body": "Tudo o que a usa para de funcionar imediatamente, e isso não pode ser desfeito. A chave continua listada depois, para que você a reconheça em um registro de acesso.",
+          "cta": "Revogar chave"
+        },
+        "confirm": "Revogar esta chave? Tudo o que a usa para de funcionar imediatamente."
+      },
+      "stat": {
+        "renders": "Imagens · {days} d",
+        "delivered": "Entregues",
+        "median": "Mediana por imagem",
+        "creditsSpent": "Créditos gastos",
+        "balance": "Saldo",
+        "purchased": "Comprados",
+        "spent": "Gastos",
+        "runway": "Autonomia"
+      },
+      "note": {
+        "lastSeven": "{count} nos últimos 7 dias",
+        "usageUnavailable": "uso indisponível",
+        "refunded": "{count} reembolsadas",
+        "refundedAuto": "{count} reembolsadas automaticamente",
+        "noFailures": "nenhuma imagem com falha",
+        "nothingYet": "nada gerado ainda",
+        "inFlight": "{count} em andamento agora",
+        "endToEnd": "do início ao fim",
+        "throughKey": "por esta chave",
+        "inWindow": "neste período",
+        "allTime": "no total",
+        "images": {
+          "one": "imagem",
+          "other": "imagens"
+        },
+        "runwayDays": {
+          "one": "≈ {count} dia",
+          "other": "≈ {count} dias"
+        },
+        "weekPace": "no ritmo desta semana",
+        "noBurn": "nenhuma imagem na última semana"
+      },
+      "usage": {
+        "title": "Uso",
+        "lede": {
+          "one": "Último dia, em todas as chaves da conta.",
+          "other": "Últimos {count} dias, em todas as chaves da conta."
+        },
+        "failedTitle": "Não foi possível carregar o uso agora.",
+        "failedBody": "Suas chaves e seu saldo não foram afetados. Este painel conta requisições, e só essa contagem está faltando. Recarregue a página para tentar de novo.",
+        "perDay": "Imagens por dia",
+        "byKey": "Por chave",
+        "thKey": "Chave",
+        "thRefunded": "Reembolsadas",
+        "thMedian": "Mediana",
+        "thCredits": "Créditos",
+        "deletedKey": "Chave excluída",
+        "empty": "Nenhuma requisição neste período.",
+        "sampleNote": "Mediana medida sobre as {count} imagens entregues mais recentes. Os dias são em UTC."
+      },
+      "billing": {
+        "title": "Créditos e cobrança",
+        "lede": "Pré-pago. Um crédito é uma imagem entregue, e uma imagem que falha é reembolsada automaticamente.",
+        "suspended": "Esta conta está suspensa e não pode gerar imagens. Escreva para <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a>.",
+        "buy": "Comprar créditos",
+        "buyCta": "Comprar",
+        "activity": "Atividade recente",
+        "thWhen": "Quando",
+        "thWhat": "O quê",
+        "thChange": "Variação",
+        "empty": "Ainda nada."
+      },
+      "ledger": {
+        "purchase": "Créditos comprados",
+        "debit": "Imagem",
+        "refund": "Imagem com falha, reembolsada",
+        "clawback": "Pagamento estornado",
+        "grant": "Créditos concedidos",
+        "adjustment": "Ajuste",
+        "activity": "Atividade"
+      },
+      "chart": {
+        "empty": "Ainda não há requisições.",
+        "tip": {
+          "one": "{day} UTC · {count} requisição",
+          "other": "{day} UTC · {count} requisições"
+        },
+        "tipRefunded": "{day} UTC · {count} requisições · {refunded} reembolsadas"
+      },
+      "dialog": {
+        "title": "Criar uma chave de API",
+        "label": "Dê um nome a ela, para diferenciar suas chaves",
+        "placeholder": "Servidor de produção",
+        "revealTitle": "Copie sua chave agora",
+        "revealWarn": "Esta é a única vez em que ela será exibida. Guardamos um hash, não a chave, então se você perdê-la terá de criar outra.",
+        "copy": "Copiar",
+        "copied": "Copiada",
+        "copyFallback": "Selecione e copie",
+        "done": "Já salvei",
+        "close": "Fechar",
+        "error": "Não foi possível criar a chave. Tente novamente."
+      },
+      "error": {
+        "checkout": "Não foi possível iniciar o pagamento. Tente novamente.",
+        "billing": "Não foi possível contatar o serviço de cobrança. Tente novamente.",
+        "server": "Não foi possível contatar o servidor. Tente novamente."
+      }
+    },
   "navigation": {
     "home": "Início",
     "about": "Sobre",
@@ -42,68 +228,356 @@
       "item5": "Quadro abstrato geométrico",
       "items": {
         "standard": {
-          "bedroom": ["Cama de carvalho claro, roupa branca", "Cômoda larga de carvalho, 6 gavetas", "Tapete bege grande sob a cama", "Três quadros em preto e branco", "Poltrona creme junto à janela"],
-          "livingRoom": ["Sofá creme de três lugares", "Tapete estampado cinza e marfim", "Rack de TV branco e carvalho", "Duas poltronas cinza de estrutura metálica", "Figueira-lira em vaso de barro"],
-          "diningRoom": ["Mesa de seis lugares com toalha marfim", "Seis cadeiras estofadas em creme", "Buffet de carvalho claro com pés", "Quadro abstrato sobre o buffet", "Orquídea branca no centro da mesa"],
-          "kitchen": ["Ilha branca em cascata com cuba", "Armários brancos sem puxadores", "Geladeira e forno em inox", "Quatro banquetas cinza", "Dois quadros geométricos"],
-          "office": ["Mesa retangular branca com pés", "Estante aberta de carvalho", "Cadeira de escritório em tela preta", "Armário baixo cinza", "Dois quadros abstratos emoldurados"],
-          "bathroom": ["Gabinete suspenso branco com cuba", "Box de vidro com chuveiro de teto", "Vaso sanitário suspenso branco", "Tapete de banho cinza-chumbo", "Espelho de moldura fina na parede"]
+          "bedroom": [
+            "Cama de carvalho claro, roupa branca",
+            "Cômoda larga de carvalho, 6 gavetas",
+            "Tapete bege grande sob a cama",
+            "Três quadros em preto e branco",
+            "Poltrona creme junto à janela"
+          ],
+          "livingRoom": [
+            "Sofá creme de três lugares",
+            "Tapete estampado cinza e marfim",
+            "Rack de TV branco e carvalho",
+            "Duas poltronas cinza de estrutura metálica",
+            "Figueira-lira em vaso de barro"
+          ],
+          "diningRoom": [
+            "Mesa de seis lugares com toalha marfim",
+            "Seis cadeiras estofadas em creme",
+            "Buffet de carvalho claro com pés",
+            "Quadro abstrato sobre o buffet",
+            "Orquídea branca no centro da mesa"
+          ],
+          "kitchen": [
+            "Ilha branca em cascata com cuba",
+            "Armários brancos sem puxadores",
+            "Geladeira e forno em inox",
+            "Quatro banquetas cinza",
+            "Dois quadros geométricos"
+          ],
+          "office": [
+            "Mesa retangular branca com pés",
+            "Estante aberta de carvalho",
+            "Cadeira de escritório em tela preta",
+            "Armário baixo cinza",
+            "Dois quadros abstratos emoldurados"
+          ],
+          "bathroom": [
+            "Gabinete suspenso branco com cuba",
+            "Box de vidro com chuveiro de teto",
+            "Vaso sanitário suspenso branco",
+            "Tapete de banho cinza-chumbo",
+            "Espelho de moldura fina na parede"
+          ]
         },
         "modern": {
-          "bedroom": ["Cama de nogueira, roupa de cama branca", "Cômoda de nogueira, seis gavetas", "Tapete creme quadriculado sob a cama", "Poltrona bouclê junto à janela", "Quadro abstrato geométrico"],
-          "livingRoom": ["Sofá de canto cinza em L", "Tapete geométrico azul e cinza", "Mesa de centro em pedra branca", "Luminária de piso arco preta", "Tríptico marinho de três painéis"],
-          "diningRoom": ["Mesa de jantar branca, pés pretos", "Seis cadeiras estofadas cinza", "Buffet de carvalho claro", "Dois quadros em azul-marinho e dourado", "Capim dos pampas seco em vaso"],
-          "kitchen": ["Ilha branca com tampo cinza", "Armários aéreos e torres brancos", "Três banquetas pretas de aramado", "Fornos de embutir em inox", "Fruteira preta com maçãs verdes"],
-          "office": ["Mesa branca com pés cromados", "Estante aberta de estrutura preta", "Monitor ultrawide sobre a mesa", "Cadeira cinza em tela com rodízios", "Armário baixo branco"],
-          "bathroom": ["Gabinete suspenso branco duplo", "Box de vidro para o chuveiro", "Estrelícia alta em vaso", "Vaso sanitário suspenso branco", "Tapete de banho cinza com losangos"]
+          "bedroom": [
+            "Cama de nogueira, roupa de cama branca",
+            "Cômoda de nogueira, seis gavetas",
+            "Tapete creme quadriculado sob a cama",
+            "Poltrona bouclê junto à janela",
+            "Quadro abstrato geométrico"
+          ],
+          "livingRoom": [
+            "Sofá de canto cinza em L",
+            "Tapete geométrico azul e cinza",
+            "Mesa de centro em pedra branca",
+            "Luminária de piso arco preta",
+            "Tríptico marinho de três painéis"
+          ],
+          "diningRoom": [
+            "Mesa de jantar branca, pés pretos",
+            "Seis cadeiras estofadas cinza",
+            "Buffet de carvalho claro",
+            "Dois quadros em azul-marinho e dourado",
+            "Capim dos pampas seco em vaso"
+          ],
+          "kitchen": [
+            "Ilha branca com tampo cinza",
+            "Armários aéreos e torres brancos",
+            "Três banquetas pretas de aramado",
+            "Fornos de embutir em inox",
+            "Fruteira preta com maçãs verdes"
+          ],
+          "office": [
+            "Mesa branca com pés cromados",
+            "Estante aberta de estrutura preta",
+            "Monitor ultrawide sobre a mesa",
+            "Cadeira cinza em tela com rodízios",
+            "Armário baixo branco"
+          ],
+          "bathroom": [
+            "Gabinete suspenso branco duplo",
+            "Box de vidro para o chuveiro",
+            "Estrelícia alta em vaso",
+            "Vaso sanitário suspenso branco",
+            "Tapete de banho cinza com losangos"
+          ]
         },
         "scandinavian": {
-          "bedroom": ["Cama de carvalho claro, roupa branca", "Cômoda de carvalho com seis gavetas", "Tapete redondo de juta sob a cama", "Criados-mudos de carvalho e luminárias", "Par de quadros abstratos"],
-          "livingRoom": ["Sofá cinza de três lugares na janela", "Tapete grande de juta trançada", "Mesa de centro baixa em carvalho claro", "Duas poltronas de corda trançada", "Costela-de-adão e figueira-lira em vasos"],
-          "diningRoom": ["Mesa de carvalho com trilho de linho", "Seis cadeiras de carvalho claro", "Buffet de carvalho junto à parede", "Mesa posta com pratos e taças", "Arranjo de galhos secos em uma tigela"],
-          "kitchen": ["Ilha de carvalho com tampo de pedra", "Armários aéreos de carvalho claro", "Forno branco embutido na bancada", "Três banquetas de carvalho", "Revestimento branco tipo metrô"],
-          "office": ["Escrivaninha de carvalho na janela", "Estante estreita de carvalho", "Cadeira de carvalho com almofada cinza", "Gaveteiro branco com rodízios", "Luminária dourada e ervas em vasos"],
-          "bathroom": ["Box de vidro para o chuveiro", "Gabinete suspenso de carvalho com cuba", "Chuveiro de teto preto fosco", "Tapete bege sobre o piso de madeira", "Cesto de palha e toalhas"]
+          "bedroom": [
+            "Cama de carvalho claro, roupa branca",
+            "Cômoda de carvalho com seis gavetas",
+            "Tapete redondo de juta sob a cama",
+            "Criados-mudos de carvalho e luminárias",
+            "Par de quadros abstratos"
+          ],
+          "livingRoom": [
+            "Sofá cinza de três lugares na janela",
+            "Tapete grande de juta trançada",
+            "Mesa de centro baixa em carvalho claro",
+            "Duas poltronas de corda trançada",
+            "Costela-de-adão e figueira-lira em vasos"
+          ],
+          "diningRoom": [
+            "Mesa de carvalho com trilho de linho",
+            "Seis cadeiras de carvalho claro",
+            "Buffet de carvalho junto à parede",
+            "Mesa posta com pratos e taças",
+            "Arranjo de galhos secos em uma tigela"
+          ],
+          "kitchen": [
+            "Ilha de carvalho com tampo de pedra",
+            "Armários aéreos de carvalho claro",
+            "Forno branco embutido na bancada",
+            "Três banquetas de carvalho",
+            "Revestimento branco tipo metrô"
+          ],
+          "office": [
+            "Escrivaninha de carvalho na janela",
+            "Estante estreita de carvalho",
+            "Cadeira de carvalho com almofada cinza",
+            "Gaveteiro branco com rodízios",
+            "Luminária dourada e ervas em vasos"
+          ],
+          "bathroom": [
+            "Box de vidro para o chuveiro",
+            "Gabinete suspenso de carvalho com cuba",
+            "Chuveiro de teto preto fosco",
+            "Tapete bege sobre o piso de madeira",
+            "Cesto de palha e toalhas"
+          ]
         },
         "coastal": {
-          "bedroom": ["Cama branca com cabeceira ripada", "Cômoda de madeira branqueada", "Passadeira listrada em azul-piscina", "Poltrona de rattan junto à janela", "Trio de quadros de conchas"],
-          "livingRoom": ["Dois sofás brancos com capa", "Tapete grande de sisal trançado", "Mesa de centro em madeira envelhecida", "Duas poltronas de vime", "Mesa lateral revestida de corda"],
-          "diningRoom": ["Mesa de jantar em madeira acinzentada", "Seis cadeiras de fibra natural", "Buffet branco patinado", "Banco de vime com assento listrado", "Quadro de onda quebrando"],
-          "kitchen": ["Armários brancos estilo shaker", "Ilha branca com tampo em cascata", "Três banquetas de fibra trançada", "Fornos de embutir em inox", "Tábua de madeira ao lado da cuba"],
-          "office": ["Escrivaninha rústica de cavalete", "Quatro quadros com marinhas", "Arquivo verde-menta", "Cadeira de rattan trançado", "Abajur de cerâmica verde-água"],
-          "bathroom": ["Gabinete branco com uma cuba", "Palmeira alta em cesto de palha", "Tapete de banho marmorizado azul", "Espelho com moldura sobre a cuba", "Plafon de níquel escovado"]
+          "bedroom": [
+            "Cama branca com cabeceira ripada",
+            "Cômoda de madeira branqueada",
+            "Passadeira listrada em azul-piscina",
+            "Poltrona de rattan junto à janela",
+            "Trio de quadros de conchas"
+          ],
+          "livingRoom": [
+            "Dois sofás brancos com capa",
+            "Tapete grande de sisal trançado",
+            "Mesa de centro em madeira envelhecida",
+            "Duas poltronas de vime",
+            "Mesa lateral revestida de corda"
+          ],
+          "diningRoom": [
+            "Mesa de jantar em madeira acinzentada",
+            "Seis cadeiras de fibra natural",
+            "Buffet branco patinado",
+            "Banco de vime com assento listrado",
+            "Quadro de onda quebrando"
+          ],
+          "kitchen": [
+            "Armários brancos estilo shaker",
+            "Ilha branca com tampo em cascata",
+            "Três banquetas de fibra trançada",
+            "Fornos de embutir em inox",
+            "Tábua de madeira ao lado da cuba"
+          ],
+          "office": [
+            "Escrivaninha rústica de cavalete",
+            "Quatro quadros com marinhas",
+            "Arquivo verde-menta",
+            "Cadeira de rattan trançado",
+            "Abajur de cerâmica verde-água"
+          ],
+          "bathroom": [
+            "Gabinete branco com uma cuba",
+            "Palmeira alta em cesto de palha",
+            "Tapete de banho marmorizado azul",
+            "Espelho com moldura sobre a cuba",
+            "Plafon de níquel escovado"
+          ]
         },
         "farmhouse": {
-          "bedroom": ["Cama rústica de tábuas de pinho", "Cômoda branqueada de seis gavetas", "Colcha floral e manta de retalhos", "Cadeira de balanço com palhinha", "Trio de quadros de animais da fazenda"],
-          "livingRoom": ["Sofá creme de três lugares com capa", "Tapete grande de juta trançada", "Mesa de centro em madeira de demolição", "Par de poltronas de linho", "Painel de quadros botânicos"],
-          "diningRoom": ["Mesa de jantar em carvalho envelhecido", "Buffet branco patinado", "Toalha xadrez vermelha", "Seis cadeiras estofadas em floral", "Potes com flores laranja do jardim"],
-          "kitchen": ["Armários shaker branqueados", "Cuba avental estilo fazenda", "Bancada de refeições em madeira maciça", "Três banquetas rústicas de madeira", "Prateleiras com potes e ervas"],
-          "office": ["Mesa robusta de madeira de demolição", "Estante alta de pinho com livros", "Cadeira de couro marrom com rodízios", "Arquivo de metal preto", "Relógio de parede redondo rústico"],
-          "bathroom": ["Banheira com pés de garra", "Lavatório branco de coluna", "Box de canto com paredes de vidro", "Tapete oval trançado", "Placa de madeira pintada na parede"]
+          "bedroom": [
+            "Cama rústica de tábuas de pinho",
+            "Cômoda branqueada de seis gavetas",
+            "Colcha floral e manta de retalhos",
+            "Cadeira de balanço com palhinha",
+            "Trio de quadros de animais da fazenda"
+          ],
+          "livingRoom": [
+            "Sofá creme de três lugares com capa",
+            "Tapete grande de juta trançada",
+            "Mesa de centro em madeira de demolição",
+            "Par de poltronas de linho",
+            "Painel de quadros botânicos"
+          ],
+          "diningRoom": [
+            "Mesa de jantar em carvalho envelhecido",
+            "Buffet branco patinado",
+            "Toalha xadrez vermelha",
+            "Seis cadeiras estofadas em floral",
+            "Potes com flores laranja do jardim"
+          ],
+          "kitchen": [
+            "Armários shaker branqueados",
+            "Cuba avental estilo fazenda",
+            "Bancada de refeições em madeira maciça",
+            "Três banquetas rústicas de madeira",
+            "Prateleiras com potes e ervas"
+          ],
+          "office": [
+            "Mesa robusta de madeira de demolição",
+            "Estante alta de pinho com livros",
+            "Cadeira de couro marrom com rodízios",
+            "Arquivo de metal preto",
+            "Relógio de parede redondo rústico"
+          ],
+          "bathroom": [
+            "Banheira com pés de garra",
+            "Lavatório branco de coluna",
+            "Box de canto com paredes de vidro",
+            "Tapete oval trançado",
+            "Placa de madeira pintada na parede"
+          ]
         },
         "luxury": {
-          "bedroom": ["Cama capitonê azul-marinho", "Cômoda de mogno com seis gavetas", "Dois painéis de mármore em moldura dourada", "Par de abajures de vidro", "Almofadas de veludo em tons joia"],
-          "livingRoom": ["Sofá de canto em veludo marinho", "Mesa de centro em bloco de mármore", "Duas poltronas de veludo creme", "Tapete abstrato azul e dourado", "Tríptico com molduras douradas"],
-          "diningRoom": ["Mesa de jantar longa com toalha", "Seis cadeiras de veludo azul", "Buffet de madeira com tampo de mármore", "Candelabro de cristal ao centro", "Trilho de mesa em brocado dourado"],
-          "kitchen": ["Armários em L de carvalho claro", "Ilha de quartzo em cascata", "Duas banquetas creme", "Forno duplo de embutir em inox", "Orquídea branca em vaso de vidro"],
-          "office": ["Escrivaninha de mármore e dourado", "Estante entalhada com livros", "Cadeira de couro verde capitonê", "Figueira-lira em cachepô dourado", "Abajur de cristal canelado"],
-          "bathroom": ["Banheira oval independente", "Box de canto com paredes de vidro", "Gabinete escuro com duas cubas", "Torneira de piso dourada", "Vaso suspenso junto à janela"]
+          "bedroom": [
+            "Cama capitonê azul-marinho",
+            "Cômoda de mogno com seis gavetas",
+            "Dois painéis de mármore em moldura dourada",
+            "Par de abajures de vidro",
+            "Almofadas de veludo em tons joia"
+          ],
+          "livingRoom": [
+            "Sofá de canto em veludo marinho",
+            "Mesa de centro em bloco de mármore",
+            "Duas poltronas de veludo creme",
+            "Tapete abstrato azul e dourado",
+            "Tríptico com molduras douradas"
+          ],
+          "diningRoom": [
+            "Mesa de jantar longa com toalha",
+            "Seis cadeiras de veludo azul",
+            "Buffet de madeira com tampo de mármore",
+            "Candelabro de cristal ao centro",
+            "Trilho de mesa em brocado dourado"
+          ],
+          "kitchen": [
+            "Armários em L de carvalho claro",
+            "Ilha de quartzo em cascata",
+            "Duas banquetas creme",
+            "Forno duplo de embutir em inox",
+            "Orquídea branca em vaso de vidro"
+          ],
+          "office": [
+            "Escrivaninha de mármore e dourado",
+            "Estante entalhada com livros",
+            "Cadeira de couro verde capitonê",
+            "Figueira-lira em cachepô dourado",
+            "Abajur de cristal canelado"
+          ],
+          "bathroom": [
+            "Banheira oval independente",
+            "Box de canto com paredes de vidro",
+            "Gabinete escuro com duas cubas",
+            "Torneira de piso dourada",
+            "Vaso suspenso junto à janela"
+          ]
         },
         "midcentury": {
-          "bedroom": ["Cama de nogueira, cabeceira cinza", "Cômoda de teca com seis gavetas", "Poltrona de couro preto", "Colcha geométrica e manta mostarda", "Pôsteres de viagem emoldurados"],
-          "livingRoom": ["Sofá capitonê azul-petróleo", "Tapete estampado dourado e laranja", "Par de poltronas em jacarandá", "Mesa de centro baixa de nogueira", "Painel de seis quadros abstratos"],
-          "diningRoom": ["Mesa redonda com toalha floral", "Quatro cadeiras concha moldadas", "Buffet de teca com pés palito", "Segundo pendente cilíndrico na mesa", "Taças âmbar e flores secas"],
-          "kitchen": ["Ilha branca com tampo em cascata", "Parede de armários aéreos brancos", "Três banquetas laranja de vinil", "Geladeira de aço inox", "Samambaia em suporte branco"],
-          "office": ["Mesa de nogueira com gaveteiro", "Cadeira giratória de couro caramelo", "Estante aberta de teca", "Luminária de mesa cromada", "Trio de quadros abstratos"],
-          "bathroom": ["Gabinete de nogueira com cuba branca", "Box de canto com paredes de vidro", "Planta alta em suporte de vaso", "Passadeira estampada no piso", "Lixeira de madeira ao lado do gabinete"]
+          "bedroom": [
+            "Cama de nogueira, cabeceira cinza",
+            "Cômoda de teca com seis gavetas",
+            "Poltrona de couro preto",
+            "Colcha geométrica e manta mostarda",
+            "Pôsteres de viagem emoldurados"
+          ],
+          "livingRoom": [
+            "Sofá capitonê azul-petróleo",
+            "Tapete estampado dourado e laranja",
+            "Par de poltronas em jacarandá",
+            "Mesa de centro baixa de nogueira",
+            "Painel de seis quadros abstratos"
+          ],
+          "diningRoom": [
+            "Mesa redonda com toalha floral",
+            "Quatro cadeiras concha moldadas",
+            "Buffet de teca com pés palito",
+            "Segundo pendente cilíndrico na mesa",
+            "Taças âmbar e flores secas"
+          ],
+          "kitchen": [
+            "Ilha branca com tampo em cascata",
+            "Parede de armários aéreos brancos",
+            "Três banquetas laranja de vinil",
+            "Geladeira de aço inox",
+            "Samambaia em suporte branco"
+          ],
+          "office": [
+            "Mesa de nogueira com gaveteiro",
+            "Cadeira giratória de couro caramelo",
+            "Estante aberta de teca",
+            "Luminária de mesa cromada",
+            "Trio de quadros abstratos"
+          ],
+          "bathroom": [
+            "Gabinete de nogueira com cuba branca",
+            "Box de canto com paredes de vidro",
+            "Planta alta em suporte de vaso",
+            "Passadeira estampada no piso",
+            "Lixeira de madeira ao lado do gabinete"
+          ]
         },
         "custom": {
-          "bedroom": ["Cabeceira de veludo verde ondulada", "Tapete geométrico verde e creme", "Cômoda de nogueira com seis gavetas", "Criado-mudo preto com puxadores dourados", "Banco verde capitonê aos pés da cama"],
-          "livingRoom": ["Sofá curvo de veludo esmeralda", "Buffet preto laqueado com marchetaria", "Duas poltronas giratórias rosé", "Tapete verde com motivo de leque", "Espelho sol dourado na parede"],
-          "diningRoom": ["Mesa redonda de mármore branco", "Buffet canelado de nogueira", "Seis cadeiras de veludo verde", "Tapete redondo verde com medalhão", "Buquê de rosas brancas em vaso"],
-          "kitchen": ["Carrinho bar preto com tampo dourado", "Palmeira em cachepô dourado", "Passadeira verde com folhagens", "Três esboços em molduras douradas", "Potes de cobre e peças de vidro"],
-          "office": ["Mesa canelada com base dourada", "Estante alta preta com vidros", "Tapete verde com listras chevron", "Cadeira concha de veludo verde", "Luminária dourada com cúpula verde"],
-          "bathroom": ["Banheira oval independente", "Gabinete canelado de nogueira com cuba", "Base de mármore sob a banheira", "Palmeira em cachepô dourado com pés", "Tapete de banho com estampa orgânica"]
+          "bedroom": [
+            "Cabeceira de veludo verde ondulada",
+            "Tapete geométrico verde e creme",
+            "Cômoda de nogueira com seis gavetas",
+            "Criado-mudo preto com puxadores dourados",
+            "Banco verde capitonê aos pés da cama"
+          ],
+          "livingRoom": [
+            "Sofá curvo de veludo esmeralda",
+            "Buffet preto laqueado com marchetaria",
+            "Duas poltronas giratórias rosé",
+            "Tapete verde com motivo de leque",
+            "Espelho sol dourado na parede"
+          ],
+          "diningRoom": [
+            "Mesa redonda de mármore branco",
+            "Buffet canelado de nogueira",
+            "Seis cadeiras de veludo verde",
+            "Tapete redondo verde com medalhão",
+            "Buquê de rosas brancas em vaso"
+          ],
+          "kitchen": [
+            "Carrinho bar preto com tampo dourado",
+            "Palmeira em cachepô dourado",
+            "Passadeira verde com folhagens",
+            "Três esboços em molduras douradas",
+            "Potes de cobre e peças de vidro"
+          ],
+          "office": [
+            "Mesa canelada com base dourada",
+            "Estante alta preta com vidros",
+            "Tapete verde com listras chevron",
+            "Cadeira concha de veludo verde",
+            "Luminária dourada com cúpula verde"
+          ],
+          "bathroom": [
+            "Banheira oval independente",
+            "Gabinete canelado de nogueira com cuba",
+            "Base de mármore sob a banheira",
+            "Palmeira em cachepô dourado com pés",
+            "Tapete de banho com estampa orgânica"
+          ]
         }
       }
     },
@@ -398,9 +872,19 @@
       "stat2": "já usam IA para gerar conteúdo de anúncios",
       "source": "Dados da Pesquisa de Tecnologia de 2025 da National Association of Realtors com corretores de imóveis.",
       "sourceCite": "Fonte: National Association of Realtors, Pesquisa de Tecnologia de 2025",
-      "usageAria": "Uso de IA entre corretores: 20% diariamente, 22% semanalmente, 27% algumas vezes por mês, 32% ainda não"
+      "usageAria": "Uso de IA entre corretores: 20% diariamente, 22% semanalmente, 27% algumas vezes por mês, 32% ainda não",
+      "yearsLabel": "Ano da pesquisa",
+      "y2024": {
+        "stat1": "dos corretores usaram o ChatGPT nos últimos 12 meses",
+        "stat2": "usam ferramentas de IA e machine learning no seu trabalho",
+        "usageAria": "Uso de IA entre corretores: 9% diariamente, 17% semanalmente, 30% algumas vezes por mês, 45% ainda não"
+      }
     },
     "plus": {
+      "api": {
+        "text": "Trabalha com o seu próprio software? Faça staging de fotos programaticamente com a API da Stagify.",
+        "link": "Leia a documentação da API"
+      },
       "title": "Vá além com o Stagify+",
       "pro": {
         "name": "Stagify+",
@@ -860,6 +1344,7 @@
     "terms": "Termos de Serviço",
     "contact": "Contato",
     "status": "Status",
+    "developers": "API",
     "copyright": "Stagify.ai"
   },
   "auth": {
@@ -920,6 +1405,8 @@
     "signOut": "Sair",
     "manageBillingAria": "Gerenciar cobrança no Stripe",
     "stripeHelp": "Central de ajuda do Stripe",
+    "apiKeys": "Chaves de API e créditos",
+    "stagifyApi": "Stagify API",
     "reportIssue": "Relatar um problema",
     "report": {
       "title": "Relatar um problema",
@@ -1259,11 +1746,11 @@
       "description": "Entre em contato com a equipe da Stagify.ai para suporte, parcerias ou dúvidas sobre nossa ferramenta gratuita de home staging por IA."
     },
     "stagifyPlus": {
-      "title": "Stagify+ – Planos e preços | Stagify.ai",
+      "title": "Stagify+ Planos e preços | Stagify.ai",
       "description": "Stagify+: remoção de móveis, o Designer de IA, o Masking Studio, modelos de maior qualidade e staging ilimitado. Veja planos e preços."
     },
     "enterprise": {
-      "title": "Stagify Enterprise – Staging por IA por uso para equipes",
+      "title": "Stagify Enterprise | Staging por IA por uso para equipes",
       "description": "Dê a toda a sua equipe staging por IA ilimitado com cobrança por uso a US$ 0,15 por geração. Uma única fatura, sem taxas por usuário."
     },
     "maskingStudio": {
@@ -1275,6 +1762,10 @@
       "title": "Estúdio de Exteriores | Stagify.ai - Melhoria de fotos de fachada com IA",
       "description": "Transforme uma foto de exterior cinzenta e desordenada na imagem que o anúncio merece. Mude a hora do dia, limpe o céu e remova carros e contentores, enquanto o imóvel permanece exatamente como foi fotografado.",
       "keywords": "apelo exterior, edição de fotos de exterior, melhoria de fotos imobiliárias, substituição de céu, remover carros da foto, foto ao crepúsculo, hora dourada, editor de fotos com IA, fachada, Stagify"
+    },
+    "developers": {
+      "title": "API da Stagify para desenvolvedores | Stagify.ai",
+      "description": "Decore fotos imobiliárias a partir do seu código. Uma chamada HTTP por imagem, créditos pré-pagos a 0,15 $ por imagem, sem assinatura e sem mínimo."
     }
   },
   "basicMask": {
@@ -1797,5 +2288,100 @@
     "heading": "Esta página não existe",
     "body": "O link pode estar danificado, ou a página pode ter sido movida. Tudo o resto continua onde o deixou.",
     "homeCta": "Voltar ao início"
+  },
+  "developers": {
+    "crumb": "Documentação da API",
+    "lede": "Decore uma foto imobiliária a partir do seu próprio código. Uma chamada HTTP devolve uma imagem decorada. Créditos pré-pagos a 0,15 $ por imagem, sem assinatura, sem mínimo e sem fatura que fuja ao controle.",
+    "toc": "Nesta página",
+    "contact": "Dúvidas, limites maiores ou fatura em vez de cartão: <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a>.",
+    "facts": {
+      "baseUrl": "URL base",
+      "auth": "Autenticação",
+      "contentType": "Tipo de conteúdo"
+    },
+    "intro": {
+      "h2": "Introdução",
+      "p1": "A API expõe uma única coisa: o pipeline de decoração por trás do aplicativo web. Você envia a foto de um cômodo, informa um tipo de ambiente e um estilo de mobiliário, e recebe a imagem decorada na mesma resposta. Não há fila de tarefas nem nada a consultar no caminho normal.",
+      "p2": "Créditos são imagens inteiras. Você os compra antecipadamente e cada renderização bem-sucedida gasta um. Uma renderização que falha é reembolsada automaticamente, então você só paga por uma foto que recebeu. E como o saldo é pré-pago, uma chave roubada custa no máximo o que restar nela. Não há fatura no fim do mês.",
+      "note": "As chaves são para uso servidor a servidor. A API não envia cabeçalhos CORS, portanto um navegador não pode chamá-la diretamente; isso é proposital, e uma chave acessível pelo JavaScript do navegador é uma chave vazada. Mostramos a chave uma única vez, guardamos apenas um hash e revogamos imediatamente."
+    },
+    "quickstart": {
+      "h2": "Início rápido",
+      "p1": "Crie uma chave na sua <a href=\"api-keys.html\">página de chaves de API</a>, compre um pacote de créditos e envie uma foto. A resposta traz a imagem decorada como data URL.",
+      "note": "Uma renderização pode levar alguns minutos. Defina o tempo limite de leitura do seu cliente para <strong>300 segundos</strong> e tente novamente com a <em>mesma</em> <code>Idempotency-Key</code>. É isso que garante que você nunca será cobrado duas vezes pela mesma foto.",
+      "packs": "Pacotes de créditos"
+    },
+    "packs": {
+      "loading": "Carregando preços…",
+      "images": "imagens",
+      "each": "por imagem",
+      "empty": "Os pacotes de créditos não estão disponíveis no momento. <a href=\"contact.html\">Fale conosco</a> e resolveremos isso."
+    },
+    "params": {
+      "h2": "Parâmetros da requisição",
+      "lede": "<code>POST /api/v1/renders</code>, enviado como <code>multipart/form-data</code>. Todos os valores aceitos abaixo também são servidos em JSON por <code>GET /api/v1/options</code>, que não exige chave de API, para que um cliente possa preencher seus próprios menus em vez de fixar esta tabela no código.",
+      "thField": "Campo",
+      "thType": "Tipo",
+      "thNotes": "Observações",
+      "image": "<strong>Obrigatório.</strong> A foto do cômodo. JPEG, PNG ou WebP, até 25 MB. O que é verificado é o tipo MIME, não a extensão do arquivo.",
+      "roomType": "<code>Bedroom</code>, <code>Living room</code>, <code>Dining room</code>, <code>Kitchen</code>, <code>Office</code>, <code>Bathroom</code>, <code>Outdoors</code>, <code>Dorm</code>. Padrão <code>Living room</code>. <strong>Diferencia maiúsculas e espaços</strong>, e um valor não reconhecido <strong>não é rejeitado</strong>. Ele é escrito no prompt como texto livre, então <code>Living Room</code> não é <code>Living room</code>.",
+      "furnitureStyle": "<code>standard</code>, <code>modern</code>, <code>midcentury</code>, <code>scandinavian</code>, <code>luxury</code>, <code>coastal</code>, <code>farmhouse</code>, <code>custom</code>. Padrão <code>standard</code>, que é também no que um valor não reconhecido se transforma silenciosamente. <code>custom</code> usa o seu <code>additionalPrompt</code> no lugar do texto de estilo interno.",
+      "additionalPrompt": "Orientações em texto livre para esta renderização.",
+      "removeFurniture": "Esvaziar o cômodo antes de decorá-lo. Envie <code>true</code> ou <code>on</code>; qualquer outra coisa, incluindo <code>1</code> e <code>yes</code>, vale falso.",
+      "keepFurniture": "Texto livre indicando o que manter, por ex. <code>keep the dining table and the built-in shelves</code>. Lido apenas quando <code>removeFurniture</code> está ativo. 500 caracteres.",
+      "furnitureImage": "Até 5 fotos de referência de mobiliário a imitar. Mesmos formatos e limite de tamanho de <code>image</code>.",
+      "labelVirtuallyStaged": "Grava o aviso “Virtually staged” na imagem final.",
+      "stampStyle": "<code>dark</code>, <code>light</code>, <code>minimal</code>, <code>banner</code>. Padrão <code>dark</code>. Não diferencia maiúsculas; um valor não reconhecido volta ao padrão.",
+      "stampScale": "De <code>0.7</code> a <code>1.6</code>, padrão <code>1</code>. Valores fora do intervalo são limitados em vez de recusados.",
+      "stampLang": "O idioma do selo: <code>english</code>, <code>spanish</code>, <code>french</code>, <code>german</code>, <code>chinese</code>, <code>korean</code>, <code>portuguese</code>, <code>russian</code>, <code>italian</code>, <code>japanese</code>, <code>dutch</code>. Padrão <code>english</code>.",
+      "variations": "Apenas <code>1</code> é aceito. Envie requisições simultâneas para obter mais."
+    },
+    "idem": {
+      "h2": "Idempotência",
+      "p1": "Uma renderização mantém a conexão aberta por minutos, o que significa que a falha que realmente vai te atingir é um socket caído depois de o trabalho terminar: cobrado e sem nada em mãos. Envie um cabeçalho <code>Idempotency-Key</code> em cada requisição e tente novamente com o <em>mesmo</em> valor.",
+      "thHave": "O que temos registrado",
+      "thRetry": "O que uma nova tentativa faz",
+      "r1a": "Uma requisição bem-sucedida, mesmos parâmetros",
+      "r1b": "Devolve o resultado armazenado com <code>X-Stagify-Replayed: true</code>. Sem segunda cobrança.",
+      "r2a": "Uma requisição ainda em andamento",
+      "r2b": "<code>409 REQUEST_IN_FLIGHT</code>. Aguarde e tente de novo.",
+      "r3a": "Uma requisição abandonada no meio da renderização",
+      "r3b": "É reexecutada sobre a cobrança existente, até três tentativas.",
+      "r4a": "A mesma chave com parâmetros diferentes",
+      "r4b": "<code>422 IDEMPOTENCY_KEY_REUSED</code>. Use uma chave nova.",
+      "note": "Omitir o cabeçalho é permitido e significa nenhuma proteção contra repetição, que é o padrão honesto. Não derivamos uma chave a partir da sua foto: duas renderizações genuinamente distintas do mesmo cômodo colidiriam e quem chamasse em segundo receberia a imagem do primeiro."
+    },
+    "disclosure": {
+      "h2": "Avisos de decoração virtual",
+      "p1": "Muitas regras da MLS e da NAR exigem que uma foto decorada virtualmente informe isso. <code>labelVirtuallyStaged</code> grava esse aviso nos pixels em vez de anexá-lo como metadado que uma ferramenta seguinte pode remover.",
+      "note": "Se o aviso não puder ser aplicado, a imagem é <strong>retida em vez de entregue sem rótulo</strong>, a chamada responde <code>500 DISCLOSURE_STAMP_FAILED</code> e seu crédito é reembolsado. Não há como desligar esse comportamento, nem um padrão por chave que o desative silenciosamente."
+    },
+    "errors": {
+      "h2": "Erros",
+      "lede": "Toda falha responde <code>{ \"error\": \"…\", \"code\": \"…\" }</code>. Ramifique pelo <code>code</code>, nunca pela mensagem. Mensagens mudam, códigos não.",
+      "thStatus": "Status",
+      "thCode": "Código",
+      "thAction": "O que fazer",
+      "keyMissing": "Verifique o cabeçalho <code>Authorization</code> ou crie uma nova chave.",
+      "noCredits": "Recarregue. O corpo traz <code>credits_remaining</code>.",
+      "suspended": "Fale com o suporte.",
+      "variations": "Esta API renderiza uma imagem por requisição. Envie requisições simultâneas.",
+      "inFlight": "Essa chave de idempotência ainda está em execução. Aguarde e tente de novo.",
+      "concurrency": "Renderizações demais ao mesmo tempo. Tente de novo em alguns segundos.",
+      "keyReused": "Você reutilizou uma chave com parâmetros diferentes. Use uma nova.",
+      "noImage": "O modelo não devolveu nada. Reembolsado; tente de novo ou use outra foto.",
+      "rateLimited": "Reduza o ritmo e tente de novo.",
+      "stampFailed": "O aviso não pôde ser aplicado, então a imagem foi retida. Reembolsado.",
+      "renderFailed": "Reembolsado. Informe o <code>ref</code> se entrar em contato com o suporte."
+    },
+    "other": {
+      "h2": "Outros endpoints",
+      "options": "<code>GET /api/v1/options</code>: os valores aceitos de cada enumeração acima. Não exige chave de API.",
+      "me": "<code>GET /api/v1/me</code>: minha chave está funcionando? Devolve a conta e o saldo.",
+      "credits": "<code>GET /api/v1/credits</code>: saldo e totais acumulados.",
+      "render": "<code>GET /api/v1/renders/{id}</code>: o status de uma renderização.",
+      "note": "Cada resposta traz <code>X-Stagify-Credits-Remaining</code>, para você ver o saldo cair sem precisar consultá-lo."
+    },
+    "dashboard": "Painel da API"
   }
 }

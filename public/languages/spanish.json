@@ -4,6 +4,192 @@
     "description": "Transforma habitaciones vacías con escenificación IA. Sube fotos y obtén resultados profesionalmente escenificados en segundos. Escenificación de hogares con IA gratuita para agentes inmobiliarios, vendedores y compradores.",
     "keywords": "escenificación IA, escenificación de hogares, escenificación inmobiliaria, escenificación virtual, escenificación de hogares IA, escenificación de propiedades, fotografía inmobiliaria, herramienta de escenificación, muebles virtuales"
   },
+    "apiKeys": {
+      "title": "Claves de API y créditos",
+      "docs": "Documentación",
+      "searchLabel": "Buscar claves",
+      "searchPlaceholder": "Buscar claves…",
+      "listLabel": "Cuenta y claves",
+      "createKey": "Crear clave",
+      "gone": "Esa clave ya no pertenece a esta cuenta.",
+      "signedOut": {
+        "title": "Inicia sesión para gestionar tus claves de API",
+        "body": "Tus claves y tu saldo de créditos están en tu cuenta de Stagify.",
+        "cta": "Iniciar sesión"
+      },
+      "group": {
+        "account": "Cuenta",
+        "keys": "Claves · {count} activas"
+      },
+      "nav": {
+        "usage": "Uso",
+        "billing": "Créditos y facturación"
+      },
+      "list": {
+        "credits": {
+          "one": "{count} crédito",
+          "other": "{count} créditos"
+        },
+        "rendersWeek": {
+          "one": "{count} imagen esta semana",
+          "other": "{count} imágenes esta semana"
+        },
+        "thisWeek": "{count} esta semana",
+        "none": "Todavía no hay claves.",
+        "noMatch": "Ninguna clave coincide con «{query}»."
+      },
+      "status": {
+        "live": "activa",
+        "idle": "inactiva",
+        "revoked": "revocada"
+      },
+      "ago": {
+        "never": "nunca",
+        "justNow": "ahora mismo",
+        "minutes": {
+          "one": "hace {count} minuto",
+          "other": "hace {count} minutos"
+        },
+        "hours": {
+          "one": "hace {count} hora",
+          "other": "hace {count} horas"
+        },
+        "days": {
+          "one": "hace {count} día",
+          "other": "hace {count} días"
+        }
+      },
+      "value": {
+        "never": "Nunca",
+        "none": "n/d"
+      },
+      "unit": {
+        "seconds": "{value} s",
+        "minutes": "{value} min",
+        "percent": "{value} %"
+      },
+      "key": {
+        "fallbackName": "Clave de API",
+        "lastUsed": "usada por última vez {ago}",
+        "rename": "Renombrar",
+        "nameLabel": "Nombre de la clave",
+        "save": "Guardar",
+        "cancel": "Cancelar",
+        "chart": {
+          "one": "Imágenes · último día",
+          "other": "Imágenes · últimos {count} días"
+        },
+        "prefix": "Prefijo de la clave",
+        "created": "Creada",
+        "lastUsedField": "Último uso",
+        "revokedField": "Revocada",
+        "revokedNote": "Revocada el {when}. La fila se queda aquí para que esta clave siga correspondiendo a un nombre en un registro de acceso.",
+        "danger": {
+          "title": "Revocar esta clave",
+          "body": "Todo lo que la use dejará de funcionar de inmediato, y esto no se puede deshacer. La clave seguirá en la lista después, para que puedas reconocerla en un registro de acceso.",
+          "cta": "Revocar clave"
+        },
+        "confirm": "¿Revocar esta clave? Todo lo que la use dejará de funcionar de inmediato."
+      },
+      "stat": {
+        "renders": "Imágenes · {days} d",
+        "delivered": "Entregadas",
+        "median": "Mediana por imagen",
+        "creditsSpent": "Créditos gastados",
+        "balance": "Saldo",
+        "purchased": "Comprados",
+        "spent": "Gastados",
+        "runway": "Autonomía"
+      },
+      "note": {
+        "lastSeven": "{count} en los últimos 7 días",
+        "usageUnavailable": "uso no disponible",
+        "refunded": "{count} reembolsadas",
+        "refundedAuto": "{count} reembolsadas automáticamente",
+        "noFailures": "ninguna imagen fallida",
+        "nothingYet": "todavía no se ha generado nada",
+        "inFlight": "{count} en curso ahora",
+        "endToEnd": "de principio a fin",
+        "throughKey": "a través de esta clave",
+        "inWindow": "en este periodo",
+        "allTime": "en total",
+        "images": {
+          "one": "imagen",
+          "other": "imágenes"
+        },
+        "runwayDays": {
+          "one": "≈ {count} día",
+          "other": "≈ {count} días"
+        },
+        "weekPace": "al ritmo de esta semana",
+        "noBurn": "ninguna imagen en la última semana"
+      },
+      "usage": {
+        "title": "Uso",
+        "lede": {
+          "one": "Último día, en todas las claves de la cuenta.",
+          "other": "Últimos {count} días, en todas las claves de la cuenta."
+        },
+        "failedTitle": "No se ha podido cargar el uso ahora mismo.",
+        "failedBody": "Tus claves y tu saldo no se ven afectados. Este panel cuenta peticiones, y lo único que falta es esa cuenta. Vuelve a cargar la página para intentarlo otra vez.",
+        "perDay": "Imágenes por día",
+        "byKey": "Por clave",
+        "thKey": "Clave",
+        "thRefunded": "Reembolsadas",
+        "thMedian": "Mediana",
+        "thCredits": "Créditos",
+        "deletedKey": "Clave eliminada",
+        "empty": "Ninguna petición en este periodo.",
+        "sampleNote": "Mediana medida sobre las {count} imágenes entregadas más recientes. Los días son UTC."
+      },
+      "billing": {
+        "title": "Créditos y facturación",
+        "lede": "De prepago. Un crédito es una imagen entregada, y una imagen que falla se reembolsa automáticamente.",
+        "suspended": "Esta cuenta está suspendida y no puede generar imágenes. Escribe a <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a>.",
+        "buy": "Comprar créditos",
+        "buyCta": "Comprar",
+        "activity": "Actividad reciente",
+        "thWhen": "Cuándo",
+        "thWhat": "Qué",
+        "thChange": "Cambio",
+        "empty": "Todavía nada."
+      },
+      "ledger": {
+        "purchase": "Créditos comprados",
+        "debit": "Imagen",
+        "refund": "Imagen fallida, reembolsada",
+        "clawback": "Pago revertido",
+        "grant": "Créditos concedidos",
+        "adjustment": "Ajuste",
+        "activity": "Actividad"
+      },
+      "chart": {
+        "empty": "Todavía no hay peticiones.",
+        "tip": {
+          "one": "{day} UTC · {count} petición",
+          "other": "{day} UTC · {count} peticiones"
+        },
+        "tipRefunded": "{day} UTC · {count} peticiones · {refunded} reembolsadas"
+      },
+      "dialog": {
+        "title": "Crear una clave de API",
+        "label": "Ponle un nombre, para distinguir unas claves de otras",
+        "placeholder": "Servidor de producción",
+        "revealTitle": "Copia tu clave ahora",
+        "revealWarn": "Esta es la única vez que se mostrará. Guardamos un hash, no la clave, así que si la pierdes tendrás que crear otra.",
+        "copy": "Copiar",
+        "copied": "Copiada",
+        "copyFallback": "Selecciona y copia",
+        "done": "Ya la he guardado",
+        "close": "Cerrar",
+        "error": "No se ha podido crear la clave. Inténtalo de nuevo."
+      },
+      "error": {
+        "checkout": "No se ha podido iniciar el pago. Inténtalo de nuevo.",
+        "billing": "No se ha podido contactar con el servicio de facturación. Inténtalo de nuevo.",
+        "server": "No se ha podido contactar con el servidor. Inténtalo de nuevo."
+      }
+    },
   "navigation": {
     "home": "Inicio",
     "about": "Acerca de",
@@ -42,68 +228,356 @@
       "item5": "Lámina abstracta geométrica enmarcada",
       "items": {
         "standard": {
-          "bedroom": ["Cama baja de roble claro, ropa blanca", "Cómoda ancha de roble, seis cajones", "Alfombra beige grande bajo la cama", "Tres láminas en blanco y negro", "Butaca crema junto a la ventana"],
-          "livingRoom": ["Sofá de tres plazas crema", "Alfombra estampada gris y marfil", "Mueble de TV blanco y roble", "Dos butacas grises de estructura metálica", "Ficus lyrata en maceta de barro"],
-          "diningRoom": ["Mesa de seis con mantel de lino marfil", "Seis sillas tapizadas en crema", "Aparador de roble claro con patas", "Lienzo abstracto sobre el aparador", "Centro de mesa con orquídea blanca"],
-          "kitchen": ["Isla blanca en cascada con fregadero", "Frente de armarios blancos sin tiradores", "Nevera y horno de acero inoxidable", "Cuatro taburetes grises de barra", "Dos láminas geométricas enmarcadas"],
-          "office": ["Escritorio blanco rectangular con patas", "Estantería abierta de roble", "Silla de oficina negra de malla", "Mueble bajo de almacenaje gris", "Dos obras abstractas enmarcadas"],
-          "bathroom": ["Mueble de lavabo suspendido blanco", "Ducha de obra con rociador de lluvia", "Inodoro suspendido blanco", "Alfombrilla de baño gris antracita", "Espejo estrecho enmarcado en la pared"]
+          "bedroom": [
+            "Cama baja de roble claro, ropa blanca",
+            "Cómoda ancha de roble, seis cajones",
+            "Alfombra beige grande bajo la cama",
+            "Tres láminas en blanco y negro",
+            "Butaca crema junto a la ventana"
+          ],
+          "livingRoom": [
+            "Sofá de tres plazas crema",
+            "Alfombra estampada gris y marfil",
+            "Mueble de TV blanco y roble",
+            "Dos butacas grises de estructura metálica",
+            "Ficus lyrata en maceta de barro"
+          ],
+          "diningRoom": [
+            "Mesa de seis con mantel de lino marfil",
+            "Seis sillas tapizadas en crema",
+            "Aparador de roble claro con patas",
+            "Lienzo abstracto sobre el aparador",
+            "Centro de mesa con orquídea blanca"
+          ],
+          "kitchen": [
+            "Isla blanca en cascada con fregadero",
+            "Frente de armarios blancos sin tiradores",
+            "Nevera y horno de acero inoxidable",
+            "Cuatro taburetes grises de barra",
+            "Dos láminas geométricas enmarcadas"
+          ],
+          "office": [
+            "Escritorio blanco rectangular con patas",
+            "Estantería abierta de roble",
+            "Silla de oficina negra de malla",
+            "Mueble bajo de almacenaje gris",
+            "Dos obras abstractas enmarcadas"
+          ],
+          "bathroom": [
+            "Mueble de lavabo suspendido blanco",
+            "Ducha de obra con rociador de lluvia",
+            "Inodoro suspendido blanco",
+            "Alfombrilla de baño gris antracita",
+            "Espejo estrecho enmarcado en la pared"
+          ]
         },
         "modern": {
-          "bedroom": ["Cama baja de nogal, ropa blanca", "Cómoda larga de nogal, seis cajones", "Alfombra crema de cuadrícula bajo la cama", "Butaca de bouclé junto a la ventana", "Lámina abstracta geométrica enmarcada"],
-          "livingRoom": ["Sofá rinconero gris en forma de L", "Alfombra geométrica azul y gris", "Mesa de centro de piedra blanca", "Lámpara de pie de arco negra", "Tríptico marino de tres paneles"],
-          "diningRoom": ["Mesa de comedor blanca, patas negras", "Seis sillas tapizadas en gris", "Aparador de roble claro", "Dos láminas en azul marino y dorado", "Pampa seca en un jarrón"],
-          "kitchen": ["Isla blanca con encimera gris", "Armarios altos y superiores blancos", "Tres taburetes negros de varilla", "Hornos de acero empotrados en columna", "Bol negro con manzanas verdes"],
-          "office": ["Escritorio blanco con patas cromadas", "Estantería abierta de estructura negra", "Monitor panorámico sobre el escritorio", "Silla gris de malla con ruedas", "Mueble bajo de almacenaje blanco"],
-          "bathroom": ["Mueble doble suspendido blanco", "Ducha de obra con mampara de vidrio", "Ave del paraíso alta en maceta", "Inodoro suspendido blanco", "Alfombrilla gris de rombos"]
+          "bedroom": [
+            "Cama baja de nogal, ropa blanca",
+            "Cómoda larga de nogal, seis cajones",
+            "Alfombra crema de cuadrícula bajo la cama",
+            "Butaca de bouclé junto a la ventana",
+            "Lámina abstracta geométrica enmarcada"
+          ],
+          "livingRoom": [
+            "Sofá rinconero gris en forma de L",
+            "Alfombra geométrica azul y gris",
+            "Mesa de centro de piedra blanca",
+            "Lámpara de pie de arco negra",
+            "Tríptico marino de tres paneles"
+          ],
+          "diningRoom": [
+            "Mesa de comedor blanca, patas negras",
+            "Seis sillas tapizadas en gris",
+            "Aparador de roble claro",
+            "Dos láminas en azul marino y dorado",
+            "Pampa seca en un jarrón"
+          ],
+          "kitchen": [
+            "Isla blanca con encimera gris",
+            "Armarios altos y superiores blancos",
+            "Tres taburetes negros de varilla",
+            "Hornos de acero empotrados en columna",
+            "Bol negro con manzanas verdes"
+          ],
+          "office": [
+            "Escritorio blanco con patas cromadas",
+            "Estantería abierta de estructura negra",
+            "Monitor panorámico sobre el escritorio",
+            "Silla gris de malla con ruedas",
+            "Mueble bajo de almacenaje blanco"
+          ],
+          "bathroom": [
+            "Mueble doble suspendido blanco",
+            "Ducha de obra con mampara de vidrio",
+            "Ave del paraíso alta en maceta",
+            "Inodoro suspendido blanco",
+            "Alfombrilla gris de rombos"
+          ]
         },
         "scandinavian": {
-          "bedroom": ["Cama baja de roble claro, ropa blanca", "Cómoda de roble de seis cajones", "Alfombra redonda de yute bajo la cama", "Mesillas de roble y dos lámparas", "Par de láminas abstractas enmarcadas"],
-          "livingRoom": ["Sofá gris de tres plazas en la ventana", "Gran alfombra de yute trenzado", "Mesa de centro baja de roble claro", "Dos butacas de cuerda trenzada", "Monstera y ficus lyrata en maceta"],
-          "diningRoom": ["Mesa larga de roble con camino de lino", "Seis sillas de roble claro", "Aparador de roble contra la pared", "Mesa puesta con platos y copas", "Ramas secas en un cuenco"],
-          "kitchen": ["Isla de roble con encimera de piedra", "Frente de armarios de roble claro", "Horno blanco bajo la encimera", "Tres taburetes de roble", "Alicatado blanco tipo metro"],
-          "office": ["Escritorio de roble macizo en la ventana", "Librería abierta y estrecha de roble", "Silla de roble con cojín gris", "Cajonera blanca con ruedas", "Flexo de latón y hierbas en maceta"],
-          "bathroom": ["Ducha de obra con mampara de vidrio", "Mueble de roble suspendido con lavabo", "Rociador de lluvia negro mate", "Alfombrilla beige sobre el parqué", "Cesto de mimbre y toallas"]
+          "bedroom": [
+            "Cama baja de roble claro, ropa blanca",
+            "Cómoda de roble de seis cajones",
+            "Alfombra redonda de yute bajo la cama",
+            "Mesillas de roble y dos lámparas",
+            "Par de láminas abstractas enmarcadas"
+          ],
+          "livingRoom": [
+            "Sofá gris de tres plazas en la ventana",
+            "Gran alfombra de yute trenzado",
+            "Mesa de centro baja de roble claro",
+            "Dos butacas de cuerda trenzada",
+            "Monstera y ficus lyrata en maceta"
+          ],
+          "diningRoom": [
+            "Mesa larga de roble con camino de lino",
+            "Seis sillas de roble claro",
+            "Aparador de roble contra la pared",
+            "Mesa puesta con platos y copas",
+            "Ramas secas en un cuenco"
+          ],
+          "kitchen": [
+            "Isla de roble con encimera de piedra",
+            "Frente de armarios de roble claro",
+            "Horno blanco bajo la encimera",
+            "Tres taburetes de roble",
+            "Alicatado blanco tipo metro"
+          ],
+          "office": [
+            "Escritorio de roble macizo en la ventana",
+            "Librería abierta y estrecha de roble",
+            "Silla de roble con cojín gris",
+            "Cajonera blanca con ruedas",
+            "Flexo de latón y hierbas en maceta"
+          ],
+          "bathroom": [
+            "Ducha de obra con mampara de vidrio",
+            "Mueble de roble suspendido con lavabo",
+            "Rociador de lluvia negro mate",
+            "Alfombrilla beige sobre el parqué",
+            "Cesto de mimbre y toallas"
+          ]
         },
         "coastal": {
-          "bedroom": ["Cama blanca con cabecero de listones", "Cómoda de madera encalada", "Alfombra de pasillo a rayas aguamarina", "Butaca de ratán junto a la ventana", "Tres láminas de conchas enmarcadas"],
-          "livingRoom": ["Dos sofás blancos con funda", "Gran alfombra de sisal trenzado", "Mesa de centro de madera envejecida", "Dos butacas de mimbre", "Mesa auxiliar forrada de cuerda"],
-          "diningRoom": ["Mesa larga de madera gris lavada", "Seis sillas de fibra natural", "Aparador blanco envejecido", "Banco de mimbre con asiento a rayas", "Lienzo enmarcado de una ola"],
-          "kitchen": ["Frente de armarios blancos shaker", "Isla blanca con encimera en cascada", "Tres taburetes de fibra trenzada", "Hornos de acero empotrados en columna", "Tabla de madera junto al fregadero"],
-          "office": ["Escritorio rústico de caballetes", "Cuatro lienzos marinos enmarcados", "Archivador verde menta", "Silla de escritorio de ratán", "Lámpara de cerámica verde agua"],
-          "bathroom": ["Mueble de lavabo blanco individual", "Palmera alta en cesto de fibra", "Alfombrilla jaspeada aguamarina", "Espejo enmarcado sobre el lavabo", "Plafón de techo en níquel cepillado"]
+          "bedroom": [
+            "Cama blanca con cabecero de listones",
+            "Cómoda de madera encalada",
+            "Alfombra de pasillo a rayas aguamarina",
+            "Butaca de ratán junto a la ventana",
+            "Tres láminas de conchas enmarcadas"
+          ],
+          "livingRoom": [
+            "Dos sofás blancos con funda",
+            "Gran alfombra de sisal trenzado",
+            "Mesa de centro de madera envejecida",
+            "Dos butacas de mimbre",
+            "Mesa auxiliar forrada de cuerda"
+          ],
+          "diningRoom": [
+            "Mesa larga de madera gris lavada",
+            "Seis sillas de fibra natural",
+            "Aparador blanco envejecido",
+            "Banco de mimbre con asiento a rayas",
+            "Lienzo enmarcado de una ola"
+          ],
+          "kitchen": [
+            "Frente de armarios blancos shaker",
+            "Isla blanca con encimera en cascada",
+            "Tres taburetes de fibra trenzada",
+            "Hornos de acero empotrados en columna",
+            "Tabla de madera junto al fregadero"
+          ],
+          "office": [
+            "Escritorio rústico de caballetes",
+            "Cuatro lienzos marinos enmarcados",
+            "Archivador verde menta",
+            "Silla de escritorio de ratán",
+            "Lámpara de cerámica verde agua"
+          ],
+          "bathroom": [
+            "Mueble de lavabo blanco individual",
+            "Palmera alta en cesto de fibra",
+            "Alfombrilla jaspeada aguamarina",
+            "Espejo enmarcado sobre el lavabo",
+            "Plafón de techo en níquel cepillado"
+          ]
         },
         "farmhouse": {
-          "bedroom": ["Cama rústica de tablones de pino", "Cómoda encalada de seis cajones", "Colcha floral y manta de patchwork", "Mecedora de madera con asiento trenzado", "Tres láminas de animales de granja"],
-          "livingRoom": ["Sofá de tres plazas con funda crema", "Gran alfombra de yute trenzado", "Mesa de centro de madera reciclada", "Par de butacas de lino", "Mural de láminas botánicas"],
-          "diningRoom": ["Mesa larga de roble envejecido", "Aparador blanco envejecido", "Mantel de cuadros vichy rojo", "Seis sillas tapizadas en flores", "Tarros con flores naranjas"],
-          "kitchen": ["Frente de armarios shaker encalados", "Fregadero de delantal tipo granja", "Barra de desayuno de madera maciza", "Tres taburetes rústicos de madera", "Baldas con tarros y hierbas"],
-          "office": ["Escritorio macizo de madera reciclada", "Librería alta de pino con libros", "Silla de cuero marrón con ruedas", "Archivador metálico negro", "Reloj de pared redondo de granja"],
-          "bathroom": ["Bañera exenta con patas de garra", "Lavabo blanco de pie con grifería", "Ducha de rincón con mampara", "Alfombra ovalada trenzada", "Cartel de madera pintado"]
+          "bedroom": [
+            "Cama rústica de tablones de pino",
+            "Cómoda encalada de seis cajones",
+            "Colcha floral y manta de patchwork",
+            "Mecedora de madera con asiento trenzado",
+            "Tres láminas de animales de granja"
+          ],
+          "livingRoom": [
+            "Sofá de tres plazas con funda crema",
+            "Gran alfombra de yute trenzado",
+            "Mesa de centro de madera reciclada",
+            "Par de butacas de lino",
+            "Mural de láminas botánicas"
+          ],
+          "diningRoom": [
+            "Mesa larga de roble envejecido",
+            "Aparador blanco envejecido",
+            "Mantel de cuadros vichy rojo",
+            "Seis sillas tapizadas en flores",
+            "Tarros con flores naranjas"
+          ],
+          "kitchen": [
+            "Frente de armarios shaker encalados",
+            "Fregadero de delantal tipo granja",
+            "Barra de desayuno de madera maciza",
+            "Tres taburetes rústicos de madera",
+            "Baldas con tarros y hierbas"
+          ],
+          "office": [
+            "Escritorio macizo de madera reciclada",
+            "Librería alta de pino con libros",
+            "Silla de cuero marrón con ruedas",
+            "Archivador metálico negro",
+            "Reloj de pared redondo de granja"
+          ],
+          "bathroom": [
+            "Bañera exenta con patas de garra",
+            "Lavabo blanco de pie con grifería",
+            "Ducha de rincón con mampara",
+            "Alfombra ovalada trenzada",
+            "Cartel de madera pintado"
+          ]
         },
         "luxury": {
-          "bedroom": ["Cama con cabecero capitoné azul marino", "Cómoda de caoba de seis cajones", "Dos paneles de mármol con marco dorado", "Par de lámparas de mesilla de vidrio", "Cojines de terciopelo en tonos joya"],
-          "livingRoom": ["Sofá rinconero de terciopelo azul", "Mesa de centro de mármol blanco", "Dos butacas de terciopelo crema", "Alfombra abstracta azul y dorada", "Tríptico con marcos dorados"],
-          "diningRoom": ["Mesa larga vestida con mantel", "Seis sillas de terciopelo azul", "Aparador de madera con tapa de mármol", "Candelabro de cristal como centro", "Camino de mesa de brocado dorado"],
-          "kitchen": ["Mobiliario en L de roble claro", "Isla de cuarzo en cascada", "Dos taburetes de barra crema", "Horno doble de acero inoxidable", "Orquídea blanca en jarrón de vidrio"],
-          "office": ["Escritorio de mármol y dorado", "Librería de madera tallada con libros", "Silla de cuero verde capitoné", "Ficus lyrata en macetero de latón", "Lámpara de cristal estriado"],
-          "bathroom": ["Bañera exenta ovalada", "Ducha de rincón con mampara", "Mueble de doble lavabo en madera oscura", "Grifería de bañera de pie en latón", "Inodoro suspendido junto a la ventana"]
+          "bedroom": [
+            "Cama con cabecero capitoné azul marino",
+            "Cómoda de caoba de seis cajones",
+            "Dos paneles de mármol con marco dorado",
+            "Par de lámparas de mesilla de vidrio",
+            "Cojines de terciopelo en tonos joya"
+          ],
+          "livingRoom": [
+            "Sofá rinconero de terciopelo azul",
+            "Mesa de centro de mármol blanco",
+            "Dos butacas de terciopelo crema",
+            "Alfombra abstracta azul y dorada",
+            "Tríptico con marcos dorados"
+          ],
+          "diningRoom": [
+            "Mesa larga vestida con mantel",
+            "Seis sillas de terciopelo azul",
+            "Aparador de madera con tapa de mármol",
+            "Candelabro de cristal como centro",
+            "Camino de mesa de brocado dorado"
+          ],
+          "kitchen": [
+            "Mobiliario en L de roble claro",
+            "Isla de cuarzo en cascada",
+            "Dos taburetes de barra crema",
+            "Horno doble de acero inoxidable",
+            "Orquídea blanca en jarrón de vidrio"
+          ],
+          "office": [
+            "Escritorio de mármol y dorado",
+            "Librería de madera tallada con libros",
+            "Silla de cuero verde capitoné",
+            "Ficus lyrata en macetero de latón",
+            "Lámpara de cristal estriado"
+          ],
+          "bathroom": [
+            "Bañera exenta ovalada",
+            "Ducha de rincón con mampara",
+            "Mueble de doble lavabo en madera oscura",
+            "Grifería de bañera de pie en latón",
+            "Inodoro suspendido junto a la ventana"
+          ]
         },
         "midcentury": {
-          "bedroom": ["Cama de nogal con cabecero gris", "Cómoda larga de teca, seis cajones", "Butaca de cuero negro", "Colcha geométrica y manta mostaza", "Carteles de viaje enmarcados"],
-          "livingRoom": ["Sofá capitoné turquesa de tres plazas", "Alfombra estampada dorada y naranja", "Par de butacas de palisandro", "Mesa de centro baja de nogal", "Mural de seis láminas abstractas"],
-          "diningRoom": ["Mesa redonda con mantel floral", "Cuatro sillas de carcasa moldeada", "Aparador largo de teca con patas", "Segunda lámpara cilíndrica sobre la mesa", "Copas ámbar y flores secas"],
-          "kitchen": ["Isla blanca con encimera en cascada", "Frente de armarios altos blancos lisos", "Tres taburetes de vinilo naranja", "Nevera de acero inoxidable", "Helecho en macetero blanco"],
-          "office": ["Escritorio de nogal con cajonera", "Silla giratoria de cuero camel", "Estantería abierta de teca", "Flexo cromado de cúpula", "Tres láminas abstractas enmarcadas"],
-          "bathroom": ["Mueble de nogal con lavabo blanco", "Ducha de rincón con mampara", "Planta alta sobre un macetero", "Alfombra de pasillo estampada", "Papelera de madera junto al mueble"]
+          "bedroom": [
+            "Cama de nogal con cabecero gris",
+            "Cómoda larga de teca, seis cajones",
+            "Butaca de cuero negro",
+            "Colcha geométrica y manta mostaza",
+            "Carteles de viaje enmarcados"
+          ],
+          "livingRoom": [
+            "Sofá capitoné turquesa de tres plazas",
+            "Alfombra estampada dorada y naranja",
+            "Par de butacas de palisandro",
+            "Mesa de centro baja de nogal",
+            "Mural de seis láminas abstractas"
+          ],
+          "diningRoom": [
+            "Mesa redonda con mantel floral",
+            "Cuatro sillas de carcasa moldeada",
+            "Aparador largo de teca con patas",
+            "Segunda lámpara cilíndrica sobre la mesa",
+            "Copas ámbar y flores secas"
+          ],
+          "kitchen": [
+            "Isla blanca con encimera en cascada",
+            "Frente de armarios altos blancos lisos",
+            "Tres taburetes de vinilo naranja",
+            "Nevera de acero inoxidable",
+            "Helecho en macetero blanco"
+          ],
+          "office": [
+            "Escritorio de nogal con cajonera",
+            "Silla giratoria de cuero camel",
+            "Estantería abierta de teca",
+            "Flexo cromado de cúpula",
+            "Tres láminas abstractas enmarcadas"
+          ],
+          "bathroom": [
+            "Mueble de nogal con lavabo blanco",
+            "Ducha de rincón con mampara",
+            "Planta alta sobre un macetero",
+            "Alfombra de pasillo estampada",
+            "Papelera de madera junto al mueble"
+          ]
         },
         "custom": {
-          "bedroom": ["Cabecero ondulado de terciopelo verde", "Alfombra geométrica verde y crema", "Cómoda de nogal de seis cajones", "Mesilla negra con tiradores de latón", "Banqueta verde capitoné a los pies"],
-          "livingRoom": ["Sofá curvo de terciopelo esmeralda", "Aparador negro lacado con marquetería", "Dos butacas giratorias rosa empolvado", "Alfombra verde con motivo de abanico", "Espejo sol dorado en la pared"],
-          "diningRoom": ["Mesa redonda de mármol blanco", "Aparador de nogal estriado", "Seis sillas de terciopelo verde", "Alfombra redonda verde con medallón", "Ramo de rosas blancas en jarrón"],
-          "kitchen": ["Carrito de bar negro con tapa de latón", "Palmera en macetero de latón", "Alfombra de pasillo con hojas verdes", "Tres bocetos con marco dorado", "Botes de cobre y cristalería"],
-          "office": ["Escritorio estriado con base de latón", "Librería alta negra con vitrina", "Alfombra verde de espiga", "Silla concha de terciopelo verde", "Lámpara de latón con tulipa verde"],
-          "bathroom": ["Bañera exenta ovalada", "Mueble estriado de nogal con lavabo", "Base de mármol bajo la bañera", "Palmera en macetero de latón con pie", "Alfombrilla verde de estampado orgánico"]
+          "bedroom": [
+            "Cabecero ondulado de terciopelo verde",
+            "Alfombra geométrica verde y crema",
+            "Cómoda de nogal de seis cajones",
+            "Mesilla negra con tiradores de latón",
+            "Banqueta verde capitoné a los pies"
+          ],
+          "livingRoom": [
+            "Sofá curvo de terciopelo esmeralda",
+            "Aparador negro lacado con marquetería",
+            "Dos butacas giratorias rosa empolvado",
+            "Alfombra verde con motivo de abanico",
+            "Espejo sol dorado en la pared"
+          ],
+          "diningRoom": [
+            "Mesa redonda de mármol blanco",
+            "Aparador de nogal estriado",
+            "Seis sillas de terciopelo verde",
+            "Alfombra redonda verde con medallón",
+            "Ramo de rosas blancas en jarrón"
+          ],
+          "kitchen": [
+            "Carrito de bar negro con tapa de latón",
+            "Palmera en macetero de latón",
+            "Alfombra de pasillo con hojas verdes",
+            "Tres bocetos con marco dorado",
+            "Botes de cobre y cristalería"
+          ],
+          "office": [
+            "Escritorio estriado con base de latón",
+            "Librería alta negra con vitrina",
+            "Alfombra verde de espiga",
+            "Silla concha de terciopelo verde",
+            "Lámpara de latón con tulipa verde"
+          ],
+          "bathroom": [
+            "Bañera exenta ovalada",
+            "Mueble estriado de nogal con lavabo",
+            "Base de mármol bajo la bañera",
+            "Palmera en macetero de latón con pie",
+            "Alfombrilla verde de estampado orgánico"
+          ]
         }
       }
     },
@@ -398,9 +872,19 @@
       "stat2": "ya usan IA para generar contenido de sus anuncios",
       "source": "Datos de la Encuesta de Tecnología 2025 de la National Association of Realtors a agentes inmobiliarios.",
       "sourceCite": "Fuente: National Association of Realtors, Encuesta de Tecnología 2025",
-      "usageAria": "Uso de IA entre agentes: 20% diario, 22% semanal, 27% unas veces al mes, 32% aún no"
+      "usageAria": "Uso de IA entre agentes: 20% diario, 22% semanal, 27% unas veces al mes, 32% aún no",
+      "yearsLabel": "Año de la encuesta",
+      "y2024": {
+        "stat1": "de los agentes ha usado ChatGPT en los últimos 12 meses",
+        "stat2": "usan herramientas de IA y aprendizaje automático en su negocio",
+        "usageAria": "Uso de IA entre agentes: 9% diario, 17% semanal, 30% unas veces al mes, 45% aún no"
+      }
     },
     "plus": {
+      "api": {
+        "text": "¿Trabajas con tu propio software? Haz staging de fotos mediante la API de Stagify.",
+        "link": "Consulta la documentación de la API"
+      },
       "title": "Ve más lejos con Stagify+",
       "pro": {
         "name": "Stagify+",
@@ -860,6 +1344,7 @@
     "terms": "Términos de servicio",
     "contact": "Contacto",
     "status": "Estado",
+    "developers": "API",
     "copyright": "Stagify.ai"
   },
   "auth": {
@@ -920,6 +1405,8 @@
     "signOut": "Cerrar sesión",
     "manageBillingAria": "Administrar facturación en Stripe",
     "stripeHelp": "Centro de ayuda de Stripe",
+    "apiKeys": "Claves de API y créditos",
+    "stagifyApi": "Stagify API",
     "reportIssue": "Informar de un problema",
     "report": {
       "title": "Informar de un problema",
@@ -1259,11 +1746,11 @@
       "description": "Ponte en contacto con el equipo de Stagify.ai para soporte, colaboraciones o dudas sobre nuestra herramienta gratuita de staging con IA."
     },
     "stagifyPlus": {
-      "title": "Stagify+ — Planes y Precios | Stagify.ai",
+      "title": "Stagify+ Planes y Precios | Stagify.ai",
       "description": "Stagify+: eliminación de muebles, el Diseñador IA, el Estudio de Máscaras, modelos de mayor calidad y montaje ilimitado. Consulta planes y precios."
     },
     "enterprise": {
-      "title": "Stagify Enterprise — Staging con IA por Uso para Equipos",
+      "title": "Stagify Enterprise | Staging con IA por Uso para Equipos",
       "description": "Da a todo tu equipo staging con IA ilimitado con facturación por uso a $0.15 por generación. Una sola factura, sin cuotas por usuario."
     },
     "maskingStudio": {
@@ -1275,6 +1762,10 @@
       "title": "Estudio de Exteriores | Stagify.ai - Mejora de fotos de fachada con IA",
       "description": "Convierte una foto de exterior gris y desordenada en la imagen que el anuncio merece. Cambia la hora del día, despeja el cielo y elimina coches y contenedores, mientras la propiedad permanece exactamente como se fotografió.",
       "keywords": "atractivo exterior, edición de fotos de exterior, mejora de fotos inmobiliarias, reemplazo de cielo, eliminar coches de fotos, foto crepuscular inmobiliaria, hora dorada, editor de fotos con IA, fachada, Stagify"
+    },
+    "developers": {
+      "title": "API de Stagify para desarrolladores | Stagify.ai",
+      "description": "Escenifica fotos inmobiliarias desde tu propio código. Una llamada HTTP por imagen, créditos prepago a 0,15 $ por imagen, sin suscripción ni mínimo."
     }
   },
   "basicMask": {
@@ -1797,5 +2288,100 @@
     "heading": "Esta página no existe",
     "body": "Puede que el enlace esté roto o que la página se haya movido. Todo lo demás sigue donde lo dejaste.",
     "homeCta": "Volver al inicio"
+  },
+  "developers": {
+    "crumb": "Documentación de la API",
+    "lede": "Escenifica una foto inmobiliaria desde tu propio código. Una llamada HTTP devuelve una imagen escenificada. Créditos prepago a 0,15 $ por imagen, sin suscripción, sin mínimo y sin facturas que se disparen.",
+    "toc": "En esta página",
+    "contact": "Preguntas, límites más altos o una factura en lugar de tarjeta: <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a>.",
+    "facts": {
+      "baseUrl": "URL base",
+      "auth": "Autenticación",
+      "contentType": "Tipo de contenido"
+    },
+    "intro": {
+      "h2": "Introducción",
+      "p1": "La API expone una sola cosa: el motor de escenificación que hay detrás de la aplicación web. Envías la foto de una habitación, indicas un tipo de estancia y un estilo de mobiliario, y recibes la imagen escenificada en la misma respuesta. No hay cola de trabajos ni nada que consultar en el camino normal.",
+      "p2": "Los créditos son imágenes enteras. Los compras por adelantado y cada renderizado correcto gasta uno. Un renderizado fallido se reembolsa automáticamente, así que solo pagas por una foto que has recibido. Y como el saldo es prepago, una clave robada te cuesta como mucho lo que quede en ella. No hay factura a fin de mes.",
+      "note": "Las claves están pensadas para uso servidor a servidor. La API no envía cabeceras CORS, por lo que un navegador no puede llamarla directamente; es deliberado, y una clave accesible desde JavaScript de navegador es una clave filtrada. Mostramos la clave una sola vez, guardamos únicamente un hash y la revocamos de inmediato."
+    },
+    "quickstart": {
+      "h2": "Inicio rápido",
+      "p1": "Crea una clave en tu <a href=\"api-keys.html\">página de claves de API</a>, compra un paquete de créditos y envía una foto. La respuesta lleva la imagen escenificada como data URL.",
+      "note": "Un renderizado puede tardar un par de minutos. Ajusta el tiempo de espera de lectura de tu cliente a <strong>300 segundos</strong> y reintenta con la <em>misma</em> <code>Idempotency-Key</code>. Eso es lo que garantiza que nunca se te cobre dos veces por una foto.",
+      "packs": "Paquetes de créditos"
+    },
+    "packs": {
+      "loading": "Cargando precios…",
+      "images": "imágenes",
+      "each": "por imagen",
+      "empty": "Los paquetes de créditos no están disponibles ahora mismo. <a href=\"contact.html\">Escríbenos</a> y lo resolvemos."
+    },
+    "params": {
+      "h2": "Parámetros de la petición",
+      "lede": "<code>POST /api/v1/renders</code>, enviado como <code>multipart/form-data</code>. Todos los valores admitidos que aparecen abajo también se sirven en JSON desde <code>GET /api/v1/options</code>, que no requiere clave de API, para que un cliente pueda rellenar sus propios desplegables en lugar de fijar esta tabla en el código.",
+      "thField": "Campo",
+      "thType": "Tipo",
+      "thNotes": "Notas",
+      "image": "<strong>Obligatorio.</strong> La foto de la habitación. JPEG, PNG o WebP, hasta 25 MB. Se comprueba el tipo MIME, no la extensión del archivo.",
+      "roomType": "<code>Bedroom</code>, <code>Living room</code>, <code>Dining room</code>, <code>Kitchen</code>, <code>Office</code>, <code>Bathroom</code>, <code>Outdoors</code>, <code>Dorm</code>. Por defecto <code>Living room</code>. <strong>Distingue mayúsculas y espacios</strong>, y un valor no reconocido <strong>no se rechaza</strong>. Se escribe en el prompt como texto libre, por lo que <code>Living Room</code> no es <code>Living room</code>.",
+      "furnitureStyle": "<code>standard</code>, <code>modern</code>, <code>midcentury</code>, <code>scandinavian</code>, <code>luxury</code>, <code>coastal</code>, <code>farmhouse</code>, <code>custom</code>. Por defecto <code>standard</code>, que es también en lo que se convierte silenciosamente un valor no reconocido. <code>custom</code> usa tu <code>additionalPrompt</code> en lugar del texto de estilo integrado.",
+      "additionalPrompt": "Indicaciones en texto libre para este renderizado.",
+      "removeFurniture": "Vaciar la habitación antes de escenificarla. Envía <code>true</code> u <code>on</code>; cualquier otra cosa, incluidos <code>1</code> y <code>yes</code>, se lee como falso.",
+      "keepFurniture": "Texto libre indicando qué conservar, p. ej. <code>keep the dining table and the built-in shelves</code>. Solo se lee cuando <code>removeFurniture</code> está activo. 500 caracteres.",
+      "furnitureImage": "Hasta 5 fotos de referencia de mobiliario a imitar. Mismos formatos y límite de tamaño que <code>image</code>.",
+      "labelVirtuallyStaged": "Graba el aviso “Virtually staged” en la imagen resultante.",
+      "stampStyle": "<code>dark</code>, <code>light</code>, <code>minimal</code>, <code>banner</code>. Por defecto <code>dark</code>. No distingue mayúsculas; un valor no reconocido vuelve al valor por defecto.",
+      "stampScale": "De <code>0.7</code> a <code>1.6</code>, por defecto <code>1</code>. Los valores fuera de rango se ajustan al límite en vez de rechazarse.",
+      "stampLang": "El idioma del distintivo: <code>english</code>, <code>spanish</code>, <code>french</code>, <code>german</code>, <code>chinese</code>, <code>korean</code>, <code>portuguese</code>, <code>russian</code>, <code>italian</code>, <code>japanese</code>, <code>dutch</code>. Por defecto <code>english</code>.",
+      "variations": "Solo se acepta <code>1</code>. Lanza peticiones simultáneas si quieres más."
+    },
+    "idem": {
+      "h2": "Idempotencia",
+      "p1": "Un renderizado mantiene la conexión abierta durante minutos, lo que significa que el fallo que de verdad te afectará es un socket caído después de que el trabajo se completó: cobrado y sin nada en la mano. Envía una cabecera <code>Idempotency-Key</code> en cada petición y reintenta con el <em>mismo</em> valor.",
+      "thHave": "Lo que tenemos registrado",
+      "thRetry": "Qué hace un reintento",
+      "r1a": "Una petición correcta, con los mismos parámetros",
+      "r1b": "Devuelve el resultado guardado con <code>X-Stagify-Replayed: true</code>. Sin segundo cobro.",
+      "r2a": "Una petición todavía en curso",
+      "r2b": "<code>409 REQUEST_IN_FLIGHT</code>. Espera y reintenta.",
+      "r3a": "Una petición abandonada a mitad del renderizado",
+      "r3b": "Se vuelve a ejecutar con el cobro existente, hasta tres intentos.",
+      "r4a": "La misma clave con parámetros distintos",
+      "r4b": "<code>422 IDEMPOTENCY_KEY_REUSED</code>. Usa una clave nueva.",
+      "note": "Omitir la cabecera está permitido y significa que no hay protección frente a reintentos, que es el comportamiento honesto por defecto. No derivamos una clave a partir de tu foto: dos renderizados realmente distintos de la misma habitación colisionarían y quien llamase en segundo lugar recibiría la imagen del primero."
+    },
+    "disclosure": {
+      "h2": "Avisos de escenificación",
+      "p1": "Muchas normas de MLS y NAR exigen que una foto escenificada lo indique. <code>labelVirtuallyStaged</code> graba ese aviso en los píxeles en lugar de añadirlo como metadatos que una herramienta posterior pueda eliminar.",
+      "note": "Si el aviso no se puede aplicar, la imagen se <strong>retiene en vez de entregarse sin etiquetar</strong>, la llamada responde <code>500 DISCLOSURE_STAMP_FAILED</code> y tu crédito se reembolsa. No hay forma de desactivar ese comportamiento, ni un valor por defecto por clave que lo anule sin avisar."
+    },
+    "errors": {
+      "h2": "Errores",
+      "lede": "Todo fallo responde <code>{ \"error\": \"…\", \"code\": \"…\" }</code>. Ramífica según <code>code</code>, nunca según el mensaje. Los mensajes cambian; los códigos no.",
+      "thStatus": "Estado",
+      "thCode": "Código",
+      "thAction": "Qué hacer",
+      "keyMissing": "Revisa la cabecera <code>Authorization</code> o crea una clave nueva.",
+      "noCredits": "Recarga. El cuerpo incluye <code>credits_remaining</code>.",
+      "suspended": "Contacta con soporte.",
+      "variations": "Esta API renderiza una imagen por petición. Lanza peticiones simultáneas en su lugar.",
+      "inFlight": "Esa clave de idempotencia sigue en curso. Espera y reintenta.",
+      "concurrency": "Demasiados renderizados a la vez. Reintenta en unos segundos.",
+      "keyReused": "Has reutilizado una clave con parámetros distintos. Usa una nueva.",
+      "noImage": "El modelo no devolvió nada. Reembolsado; reintenta o prueba con otra foto.",
+      "rateLimited": "Reduce el ritmo y reintenta.",
+      "stampFailed": "No se pudo aplicar el aviso, así que la imagen se retuvo. Reembolsado.",
+      "renderFailed": "Reembolsado. Cita el <code>ref</code> si contactas con soporte."
+    },
+    "other": {
+      "h2": "Otros endpoints",
+      "options": "<code>GET /api/v1/options</code>: los valores admitidos de cada enumeración anterior. No requiere clave de API.",
+      "me": "<code>GET /api/v1/me</code>: ¿funciona mi clave? Devuelve la cuenta y el saldo.",
+      "credits": "<code>GET /api/v1/credits</code>: saldo y totales acumulados.",
+      "render": "<code>GET /api/v1/renders/{id}</code>: el estado de un renderizado.",
+      "note": "Cada respuesta lleva <code>X-Stagify-Credits-Remaining</code>, para que puedas ver bajar el saldo sin tener que consultarlo."
+    },
+    "dashboard": "Panel de API"
   }
 }

@@ -13,6 +13,11 @@ declare global {
       // review (reviewer disabled or throwing). Recorded in the render log so a
       // silent reviewer outage is visible instead of reading as a flawless run.
       _qaDegraded?: boolean;
+      // Set by lib/http/api-key-auth.js on every authenticated /api/v1 request: the
+      // API key that was presented, and the account it belongs to. Nothing downstream
+      // may read an owner from the request BODY — these are the validated values.
+      apiKey?: { id: string; userId: string; prefix: string };
+      apiUser?: any;
     }
   }
 }

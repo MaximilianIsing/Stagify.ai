@@ -2512,7 +2512,18 @@ body.page-home main {
    ========================================================================== */
 .nar-card {
   display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
+  /* The split is set by the LONGEST tile sentence, not by taste. English's
+     "…clients responded positively to technology in the buying and selling process"
+     needs 285px of text column to hold two lines; at the old 1.15/0.85 it got 266 and
+     ran to three, which left the first tile a line taller than everything around it —
+     and, once the year switch shipped, made the whole card change height when the 2024
+     wording (two lines) replaced it. 1.08/0.92 gives that column 299px: 14px of margin
+     over the wrap point, enough to absorb font-rendering differences between browsers
+     without being so wide that the bar loses its presence (543px -> 510px, and the
+     legend still sits on one line per row).
+     Measured, so re-measure before changing it: shrink the text column past 285px and
+     English goes back to three lines. */
+  grid-template-columns: 1.08fr 0.92fr;
   /* Row gap is tighter than the column gap: the only row seam is the one above the
      citation footer, which carries its own rule and padding on top of this. */
   gap: 24px 34px;
@@ -2552,7 +2563,15 @@ body.page-home main {
      bar's aria-label in test/frontend/home-figures.test.js. */
   --seg-w: 0%;
   width: var(--seg-w);
-  transition: opacity 0.18s ease;
+  /* `width` eases ONLY because the year switch changes `--seg-w`; a transition fires on
+     change, and on first paint nothing changes — the markup ships the final widths, so
+     there is no entrance here and re-adding one is still the bug it always was. What
+     this animates is a state the visitor asked for by clicking, between two real
+     measured years, which is the opposite case to the deleted clip-path wipe: it has a
+     correct trigger, and both endpoints are true. See home-nar-years.js.
+     The easing matches the numerals rampValue() drives beside it (ease-out cubic), so
+     the bar and its percentages arrive together rather than in two waves. */
+  transition: opacity 0.18s ease, width 0.62s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 .nar-seg--daily {
   background: var(--brand-deep);
@@ -2634,6 +2653,9 @@ body.page-home main {
 .nar-usage__note strong {
   color: var(--brand);
   font-weight: 800;
+  /* Also tweened (68% <-> 55%), and the sentence sits immediately to its right, so
+     without this the whole line breathes in and out as the figure counts. */
+  font-variant-numeric: tabular-nums;
 }
 
 /* These two tiles used to be the tallest thing in the card, so they — not the chart
@@ -2668,6 +2690,13 @@ body.page-home main {
   font-weight: 900;
   line-height: 1;
   letter-spacing: -1px;
+  /* Tabular figures, for the same reason `.nar-legend .pct` has them — and it matters
+     more here, because this numeral is TWEENED between years and its column is `auto`.
+     With Inter's proportional figures the rendered width swings 17.6px across the values
+     the tween passes through ("11%" is 68.4px, "46%" is 86.0px), so the % sign slid left
+     and right and the sentence beside it got shoved once per frame. Tabular pins every
+     value to 84.7px: the glyphs stop moving and the column stops resizing. */
+  font-variant-numeric: tabular-nums;
   background: linear-gradient(135deg, var(--brand-deep) 0%, var(--brand) 55%, var(--brand-soft) 100%);
   -webkit-background-clip: text;
   background-clip: text;
@@ -2728,6 +2757,62 @@ body.page-home main {
   color: var(--brand-strong);
 }
 
+/* The survey-year switch, parked at the far end of the citation row.
+   `margin-left: auto` claims the leftover width and `align-self: flex-end` drops it to
+   the row's baseline, so it sits bottom-right of the card without being taken out of
+   flow — the row is two lines tall on desktop and three when the citation wraps, and
+   this follows it down either way. Absolute positioning was the alternative and it
+   overlapped the citation the moment the sentence wrapped to a third line. */
+.nar-years {
+  margin-left: auto;
+  align-self: flex-end;
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+}
+/* Deliberately quiet: this is an aside on a citation row, not a control the page wants
+   anyone to press. Italic to match the `cite` voice beside it, and sized under the
+   citation's own 12px so it reads as a footnote rather than a second CTA. */
+.nar-years__btn {
+  font-family: inherit;
+  font-style: italic;
+  font-size: 11.5px;
+  line-height: 1;
+  color: #8593b5;
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  /* Roomy enough to be tappable — the visible text is ~26px wide, which on its own
+     would be a 26x12 target. The padding takes the hit box to ~44x28 without making
+     the type any louder. */
+  padding: 8px 9px;
+  cursor: pointer;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+.nar-years__btn:hover {
+  color: var(--brand);
+  background: rgba(37, 99, 235, 0.07);
+}
+.nar-years__btn:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+/* The selected year stays italic — losing the slant on press made the two buttons look
+   like different controls rather than two states of one. Weight and colour carry the
+   state instead. */
+.nar-years__btn.is-on {
+  color: var(--brand-deep);
+  font-weight: 700;
+  background: rgba(37, 99, 235, 0.1);
+  /* Pressing the selected year is a no-op in home-nar-years.js, so it should not offer
+     a hand either. NOT `disabled` and NOT `pointer-events: none`: this is a toggle
+     group, and both of those would drop the pressed button out of the tab order — a
+     keyboard visitor would tab onto the group and find only the year they are not
+     reading. It stays focusable and still announces aria-pressed="true"; it simply has
+     nothing to do. */
+  cursor: default;
+}
+
 /* THE BAR HAS NO ENTRANCE ANIMATION — do not add one back. It used to wipe in from a
    collapsed `clip-path` that home-figures.js armed off screen, but the markup ships the
    bar fully drawn, so collapsing it is an erase rather than an entrance: play it early
@@ -2747,16 +2832,79 @@ body.page-home main {
   .nar-legend {
     grid-template-columns: 1fr;
   }
+  /* The year switch drops to its own line rather than sharing the citation's row.
+     `.nar-source` is a flex row and the switch is `flex-shrink: 0`, so on a narrow
+     phone it holds its ~94px while the sentence beside it absorbs the whole squeeze —
+     at 320px the citation is left with roughly a third of the card and stacks into six
+     or seven lines. Wrapping costs one row of height and keeps the sentence readable;
+     `margin-left: auto` still parks the switch on the right once it is down there. */
+  .nar-source {
+    flex-wrap: wrap;
+  }
+  .nar-years {
+    /* The full-width basis is what forces the wrap onto the SWITCH rather than onto the
+       citation: with `auto` the row just squeezes instead of breaking, and putting the
+       100% on the paragraph would drop the paragraph off the logo's line instead. */
+    flex-basis: 100%;
+  }
 }
 
-/* The chart itself needs nothing here any more — it no longer animates for anyone. What
-   is left are the two 0.18s fades the legend highlight uses; the highlight itself stays
-   on, because it is direct manipulation rather than motion. */
+/* The chart has no ENTRANCE animation for anyone — that stays deleted. What is here is
+   the year switch's change animation (bar widths, and the swapped sentences' crossfade),
+   plus the two 0.18s fades the legend highlight uses. The highlight itself stays on under
+   reduced motion, because it is direct manipulation rather than motion; the year switch
+   likewise still switches, it just arrives instantly. home-nar-years.js reads the same
+   query so the numerals skip their tween in step with this. */
 @media (prefers-reduced-motion: reduce) {
   .nar-bar span,
-  .nar-legend__btn {
+  .nar-legend__btn,
+  .nar-swap,
+  .nar-ghost {
     transition: none;
   }
+  .nar-swap.is-swapping {
+    opacity: 1;
+  }
+  /* Belt to the JS gate's braces: home-nar-years.js does not build a ghost at all under
+     reduced motion, but if one ever reached the page it must not sit visible on top of
+     the live citation as permanently doubled text. */
+  .nar-ghost {
+    display: none;
+  }
+}
+
+/* The text that cannot tween, in its two flavours.
+
+   .nar-swap — the two TILE sentences, which change wording completely between years
+   (the 2024 survey asked different questions, so "clients responded positively" becomes
+   "have used ChatGPT"). Nothing about the two is visually related, so they fade out,
+   swap while off screen, and fade back. Deliberately shorter than the bar so the words
+   have settled before the figures finish landing. */
+.nar-swap {
+  transition: opacity 0.2s ease;
+}
+.nar-swap.is-swapping {
+  opacity: 0;
+}
+
+/* .nar-dissolve — the CITATION, which changes by four characters: the year, twice.
+   Fading a sentence out to reprint it near-identically overstates the change and reads
+   as a flicker, so the two wordings overlap instead and the year appears to morph. The
+   outgoing copy is a clone parked over the original, which is why the row needs to be
+   the positioning context. `.nar-source` is a flex row, and an absolutely positioned
+   child is out of flow, so this costs the layout nothing. */
+.nar-source {
+  position: relative;
+}
+/* The live citation is NOT animated — it stays opaque under the outgoing clone so the
+   sentence is never absent. Only .nar-ghost eases. */
+.nar-ghost {
+  position: absolute;
+  margin: 0;
+  /* Inert: it is a duplicate of live text that is on its way out, so it must not take
+     clicks from the real citation link underneath it. */
+  pointer-events: none;
+  transition: opacity 0.28s ease;
 }
 
 /* ==========================================================================
@@ -3072,6 +3220,35 @@ body.page-home main {
   border-color: var(--brand);
   background: rgba(255, 255, 255, 0.85);
   box-shadow: 0 8px 20px rgba(30, 58, 138, 0.16);
+}
+/* The API footnote under the two plan cards. Sits on the page background (#ddeeff), not
+   on a translucent card, so the colours are picked against THAT: --brand-deep gives the
+   link 8.75:1, where the usual --brand (#2563eb) manages only 4.37:1 and fails AA for
+   body text. The prose reuses .home-list li's #3a4a72 (7.39:1) rather than introducing a
+   softer grey, for the same reason. */
+.plus-api {
+  margin: 22px 0 0;
+  text-align: center;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: #3a4a72;
+}
+.plus-api__logo {
+  /* Inline rather than a flex item so the sentence can wrap normally in the long packs
+     (es/pt run to two lines even on desktop) and the mark stays with the first line.
+     width/height are on the attributes too, so it reserves its box before it decodes. */
+  vertical-align: -4px;
+  margin-right: 7px;
+}
+.plus-api__link {
+  margin-left: 6px;
+  color: var(--brand-deep);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.plus-api__link:hover {
+  text-decoration-thickness: 2px;
 }
 @media (max-width: 760px) {
   .plus-grid {

@@ -1,0 +1,1318 @@
+/* Shared by developers.html (public docs) and api-keys.html (the signed-in dashboard).
+ *
+ * One stylesheet for both because they are the same surface seen from two sides — the
+ * cards, tables, code blocks and buttons are identical, and splitting them would mean
+ * maintaining two copies of the pack grid that appears on both.
+ *
+ * Colours come from the design-token palette in styles.css's :root — --brand,
+ * --slate-deep, --danger, --bg-elevated, --text-heading, --fg and --cta-gradient. Both
+ * pages load styles.css first, so the tokens are always in scope; a hard-coded hex that
+ * has a token is a test failure (test/frontend/css-tokens.test.js). The few literals
+ * left here (#0f172a, #d97706, #15803d) are colours the shared palette does not name. */
+
+
+/* ── Documentation shell (developers.html only) ───────────────────────────────
+   The page used to be a stack of translucent rounded cards floating on the site's
+   lavender gradient, over the background video. Every element was fine; together they
+   read as a landing page rather than as reference material. The fix is the SURFACE:
+   an opaque sheet, hairline rules, persistent navigation, no floating cards.
+
+   DESKTOP ONLY. Three columns cannot survive a phone, and rather than reflow them into
+   something worse, scripts/developers-gate.js redirects a phone-sized viewport to the
+   home page before paint — the same treatment the gallery and AI Designer get. The
+   footer link that points here is wrapped in `.desktop-only` so the two agree; that
+   pairing is enforced by test/frontend/desktop-only-gates.test.js. Nothing below
+   770px is therefore a layout anyone reaches, and the one media query that remains
+   exists only for the band between the gate and a comfortable three-column width. */
+
+/* `flex: 1 0 auto`, NOT `min-height: 100%`. <main> is a flex COLUMN and the scroll
+   container (styles.css), so a percentage height on a child resolves against the
+   VIEWPORT rather than the document: the sheet stopped after one screen and the site
+   gradient came back underneath everything below the fold. flex-basis auto takes the
+   content height, and flex-grow fills the leftover when the document is short. */
+/* The shared site footer sits OUTSIDE <main> (site-footer-parity.test.js byte-compares
+   it, so it cannot carry a page class of its own) and therefore lands on the body's
+   gradient, leaving a lavender band under an otherwise white sheet. Scoped from the
+   body class instead, which is how index.html already distinguishes itself.
+
+   This page also does NOT load scripts/aurora-scrollbar.js. That script adds
+   html.aurora-on, and that class is the only thing hiding the styled native scrollbar
+   (styles.css) behind the animated gradient overlay — so simply not loading it gives
+   this page the plain blue bar, with no opt-out flag to keep in sync. */
+.page-docs footer {
+  background: var(--bg-elevated);
+  border-top: 1px solid var(--border);
+}
+
+.docs-sheet {
+  background: var(--bg-elevated);
+  flex: 1 0 auto;
+  border-top: 1px solid var(--border);
+}
+
+.docs {
+  display: grid;
+  /* Reference column is the fixed one; prose takes the slack. minmax(0,1fr) rather
+     than 1fr so a long <pre> scrolls inside its own box instead of widening the grid. */
+  grid-template-columns: 224px minmax(0, 1fr) 190px;
+  max-width: 1300px;
+  margin: 0 auto;
+  align-items: start;
+}
+
+/* developers.html has no left rail: it is one document, and its right-hand "On this
+   page" list already held every anchor the rail did. api-keys.html still uses the
+   three-column base above via .docs--app, which is why this is a modifier. */
+.docs--reading {
+  grid-template-columns: minmax(0, 1fr) 190px;
+  max-width: 1080px;
+}
+
+/* ── Left rail: the persistent table of contents ──────────────────────────── */
+
+.docs-nav {
+  position: sticky;
+  /* Clears the site header (64px) plus the language pill, which is absolutely
+     positioned in a zero-height container and would otherwise sit on top of the first
+     nav group. */
+  top: 0;
+  padding: 52px 14px 40px 20px;
+  border-right: 1px solid var(--border);
+  align-self: stretch;
+}
+
+.docs-nav__group {
+  margin: 22px 8px 7px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--slate);
+}
+
+.docs-nav__group:first-child {
+  margin-top: 0;
+}
+
+.docs-nav__link {
+  display: block;
+  padding: 6px 9px;
+  border-radius: 7px;
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: var(--slate-deep);
+  text-decoration: none;
+}
+
+.docs-nav__link:hover {
+  background: var(--brand-wash);
+  color: var(--brand-strong);
+}
+
+.docs-nav__link[aria-current='true'] {
+  background: var(--brand-wash);
+  color: var(--brand-strong);
+  font-weight: 650;
+}
+
+/* ── Centre column ────────────────────────────────────────────────────────── */
+
+.docs-main {
+  padding: 44px 40px 72px;
+  min-width: 0;
+}
+
+.docs-crumb {
+  margin: 0 0 10px;
+  font-size: 12.5px;
+  color: var(--slate);
+}
+
+.docs-crumb b {
+  color: var(--slate-deep);
+  font-weight: 600;
+}
+
+/* The API mark, sitting on the baseline beside the title rather than above it: the
+   page has no hero, and a centred badge would reintroduce the marketing shape the whole
+   redesign removed. Decorative only (aria-hidden + empty alt) — the h1 text already
+   names the product, so announcing it twice helps nobody. */
+.docs-h1__logo {
+  vertical-align: -4px;
+  margin-left: 10px;
+  width: 34px;
+  height: 34px;
+}
+
+/* The language pill is normally absolutely positioned inside a zero-height container at
+   the top of <main> — and <main> is the scroll container, so it scrolls away with the
+   content. On a docs page with a persistent left rail and a persistent right rail, a
+   control that disappears on the first scroll is the odd one out, so here it is pinned.
+   The top offset clears the sticky site header (72px) rather than hugging the viewport,
+   which would put the pill over the nav — it carries z-index:1000 and would win. */
+.page-docs .language-picker-container .language-selector {
+  position: fixed;
+  /* Splits the difference: 84px cleared the sticky header but read as part of it, and
+     108px sat low enough to look detached from the top of the page. */
+  top: 96px;
+  right: 18px;
+}
+
+/* Title on the left, the one call to action on the right. `align-items: center` rather
+   than baseline: the button is shorter than a 34px heading, and sitting it on the
+   heading's baseline drops it visually below the logo beside it. */
+.docs-titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  margin-bottom: 10px;
+}
+
+/* The crumb rides with the heading rather than sitting above the whole row, so the
+   button centres against the two of them together. Centred on the heading alone it sat
+   noticeably high, because the crumb put ~22px of block above it that the button had no
+   part in. */
+.docs-titlebar__text {
+  min-width: 0;
+}
+
+.docs-main h1 {
+  margin: 0;
+  font-size: 34px;
+  line-height: 1.15;
+  letter-spacing: -0.6px;
+  color: var(--text-heading);
+}
+
+/* Solid brand fill, not --cta-gradient. The gradient is the marketing button, and this
+   page spent a redesign getting away from looking like a landing page; a flat blue
+   rectangle reads as a docs-site action rather than a conversion. */
+.docs-dash {
+  flex: none;
+  /* inline-flex so the arrow is a laid-out child with its own gap, rather than a
+     character glued to the label by a space that the font decides the width of. */
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 14px 26px;
+  border-radius: 11px;
+  background: var(--brand);
+  color: var(--bg-elevated);
+  font-size: 15.5px;
+  font-weight: 650;
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(37, 99, 235, 0.25);
+  transition: background 0.16s ease, box-shadow 0.16s ease;
+}
+
+.docs-dash::after {
+  content: '\2192';
+  font-size: 17px;
+  line-height: 1;
+}
+
+.docs-dash:hover,
+.docs-dash:focus-visible {
+  background: var(--brand-strong);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+}
+
+.docs-lede {
+  margin: 0 0 26px;
+  font-size: 16.5px;
+  line-height: 1.65;
+  color: var(--slate-deep);
+  max-width: 68ch;
+}
+
+/* Sections are separated by a rule, not by a card. This is the single change that
+   does most of the work of making the page read as documentation. */
+.docs-sec {
+  padding-top: 30px;
+  margin-top: 30px;
+  border-top: 1px solid var(--border);
+  scroll-margin-top: 12px;
+}
+
+.docs-sec:first-of-type {
+  padding-top: 0;
+  margin-top: 0;
+  border-top: none;
+}
+
+.docs-sec h2 {
+  margin: 0 0 12px;
+  font-size: 22px;
+  letter-spacing: -0.25px;
+  color: var(--text-heading);
+}
+
+.docs-sec h3 {
+  margin: 26px 0 8px;
+  font-size: 15.5px;
+  color: var(--text-heading);
+}
+
+.docs-sec p {
+  margin: 0 0 13px;
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--fg);
+  max-width: 72ch;
+}
+
+/* The base-URL / auth strip under the lede: the two facts every caller needs before
+   anything else, given their own surface so they are not prose to be scanned past. */
+.docs-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1px;
+  /* The first section has its top rule and padding suppressed (.docs-sec:first-of-type),
+     so this margin is the ONLY gap between the strip and the "Introduction" heading —
+     at 4px the heading read as belonging to the strip rather than opening the document. */
+  margin: 0 0 30px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.docs-fact {
+  background: #fbfdff;
+  padding: 12px 15px;
+}
+
+.docs-fact dt {
+  margin: 0 0 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--slate);
+}
+
+.docs-fact dd {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+  color: var(--brand-deep);
+  word-break: break-all;
+}
+
+/* ── Right rail: on this page ─────────────────────────────────────────────── */
+
+.docs-toc {
+  position: sticky;
+  top: 0;
+  padding: 52px 20px 40px 6px;
+}
+
+.docs-toc__title {
+  margin: 0 0 9px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--slate);
+}
+
+.docs-toc a {
+  display: block;
+  padding: 4px 0 4px 10px;
+  border-left: 2px solid var(--border);
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--slate);
+  text-decoration: none;
+}
+
+.docs-toc a:hover {
+  color: var(--brand-strong);
+}
+
+.docs-toc a[aria-current='true'] {
+  border-left-color: var(--brand);
+  color: var(--brand-strong);
+  font-weight: 600;
+}
+
+/* The band between the 768px gate and a width that fits three columns. Drop the
+   right rail first — the left one is navigation, the right one is a convenience. */
+@media (max-width: 1180px) {
+  .docs {
+    grid-template-columns: 210px minmax(0, 1fr);
+  }
+
+  .docs-toc {
+    display: none;
+  }
+
+  .docs-main {
+    padding: 44px 28px 64px;
+  }
+}
+
+/* ── Buttons ──────────────────────────────────────────────────────────────── */
+
+.dev-btn {
+  display: inline-block;
+  padding: 11px 20px;
+  border: 1px solid rgba(37, 99, 235, 0.35);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--brand);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+
+.dev-btn:hover {
+  background: var(--bg-elevated);
+  border-color: var(--brand);
+  transform: translateY(-1px);
+}
+
+.dev-btn--primary {
+  background: var(--cta-gradient);
+  border-color: transparent;
+  color: var(--bg-elevated);
+}
+
+.dev-btn--primary:hover {
+  background: var(--cta-gradient);
+  filter: brightness(1.06);
+}
+
+.dev-btn--danger {
+  border-color: rgba(220, 38, 38, 0.4);
+  color: var(--danger);
+}
+
+.dev-btn--small {
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+
+/* The page's closing footnote: an aside to the whole document rather than another
+   topic, so it sits outside the section rules entirely. */
+.dev-contact {
+  margin: 34px 0 0;
+  padding-top: 22px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-size: 14px;
+  color: var(--slate-deep);
+}
+
+.dev-note {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-left: 3px solid var(--brand);
+  border-radius: 0 8px 8px 0;
+  background: rgba(37, 99, 235, 0.06);
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+
+.dev-warn {
+  padding: 12px 14px;
+  border-left: 3px solid #d97706;
+  border-radius: 0 8px 8px 0;
+  background: rgba(217, 119, 6, 0.08);
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+
+.dev-alert {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: rgba(220, 38, 38, 0.08);
+  color: #991b1b;
+  font-size: 14.5px;
+}
+
+.dev-error {
+  margin: 8px 0 0;
+  color: var(--danger);
+  font-size: 14px;
+}
+
+.dev-list {
+  margin: 12px 0 0;
+  padding-left: 20px;
+  line-height: 1.75;
+  color: var(--fg);
+}
+
+/* ── Code ─────────────────────────────────────────────────────────────────── */
+
+.dev-code {
+  margin: 14px 0 0;
+  padding: 16px;
+  border-radius: 10px;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 13.5px;
+  line-height: 1.65;
+  /* Long curl lines must scroll INSIDE the block — the page body must never scroll
+     sideways. */
+  overflow-x: auto;
+  white-space: pre;
+}
+
+code {
+  font-size: 0.92em;
+}
+
+.docs-sec code,
+.ak-detail code {
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: rgba(148, 163, 184, 0.18);
+}
+
+.dev-code code {
+  padding: 0;
+  background: none;
+  color: inherit;
+}
+
+/* ── Tables ───────────────────────────────────────────────────────────────── */
+
+/* Wide tables scroll in their own container, never the page. */
+.dev-table-scroll {
+  overflow-x: auto;
+  margin-top: 12px;
+}
+
+.dev-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14.5px;
+}
+
+.dev-table th,
+.dev-table td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+  vertical-align: top;
+}
+
+.dev-table th {
+  font-weight: 700;
+  color: var(--text-heading);
+  white-space: nowrap;
+}
+
+.dev-table td {
+  color: var(--fg);
+}
+
+.dev-num {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.dev-pos { color: #15803d; }
+.dev-neg { color: var(--danger); }
+
+/* ── Credit packs ─────────────────────────────────────────────────────────── */
+
+.dev-packs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+
+/* All four packs on ONE row inside the prose column.
+   `auto-fit` with a 200px floor cannot do it here (the column is ~690px, so it lands on
+   3 + a lone orphan), and 200px is more card than these four numbers need anyway. An
+   explicit 4-up track with a 0 floor lets them share whatever the column has, and the
+   compact card below is what makes that legible rather than cramped. */
+.docs-sec .dev-packs {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+/* A price chip, not a pricing card. The marketing-page version stacks four lines with
+   18px of padding and a 26px number; at a quarter of the column that reads as a big
+   empty box. api-keys.html keeps the roomy version, which is why this is scoped. */
+.docs-sec .dev-pack {
+  padding: 12px 10px;
+  border-radius: 10px;
+}
+
+.docs-sec .dev-pack__credits {
+  font-size: 21px;
+  line-height: 1.15;
+}
+
+.docs-sec .dev-pack__unit {
+  font-size: 11.5px;
+}
+
+.docs-sec .dev-pack__price {
+  margin: 6px 0 1px;
+  font-size: 16px;
+}
+
+.docs-sec .dev-pack__each {
+  margin: 0;
+  font-size: 11.5px;
+}
+
+.dev-pack {
+  padding: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 12px;
+  background: var(--bg-elevated);
+  text-align: center;
+}
+
+.dev-pack__credits {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text-heading);
+}
+
+.dev-pack__unit {
+  font-size: 13px;
+  color: var(--slate-deep);
+}
+
+.dev-pack__price {
+  margin: 10px 0 2px;
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--brand);
+}
+
+.dev-pack__each {
+  margin: 0 0 14px;
+  font-size: 13px;
+  color: var(--slate-deep);
+}
+
+.dev-packs__loading,
+.dev-packs__empty {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--slate-deep);
+  font-size: 14.5px;
+}
+
+.dev-empty {
+  margin: 0;
+  padding: 18px 0 4px;
+  color: var(--slate-deep);
+}
+
+/* ── Create-key dialog ────────────────────────────────────────────────────── */
+
+.dev-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.55);
+}
+
+.dev-modal__panel {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  padding: 28px;
+  border-radius: 16px;
+  background: var(--bg-elevated);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+}
+
+.dev-modal__panel h2 {
+  margin: 0 0 14px;
+  font-size: 21px;
+  color: var(--text-heading);
+}
+
+.dev-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.dev-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg);
+}
+
+.dev-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  border-radius: 9px;
+  font-size: 15px;
+}
+
+.dev-input:focus {
+  outline: 2px solid var(--brand);
+  outline-offset: 1px;
+}
+
+/* The one-time key reveal. Wraps rather than scrolls, because a key the reader has to
+   scroll to see is a key they will copy incompletely. */
+.dev-reveal {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px dashed rgba(37, 99, 235, 0.45);
+  border-radius: 10px;
+  background: rgba(37, 99, 235, 0.05);
+}
+
+.dev-reveal code {
+  flex: 1;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  word-break: break-all;
+  background: none;
+  padding: 0;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   The API dashboard (api-keys.html only)
+
+   THIS PAGE WEARS THE DOCUMENTATION SHELL. It reuses `.docs-sheet`, `.docs`,
+   `.docs-nav` and `.docs-main` from the block above rather than defining a second
+   surface, because the two pages are the same product seen from two sides and they
+   were reading as a document and an app that happened to share a palette. What is
+   left here is the difference between them: the rail holds objects instead of a
+   table of contents, and the main column shows one of those objects.
+
+   The design rules are the docs page's, and they are the point:
+     - ONE OPAQUE SHEET, no cards floating on the site gradient. The inspector used
+       to be a rounded, shadowed panel; it is now part of the sheet, and the only
+       thing separating the rail from the pane is a hairline.
+     - SECTIONS ARE SEPARATED BY RULES, not by boxes. `.ak-panel` is `.docs-sec`
+       with a smaller heading.
+     - NOTES ARE LEFT-BORDERED, like `.dev-note` and `.dev-warn`.
+   Everything is prefixed `.ak-`; developers.html loads this file and uses none of it.
+
+   The page is PC-only (scripts/api-keys-gate.js), so there is no phone layout here
+   on purpose. The one media query at the end is for a WINDOWED desktop browser.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Page header ──────────────────────────────────────────────────────────── */
+
+/* Above the grid and across the whole sheet, so it titles the PAGE rather than the
+   pane, and so the signed-out state below it needs no second copy. Centred, and the
+   same plain dark heading the docs page uses — the two titles now differ only in
+   where they sit. */
+.ak-head {
+  padding: 34px 24px 22px;
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+}
+
+.ak-head h1 {
+  /* 34px is the docs h1 exactly, tracking included. The two titles are the same
+     size on purpose: one product, two pages. */
+  margin: 0 0 6px;
+  font-size: 34px;
+  line-height: 1.15;
+  letter-spacing: -0.6px;
+  color: var(--text-heading);
+}
+
+/* A link, not a lede. Underlined with a border rather than text-decoration so the
+   rule sits a little clear of the descenders. */
+.ak-head__link {
+  margin: 0;
+  font-size: 14.5px;
+}
+
+.ak-head__link a {
+  color: var(--slate-deep);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.55);
+  padding-bottom: 1px;
+}
+
+.ak-head__link a:hover {
+  color: var(--brand-strong);
+  border-bottom-color: var(--brand);
+}
+
+/* ── The grid ─────────────────────────────────────────────────────────────── */
+
+/* The docs grid with its right rail removed: a dashboard has no table of contents
+   to put there, and stretching two columns across 1300px would leave the stat row
+   swimming. 248px is the docs rail (224px) plus the two lines every key row shows. */
+.docs--app {
+  grid-template-columns: 248px minmax(0, 1fr);
+  max-width: 1200px;
+}
+
+/* ── Rail ─────────────────────────────────────────────────────────────────── */
+
+/* .docs-nav already makes this sticky, full-height and hairline-separated. What is
+   added is the shape of a list that can outgrow the viewport, plus the two controls
+   the docs rail does not have. */
+.ak-rail {
+  display: flex;
+  flex-direction: column;
+  max-height: 100vh;
+  padding: 20px 12px 16px;
+}
+
+.ak-rail__search .dev-input {
+  padding: 7px 10px;
+  font-size: 13.5px;
+}
+
+/* Deliberately NOT `flex: 1`. The rail is stretched to the full height of the sheet
+   (that is what runs its hairline all the way down, as on the docs page), so a growing
+   list would push Create key to the bottom of a two-screen pane — the primary action,
+   below the fold, on a page whose list is four rows long. The list takes its own height
+   and scrolls internally once an account has enough keys to need it. */
+.ak-list {
+  margin: 14px -8px 0;
+  padding: 0;
+  max-height: 62vh;
+  overflow-y: auto;
+}
+
+.ak-list__group {
+  /* The docs rail's group label, to the letter. */
+  margin: 18px 8px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--slate);
+}
+
+.ak-list__group:first-child {
+  margin-top: 0;
+}
+
+.ak-list__none {
+  margin: 4px 9px 8px;
+  font-size: 13px;
+  color: var(--slate-deep);
+}
+
+.ak-rail__foot {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.ak-rail__foot .dev-btn {
+  display: block;
+  width: 100%;
+  padding: 9px 14px;
+  font-size: 14px;
+  text-align: center;
+}
+
+/* One row: `.docs-nav__link` with a second line. A button, not a link — nothing here
+   navigates, the selection is written into the hash by JS, and an <a href="#key/…">
+   would push a history entry per click and make Back a lottery. */
+.ak-item {
+  display: block;
+  width: 100%;
+  padding: 7px 9px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ak-item:hover {
+  background: var(--brand-wash);
+}
+
+.ak-item:hover .ak-item__title {
+  color: var(--brand-strong);
+}
+
+.ak-item:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: -2px;
+}
+
+.ak-item[aria-current] {
+  background: var(--brand-wash);
+}
+
+.ak-item[aria-current] .ak-item__title {
+  color: var(--brand-strong);
+  font-weight: 650;
+}
+
+.ak-item__title {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--slate-deep);
+  overflow-wrap: anywhere;
+}
+
+.ak-item__sub {
+  display: block;
+  margin-top: 1px;
+  font-size: 11.5px;
+  color: var(--slate);
+}
+
+.ak-item--muted .ak-item__title {
+  font-weight: 500;
+  color: var(--slate);
+}
+
+/* The status dot. Colour is never the only carrier — the row's own text says
+   "revoked" or how long ago the key was used, and the pane spells the state out. */
+.ak-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 6px;
+  border-radius: 50%;
+  vertical-align: 1px;
+  background: var(--muted-light);
+}
+
+.ak-dot--live { background: #16a34a; }
+.ak-dot--revoked { background: var(--danger); }
+
+/* ── Detail column ────────────────────────────────────────────────────────── */
+
+/* .docs-main brings the padding; the pane is its whole content. */
+.docs--app .docs-main {
+  padding: 32px 40px 64px;
+}
+
+.ak-detail__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+
+.ak-detail__head h2 {
+  /* The docs section heading, since that is what this is: the title of the thing
+     being read. */
+  margin: 0 0 5px;
+  font-size: 22px;
+  letter-spacing: -0.25px;
+  color: var(--text-heading);
+}
+
+.ak-detail__sub {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--slate-deep);
+  max-width: 68ch;
+}
+
+.ak-detail__sub code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12.5px;
+}
+
+.ak-detail__actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* The state word, beside the key's name at the one size where the difference
+   between "live" and "revoked" changes what you are about to do. */
+.ak-tag {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  vertical-align: 4px;
+}
+
+.ak-tag--live { background: rgba(22, 163, 74, 0.12); color: #14532d; }
+.ak-tag--idle { background: rgba(148, 163, 184, 0.2); color: var(--slate-deep); }
+.ak-tag--revoked { background: rgba(220, 38, 38, 0.12); color: var(--danger); }
+
+/* ── Stat strip ───────────────────────────────────────────────────────────── */
+
+/* This IS `.docs-facts`: four cells hairlined apart by a 1px grid gap over a
+   border-coloured background, in one rounded box. It was four separate bordered
+   tiles, which is the card look the docs surface exists to get away from. */
+.ak-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  margin: 0 0 4px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.ak-stat {
+  background: #fbfdff;
+  padding: 12px 15px;
+}
+
+/* The balance, which is the one number on this page somebody opens it to read. */
+.ak-stat--accent {
+  background: var(--brand-wash);
+}
+
+.ak-stat__label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--slate);
+}
+
+.ak-stat__value {
+  display: block;
+  font-size: 23px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--text-heading);
+  font-variant-numeric: tabular-nums;
+}
+
+.ak-stat__note {
+  display: block;
+  margin-top: 2px;
+  font-size: 11.5px;
+  color: var(--slate);
+}
+
+/* ── Sections ─────────────────────────────────────────────────────────────── */
+
+/* `.docs-sec` with a smaller heading: a rule and space, never a box. */
+.ak-panel {
+  padding-top: 28px;
+  margin-top: 28px;
+  border-top: 1px solid var(--border);
+}
+
+.ak-panel h3 {
+  margin: 0 0 14px;
+  font-size: 17px;
+  font-weight: 650;
+  letter-spacing: -0.2px;
+  color: var(--text-heading);
+}
+
+.ak-panel .dev-table-scroll {
+  margin-top: 0;
+}
+
+.ak-panel .dev-table {
+  font-size: 14.5px;
+}
+
+/* A key name inside the by-key table, which selects that key rather than navigating.
+   Styled as a link because that is what it behaves like; it is a button because
+   there is nowhere to go. */
+.ak-linkbtn {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: var(--brand);
+  text-align: left;
+  cursor: pointer;
+}
+
+.ak-linkbtn:hover { text-decoration: underline; }
+
+/* The pack grid is shared with developers.html, where it has the full page width and
+   its 200px minimum keeps four cards on one row. Inside the detail column that
+   minimum wraps them into a 2×2 block half a screen tall, which is a lot of dashboard
+   to spend on a purchase made once a month. Narrower cards, not fewer — and hairlined
+   into one box like the stat strip rather than four floating cards. */
+.ak-panel .dev-packs {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: 0;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.ak-panel .dev-pack {
+  padding: 16px 12px;
+  border: 0;
+  border-radius: 0;
+  background: #fbfdff;
+}
+
+.ak-panel .dev-pack__credits {
+  font-size: 22px;
+}
+
+.ak-panel .dev-pack__price {
+  margin-top: 6px;
+  font-size: 17px;
+}
+
+.ak-panel .dev-packs__loading,
+.ak-panel .dev-packs__empty {
+  background: #fbfdff;
+  padding: 14px 16px;
+}
+
+/* ── Chart ────────────────────────────────────────────────────────────────── */
+
+.ak-chart__plot {
+  display: flex;
+  align-items: stretch;
+  gap: 3px;
+  height: 132px;
+}
+
+/* The columns MUST be full height. Their bars are sized in percentages, and a
+   percentage height resolves against the parent's height — with `align-items:
+   flex-end` above, each column would shrink to its content and every bar would
+   resolve against zero, leaving an empty chart that looks exactly like a broken
+   one. Found the hard way in the prototype. */
+.ak-chart__col {
+  flex: 1;
+  min-width: 2px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.ak-chart__bar {
+  display: block;
+  border-radius: 2px 2px 0 0;
+}
+
+.ak-chart__bar--delivered { background: var(--brand-pale); }
+.ak-chart__bar--refunded { background: #fca5a5; }
+
+/* The refunded segment caps the stack, so the delivered bar below it loses its cap. */
+.ak-chart__bar--refunded + .ak-chart__bar--delivered {
+  border-radius: 0;
+}
+
+.ak-chart__col:hover .ak-chart__bar--delivered {
+  background: var(--brand);
+}
+
+.ak-chart__axis {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  font-size: 11.5px;
+  color: var(--slate);
+}
+
+.ak-chart--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 132px;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+}
+
+/* ── Fields, notes and the danger zone ────────────────────────────────────── */
+
+.ak-fields {
+  margin: 0;
+  padding-top: 28px;
+  margin-top: 28px;
+  border-top: 1px solid var(--border);
+}
+
+.ak-field {
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr);
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 14.5px;
+}
+
+.ak-field:last-child { border-bottom: 0; }
+
+.ak-field dt { color: var(--slate); }
+
+.ak-field dd {
+  margin: 0;
+  color: var(--fg);
+  overflow-wrap: anywhere;
+}
+
+.ak-empty,
+.ak-footnote {
+  margin: 0;
+  color: var(--slate-deep);
+}
+
+.ak-empty { padding: 14px 0; font-size: 14.5px; }
+.ak-footnote { margin-top: 12px; font-size: 12.5px; }
+
+/* `.dev-note` and `.dev-warn` shapes: a left border and a tint, square on the left so
+   the rule reads as a margin mark rather than as another box. */
+.ak-note {
+  margin-top: 24px;
+  padding: 12px 14px;
+  border-left: 3px solid var(--muted-light);
+  border-radius: 0 8px 8px 0;
+  background: rgba(148, 163, 184, 0.12);
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--slate-deep);
+}
+
+/* Walled off, and it looks it. Revoking breaks whatever is using the key with no
+   undo, so it does not share a row with Rename. */
+.ak-danger {
+  margin-top: 28px;
+  padding: 14px 16px;
+  border-left: 3px solid var(--danger);
+  border-radius: 0 8px 8px 0;
+  background: rgba(220, 38, 38, 0.06);
+}
+
+.ak-danger h3 {
+  margin: 0 0 4px;
+  font-size: 15px;
+  color: var(--danger);
+}
+
+.ak-danger p {
+  margin: 0 0 10px;
+  max-width: 68ch;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #7f1d1d;
+}
+
+.ak-rename {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 5px;
+  flex-wrap: wrap;
+}
+
+.ak-rename .dev-input {
+  width: auto;
+  min-width: 220px;
+  padding: 6px 10px;
+  font-size: 15px;
+}
+
+/* ── Signed out ───────────────────────────────────────────────────────────── */
+
+/* Not a card: the same sheet, centred, with the sheet's own hairline above it doing
+   the separating. */
+.ak-signin {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 56px 24px 72px;
+  text-align: center;
+}
+
+.ak-signin h2 {
+  margin: 0 0 8px;
+  font-size: 22px;
+  letter-spacing: -0.25px;
+  color: var(--text-heading);
+}
+
+.ak-signin p {
+  margin: 0 0 20px;
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--slate-deep);
+}
+
+/* ── Buttons on the documentation surface ─────────────────────────────────── */
+
+/* Solid brand, not --cta-gradient, matching `.docs-dash` on the docs page. The
+   gradient is the marketing button; on a reference surface it is the one element
+   that still reads as a landing page. */
+.page-docs .dev-btn--primary {
+  background: var(--brand);
+  border-color: var(--brand);
+}
+
+.page-docs .dev-btn--primary:hover {
+  background: var(--brand-strong);
+  border-color: var(--brand-strong);
+  filter: none;
+}
+
+/* The band between the 768px gate and a width that fits two columns plus four stat
+   cells. This is a WINDOWED DESKTOP browser, not phone support — a phone never
+   reaches it, api-keys-gate.js having already sent it home. */
+@media (max-width: 980px) {
+  .docs--app {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ak-rail {
+    position: static;
+    max-height: none;
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .docs--app .docs-main {
+    padding: 28px 24px 56px;
+  }
+
+  .ak-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ak-panel .dev-packs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ak-field {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+  }
+}

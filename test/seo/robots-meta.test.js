@@ -45,6 +45,7 @@ const NOINDEX = {
   '404.html': 'noindex, follow',
   'legal/enterprise-msa.html': 'noindex, follow',
   'admin.html': 'noindex, nofollow',
+  'api-keys.html': 'noindex, nofollow',
   'gallery.html': 'noindex, nofollow',
   'getpro.html': 'noindex, nofollow',
   'listing-share.html': 'noindex, nofollow',

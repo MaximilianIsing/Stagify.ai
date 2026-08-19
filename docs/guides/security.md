@@ -671,6 +671,17 @@ automatically.
   fix, its true scope, and the CSRF surface it opens are written up under
   [Tokens in the browser](#tokens-in-the-browser-localstorage-not-a-cookie--accepted-risk).
   Deliberately deferred: it is a project, not a patch.
+* **The public API's blast radius is the prepaid balance, and nothing more.** A leaked
+  `stg_live_…` key can spend the credits already bought and cannot run up an invoice —
+  there is no postpaid metering on that path. Keys are stored as `sha256$` digests
+  (`lib/data/api-keys.js`), belong to exactly one account, and revoke immediately. This is
+  the property that made prepaid the right billing model rather than merely a simpler one.
+* **`POST /api/stage-by-endpoint-key` is deprecated and should be deleted.** It is an
+  unmetered image generator behind `LOGS_ACCESS_KEY`, the same secret that opens the whole
+  admin surface, so one leak is total compromise plus free AI. It now answers with a
+  `Deprecation` header and warns on every call; the follow-up is removing it and narrowing
+  that key's reach.
+
 - **Erasure is operator-mediated** — `POST /api/admin/delete-user` exists, but there is
   no self-serve "delete my account" button in the product. Adding one is a product
   decision (confirmation flow, Stripe cancellation, copy in 11 languages), not a data-

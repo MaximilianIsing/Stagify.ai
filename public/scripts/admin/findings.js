@@ -226,9 +226,12 @@ export function sortFindings(findings) {
  *
  * @param {{
  *   promptRows?: string[][], users?: any[], enterprise?: any[], metrics?: any,
+ *   rejectionRows?: string[][],
  *   index?: any, effectivePlan?: (u: any) => string, now?: number,
  * }} input Header-stripped tables and the account list; `metrics` may be null
- *   when GET /api/admin/metrics is unavailable, and rules must cope.
+ *   when GET /api/admin/metrics is unavailable, and rules must cope. So may
+ *   `rejectionRows` be empty — a fresh install has refused nothing, so a rule
+ *   reading it must distinguish "nothing recorded" from "nothing happened".
  * @returns {{findings: Finding[], suppressed: string[], failed: string[], counts: Record<string, number>}}
  */
 export function runFindings(input) {

@@ -41,7 +41,7 @@ import { showErrorToast } from './toast.js';
   // Shared, mutable app state handed to the renderers island by reference so both
   // sides see the same data / filter / sort. signOut swaps ctx.data wholesale.
   var ctx = {
-    data: { users:[], promptRows:[], chatRows:[], bugRows:[], maskRows:[], contactRows:[], emailOpenRows:[], enterprise:[], hostedImages:[], metrics:null },
+    data: { users:[], promptRows:[], chatRows:[], bugRows:[], maskRows:[], contactRows:[], emailOpenRows:[], rejectionRows:[], enterprise:[], hostedImages:[], metrics:null },
     userFilter: 'all',
     userSortCol: 'created',
     userSortDir: 'desc',
@@ -78,7 +78,16 @@ import { showErrorToast } from './toast.js';
     }
     return fetch(url,opts).then(function(r){
       if(!r.ok){
-        return r.json().catch(function(){return{}}).then(function(j){throw new Error(j.error||('HTTP '+r.status))});
+        return r.json().catch(function(){return{}}).then(function(j){
+          // The message is what the operator reads; the CODE is what a caller
+          // branches on. Referrals only ever needed the first, so this used to
+          // throw a bare Error and drop the rest — which left the delete flow
+          // unable to tell ACTIVE_SUBSCRIPTION (offer the force step) from any
+          // other 400 (do not). Additive: existing callers still read .message.
+          var err=/** @type {Error & {code?: string, status?: number}} */(new Error(j.error||('HTTP '+r.status)));
+          err.code=j.code||''; err.status=r.status;
+          throw err;
+        });
       }
       return r.json().catch(function(){return{}});
     });
@@ -131,7 +140,14 @@ import { showErrorToast } from './toast.js';
       apiFetchQ('/api/hosted-images').then(function(r){return r.json()}).catch(function(){return{images:[]}}),
       // Signals tab only. Its own .catch because a metrics outage must not blank
       // the dashboard: findings-quality.js reports the null as a finding of its own.
-      apiFetchQ('/api/admin/metrics').then(function(r){return r.json()}).catch(function(){return{metrics:null}})
+      apiFetchQ('/api/admin/metrics').then(function(r){return r.json()}).catch(function(){return{metrics:null}}),
+      // Requests turned away BEFORE a render — refused uploads, daily-cap hits,
+      // rate-limit bounces, API concurrency. Appended LAST on purpose: the res[i]
+      // reads below are positional, so a new feed goes on the end or every existing
+      // index shifts. A fresh install has never written this file, so the 404 its
+      // .catch swallows is the NORMAL state, and the cards it feeds must read
+      // "none recorded" rather than reporting a refusal rate of zero.
+      apiFetchQ('/rejectionlogs').then(function(r){return r.text()}).catch(function(){return''})
     ]).then(function(res){
       ctx.data.users=(res[0]&&res[0].users)||[];
       ctx.data.promptRows=parseCSV(res[1]);
@@ -143,6 +159,7 @@ import { showErrorToast } from './toast.js';
       ctx.data.enterprise=(res[7]&&res[7].domains)||[];
       ctx.data.hostedImages=(res[8]&&res[8].images)||[];
       ctx.data.metrics=(res[9]&&res[9].metrics)||null;
+      ctx.data.rejectionRows=parseCSV(res[10]);
       // One computation of the findings per data load, shared by the rail chip,
       // the Overview teaser and the Signals panel so the three cannot disagree.
       renderers.resetSignals();
@@ -367,7 +384,7 @@ import { showErrorToast } from './toast.js';
     // summary of them — both have to go with it, or the next operator to sign
     // in sees the previous one's account names before the first fetch lands.
     renderers.resetSignals();
-    ctx.data={users:[],promptRows:[],chatRows:[],bugRows:[],maskRows:[],contactRows:[],emailOpenRows:[],enterprise:[],hostedImages:[],metrics:null};
+    ctx.data={users:[],promptRows:[],chatRows:[],bugRows:[],maskRows:[],contactRows:[],emailOpenRows:[],rejectionRows:[],enterprise:[],hostedImages:[],metrics:null};
     qs('#adm-dash').classList.add('hidden');
     qs('#adm-login').style.display='';
     qs('#adm-key').value='';

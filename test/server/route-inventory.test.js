@@ -54,6 +54,8 @@ const CRITICAL_ROUTES = [
   ['POST', '/api/getpro'],
   ['POST', '/api/admin/grant-plus'],
   ['POST', '/api/admin/revoke-plus'],
+  ['POST', '/api/admin/revoke-sessions'],
+  ['GET', '/api/admin/renders'],
   // Signals tab. Both key-gated, so an unauthenticated probe stops at the guard —
   // no SQL runs and no model call is billed. Listed because losing either one
   // degrades the tab silently rather than visibly: findings-quality.js reports a
@@ -68,6 +70,25 @@ const CRITICAL_ROUTES = [
   ['POST', '/api/admin/referrals/probe/deactivate'],
   ['POST', '/api/admin/referrals/probe/activate'],
   ['DELETE', '/api/admin/referrals/probe'],
+  // The public developer API. Every one refuses an unauthenticated probe at
+  // requireApiKey (401) before any store read, so nothing is charged here. Listed
+  // because these are the routes PAYING INTEGRATIONS call: a rename that the browser
+  // would never notice breaks every customer's script at once, silently, and they
+  // find out before we do.
+  ['POST', '/api/v1/renders'],
+  ['GET', '/api/api-keys'],
+  ['POST', '/api/api-keys'],
+  ['GET', '/api/api-credits'],
+  ['GET', '/api/api-credits/packs'],
+  ['POST', '/api/api-credits/checkout'],
+  ['GET', '/api/v1/renders/probe'],
+  ['GET', '/api/v1/credits'],
+  ['GET', '/api/v1/me'],
+  // The one /api/v1 route with NO key check — it publishes the accepted values for
+  // roomType, furnitureStyle and the stamp fields, which a caller needs before they
+  // have bought anything. developers.html renders its parameter table from it, so
+  // losing this route empties that table rather than erroring visibly.
+  ['GET', '/api/v1/options'],
   ['POST', '/api/billing/stripe-webhook'],
   ['POST', '/api/billing/customer-portal'],
   ['POST', '/api/enterprise/create-checkout'],

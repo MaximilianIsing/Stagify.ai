@@ -4,6 +4,192 @@
     "description": "Transform empty rooms with AI staging. Upload photos and get professionally staged results in seconds. Free AI home staging for real estate agents, sellers, and buyers.",
     "keywords": "AI staging, home staging, real estate staging, virtual staging, AI home staging, property staging, real estate photography, staging tool, virtual furniture"
   },
+    "apiKeys": {
+      "title": "API keys & credits",
+      "docs": "Documentation",
+      "searchLabel": "Search keys",
+      "searchPlaceholder": "Search keys…",
+      "listLabel": "Account and keys",
+      "createKey": "Create key",
+      "gone": "That key is no longer on this account.",
+      "signedOut": {
+        "title": "Sign in to manage API keys",
+        "body": "Your keys and credit balance live on your Stagify account.",
+        "cta": "Sign in"
+      },
+      "group": {
+        "account": "Account",
+        "keys": "Keys · {count} live"
+      },
+      "nav": {
+        "usage": "Usage",
+        "billing": "Credits & billing"
+      },
+      "list": {
+        "credits": {
+          "one": "{count} credit",
+          "other": "{count} credits"
+        },
+        "rendersWeek": {
+          "one": "{count} render this week",
+          "other": "{count} renders this week"
+        },
+        "thisWeek": "{count} this week",
+        "none": "No keys yet.",
+        "noMatch": "No key matches “{query}”."
+      },
+      "status": {
+        "live": "live",
+        "idle": "idle",
+        "revoked": "revoked"
+      },
+      "ago": {
+        "never": "never",
+        "justNow": "just now",
+        "minutes": {
+          "one": "{count} minute ago",
+          "other": "{count} minutes ago"
+        },
+        "hours": {
+          "one": "{count} hour ago",
+          "other": "{count} hours ago"
+        },
+        "days": {
+          "one": "{count} day ago",
+          "other": "{count} days ago"
+        }
+      },
+      "value": {
+        "never": "Never",
+        "none": "n/a"
+      },
+      "unit": {
+        "seconds": "{value}s",
+        "minutes": "{value}m",
+        "percent": "{value}%"
+      },
+      "key": {
+        "fallbackName": "API key",
+        "lastUsed": "last used {ago}",
+        "rename": "Rename",
+        "nameLabel": "Key name",
+        "save": "Save",
+        "cancel": "Cancel",
+        "chart": {
+          "one": "Renders · last day",
+          "other": "Renders · last {count} days"
+        },
+        "prefix": "Key prefix",
+        "created": "Created",
+        "lastUsedField": "Last used",
+        "revokedField": "Revoked",
+        "revokedNote": "Revoked on {when}. The row stays here so this key still resolves to a name in an access log.",
+        "danger": {
+          "title": "Revoke this key",
+          "body": "Anything using it stops working immediately, and this cannot be undone. The key stays listed afterwards so you can still recognise it in an access log.",
+          "cta": "Revoke key"
+        },
+        "confirm": "Revoke this key? Anything using it will stop working immediately."
+      },
+      "stat": {
+        "renders": "Renders · {days}d",
+        "delivered": "Delivered",
+        "median": "Median render",
+        "creditsSpent": "Credits spent",
+        "balance": "Balance",
+        "purchased": "Purchased",
+        "spent": "Spent",
+        "runway": "Runway"
+      },
+      "note": {
+        "lastSeven": "{count} in the last 7 days",
+        "usageUnavailable": "usage unavailable",
+        "refunded": "{count} refunded",
+        "refundedAuto": "{count} refunded automatically",
+        "noFailures": "no failed renders",
+        "nothingYet": "nothing rendered yet",
+        "inFlight": "{count} in flight now",
+        "endToEnd": "end to end",
+        "throughKey": "through this key",
+        "inWindow": "in this window",
+        "allTime": "all time",
+        "images": {
+          "one": "image",
+          "other": "images"
+        },
+        "runwayDays": {
+          "one": "≈ {count} day",
+          "other": "≈ {count} days"
+        },
+        "weekPace": "at this week’s pace",
+        "noBurn": "no renders in the last week"
+      },
+      "usage": {
+        "title": "Usage",
+        "lede": {
+          "one": "Last day, across every key on the account.",
+          "other": "Last {count} days, across every key on the account."
+        },
+        "failedTitle": "Could not load usage just now.",
+        "failedBody": "Your keys and balance are unaffected. This pane counts requests, and that count is the only thing missing. Reload to try again.",
+        "perDay": "Renders per day",
+        "byKey": "By key",
+        "thKey": "Key",
+        "thRefunded": "Refunded",
+        "thMedian": "Median",
+        "thCredits": "Credits",
+        "deletedKey": "Deleted key",
+        "empty": "No requests in this window.",
+        "sampleNote": "Median timed from the most recent {count} delivered renders. Days are UTC."
+      },
+      "billing": {
+        "title": "Credits & billing",
+        "lede": "Prepaid. One credit is one delivered image, and a render that fails is refunded automatically.",
+        "suspended": "This account is suspended and cannot render. Contact <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a>.",
+        "buy": "Buy credits",
+        "buyCta": "Buy",
+        "activity": "Recent activity",
+        "thWhen": "When",
+        "thWhat": "What",
+        "thChange": "Change",
+        "empty": "Nothing yet."
+      },
+      "ledger": {
+        "purchase": "Credits purchased",
+        "debit": "Render",
+        "refund": "Render failed, refunded",
+        "clawback": "Payment reversed",
+        "grant": "Credits granted",
+        "adjustment": "Adjustment",
+        "activity": "Activity"
+      },
+      "chart": {
+        "empty": "No requests yet.",
+        "tip": {
+          "one": "{day} UTC · {count} request",
+          "other": "{day} UTC · {count} requests"
+        },
+        "tipRefunded": "{day} UTC · {count} requests · {refunded} refunded"
+      },
+      "dialog": {
+        "title": "Create an API key",
+        "label": "Name it, so you can tell your keys apart",
+        "placeholder": "Production server",
+        "revealTitle": "Copy your key now",
+        "revealWarn": "This is the only time it will ever be shown. We store a hash, not the key, so if you lose it you will have to create another.",
+        "copy": "Copy",
+        "copied": "Copied",
+        "copyFallback": "Select and copy",
+        "done": "I’ve saved it",
+        "close": "Close",
+        "error": "Could not create the key. Please try again."
+      },
+      "error": {
+        "checkout": "Could not start checkout. Please try again.",
+        "billing": "Could not reach the billing service. Please try again.",
+        "server": "Could not reach the server. Please try again."
+      }
+    },
   "navigation": {
     "home": "Home",
     "about": "About",
@@ -42,68 +228,356 @@
       "item5": "Geometric abstract framed print",
       "items": {
         "standard": {
-          "bedroom": ["Light oak platform bed, white linens", "Wide oak six-drawer dresser", "Large beige rug under the bed", "Three framed black-and-white prints", "Cream armchair by the window"],
-          "livingRoom": ["Long cream three-seat sofa", "Patterned grey and ivory area rug", "White and oak TV console", "Two grey metal-frame armchairs", "Fiddle-leaf fig in a clay pot"],
-          "diningRoom": ["Six-seat table in ivory linen", "Six cream upholstered chairs", "Pale oak sideboard on legs", "Abstract canvas over the sideboard", "White orchid centerpiece"],
-          "kitchen": ["White waterfall island with sink", "Run of handleless white cabinets", "Stainless fridge and wall oven", "Four grey counter stools", "Two framed geometric prints"],
-          "office": ["White rectangular desk on legs", "Open oak shelving unit", "Black mesh task chair", "Grey low storage credenza", "Two abstract framed artworks"],
-          "bathroom": ["White wall-hung vanity with sink", "Glass walk-in shower, rain head", "Wall-hung white toilet", "Charcoal grey bath mat", "Slim framed mirror on the wall"]
+          "bedroom": [
+            "Light oak platform bed, white linens",
+            "Wide oak six-drawer dresser",
+            "Large beige rug under the bed",
+            "Three framed black-and-white prints",
+            "Cream armchair by the window"
+          ],
+          "livingRoom": [
+            "Long cream three-seat sofa",
+            "Patterned grey and ivory area rug",
+            "White and oak TV console",
+            "Two grey metal-frame armchairs",
+            "Fiddle-leaf fig in a clay pot"
+          ],
+          "diningRoom": [
+            "Six-seat table in ivory linen",
+            "Six cream upholstered chairs",
+            "Pale oak sideboard on legs",
+            "Abstract canvas over the sideboard",
+            "White orchid centerpiece"
+          ],
+          "kitchen": [
+            "White waterfall island with sink",
+            "Run of handleless white cabinets",
+            "Stainless fridge and wall oven",
+            "Four grey counter stools",
+            "Two framed geometric prints"
+          ],
+          "office": [
+            "White rectangular desk on legs",
+            "Open oak shelving unit",
+            "Black mesh task chair",
+            "Grey low storage credenza",
+            "Two abstract framed artworks"
+          ],
+          "bathroom": [
+            "White wall-hung vanity with sink",
+            "Glass walk-in shower, rain head",
+            "Wall-hung white toilet",
+            "Charcoal grey bath mat",
+            "Slim framed mirror on the wall"
+          ]
         },
         "modern": {
-          "bedroom": ["Walnut platform bed, white linens", "Long walnut six-drawer dresser", "Cream grid rug under the bed", "Boucle armchair by the window", "Geometric abstract framed print"],
-          "livingRoom": ["Grey L-shaped sectional sofa", "Blue and grey geometric rug", "White stone coffee table", "Black arc floor lamp", "Three-panel seascape triptych"],
-          "diningRoom": ["White dining table, black legs", "Six grey upholstered chairs", "Pale oak sideboard credenza", "Two navy and gold framed prints", "Dried pampas in a vase"],
-          "kitchen": ["White kitchen island, grey top", "White upper and tall cabinets", "Three black wire counter stools", "Stacked stainless wall ovens", "Black bowl of green apples"],
-          "office": ["White desk on chrome legs", "Black-framed open shelving unit", "Wide monitor on the desk", "Grey mesh task chair on casters", "White low storage credenza"],
-          "bathroom": ["White floating double vanity", "Glass walk-in shower enclosure", "Tall bird of paradise in a pot", "White wall-mounted toilet", "Grey diamond-pattern bath mat"]
+          "bedroom": [
+            "Walnut platform bed, white linens",
+            "Long walnut six-drawer dresser",
+            "Cream grid rug under the bed",
+            "Boucle armchair by the window",
+            "Geometric abstract framed print"
+          ],
+          "livingRoom": [
+            "Grey L-shaped sectional sofa",
+            "Blue and grey geometric rug",
+            "White stone coffee table",
+            "Black arc floor lamp",
+            "Three-panel seascape triptych"
+          ],
+          "diningRoom": [
+            "White dining table, black legs",
+            "Six grey upholstered chairs",
+            "Pale oak sideboard credenza",
+            "Two navy and gold framed prints",
+            "Dried pampas in a vase"
+          ],
+          "kitchen": [
+            "White kitchen island, grey top",
+            "White upper and tall cabinets",
+            "Three black wire counter stools",
+            "Stacked stainless wall ovens",
+            "Black bowl of green apples"
+          ],
+          "office": [
+            "White desk on chrome legs",
+            "Black-framed open shelving unit",
+            "Wide monitor on the desk",
+            "Grey mesh task chair on casters",
+            "White low storage credenza"
+          ],
+          "bathroom": [
+            "White floating double vanity",
+            "Glass walk-in shower enclosure",
+            "Tall bird of paradise in a pot",
+            "White wall-mounted toilet",
+            "Grey diamond-pattern bath mat"
+          ]
         },
         "scandinavian": {
-          "bedroom": ["Light oak platform bed, white linens", "Six-drawer oak dresser on the wall", "Round jute rug under the bed", "Rounded oak nightstands, two lamps", "Pair of framed abstract prints"],
-          "livingRoom": ["Grey three-seat sofa on the window", "Large woven jute area rug", "Blond oak coffee table, low slab", "Two woven cord lounge chairs", "Potted monstera and fiddle-leaf fig"],
-          "diningRoom": ["Long oak table, linen runner", "Six pale oak dining chairs", "Oak sideboard against the wall", "Table set with plates and glasses", "Dried branch arrangement in a bowl"],
-          "kitchen": ["Oak island with pale stone top", "Run of light oak wall cabinets", "White oven stacked under counter", "Three oak counter stools", "White subway tile backsplash"],
-          "office": ["Solid oak writing desk at the window", "Slim oak open bookcase", "Oak armchair with grey seat pad", "White rolling drawer pedestal", "Brass task lamp and potted herbs"],
-          "bathroom": ["Glass walk-in shower enclosure", "Floating oak vanity with basin", "Matte black rain shower head", "Beige bath mat on the parquet", "Woven laundry basket and towels"]
+          "bedroom": [
+            "Light oak platform bed, white linens",
+            "Six-drawer oak dresser on the wall",
+            "Round jute rug under the bed",
+            "Rounded oak nightstands, two lamps",
+            "Pair of framed abstract prints"
+          ],
+          "livingRoom": [
+            "Grey three-seat sofa on the window",
+            "Large woven jute area rug",
+            "Blond oak coffee table, low slab",
+            "Two woven cord lounge chairs",
+            "Potted monstera and fiddle-leaf fig"
+          ],
+          "diningRoom": [
+            "Long oak table, linen runner",
+            "Six pale oak dining chairs",
+            "Oak sideboard against the wall",
+            "Table set with plates and glasses",
+            "Dried branch arrangement in a bowl"
+          ],
+          "kitchen": [
+            "Oak island with pale stone top",
+            "Run of light oak wall cabinets",
+            "White oven stacked under counter",
+            "Three oak counter stools",
+            "White subway tile backsplash"
+          ],
+          "office": [
+            "Solid oak writing desk at the window",
+            "Slim oak open bookcase",
+            "Oak armchair with grey seat pad",
+            "White rolling drawer pedestal",
+            "Brass task lamp and potted herbs"
+          ],
+          "bathroom": [
+            "Glass walk-in shower enclosure",
+            "Floating oak vanity with basin",
+            "Matte black rain shower head",
+            "Beige bath mat on the parquet",
+            "Woven laundry basket and towels"
+          ]
         },
         "coastal": {
-          "bedroom": ["White slat-back platform bed", "Whitewashed wood dresser", "Aqua striped floor runner", "Rattan armchair by the window", "Trio of framed seashell prints"],
-          "livingRoom": ["White slipcovered sofa pair", "Large woven sisal area rug", "Weathered wood coffee table", "Two wicker lounge chairs", "Rope-wrapped side table"],
-          "diningRoom": ["Long grey wash dining table", "Six woven seagrass chairs", "Distressed white sideboard", "Wicker bench with striped seat", "Framed breaking wave canvas"],
-          "kitchen": ["Full white shaker cabinet run", "White waterfall island counter", "Three woven counter stools", "Stacked stainless wall ovens", "Wood cutting board by the sink"],
-          "office": ["Rustic trestle wood desk", "Four framed ocean canvases", "Mint green filing cabinet", "Woven rattan desk chair", "Seafoam ceramic table lamp"],
-          "bathroom": ["White single sink vanity", "Tall potted palm in a basket", "Aqua marbled bath mat", "Framed mirror over the sink", "Brushed nickel ceiling drum light"]
+          "bedroom": [
+            "White slat-back platform bed",
+            "Whitewashed wood dresser",
+            "Aqua striped floor runner",
+            "Rattan armchair by the window",
+            "Trio of framed seashell prints"
+          ],
+          "livingRoom": [
+            "White slipcovered sofa pair",
+            "Large woven sisal area rug",
+            "Weathered wood coffee table",
+            "Two wicker lounge chairs",
+            "Rope-wrapped side table"
+          ],
+          "diningRoom": [
+            "Long grey wash dining table",
+            "Six woven seagrass chairs",
+            "Distressed white sideboard",
+            "Wicker bench with striped seat",
+            "Framed breaking wave canvas"
+          ],
+          "kitchen": [
+            "Full white shaker cabinet run",
+            "White waterfall island counter",
+            "Three woven counter stools",
+            "Stacked stainless wall ovens",
+            "Wood cutting board by the sink"
+          ],
+          "office": [
+            "Rustic trestle wood desk",
+            "Four framed ocean canvases",
+            "Mint green filing cabinet",
+            "Woven rattan desk chair",
+            "Seafoam ceramic table lamp"
+          ],
+          "bathroom": [
+            "White single sink vanity",
+            "Tall potted palm in a basket",
+            "Aqua marbled bath mat",
+            "Framed mirror over the sink",
+            "Brushed nickel ceiling drum light"
+          ]
         },
         "farmhouse": {
-          "bedroom": ["Rustic pine plank bed frame", "Whitewashed six-drawer dresser", "Floral quilt and patchwork throw", "Woven spindle rocking chair", "Framed farm animal print trio"],
-          "livingRoom": ["Cream slipcovered three-seat sofa", "Large woven jute area rug", "Reclaimed wood coffee table", "Pair of linen armchairs", "Botanical gallery wall grid"],
-          "diningRoom": ["Long weathered oak dining table", "Distressed white sideboard", "Red gingham tablecloth", "Six floral upholstered chairs", "Jars of orange garden blooms"],
-          "kitchen": ["Whitewashed shaker cabinet run", "Farmhouse apron front sink", "Butcher block breakfast bar", "Three rustic wood bar stools", "Open shelves with crocks and herbs"],
-          "office": ["Chunky reclaimed wood desk", "Tall pine bookcase with books", "Brown leather rolling chair", "Black metal filing cabinet", "Round barn wall clock"],
-          "bathroom": ["Clawfoot roll top bathtub", "White pedestal sink with taps", "Glass walled corner shower", "Braided oval floor rug", "Painted wooden wall sign"]
+          "bedroom": [
+            "Rustic pine plank bed frame",
+            "Whitewashed six-drawer dresser",
+            "Floral quilt and patchwork throw",
+            "Woven spindle rocking chair",
+            "Framed farm animal print trio"
+          ],
+          "livingRoom": [
+            "Cream slipcovered three-seat sofa",
+            "Large woven jute area rug",
+            "Reclaimed wood coffee table",
+            "Pair of linen armchairs",
+            "Botanical gallery wall grid"
+          ],
+          "diningRoom": [
+            "Long weathered oak dining table",
+            "Distressed white sideboard",
+            "Red gingham tablecloth",
+            "Six floral upholstered chairs",
+            "Jars of orange garden blooms"
+          ],
+          "kitchen": [
+            "Whitewashed shaker cabinet run",
+            "Farmhouse apron front sink",
+            "Butcher block breakfast bar",
+            "Three rustic wood bar stools",
+            "Open shelves with crocks and herbs"
+          ],
+          "office": [
+            "Chunky reclaimed wood desk",
+            "Tall pine bookcase with books",
+            "Brown leather rolling chair",
+            "Black metal filing cabinet",
+            "Round barn wall clock"
+          ],
+          "bathroom": [
+            "Clawfoot roll top bathtub",
+            "White pedestal sink with taps",
+            "Glass walled corner shower",
+            "Braided oval floor rug",
+            "Painted wooden wall sign"
+          ]
         },
         "luxury": {
-          "bedroom": ["Navy tufted wingback bed", "Mahogany six-drawer dresser", "Two gold-framed marble art panels", "Pair of glass bedside lamps", "Jewel-tone velvet throw pillows"],
-          "livingRoom": ["Navy velvet sectional sofa", "White marble block coffee table", "Two cream velvet barrel chairs", "Blue and gold abstract area rug", "Gilt-framed art triptych on wall"],
-          "diningRoom": ["Long draped dining table", "Six blue velvet dining chairs", "Marble-top inlaid wood sideboard", "Crystal candelabra centerpiece", "Gold brocade table runner"],
-          "kitchen": ["Pale oak L-shaped cabinetry", "Waterfall quartz island", "Two cream counter stools", "Stainless double wall ovens", "White orchid in a glass vase"],
-          "office": ["Marble and gold writing desk", "Carved wood bookcase with books", "Green tufted leather task chair", "Potted fiddle-leaf fig in brass", "Fluted crystal desk lamp"],
-          "bathroom": ["Freestanding oval soaking tub", "Glass-walled corner shower", "Dark wood double-sink vanity", "Brass floor-mounted tub filler", "Wall-hung toilet by the window"]
+          "bedroom": [
+            "Navy tufted wingback bed",
+            "Mahogany six-drawer dresser",
+            "Two gold-framed marble art panels",
+            "Pair of glass bedside lamps",
+            "Jewel-tone velvet throw pillows"
+          ],
+          "livingRoom": [
+            "Navy velvet sectional sofa",
+            "White marble block coffee table",
+            "Two cream velvet barrel chairs",
+            "Blue and gold abstract area rug",
+            "Gilt-framed art triptych on wall"
+          ],
+          "diningRoom": [
+            "Long draped dining table",
+            "Six blue velvet dining chairs",
+            "Marble-top inlaid wood sideboard",
+            "Crystal candelabra centerpiece",
+            "Gold brocade table runner"
+          ],
+          "kitchen": [
+            "Pale oak L-shaped cabinetry",
+            "Waterfall quartz island",
+            "Two cream counter stools",
+            "Stainless double wall ovens",
+            "White orchid in a glass vase"
+          ],
+          "office": [
+            "Marble and gold writing desk",
+            "Carved wood bookcase with books",
+            "Green tufted leather task chair",
+            "Potted fiddle-leaf fig in brass",
+            "Fluted crystal desk lamp"
+          ],
+          "bathroom": [
+            "Freestanding oval soaking tub",
+            "Glass-walled corner shower",
+            "Dark wood double-sink vanity",
+            "Brass floor-mounted tub filler",
+            "Wall-hung toilet by the window"
+          ]
         },
         "midcentury": {
-          "bedroom": ["Walnut platform bed, grey headboard", "Long teak six-drawer dresser", "Black leather lounge chair", "Geometric quilt and mustard throw", "Framed travel posters on the wall"],
-          "livingRoom": ["Teal tufted three-seat sofa", "Patterned gold and orange area rug", "Pair of rosewood lounge chairs", "Low walnut coffee table", "Six-print grid of abstract art"],
-          "diningRoom": ["Round table with floral cloth", "Four moulded shell dining chairs", "Long teak credenza on legs", "Second drum pendant over the table", "Amber goblets and dried florals"],
-          "kitchen": ["White waterfall island counter", "Wall of flat white upper cabinets", "Three orange vinyl bar stools", "Stainless steel fridge", "Fern in a white plant stand"],
-          "office": ["Walnut desk with drawer pedestal", "Tan leather swivel task chair", "Open teak shelving unit", "Domed chrome desk lamp", "Trio of abstract framed prints"],
-          "bathroom": ["Walnut vanity with white basin", "Glass walled corner shower", "Tall potted plant on a stand", "Patterned runner rug on the floor", "Wooden waste bin by the vanity"]
+          "bedroom": [
+            "Walnut platform bed, grey headboard",
+            "Long teak six-drawer dresser",
+            "Black leather lounge chair",
+            "Geometric quilt and mustard throw",
+            "Framed travel posters on the wall"
+          ],
+          "livingRoom": [
+            "Teal tufted three-seat sofa",
+            "Patterned gold and orange area rug",
+            "Pair of rosewood lounge chairs",
+            "Low walnut coffee table",
+            "Six-print grid of abstract art"
+          ],
+          "diningRoom": [
+            "Round table with floral cloth",
+            "Four moulded shell dining chairs",
+            "Long teak credenza on legs",
+            "Second drum pendant over the table",
+            "Amber goblets and dried florals"
+          ],
+          "kitchen": [
+            "White waterfall island counter",
+            "Wall of flat white upper cabinets",
+            "Three orange vinyl bar stools",
+            "Stainless steel fridge",
+            "Fern in a white plant stand"
+          ],
+          "office": [
+            "Walnut desk with drawer pedestal",
+            "Tan leather swivel task chair",
+            "Open teak shelving unit",
+            "Domed chrome desk lamp",
+            "Trio of abstract framed prints"
+          ],
+          "bathroom": [
+            "Walnut vanity with white basin",
+            "Glass walled corner shower",
+            "Tall potted plant on a stand",
+            "Patterned runner rug on the floor",
+            "Wooden waste bin by the vanity"
+          ]
         },
         "custom": {
-          "bedroom": ["Green velvet scalloped headboard", "Green and cream geometric rug", "Walnut six-drawer dresser", "Black nightstand with brass pulls", "Tufted green bench at bed foot"],
-          "livingRoom": ["Emerald velvet curved sofa", "Black lacquer inlaid credenza", "Two blush scalloped swivel chairs", "Green fan-motif area rug", "Gold sunburst mirror on the wall"],
-          "diningRoom": ["Round white marble dining table", "Fluted walnut sideboard", "Six green velvet dining chairs", "Round green medallion rug", "White rose bouquet in glass vase"],
-          "kitchen": ["Black bar cart with brass top", "Potted palm in a brass planter", "Green leaf-pattern floor runner", "Three framed sketches in gold", "Copper canisters and glassware"],
-          "office": ["Fluted wood desk with brass base", "Tall black glazed bookcase", "Green striped chevron rug", "Green velvet shell desk chair", "Brass lamp with green glass shade"],
-          "bathroom": ["Freestanding oval soaking tub", "Fluted walnut vanity with sink", "Marble platform under the tub", "Palm in a brass footed planter", "Green organic-print bath mat"]
+          "bedroom": [
+            "Green velvet scalloped headboard",
+            "Green and cream geometric rug",
+            "Walnut six-drawer dresser",
+            "Black nightstand with brass pulls",
+            "Tufted green bench at bed foot"
+          ],
+          "livingRoom": [
+            "Emerald velvet curved sofa",
+            "Black lacquer inlaid credenza",
+            "Two blush scalloped swivel chairs",
+            "Green fan-motif area rug",
+            "Gold sunburst mirror on the wall"
+          ],
+          "diningRoom": [
+            "Round white marble dining table",
+            "Fluted walnut sideboard",
+            "Six green velvet dining chairs",
+            "Round green medallion rug",
+            "White rose bouquet in glass vase"
+          ],
+          "kitchen": [
+            "Black bar cart with brass top",
+            "Potted palm in a brass planter",
+            "Green leaf-pattern floor runner",
+            "Three framed sketches in gold",
+            "Copper canisters and glassware"
+          ],
+          "office": [
+            "Fluted wood desk with brass base",
+            "Tall black glazed bookcase",
+            "Green striped chevron rug",
+            "Green velvet shell desk chair",
+            "Brass lamp with green glass shade"
+          ],
+          "bathroom": [
+            "Freestanding oval soaking tub",
+            "Fluted walnut vanity with sink",
+            "Marble platform under the tub",
+            "Palm in a brass footed planter",
+            "Green organic-print bath mat"
+          ]
         }
       }
     },
@@ -398,9 +872,19 @@
       "stat2": "already use AI to generate listing content",
       "source": "Figures from the National Association of Realtors’ 2025 Technology Survey of real estate agents.",
       "sourceCite": "Source: National Association of Realtors, 2025 Technology Survey",
-      "usageAria": "AI usage among agents: 20% daily, 22% weekly, 27% a few times a month, 32% not yet"
+      "usageAria": "AI usage among agents: 20% daily, 22% weekly, 27% a few times a month, 32% not yet",
+      "yearsLabel": "Survey year",
+      "y2024": {
+        "stat1": "of agents have used ChatGPT in the past 12 months",
+        "stat2": "use AI and machine learning tools in their business",
+        "usageAria": "AI usage among agents: 9% daily, 17% weekly, 30% a few times a month, 45% not yet"
+      }
     },
     "plus": {
+      "api": {
+        "text": "Working with your own software? Stage photos programmatically with the Stagify API.",
+        "link": "Read the API docs"
+      },
       "title": "Go further with Stagify+",
       "pro": {
         "name": "Stagify+",
@@ -860,6 +1344,7 @@
     "terms": "Terms of Service",
     "contact": "Contact",
     "status": "Status",
+    "developers": "API",
     "copyright": "Stagify.ai"
   },
   "auth": {
@@ -920,6 +1405,8 @@
     "signOut": "Sign out",
     "manageBillingAria": "Manage billing in Stripe",
     "stripeHelp": "Stripe help center",
+    "apiKeys": "API keys & credits",
+    "stagifyApi": "Stagify API",
     "reportIssue": "Report an issue",
     "report": {
       "title": "Report an issue",
@@ -1259,11 +1746,11 @@
       "description": "Get in touch with the Stagify.ai team for support, partnerships, or questions about our free AI home staging tool."
     },
     "stagifyPlus": {
-      "title": "Stagify+ — Plans & Pricing | Stagify.ai",
+      "title": "Stagify+ Plans & Pricing | Stagify.ai",
       "description": "Stagify+: furniture removal, the AI Designer, the Masking Studio, higher-quality models, and unlimited staging. See plans and pricing."
     },
     "enterprise": {
-      "title": "Stagify Enterprise — Usage-Based AI Staging for Teams",
+      "title": "Stagify Enterprise | Usage-Based AI Staging for Teams",
       "description": "Give your whole team unlimited AI staging with usage-based billing at $0.15 per generation. One invoice, no per-seat fees."
     },
     "maskingStudio": {
@@ -1275,6 +1762,10 @@
       "title": "Exterior Studio | Stagify.ai - AI Curb Appeal Photo Enhancement",
       "description": "Turn a grey, cluttered exterior photo into the shot the listing deserves. Change the time of day, clear the sky, and remove parked cars and bins — while the property itself stays exactly as photographed.",
       "keywords": "curb appeal, exterior photo editing, real estate photo enhancement, sky replacement, remove cars from photo, twilight photo real estate, golden hour listing photo, AI photo editor, property exterior, Stagify"
+    },
+    "developers": {
+      "title": "Stagify API for Developers | Stagify.ai",
+      "description": "Stage real-estate photos from your own code. One HTTP call per image, prepaid credits at $0.15 an image, no subscription and no minimum."
     }
   },
   "basicMask": {
@@ -1797,5 +2288,100 @@
     "heading": "This page doesn’t exist",
     "body": "The link may be broken, or the page may have moved. Everything else is still right where you left it.",
     "homeCta": "Back to home"
+  },
+  "developers": {
+    "crumb": "API documentation",
+    "lede": "Stage a real-estate photo from your own code. One HTTP call returns one staged image. Prepaid credits at $0.15 an image, with no subscription, no minimum and no bill that can run away from you.",
+    "toc": "On this page",
+    "contact": "Questions, higher limits, or an invoice instead of a card: <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a>.",
+    "facts": {
+      "baseUrl": "Base URL",
+      "auth": "Authentication",
+      "contentType": "Content type"
+    },
+    "intro": {
+      "h2": "Introduction",
+      "p1": "The API exposes one thing: the staging pipeline behind the web app. You post a photo of a room, name a room type and a furniture style, and get a staged image back in the same response. There is no job queue and nothing to poll on the happy path.",
+      "p2": "Credits are whole images. You buy them up front and each successful render spends one. A render that fails is refunded automatically, so you only ever pay for a photo you received. And because the balance is prepaid, a stolen key costs you at most what is left on it. There is no invoice at the end of the month.",
+      "note": "Keys are meant for server-to-server use. The API sends no CORS headers, so a browser cannot call it directly; that is deliberate, and a key reachable from browser JavaScript is a leaked key. We show a key once, store only a hash, and revoke immediately."
+    },
+    "quickstart": {
+      "h2": "Quickstart",
+      "p1": "Create a key on your <a href=\"api-keys.html\">API keys page</a>, buy a credit pack, then post a photo. The response carries the staged image as a data URL.",
+      "note": "A render takes up to a couple of minutes. Set your client’s read timeout to <strong>300 seconds</strong> and retry with the <em>same</em> <code>Idempotency-Key</code>. That is what guarantees you are never charged twice for one photo.",
+      "packs": "Credit packs"
+    },
+    "packs": {
+      "loading": "Loading pricing…",
+      "images": "images",
+      "each": "an image",
+      "empty": "Credit packs are not available right now. Please <a href=\"contact.html\">get in touch</a> and we will sort you out."
+    },
+    "params": {
+      "h2": "Request parameters",
+      "lede": "<code>POST /api/v1/renders</code>, sent as <code>multipart/form-data</code>. Every accepted value below is also served as JSON from <code>GET /api/v1/options</code>, which needs no API key, so a client can populate its own dropdowns instead of hard-coding this table.",
+      "thField": "Field",
+      "thType": "Type",
+      "thNotes": "Notes",
+      "image": "<strong>Required.</strong> The room photo. JPEG, PNG or WebP, up to 25 MB. The MIME type is what is checked, not the file extension.",
+      "roomType": "<code>Bedroom</code>, <code>Living room</code>, <code>Dining room</code>, <code>Kitchen</code>, <code>Office</code>, <code>Bathroom</code>, <code>Outdoors</code>, <code>Dorm</code>. Default <code>Living room</code>. <strong>Case- and space-sensitive</strong>, and an unrecognised value is <strong>not rejected</strong>. It is written into the prompt as free text, so <code>Living Room</code> is not <code>Living room</code>.",
+      "furnitureStyle": "<code>standard</code>, <code>modern</code>, <code>midcentury</code>, <code>scandinavian</code>, <code>luxury</code>, <code>coastal</code>, <code>farmhouse</code>, <code>custom</code>. Default <code>standard</code>, which is also what an unrecognised value silently becomes. <code>custom</code> uses your <code>additionalPrompt</code> in place of the built-in style text.",
+      "additionalPrompt": "Free-text direction for this render.",
+      "removeFurniture": "Empty the room before staging it. Send <code>true</code> or <code>on</code>; anything else, including <code>1</code> and <code>yes</code>, reads as false.",
+      "keepFurniture": "Free text naming what to leave in place, e.g. <code>keep the dining table and the built-in shelves</code>. Read only when <code>removeFurniture</code> is set. 500 characters.",
+      "furnitureImage": "Up to 5 reference photos of furniture to match. Same formats and size limit as <code>image</code>.",
+      "labelVirtuallyStaged": "Burn the “Virtually staged” disclosure onto the output.",
+      "stampStyle": "<code>dark</code>, <code>light</code>, <code>minimal</code>, <code>banner</code>. Default <code>dark</code>. Case-insensitive; an unrecognised value falls back to the default.",
+      "stampScale": "<code>0.7</code> to <code>1.6</code>, default <code>1</code>. Out-of-range values are clamped rather than refused.",
+      "stampLang": "The badge language: <code>english</code>, <code>spanish</code>, <code>french</code>, <code>german</code>, <code>chinese</code>, <code>korean</code>, <code>portuguese</code>, <code>russian</code>, <code>italian</code>, <code>japanese</code>, <code>dutch</code>. Default <code>english</code>.",
+      "variations": "Only <code>1</code> is accepted. Issue concurrent requests for more."
+    },
+    "idem": {
+      "h2": "Idempotency",
+      "p1": "A render holds the connection for minutes, which means the failure that will actually bite you is a dead socket after the work completed: charged, holding nothing. Send an <code>Idempotency-Key</code> header on every request and retry with the <em>same</em> value.",
+      "thHave": "What we have on file",
+      "thRetry": "What a retry does",
+      "r1a": "A succeeded request, same parameters",
+      "r1b": "Returns the stored result with <code>X-Stagify-Replayed: true</code>. No second charge.",
+      "r2a": "A request still running",
+      "r2b": "<code>409 REQUEST_IN_FLIGHT</code>. Wait, then retry.",
+      "r3a": "A request abandoned mid-render",
+      "r3b": "Re-runs on the existing charge, up to three attempts.",
+      "r4a": "The same key with different parameters",
+      "r4b": "<code>422 IDEMPOTENCY_KEY_REUSED</code>. Use a fresh key.",
+      "note": "Omitting the header is allowed and means no replay protection, which is the honest default. We do not derive a key from your photo: two genuinely separate renders of the same room would collide and the second caller would be handed the first one’s image."
+    },
+    "disclosure": {
+      "h2": "Disclosure labels",
+      "p1": "Many MLS and NAR rules require a staged photo to say that it is staged. <code>labelVirtuallyStaged</code> burns that label into the pixels rather than attaching it as metadata that a downstream tool can strip.",
+      "note": "If the label cannot be applied, the image is <strong>withheld rather than delivered unlabelled</strong>, the call answers <code>500 DISCLOSURE_STAMP_FAILED</code>, and your credit is refunded. There is no way to switch that behaviour off, and no per-key default that quietly disables it."
+    },
+    "errors": {
+      "h2": "Errors",
+      "lede": "Every failure answers <code>{ \"error\": \"…\", \"code\": \"…\" }</code>. Branch on <code>code</code>, never on the message. Messages change, codes do not.",
+      "thStatus": "Status",
+      "thCode": "Code",
+      "thAction": "What to do",
+      "keyMissing": "Check the <code>Authorization</code> header, or mint a new key.",
+      "noCredits": "Top up. The body carries <code>credits_remaining</code>.",
+      "suspended": "Contact support.",
+      "variations": "This API renders one image per request. Issue concurrent requests instead.",
+      "inFlight": "That idempotency key is still running. Wait, then retry.",
+      "concurrency": "Too many renders at once. Retry in a few seconds.",
+      "keyReused": "You reused a key with different parameters. Use a fresh one.",
+      "noImage": "The model returned nothing. Refunded; retry or try another photo.",
+      "rateLimited": "Back off and retry.",
+      "stampFailed": "The label could not be applied so the image was withheld. Refunded.",
+      "renderFailed": "Refunded. Quote the <code>ref</code> if you contact support."
+    },
+    "other": {
+      "h2": "Other endpoints",
+      "options": "<code>GET /api/v1/options</code>: the accepted values for every enum above. No API key required.",
+      "me": "<code>GET /api/v1/me</code>: is my key working? Returns the account and balance.",
+      "credits": "<code>GET /api/v1/credits</code>: balance and lifetime totals.",
+      "render": "<code>GET /api/v1/renders/{id}</code>: the status of one render.",
+      "note": "Every response carries <code>X-Stagify-Credits-Remaining</code>, so you can watch the balance fall without polling for it."
+    },
+    "dashboard": "API dashboard"
   }
 }

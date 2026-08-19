@@ -131,7 +131,7 @@ admin/log endpoints — see [`endpoints.md`](endpoints.md).
 
 | File | Header |
 |---|---|
-| `prompt_logs.csv` | `timestamp,roomType,furnitureStyle,additionalPrompt,removeFurniture,userRole,referralSource,email,ipAddress,status,durationMs,model,attempts,errorCode` |
+| `prompt_logs.csv` | `timestamp,roomType,furnitureStyle,additionalPrompt,removeFurniture,userRole,referralSource,email,ipAddress,status,durationMs,model,attempts,errorCode,architectureDrift,seed,variation` |
 | `chat_logs.csv` | `timestamp,userId,userMessage,aiResponse,fileNames,fileTypes,ipAddress,userAgent` |
 | `mask_logs.csv` | `timestamp,prompt,model,geminiModel,imageWidth,imageHeight,userId,ipAddress,userAgent` |
 | `contact_logs.csv` | `timestamp,userRole,referralSource,email,userAgent,ipAddress` |
@@ -154,11 +154,18 @@ It is a **separate file rather than rows in `prompt_logs.csv` on purpose**: the 
 counts every prompt-log row as a generation, so folding rejections in would inflate the
 headline volume and distort the success rate with work that never ran.
 
-The last five `prompt_logs.csv` columns (`status` … `errorCode`) were **appended, never
-inserted**, because the admin dashboard reads these files **by column index** — a column
-added mid-row would silently re-label every historical render. Rows written before they
-existed simply end early, which reads as "outcome unknown". Append-only applies to the
-header as much as the data.
+The `prompt_logs.csv` outcome columns (`status` … `errorCode`, then `architectureDrift`,
+`seed` and `variation` in three later rounds) were **appended, never inserted**, because
+the admin dashboard reads these files **by column index** — a column added mid-row would
+silently re-label every historical render. Rows written before they existed simply end
+early, which reads as "outcome unknown". Append-only applies to the header as much as the
+data, and every historical header is kept in `PROMPT_LOG_HEADERS_LEGACY` so an existing
+log is upgraded in place rather than left mislabelled.
+
+`variation` is `"n/N"` on a studio render — which of how many the Stagify+ "Image
+Generations" slider asked for, `"1/1"` when it asked for one — and empty on the surfaces
+that never fan out (chat, Exterior, the v1 API). Paired with `architectureDrift` it makes
+"do the later variations damage the room more?" a query rather than an impression.
 
 **The public counters are seeded from two of these files at boot.**
 [`lib/data/counters.js`](../../lib/data/counters.js) counts the records in
@@ -261,6 +268,43 @@ Three properties are load-bearing rather than stylistic:
   and no-match queries, for a 25 MB index per 100k rows plus sync triggers on every write
   path. Revisit if a single account passes ~50k renders. The full numbers are in the
   `SEARCH_HAYSTACK` comment.
+
+## The public API tables
+
+Four tables back the developer API (`lib/data/api-keys.js`, `lib/data/api-billing.js`).
+
+| Table | Holds |
+| --- | --- |
+| `api_keys` | One row per key: owner, name, `key_hash`, a 12-char display prefix, `revoked_at`. |
+| `api_credit_balances` | One row per account: `balance`, lifetime totals, `suspended_at`. |
+| `api_credit_ledger` | Append-only. Every movement: purchase, debit, refund, clawback, grant. |
+| `api_requests` | One row per render: the idempotency claim, the fingerprint, and what was charged. |
+
+Three things about them are load-bearing:
+
+**Keys are stored as digests, not keys.** `key_hash` is `sha256$<hex>` via the shared
+`hashToken` in `lib/data/session-tokens.js` — the same at-rest format sessions use, and
+deliberately not a second definition of it. The plaintext is returned once, by
+`POST /api/api-keys`, and nothing can recover it afterwards. A stolen `/data` volume
+therefore yields no usable credentials. `test/data/api-keys.test.js` proves it by scanning
+the `.db` file for the raw bytes.
+
+**The ledger is the source of truth; `balance` is a cache of it.** Every balance mutation
+writes a ledger row in the *same* transaction, so `balance === SUM(delta)` always holds —
+asserted over a randomized operation sequence in `test/data/api-billing.test.js`. If the
+two ever disagree, the ledger is right.
+
+**Two partial UNIQUE indexes are the structural guards.**
+`idx_api_ledger_ext (reason, external_id) WHERE external_id IS NOT NULL` makes a double
+credit, a double debit and a double refund impossible even if the code tried;
+`idx_api_requests_idem (key_id, idempotency_key)` is what the idempotency claim races
+against. Both are asserted to exist, and to actually bite, rather than merely being
+declared.
+
+All four are registered in `USER_ID_TABLES` (`lib/data/user-deletion.js`), so an erasure
+takes the keys and the billing history with the account. The billing rows are treated as
+operational rather than statutory records — Stripe holds the authoritative payment history
+under its own retention.
 
 ## Object storage — gallery render bytes (R2)
 

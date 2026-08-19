@@ -579,6 +579,76 @@ body.page-admin main { flex: 0 0 auto; overflow: visible; width: 100% }
 .adm-grant-status { margin: 0 0 .5rem; font-size: .8125rem; font-weight: 550; color: var(--adm-ink-2) }
 .adm-grant-msg { margin: .5rem 0 0; font-size: .78125rem; color: var(--adm-muted); min-height: 1em }
 
+/* Render strip (user detail drawer). A grid of small cards rather than a row of
+   bare thumbnails: half the point is the parameters beside the picture, and the
+   states without a picture at all still need somewhere to say so. */
+.adm-renders-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: .75rem }
+.adm-render-item {
+  display: flex; flex-direction: column; background: var(--adm-surface);
+  border: 1px solid var(--adm-line); border-radius: var(--adm-r-md); overflow: hidden;
+}
+.adm-render-frame { position: relative; aspect-ratio: 4 / 3; background: var(--adm-sunken) }
+.adm-render-thumb { width: 100%; height: 100%; object-fit: cover; display: block }
+/* The three no-image states say WHY in words. A grey box reads as a failed load
+   whichever of them actually applies, which would turn a reaped render into an
+   apparent outage. */
+.adm-render-placeholder {
+  display: flex; align-items: center; justify-content: center; height: 100%;
+  font-size: .75rem; font-weight: 550; color: var(--adm-faint); text-align: center; padding: .5rem;
+}
+.adm-render-badge {
+  position: absolute; top: .4rem; left: .4rem; padding: .1rem .4rem;
+  font-size: .6875rem; font-weight: 600; border-radius: var(--adm-r-sm);
+  background: var(--bg-elevated); border: 1px solid var(--adm-line);
+}
+.adm-render-badge--failed { color: var(--adm-neg); background: var(--adm-neg-wash); border-color: var(--adm-neg-line) }
+.adm-render-badge--evicted, .adm-render-badge--pending { color: var(--adm-ink-2); background: var(--adm-sunken) }
+.adm-render-item--failed { border-color: var(--adm-neg-line) }
+.adm-render-meta { padding: .6rem; display: flex; flex-direction: column; gap: .25rem; min-width: 0 }
+.adm-render-title {
+  font-size: .8125rem; font-weight: 600; color: var(--adm-ink);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.adm-render-sub { font-size: .71875rem; color: var(--adm-muted) }
+.adm-render-facts { display: flex; flex-direction: column; gap: .1rem; margin-top: .25rem }
+.adm-render-kv { font-size: .71875rem; color: var(--adm-ink-2); overflow-wrap: anywhere }
+.adm-render-kv strong { font-weight: 600; color: var(--adm-muted) }
+/* The prompt is the most useful and the longest field, so it is clamped rather
+   than allowed to set every card in the row to its own height. */
+.adm-render-prompt {
+  margin: .35rem 0 0; font-size: .71875rem; line-height: 1.45; color: var(--adm-muted);
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+
+/* Danger zone (last section of the user detail drawer). Reuses .adm-danger-row
+   from the destructive-actions block below rather than declaring a second flex
+   row; inside the drawer the copy sits ABOVE its control instead of beside it,
+   because each action needs a full sentence of explanation and a side-by-side
+   row squeezes that to two words. */
+.adm-danger { border-top: 1px solid var(--adm-neg-line) }
+.adm-danger > h3 { color: var(--adm-neg) }
+.adm-danger .adm-danger-row { flex-direction: column; align-items: flex-start; gap: .5rem }
+.adm-danger .adm-danger-row + .adm-danger-row { margin-top: 1rem }
+.adm-danger-copy { margin: 0; font-size: .78125rem; line-height: 1.5; color: var(--adm-muted); max-width: 62ch }
+.adm-danger-confirm { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap }
+.adm-danger-label { flex-basis: 100%; font-size: .75rem; font-weight: 550; color: var(--adm-ink-2) }
+.adm-danger-input {
+  padding: .45rem .6rem; font-size: .78125rem; font-family: inherit; min-width: 22ch;
+  color: var(--adm-ink); background: var(--bg-elevated);
+  border: 1px solid var(--adm-line-strong); border-radius: var(--adm-r-sm);
+}
+.adm-danger-input:focus-visible { outline: 2px solid var(--adm-neg); outline-offset: 1px }
+/* The escalation only exists once the server has refused, so it is inset to read
+   as a consequence of the button above rather than a second, equal option. */
+.adm-danger-force {
+  margin-top: .75rem; padding: .75rem; border-left: 2px solid var(--adm-neg);
+  background: var(--adm-neg-wash); border-radius: var(--adm-r-sm);
+  display: flex; flex-direction: column; align-items: flex-start; gap: .5rem;
+}
+.adm-danger-msg { margin: .75rem 0 0; font-size: .78125rem; min-height: 1em; color: var(--adm-muted) }
+.adm-danger-msg--err { color: var(--adm-neg) }
+.adm-danger-msg--ok { color: var(--adm-ink-2) }
+
 /* ── Downloads & destructive actions ───────────────────────────────────── */
 
 .adm-dl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: .6rem }

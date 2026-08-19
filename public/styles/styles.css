@@ -719,6 +719,11 @@ body {
     justify-self:end;
     align-self:center
   }
+  /* The account button's mobile size is NOT here — it sits immediately after the base
+     rule, down beside .nav-actions. A media query adds no specificity, so the only thing
+     separating the two `.profile-menu-btn` blocks is source order, and this block is
+     ABOVE the base rule. Putting the 32px override here silently lost to the 42px base
+     (the icon shrank and the button did not, because the base sets no icon width). */
   .nav .nav-center {
     grid-column:1/-1;
     grid-row:2;
@@ -847,6 +852,30 @@ body {
   justify-self:start;
   color:var(--brand)
 }
+/* MOVED HERE FROM auth.css, for the same reason as the account button further down —
+   the wordmark is an `<a href="index.html" class="brand">`, and this is the ONLY
+   text-decoration:none that reaches it. There is no global `a {}` reset in this file
+   (the sole anchor rule is `.nav-link,.nav-link:hover`, which does not match), so while
+   this lived in the lazy sheet the wordmark painted UNDERLINED on the thirteen pages
+   that defer auth.css, then un-underlined when it swapped in. Same flash as the button,
+   same frame, one line to the left.
+   Order-insensitive — a.brand is (0,1,1) and outranks .brand (0,1,0) wherever it sits —
+   but it belongs next to the rule it qualifies. */
+a.brand,
+a.brand:link,
+a.brand:visited,
+a.brand:hover,
+a.brand:active {
+  color:var(--brand);
+  text-decoration:none;
+  cursor:pointer;
+  box-sizing:border-box
+}
+a.brand:focus-visible {
+  outline:2px solid var(--brand);
+  outline-offset:2px;
+  border-radius:12px
+}
 .brand-strong {
   font-weight:900
 }
@@ -865,6 +894,75 @@ body {
   gap:12px;
   align-items:center;
   justify-content:flex-end
+}
+/* MOVED HERE FROM auth.css with the rest of the nav geometry — the header grid's third
+   cell. Its mobile grid placement (`.nav .nav-trailing`, (0,2,0)) already lives in the
+   768px block above and still outranks this base box wherever it sits. */
+.nav-trailing {
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:10px;
+  min-width:0
+}
+/* The top-right account button. It lives HERE, not in auth.css, for the same reason
+   `.nav .nav-center` and `.nav .nav-trailing` do (see the (max-width:768px) block
+   above): thirteen pages load auth.css as media="print" and promote it in JS, and this
+   button is painted in the first frame on every one of them. Nothing else in any
+   render-blocking sheet styles a <button>, so left in auth.css it had no authored CSS
+   at all until the swap — a grey UA button with a black icon (the inline SVG is
+   stroke="currentColor") that then jumped to a 42px gradient circle.
+   The DROPDOWN it opens is correctly still in auth.css: `.hidden` below is
+   display:none, so that panel generates no box until it is opened.
+   Guarded by test/frontend/header-chrome-css.test.js. */
+.profile-menu-wrap {
+  position:relative;
+  flex-shrink:0
+}
+.profile-menu-btn {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:42px;
+  height:42px;
+  padding:0;
+  border-radius:999px;
+  border:none;
+  background-color:var(--brand);
+  color:var(--bg-elevated);
+  cursor:pointer;
+  transition:all .18s ease;
+  box-shadow:none;
+  position:relative;
+  overflow:hidden
+}
+.profile-menu-btn:hover {
+  background-color:var(--brand-strong);
+  transform:translateY(-1px)
+}
+.profile-menu-btn:focus-visible {
+  outline:2px solid var(--brand);
+  outline-offset:2px
+}
+.profile-menu-btn__icon {
+  display:block
+}
+/* Mobile sizing. It MUST stay immediately after the base rules above: a media query adds
+   no specificity, so nothing but source order separates the two `.profile-menu-btn`
+   blocks. Parking it up in the page's main (max-width:768px) section — which sits EARLIER
+   in this file — silently lost to the 42px base rule, and did so in a way that read as
+   correct at a glance because the icon still shrank (the base rule sets no icon width).
+   The (min-width:769px) desktop face above has no such constraint; it is the only rule
+   that touches `background` at that width. */
+@media (max-width:768px) {
+  .profile-menu-btn {
+    width:32px;
+    height:32px
+  }
+  .profile-menu-btn__icon {
+    width:17px;
+    height:17px
+  }
 }
 .nav-link {
   color:var(--bg-elevated);
@@ -1027,6 +1125,16 @@ main {
   justify-content:flex-start
 }
 @media (min-width:769px) {
+  /* Desktop face of the account button — the flat --brand fill above becomes the CTA
+     gradient. Moved here with the base rule; see the note beside .profile-menu-wrap. */
+  .profile-menu-btn {
+    background:var(--cta-gradient);
+    box-shadow:0 4px 15px rgba(0,0,0,.2)
+  }
+  .profile-menu-btn:hover {
+    background:var(--cta-gradient-hover);
+    box-shadow:0 6px 20px rgba(0,0,0,.3)
+  }
   .nav-link,.nav-link:hover {
     opacity:1;
     text-decoration:none

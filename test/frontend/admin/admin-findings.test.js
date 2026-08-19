@@ -57,6 +57,11 @@ function rows(n, spec = {}, at = NOW) {
   return Array.from({ length: n }, (_, i) => promptRow({ ...spec, at: at - i * 60 * 60 * 1000 }));
 }
 
+/** One rejection_logs.csv row: timestamp,kind,code,detail,email,userId,ip,ua. */
+function rejectionRow({ at = NOW, kind = 'daily_limit', code = 'DAILY_LIMIT_REACHED', email = '', userId = '' } = {}) {
+  return [new Date(at).toISOString(), kind, code, '', email, userId, '', ''];
+}
+
 function user(over = {}) {
   return {
     id: 'u1', email: 'a@example.com', plan: 'free', createdAt: new Date(NOW - 60 * DAY).toISOString(), ...over,
@@ -70,6 +75,7 @@ function baseInput(over = {}) {
     now: NOW,
     promptRows,
     contactRows: [],
+    rejectionRows: [],
     users: [user()],
     enterprise: [],
     metrics: null,
@@ -515,7 +521,7 @@ test('no finding says "1 things" — counts of one are pluralised correctly', ()
   //
   // `(?!of\b)` is the one exclusion that matters: "1 of 150 renders failed" is
   // correct English and would otherwise be flagged on every small dataset.
-  const BAD = /\b1 (?!of\b)(?:\w+ ){0,3}(renders|accounts|emails|links|files|domains|checks|things|reminders|grants|codes|generations|blobs)\b/;
+  const BAD = /\b1 (?!of\b)(?:\w+ ){0,3}(renders|accounts|emails|links|files|domains|checks|things|reminders|grants|codes|generations|blobs|days|refusals|photos)\b/;
 
   // The guard is only worth having if it catches the sentence that got through.
   // Asserted directly, because a regex that matches nothing passes the sweep below
@@ -528,7 +534,10 @@ test('no finding says "1 things" — counts of one are pluralised correctly', ()
 
   for (const bag of [input, trialInput]) {
     for (const f of runFindings(bag).findings) {
-      const prose = [f.title, f.detail, f.action].join(' ');
+      // The per-account notes are rendered on the card too, and they are the
+      // densest count-into-prose site on the tab ("blocked on 1 day"), so they
+      // belong in the sweep. Only the note — never the address beside it.
+      const prose = [f.title, f.detail, f.action, ...(f.accounts || []).map((a) => a.note)].join(' ');
       const hit = prose.match(BAD);
       assert.equal(hit, null, `${f.id} wrote "${hit && hit[0]}" — pluralise the singular case`);
     }
@@ -634,3 +643,68 @@ function messyInput() {
     }),
   });
 }
+
+// ── Cap refusals: the feed that used to be missing ──────────────────────────
+
+test('upgrade candidates rank by DAYS blocked once refusals are recorded', () => {
+  const users = Array.from({ length: 8 }, (_, i) => user({ id: `f${i}`, email: `f${i}@example.com` }));
+  // f3 was blocked on three separate days; f1 retried four times in one evening.
+  const rejectionRows = [
+    rejectionRow({ at: NOW - 1 * DAY, email: 'f3@example.com' }),
+    rejectionRow({ at: NOW - 3 * DAY, email: 'f3@example.com' }),
+    rejectionRow({ at: NOW - 5 * DAY, email: 'f3@example.com' }),
+    rejectionRow({ at: NOW - 2 * DAY, email: 'f1@example.com' }),
+    rejectionRow({ at: NOW - 2 * DAY - 3600e3, email: 'f1@example.com' }),
+    rejectionRow({ at: NOW - 2 * DAY - 7200e3, email: 'f1@example.com' }),
+    rejectionRow({ at: NOW - 2 * DAY - 10800e3, email: 'f1@example.com' }),
+  ];
+  const f = findingById(baseInput({ users, rejectionRows }), 'revenue.upgrade-candidates');
+  assert.ok(f, 'the rule should fire');
+  // Three separate days outranks four retries in one evening.
+  assert.equal(f.accounts[0].email, 'f3@example.com');
+  assert.match(f.accounts[0].note, /3 days/);
+  assert.equal(f.accounts[1].email, 'f1@example.com');
+  assert.match(f.accounts[1].note, /1 day\b/);
+  assert.equal(f.confidence, 'high');
+  assert.ok(f.evidence.some((e) => e.label === 'Blocked 2+ days'));
+});
+
+test('with no refusals recorded the rule keeps its degraded wording, not a false all-clear', () => {
+  // A fresh deploy has refused nothing. That must not read as "nobody is
+  // hitting the cap" — the weaker heuristic still runs, and says it is weaker.
+  const users = Array.from({ length: 8 }, (_, i) => user({
+    id: `f${i}`, email: `f${i}@example.com`, usageCount: 48, dailyGenerationLimit: 50,
+  }));
+  const f = findingById(baseInput({ users, rejectionRows: [] }), 'revenue.upgrade-candidates');
+  assert.ok(f, 'the degraded branch must still report');
+  assert.equal(f.confidence, 'low');
+  assert.ok(f.evidence.some((e) => e.label === 'Cap refusals recorded' && e.value === 'none yet'));
+  assert.match(f.detail, /PARTIAL view/);
+});
+
+test('anonymous cap refusals are reported as a gap rather than absorbed', () => {
+  const users = Array.from({ length: 8 }, (_, i) => user({ id: `f${i}`, email: `f${i}@example.com` }));
+  const rejectionRows = [
+    rejectionRow({ at: NOW - 1 * DAY, email: 'f2@example.com' }),
+    rejectionRow({ at: NOW - 2 * DAY, email: 'f2@example.com' }),
+    rejectionRow({ at: NOW - 1 * DAY }),
+    rejectionRow({ at: NOW - 1 * DAY, email: 'unknown' }),
+  ];
+  const f = findingById(baseInput({ users, rejectionRows }), 'revenue.upgrade-candidates');
+  assert.ok(f);
+  const gap = f.evidence.find((e) => e.label === 'Unattributed refusals');
+  assert.ok(gap, 'the unattributed share must be stated');
+  assert.equal(gap.value, '2 of 4');
+});
+
+test('a refusal of another kind never counts as a cap hit', () => {
+  const users = Array.from({ length: 8 }, (_, i) => user({ id: `f${i}`, email: `f${i}@example.com` }));
+  const rejectionRows = [
+    rejectionRow({ at: NOW - 1 * DAY, kind: 'rate_limit', code: 'gen', email: 'f4@example.com' }),
+    rejectionRow({ at: NOW - 2 * DAY, kind: 'unstageable', code: 'EXTERIOR', email: 'f4@example.com' }),
+  ];
+  const f = findingById(baseInput({ users, rejectionRows }), 'revenue.upgrade-candidates');
+  // Nobody is at the cap and nobody renders heavily, so with only non-cap
+  // refusals there is nothing to report at all.
+  assert.equal(f, null);
+});

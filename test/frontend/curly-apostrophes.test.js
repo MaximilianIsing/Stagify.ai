@@ -134,15 +134,20 @@ const LEGAL = /(terms|privacy)\.html$|[\\/]legal[\\/]/i;
 
 /**
  * Strip everything that is not English prose out of an HTML source: comments
- * (which quote code — `role="img"` — and would read as prose), script/style
+ * (which quote code — `role="img"` — and would read as prose), script/style/pre/code
  * bodies, and the tags themselves, whose quotes are attribute delimiters.
  * Newlines are preserved so reported line numbers stay true.
+ *
+ * `pre` and `code` are blanked for the same reason `script` is: they hold code, and
+ * code with curly quotes in it does not run. developers.html publishes a copy-pasteable
+ * curl command and a JSON error body, both of which MUST use straight quotes — asking
+ * for typographic punctuation there would be asking for a broken example.
  */
 function htmlProse(src) {
   const blank = (m) => m.replace(/[^\n]/g, ' ');
   return src
     .replace(/<!--[\s\S]*?-->/g, blank)
-    .replace(/<(script|style)\b[\s\S]*?<\/\1>/gi, blank)
+    .replace(/<(script|style|pre|code)\b[\s\S]*?<\/\1>/gi, blank)
     .replace(/<[^>]*>/g, blank);
 }
 
@@ -151,8 +156,13 @@ test('English prose uses typographic double quotes', () => {
 
   const pack = JSON.parse(fs.readFileSync(path.join(PUBLIC, 'languages', 'english.json'), 'utf8'));
   for (const value of stringValues(pack)) {
-    // Tags first: `<a href="x">` inside a copy value is markup, not punctuation.
-    if (value.replace(/<[^>]*>/g, '').includes('"')) bad.push(`english.json: ${value.slice(0, 120)}`);
+    // <code> CONTENT first, then the remaining tags. A copy value may quote a JSON
+    // response body — `{ "error": "…" }` in developers.errors.lede — and a curly quote
+    // there would be a sample that does not parse. The same exemption the HTML scan
+    // below already gives <pre>/<code>, for the same reason.
+    // Tags second: `<a href="x">` inside a copy value is markup, not punctuation.
+    const prose = value.replace(/<code>[\s\S]*?<\/code>/g, '').replace(/<[^>]*>/g, '');
+    if (prose.includes('"')) bad.push(`english.json: ${value.slice(0, 120)}`);
   }
 
   for (const file of walk(PUBLIC, f => f.endsWith('.html'))) {

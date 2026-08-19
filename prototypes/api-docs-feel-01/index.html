@@ -1,0 +1,821 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>developers.html — docs feel: 8 directions</title>
+<style>
+/* ── Brand tokens, lifted from public/styles/styles.css :root ─────────────── */
+:root{
+  --brand:#2563eb; --brand-strong:#1d4ed8; --brand-deep:#1e3a8a; --brand-soft:#60a5fa;
+  --brand-pale:#93c5fd; --brand-tint:#dbeafe; --brand-wash:#eff6ff;
+  --primary:#1e40af; --primary-light:#3b82f6;
+  --fg:#1f2937; --text-heading:#111827; --muted:#6b7280; --slate:#64748b; --slate-deep:#475569;
+  --border:#e5e7eb; --bg-elevated:#fff; --site-bg:#ddeeff;
+  --ink:#0f172a; --code-bg:#0f172a; --code-fg:#e2e8f0;
+  --ok:#15803d; --warn:#d97706; --danger:#b91c1c;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:var(--sans);color:var(--fg);background:#f1f5f9;-webkit-font-smoothing:antialiased}
+a{color:var(--brand)}
+code,pre{font-family:var(--mono)}
+
+/* ── Explorer chrome ──────────────────────────────────────────────────────── */
+.pg-head{background:var(--ink);color:#fff;padding:34px 28px 30px}
+.pg-head h1{margin:0 0 6px;font-size:24px;letter-spacing:-.3px}
+.pg-head .req{margin:14px 0 0;padding:14px 16px;border-left:3px solid var(--brand-soft);
+  background:rgba(255,255,255,.06);border-radius:0 8px 8px 0;font-size:15px;line-height:1.6;color:#cbd5e1}
+.pg-head .meta{margin-top:12px;font-size:12.5px;color:#94a3b8}
+.pg-head .assume{margin-top:10px;font-size:12.5px;color:#94a3b8}
+.pg-head .assume b{color:#cbd5e1;font-weight:600}
+
+.jump{position:sticky;top:0;z-index:60;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--border);padding:9px 14px;display:flex;gap:6px;overflow-x:auto;white-space:nowrap}
+.jump a{font-size:12.5px;text-decoration:none;color:var(--slate-deep);padding:6px 10px;border-radius:999px;
+  border:1px solid transparent}
+.jump a:hover{background:var(--brand-wash);border-color:var(--brand-tint);color:var(--brand-strong)}
+.jump .lead{font-size:12.5px;color:var(--muted);padding:6px 4px 6px 0;font-weight:600}
+
+.wrap{max-width:1240px;margin:0 auto;padding:26px 16px 90px}
+.variant{margin:30px 0 0;background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;
+  box-shadow:0 1px 2px rgba(15,23,42,.05)}
+.v-head{padding:20px 22px 18px;border-bottom:1px solid var(--border)}
+.v-title{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.v-num{font-family:var(--mono);font-size:12px;font-weight:700;color:#fff;background:var(--brand-deep);
+  padding:3px 8px;border-radius:6px}
+.v-title h2{margin:0;font-size:19px;color:var(--text-heading);letter-spacing:-.2px}
+.v-why{margin:11px 0 0;font-size:14.5px;line-height:1.65;color:var(--slate-deep);max-width:78ch}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:13px}
+.chip{font-size:12px;padding:4px 9px;border-radius:999px;border:1px solid;line-height:1.4}
+.chip.pro{background:#f0fdf4;border-color:#bbf7d0;color:#166534}
+.chip.con{background:#fef2f2;border-color:#fecaca;color:#991b1b}
+.badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.badge{font-size:11.5px;padding:4px 9px;border-radius:6px;background:#f8fafc;border:1px solid var(--border);
+  color:var(--slate-deep)}
+.badge b{color:var(--ink);font-weight:700;letter-spacing:.02em}
+.badge.stat{background:var(--brand-wash);border-color:var(--brand-tint);color:var(--brand-strong)}
+.canvas{background:#f8fafc;padding:18px;border-top:1px solid var(--border)}
+.frame{background:#fff;border:1px solid #cbd5e1;border-radius:10px;overflow:hidden;
+  box-shadow:0 8px 24px -12px rgba(15,23,42,.28)}
+.frame-bar{background:#e2e8f0;border-bottom:1px solid #cbd5e1;padding:6px 10px;display:flex;align-items:center;gap:6px}
+.dot{width:9px;height:9px;border-radius:50%;background:#cbd5e1}
+.frame-url{margin-left:8px;font-family:var(--mono);font-size:11px;color:var(--slate);background:#f8fafc;
+  padding:2px 10px;border-radius:999px;border:1px solid #cbd5e1}
+.note{font-size:12.5px;color:var(--muted);margin:10px 2px 0;font-style:italic}
+
+/* ── Shared mock primitives ───────────────────────────────────────────────── */
+.m-topnav{display:flex;align-items:center;gap:18px;padding:10px 16px;border-bottom:1px solid var(--border);
+  background:#fff;font-size:12.5px}
+.m-brand{font-weight:800;color:var(--brand-strong);letter-spacing:-.3px;font-size:14px}
+.m-brand span{color:var(--brand-soft)}
+.m-navlinks{display:flex;gap:14px;color:var(--slate-deep)}
+.m-navlinks .on{color:var(--brand-strong);font-weight:700}
+.m-spacer{margin-left:auto}
+.m-pill{border:1px solid var(--border);border-radius:999px;padding:3px 10px;font-size:11.5px;color:var(--slate-deep)}
+.m-search{border:1px solid var(--border);border-radius:8px;padding:4px 10px;font-size:11.5px;color:var(--muted);
+  background:#f8fafc;min-width:150px;display:flex;justify-content:space-between;gap:10px}
+.m-search kbd{font-family:var(--mono);font-size:10px;border:1px solid var(--border);border-radius:4px;padding:0 4px;background:#fff}
+
+.m-side{width:190px;border-right:1px solid var(--border);padding:14px 10px;background:#fcfdff;flex:none}
+.m-side h5{margin:12px 6px 6px;font-size:10.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+.m-side h5:first-child{margin-top:0}
+.m-side a{display:block;padding:4px 8px;border-radius:6px;font-size:12.5px;color:var(--slate-deep);text-decoration:none}
+.m-side a.on{background:var(--brand-wash);color:var(--brand-strong);font-weight:650}
+
+.m-toc{width:170px;padding:14px 12px;flex:none;border-left:1px solid var(--border)}
+.m-toc h5{margin:0 0 8px;font-size:10.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+.m-toc a{display:block;font-size:12px;color:var(--slate);text-decoration:none;padding:3px 0 3px 9px;
+  border-left:2px solid var(--border)}
+.m-toc a.on{color:var(--brand-strong);border-left-color:var(--brand);font-weight:600}
+
+.m-body{flex:1;padding:18px 22px;min-width:0}
+.m-crumb{font-size:11.5px;color:var(--muted);margin-bottom:8px}
+.m-h1{font-size:25px;margin:0 0 8px;color:var(--text-heading);letter-spacing:-.4px}
+.m-lede{font-size:13.5px;line-height:1.65;color:var(--slate-deep);margin:0 0 16px}
+.m-h2{font-size:16px;margin:22px 0 8px;color:var(--text-heading);letter-spacing:-.1px}
+.m-p{font-size:13px;line-height:1.7;color:var(--fg);margin:0 0 11px}
+.m-code{background:var(--code-bg);color:var(--code-fg);border-radius:8px;padding:12px 14px;font-size:11.5px;
+  line-height:1.75;overflow-x:auto;margin:0 0 12px}
+.m-code .k{color:#7dd3fc}.m-code .s{color:#86efac}.m-code .c{color:#64748b}.m-code .f{color:#fca5a5}
+.m-tbl{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:12px}
+.m-tbl th{text-align:left;padding:7px 8px;border-bottom:1px solid var(--border);color:var(--muted);
+  font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;font-weight:700}
+.m-tbl td{padding:8px;border-bottom:1px solid #f1f5f9;vertical-align:top;line-height:1.55}
+.m-tbl code{background:#f1f5f9;padding:1px 5px;border-radius:4px;font-size:11px;color:var(--brand-deep)}
+.m-meth{font-family:var(--mono);font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:4px;color:#fff}
+.m-meth.post{background:var(--ok)}.m-meth.get{background:var(--brand)}
+.m-req{font-family:var(--mono);font-size:12px;color:var(--ink)}
+.m-callout{border-left:3px solid var(--brand);background:var(--brand-wash);padding:9px 12px;border-radius:0 6px 6px 0;
+  font-size:12px;line-height:1.6;margin:0 0 12px}
+.m-callout.warn{border-left-color:var(--warn);background:#fffbeb}
+.m-tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:0}
+.m-tab{font-size:11.5px;padding:6px 12px;border:1px solid transparent;border-bottom:none;border-radius:6px 6px 0 0;
+  color:var(--muted);cursor:pointer;background:none;font-family:var(--sans)}
+.m-tab.on{background:#fff;border-color:var(--border);color:var(--brand-strong);font-weight:650;
+  box-shadow:0 1px 0 #fff}
+.mono-sm{font-family:var(--mono);font-size:11px}
+.flexrow{display:flex;align-items:stretch}
+.scrollbox{max-height:430px;overflow-y:auto}
+.scrollbox::-webkit-scrollbar{width:8px}
+.scrollbox::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
+
+/* current-state reference strip */
+.current{background:#fff;border:1px dashed #cbd5e1;border-radius:12px;padding:16px 18px;margin-top:22px}
+.current h3{margin:0 0 6px;font-size:14px;color:var(--text-heading)}
+.current p{margin:0;font-size:13px;line-height:1.65;color:var(--slate-deep);max-width:82ch}
+.today{background:
+    radial-gradient(circle at 20% 30%,#c7d8f7 0,transparent 55%),
+    radial-gradient(circle at 80% 60%,#d8ccf5 0,transparent 55%),#dde9fb;
+  padding:16px;border-radius:8px;margin-top:12px}
+.today .card{background:rgba(255,255,255,.9);border:1px solid rgba(148,163,184,.28);border-radius:14px;
+  padding:14px 16px;margin-bottom:10px}
+.today .card:last-child{margin-bottom:0}
+.today h4{margin:0 0 6px;font-size:14px;color:var(--text-heading)}
+.today p{font-size:12px;line-height:1.6;color:var(--fg);margin:0}
+.today .hero{text-align:center;padding:6px 0 14px}
+.today .hero h2{font-size:22px;color:var(--brand-deep);margin:0 0 10px}
+.today .btn{display:inline-block;background:var(--brand);color:#fff;padding:9px 22px;border-radius:12px;
+  font-size:13px;font-weight:700}
+@media(max-width:900px){
+  .m-side,.m-toc{display:none}
+  .flexrow{flex-direction:column}
+}
+</style>
+</head>
+<body>
+
+<header class="pg-head">
+  <h1>developers.html — making it feel like real API documentation</h1>
+  <div class="req"><b>Request:</b> “My issue now is that the page doesn't feel like actual professional documentation. Use the prototype skill to map up multiple ways to make that page feel and look more like real documentation.”</div>
+  <div class="meta">8 directions · generated 2026-08-19 · Stagify.ai · <span class="mono-sm">prototypes/api-docs-feel-01/</span></div>
+  <div class="assume"><b>Diagnosis carried through every variant:</b> the page reads as marketing because it is a stack of translucent rounded cards floating on the site's lavender gradient, over a background video. Real reference docs sit on an opaque, quiet surface with persistent navigation. Every direction below changes the <i>shell</i>, not just the copy.</div>
+  <div class="assume"><b>Content is real:</b> endpoints, enum values, error codes and prices are the live ones from <span class="mono-sm">lib/staging/api-options.js</span> and <span class="mono-sm">credit-packs.js</span>.</div>
+</header>
+
+<nav class="jump">
+  <span class="lead">Jump:</span>
+  <a href="#v1">1 · Sidebar Reference</a>
+  <a href="#v2">2 · Split-Pane</a>
+  <a href="#v3">3 · Spec Sheet</a>
+  <a href="#v4">4 · Try-It Console</a>
+  <a href="#v5">5 · Task Recipes</a>
+  <a href="#v6">6 · Code Spine</a>
+  <a href="#v7">7 · Endpoint Explorer</a>
+  <a href="#v8">8 · Ladder + Drawer</a>
+  <a href="#today">Today</a>
+</nav>
+
+<div class="wrap">
+
+<!-- ══ 1 ══════════════════════════════════════════════════════════════════ -->
+<section class="variant" id="v1">
+  <div class="v-head">
+    <div class="v-title"><span class="v-num">01</span><h2>Sidebar Reference</h2></div>
+    <p class="v-why">The safe, boring, correct answer — and the one a developer's eye actually recognises as documentation. Persistent left nav, breadcrumb, an opaque white canvas that kills the gradient, and a right-hand “On this page” rail. Pick this if the goal is credibility rather than distinctiveness: it looks like every docs site your customers already trust, which is the entire point. The cost is that the page stops belonging to the marketing site visually, so the handoff from the homepage feels like leaving for a different product.</p>
+    <div class="chips">
+      <span class="chip pro">+ Instantly legible as docs</span>
+      <span class="chip pro">+ Scales to 20 more pages</span>
+      <span class="chip pro">+ Deep-linkable sections</span>
+      <span class="chip pro">+ Zero novel interaction to learn</span>
+      <span class="chip con">− Visually divorced from the site</span>
+      <span class="chip con">− Sidebar is dead weight at 4 sections</span>
+    </div>
+    <div class="badges">
+      <span class="badge"><b>MEDIA</b> none</span>
+      <span class="badge"><b>JS</b> ~20 lines, scrollspy only</span>
+      <span class="badge"><b>MOBILE</b> both rails collapse to a top “Contents” drawer</span>
+      <span class="badge"><b>A11Y</b> nav landmark + skip link; easy</span>
+      <span class="badge"><b>I18N</b> stays English-only; nav labels are prose</span>
+      <span class="badge stat"><b>vs today</b> ~2× scroll depth to reference, but 1 click to any section</span>
+    </div>
+  </div>
+  <div class="canvas">
+    <div class="frame">
+      <div class="frame-bar"><i class="dot"></i><i class="dot"></i><i class="dot"></i><span class="frame-url">stagify.ai/developers.html</span></div>
+      <div class="m-topnav">
+        <span class="m-brand">Stagify<span>.ai</span></span>
+        <span class="m-navlinks"><span>Home</span><span>Staging</span><span>Guides</span><span class="on">API</span></span>
+        <span class="m-spacer"></span>
+        <span class="m-search">Search docs <kbd>⌘K</kbd></span>
+      </div>
+      <div class="flexrow scrollbox">
+        <aside class="m-side">
+          <h5>Getting started</h5>
+          <a href="#" class="on">Introduction</a>
+          <a href="#">Authentication</a>
+          <a href="#">Your first render</a>
+          <a href="#">Credits &amp; pricing</a>
+          <h5>API reference</h5>
+          <a href="#">POST /v1/renders</a>
+          <a href="#">GET /v1/renders/:id</a>
+          <a href="#">GET /v1/options</a>
+          <a href="#">GET /v1/credits</a>
+          <a href="#">GET /v1/me</a>
+          <h5>Concepts</h5>
+          <a href="#">Idempotency</a>
+          <a href="#">Refunds</a>
+          <a href="#">Disclosure labels</a>
+          <a href="#">Rate limits</a>
+        </aside>
+        <main class="m-body">
+          <div class="m-crumb">Docs → API reference → <b style="color:var(--slate-deep)">Introduction</b></div>
+          <h1 class="m-h1">Stagify API</h1>
+          <p class="m-lede">Stage a real-estate photo from your own code. One HTTP call returns one staged image. Prepaid credits at $0.15 an image — no subscription, no minimum, no invoice at the end of the month.</p>
+          <div class="m-callout"><b>Base URL</b> &nbsp;<code class="mono-sm">https://stagify.ai/api/v1</code> &nbsp;·&nbsp; all requests need <code class="mono-sm">Authorization: Bearer stg_live_…</code></div>
+          <h2 class="m-h2">Your first render</h2>
+          <p class="m-p">Create a key on your API keys page, buy a credit pack, then post a photo. The response carries the staged image as a data URL.</p>
+          <pre class="m-code"><span class="c"># one image, one credit</span>
+curl https://stagify.ai/api/v1/renders \
+  -H <span class="s">"Authorization: Bearer $STAGIFY_API_KEY"</span> \
+  -H <span class="s">"Idempotency-Key: $(uuidgen)"</span> \
+  -F <span class="s">"image=@living-room.jpg"</span> \
+  -F <span class="s">"roomType=Living room"</span> \
+  -F <span class="s">"furnitureStyle=modern"</span></pre>
+          <h2 class="m-h2">Rate limits</h2>
+          <p class="m-p">60 renders per 5 minutes per key, and 3 simultaneous renders per key. Over either ceiling you get <code style="background:#f1f5f9;padding:1px 5px;border-radius:4px;font-size:11px">429</code> or <code style="background:#f1f5f9;padding:1px 5px;border-radius:4px;font-size:11px">409 CONCURRENCY_LIMIT</code>.</p>
+        </main>
+        <nav class="m-toc">
+          <h5>On this page</h5>
+          <a href="#" class="on">Your first render</a>
+          <a href="#">Rate limits</a>
+          <a href="#">Idempotency</a>
+          <a href="#">Errors</a>
+          <a href="#">Disclosure</a>
+        </nav>
+      </div>
+    </div>
+    <p class="note">Note the surface: flat white, hairline borders, no rounded floating cards, no gradient. That single change does most of the work.</p>
+  </div>
+</section>
+
+<!-- ══ 2 ══════════════════════════════════════════════════════════════════ -->
+<section class="variant" id="v2">
+  <div class="v-head">
+    <div class="v-title"><span class="v-num">02</span><h2>Split-Pane (prose left, sticky code right)</h2></div>
+    <p class="v-why">The Stripe/Twilio shape: explanation scrolls on the left, a dark code panel sits fixed on the right and swaps its sample as you move between sections. This is the layout that most reads as “serious API company”, and it solves a real problem — the reader never loses the request while reading about a parameter. Choose it if you want the page to feel expensive. The cost is that it demands two columns of genuinely parallel content: any section without a natural code sample leaves a hole in the right rail, and you only have four endpoints to fill it with.</p>
+    <div class="chips">
+      <span class="chip pro">+ Highest “real API docs” signal</span>
+      <span class="chip pro">+ Code always visible while reading prose</span>
+      <span class="chip pro">+ Language tabs have an obvious home</span>
+      <span class="chip con">− Needs paired content for every section</span>
+      <span class="chip con">− Collapses to a plain stack under ~1000px</span>
+    </div>
+    <div class="badges">
+      <span class="badge"><b>MEDIA</b> none</span>
+      <span class="badge"><b>JS</b> ~60 lines: IntersectionObserver + tab state</span>
+      <span class="badge"><b>MOBILE</b> degrades to variant 1; code inlines after each section</span>
+      <span class="badge"><b>A11Y</b> scroll-linked panel needs aria-live care</span>
+      <span class="badge stat"><b>vs today</b> same content, ~40% less vertical scroll on desktop</span>
+    </div>
+  </div>
+  <div class="canvas">
+    <div class="frame">
+      <div class="frame-bar"><i class="dot"></i><i class="dot"></i><i class="dot"></i><span class="frame-url">stagify.ai/developers.html</span></div>
+      <div class="m-topnav">
+        <span class="m-brand">Stagify<span>.ai</span></span>
+        <span class="m-navlinks"><span>Home</span><span>Guides</span><span class="on">API reference</span></span>
+        <span class="m-spacer"></span><span class="m-pill">v1</span>
+      </div>
+      <div class="flexrow" style="min-height:400px">
+        <aside class="m-side" style="width:160px">
+          <h5>Reference</h5>
+          <a href="#" class="on">Create a render</a>
+          <a href="#">Retrieve a render</a>
+          <a href="#">List options</a>
+          <a href="#">Credits</a>
+        </aside>
+        <main class="m-body" style="max-width:none">
+          <h1 class="m-h1" style="font-size:21px">Create a render</h1>
+          <p class="m-p">Stages one photo and returns it. The credit is taken before the model runs and refunded automatically if the render fails, so you only ever pay for an image you received.</p>
+          <table class="m-tbl">
+            <tr><td style="width:38%"><code>image</code><div style="color:var(--muted);font-size:11px;margin-top:2px">file · required</div></td><td>JPEG, PNG or WebP. Up to 25 MB.</td></tr>
+            <tr><td><code>roomType</code><div style="color:var(--muted);font-size:11px;margin-top:2px">enum</div></td><td>One of 8 values. <b>Case-sensitive</b>, and an unknown value is passed to the model verbatim rather than rejected.</td></tr>
+            <tr><td><code>furnitureStyle</code><div style="color:var(--muted);font-size:11px;margin-top:2px">enum</div></td><td>Defaults to <code>standard</code>, which is also what an unrecognised value becomes.</td></tr>
+          </table>
+        </main>
+        <div style="width:330px;flex:none;background:#0f172a;padding:14px 14px 18px" id="v2pane">
+          <div style="display:flex;gap:3px;margin-bottom:10px">
+            <button class="m-tab on v2t" data-l="curl" style="color:#e2e8f0;background:#1e293b;border-color:#334155">cURL</button>
+            <button class="m-tab v2t" data-l="node" style="color:#94a3b8">Node</button>
+            <button class="m-tab v2t" data-l="py" style="color:#94a3b8">Python</button>
+          </div>
+          <div style="font-size:10.5px;color:#64748b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Request</div>
+          <pre class="m-code" style="margin-bottom:12px;font-size:10.5px" id="v2code">curl -X POST https://stagify.ai/api/v1/renders \
+  -H <span class="s">"Authorization: Bearer $KEY"</span> \
+  -F <span class="s">"image=@room.jpg"</span> \
+  -F <span class="s">"roomType=Living room"</span></pre>
+          <div style="font-size:10.5px;color:#64748b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Response</div>
+          <pre class="m-code" style="margin:0;font-size:10.5px">{
+  <span class="k">"id"</span>: <span class="s">"req_8Kd2mQ"</span>,
+  <span class="k">"object"</span>: <span class="s">"render"</span>,
+  <span class="k">"status"</span>: <span class="s">"succeeded"</span>,
+  <span class="k">"image"</span>: <span class="s">"data:image/webp;…"</span>,
+  <span class="k">"credits"</span>: { <span class="k">"charged"</span>: 1 }
+}</pre>
+        </div>
+      </div>
+    </div>
+    <p class="note">Try the language tabs — they are live.</p>
+  </div>
+</section>
+
+<!-- ══ 3 ══════════════════════════════════════════════════════════════════ -->
+<section class="variant" id="v3">
+  <div class="v-head">
+    <div class="v-title"><span class="v-num">03</span><h2>Spec Sheet (austere, no cards at all)</h2></div>
+    <p class="v-why">Delete every box. One column, hairline rules, tight leading, field names in a monospace left gutter — closer to an RFC or a man page than to a website. This is the cheapest direction by far: it is almost entirely subtraction from what you already have, and it fixes the “marketing” feel by removing the exact thing causing it. Pick it if you want the page to feel authoritative without committing to navigation you do not yet need. The risk is that austerity reads as unfinished to a non-technical buyer who lands here from the footer.</p>
+    <div class="chips">
+      <span class="chip pro">+ Cheapest to build — mostly deletion</span>
+      <span class="chip pro">+ Extremely fast to scan</span>
+      <span class="chip pro">+ No new components or JS</span>
+      <span class="chip pro">+ Prints and copy-pastes cleanly</span>
+      <span class="chip con">− Can read as austere or unpolished</span>
+      <span class="chip con">− No wayfinding once it grows</span>
+    </div>
+    <div class="badges">
+      <span class="badge"><b>MEDIA</b> none</span>
+      <span class="badge"><b>JS</b> none</span>
+      <span class="badge"><b>MOBILE</b> best of all eight — it is already one column</span>
+      <span class="badge"><b>A11Y</b> strongest: pure semantic flow, no widgets</span>
+      <span class="badge stat"><b>vs today</b> ~35% shorter page; ~0 new CSS beyond removals</span>
+    </div>
+  </div>
+  <div class="canvas">
+    <div class="frame">
+      <div class="frame-bar"><i class="dot"></i><i class="dot"></i><i class="dot"></i><span class="frame-url">stagify.ai/developers.html</span></div>
+      <div class="m-topnav"><span class="m-brand">Stagify<span>.ai</span></span><span class="m-navlinks"><span>Home</span><span>Guides</span><span>Contact</span></span></div>
+      <div style="padding:26px 30px;max-width:760px;margin:0 auto" class="scrollbox">
+        <div style="font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px">API Reference · v1</div>
+        <h1 style="font-size:26px;margin:0 0 4px;letter-spacing:-.5px;color:var(--ink)">Stagify API</h1>
+        <p style="font-size:13.5px;color:var(--slate-deep);margin:0 0 6px;line-height:1.6">One HTTP call, one staged photo. $0.15 an image, prepaid.</p>
+        <hr style="border:none;border-top:1px solid var(--border);margin:18px 0">
+
+        <div style="font-family:var(--mono);font-size:13px;color:var(--ink);margin-bottom:4px"><span class="m-meth post">POST</span> &nbsp;/api/v1/renders</div>
+        <p style="font-size:12.5px;color:var(--slate-deep);margin:0 0 14px;line-height:1.6">Stage one photo. Charges one credit, refunded on failure.</p>
+
+        <div style="font-size:10.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:8px;font-weight:700">Parameters</div>
+        <div style="display:grid;grid-template-columns:150px 1fr;gap:0 18px;font-size:12.5px;line-height:1.65">
+          <div style="font-family:var(--mono);color:var(--brand-deep);padding:7px 0;border-top:1px solid #f1f5f9">image</div>
+          <div style="padding:7px 0;border-top:1px solid #f1f5f9"><span style="color:var(--muted)">file, required.</span> JPEG, PNG, WebP. ≤ 25 MB. Checked on MIME type, not extension.</div>
+          <div style="font-family:var(--mono);color:var(--brand-deep);padding:7px 0;border-top:1px solid #f1f5f9">roomType</div>
+          <div style="padding:7px 0;border-top:1px solid #f1f5f9"><span style="color:var(--muted)">enum, default <code style="font-size:11px">Living room</code>.</span> Bedroom · Living room · Dining room · Kitchen · Office · Bathroom · Outdoors · Dorm. <b>Case-sensitive; an unknown value is not rejected</b> — it is written into the prompt as free text.</div>
+          <div style="font-family:var(--mono);color:var(--brand-deep);padding:7px 0;border-top:1px solid #f1f5f9">furnitureStyle</div>
+          <div style="padding:7px 0;border-top:1px solid #f1f5f9"><span style="color:var(--muted)">enum, default <code style="font-size:11px">standard</code>.</span> standard · modern · midcentury · scandinavian · luxury · coastal · farmhouse · custom.</div>
+          <div style="font-family:var(--mono);color:var(--brand-deep);padding:7px 0;border-top:1px solid #f1f5f9">stampScale</div>
+          <div style="padding:7px 0;border-top:1px solid #f1f5f9"><span style="color:var(--muted)">number, 0.7–1.6, default 1.</span> Out-of-range values are clamped, not refused.</div>
+        </div>
+        <div style="border-top:1px solid #f1f5f9;margin-top:0"></div>
+        <pre class="m-code" style="margin-top:18px">curl https://stagify.ai/api/v1/renders \
+  -H <span class="s">"Authorization: Bearer $KEY"</span> -F <span class="s">"image=@room.jpg"</span></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 4 ══════════════════════════════════════════════════════════════════ -->
+<section class="variant" id="v4">
+  <div class="v-head">
+    <div class="v-title"><span class="v-num">04</span><h2>Try-It Console (docs as a playground)</h2></div>
+    <p class="v-why">Put a working request builder at the top: pick the enums from real dropdowns, watch the cURL assemble itself, hit Send. This is the only direction that turns your soft-failing enums from a documentation problem into a non-problem — a developer who picks <code class="mono-sm">Living room</code> from a select can never typo it into <code class="mono-sm">Living&nbsp;Room</code> and silently get the fallback prompt. Pick it if adoption matters more than elegance. It is also the most expensive and the only one that needs a spend-free sandbox, or it will burn real credits on curiosity.</p>
+    <div class="chips">
+      <span class="chip pro">+ Eliminates the case-sensitivity trap entirely</span>
+      <span class="chip pro">+ Shortest possible time-to-first-call</span>
+      <span class="chip pro">+ Doubles as living proof the API works</span>
+      <span class="chip con">− Needs a sandbox key or it costs real money</span>
+      <span class="chip con">− By far the most code to build and keep working</span>
+    </div>
+    <div class="badges">
+      <span class="badge"><b>MEDIA</b> a sample room photo, plus a rendered result</span>
+      <span class="badge"><b>JS</b> ~200 lines + a real fetch; the heaviest option</span>
+      <span class="badge"><b>MOBILE</b> form stacks; the console is desktop-first in practice</span>
+      <span class="badge"><b>A11Y</b> a real form — labels and errors must be done properly</span>
+      <span class="badge"><b>SECURITY</b> must never accept a live key in the browser</span>
+      <span class="badge stat"><b>vs today</b> first successful call in ~30s instead of “copy, edit, guess”</span>
+    </div>
+  </div>
+  <div class="canvas">
+    <div class="frame">
+      <div class="frame-bar"><i class="dot"></i><i class="dot"></i><i class="dot"></i><span class="frame-url">stagify.ai/developers.html</span></div>
+      <div class="m-topnav"><span class="m-brand">Stagify<span>.ai</span></span><span class="m-navlinks"><span class="on">API</span><span>Guides</span></span><span class="m-spacer"></span><span class="m-pill">sandbox mode · free</span></div>
+      <div style="padding:18px 20px">
+        <h1 class="m-h1" style="font-size:20px;margin-bottom:4px">Try it</h1>
+        <p class="m-lede" style="margin-bottom:14px">Build a real request. Sandbox renders are watermarked and cost no credits.</p>
+        <div style="display:flex;gap:16px;flex-wrap:wrap">
+          <div style="flex:1;min-width:250px">
+            <label style="font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700;display:block;margin-bottom:4px">roomType</label>
+            <select id="t-room" style="width:100%;padding:7px 9px;border:1px solid var(--border);border-radius:7px;font-size:12.5px;font-family:var(--mono);margin-bottom:11px;background:#fff">
+              <option>Living room</option><option>Bedroom</option><option>Dining room</option><option>Kitchen</option>
+              <option>Office</option><option>Bathroom</option><option>Outdoors</option><option>Dorm</option>
+            </select>
+            <label style="font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700;display:block;margin-bottom:4px">furnitureStyle</label>
+            <select id="t-style" style="width:100%;padding:7px 9px;border:1px solid var(--border);border-radius:7px;font-size:12.5px;font-family:var(--mono);margin-bottom:11px;background:#fff">
+              <option>standard</option><option selected>modern</option><option>midcentury</option><option>scandinavian</option>
+              <option>luxury</option><option>coastal</option><option>farmhouse</option><option>custom</option>
+            </select>
+            <label style="font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700;display:block;margin-bottom:4px">Disclosure label</label>
+            <label style="font-size:12.5px;display:flex;gap:7px;align-items:center;margin-bottom:12px">
+              <input type="checkbox" id="t-stamp" checked> burn “Virtually staged” into the pixels</label>
+            <button id="t-send" style="background:var(--brand);color:#fff;border:none;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--sans)">Send request</button>
+            <div id="t-out" style="margin-top:11px;font-size:12px;color:var(--muted);line-height:1.6"></div>
+          </div>
+          <div style="flex:1.2;min-width:290px">
+            <div style="font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px;font-weight:700">Live request</div>
+            <pre class="m-code" id="t-curl" style="margin:0;font-size:11px"></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="note">Fully interactive — change the selects and the request rebuilds; “Send” returns a mocked response.</p>
+  </div>
+</section>
+
+<!-- ══ 5 ══════════════════════════════════════════════════════════════════ -->
+<section class="variant" id="v5">
+  <div class="v-head">
+    <div class="v-title"><span class="v-num">05</span><h2>Task Recipes (organised by job, not by object)</h2></div>
+    <p class="v-why">Stop describing the API and start describing the jobs: “Stage your first photo”, “Handle a failed render”, “Never get double-charged”, “Go to production”. Each is a numbered walkthrough with the reference folded in where it is needed. Pick this if your buyer is a small real-estate-software team rather than a platform engineer — they do not want a parameter catalogue, they want the four things they will actually do. The tradeoff is real: task docs are worse than reference docs for the reader who already knows what they want and just needs the enum list, so this direction really wants variant 1 or 3 living next to it.</p>
+    <div class="chips">
+      <span class="chip pro">+ Matches how a first-time integrator thinks</span>
+      <span class="chip pro">+ Idempotency/refunds get told as stories, not footnotes</span>
+      <span class="chip pro">+ Each recipe is independently shareable</span>
+      <span class="chip con">− Poor for lookup once you know the API</span>
+      <span class="chip con">− Duplicates reference material across recipes</span>
+    </div>
+    <div class="badges">
+      <span class="badge"><b>MEDIA</b> optional before/after per recipe</span>
+      <span class="badge"><b>JS</b> ~40 lines of accordion</span>
+      <span class="badge"><b>MOBILE</b> excellent — accordions are native to small screens</span>
+      <span class="badge"><b>CONTENT</b> the most writing of any option here</span>
+      <span class="badge stat"><b>vs today</b> 4 entry points instead of 1 linear read</span>
+    </div>
+  </div>
+  <div class="canvas">
+    <div class="frame">
+      <div class="frame-bar"><i class="dot"></i><i class="dot"></i><i class="dot"></i><span class="frame-url">stagify.ai/developers.html</span></div>
+      <div class="m-topnav"><span class="m-brand">Stagify<span>.ai</span></span><span class="m-navlinks"><span class="on">Guides</span><span>Reference</span></span></div>
+      <div style="padding:20px 22px;max-width:800px" class="scrollbox">
+        <h1 class="m-h1" style="font-size:21px">Build with the Stagify API</h1>
+        <p class="m-lede">Four things you will do. Each takes about ten minutes.</p>
+        <div class="acc">
+          <div class="acc-item" style="border:1px solid var(--border);border-radius:9px;margin-bottom:8px;overflow:hidden">
+            <button class="acc-h" style="width:100%;text-align:left;background:#fff;border:none;padding:13px 15px;cursor:pointer;display:flex;gap:11px;align-items:center;font-family:var(--sans)">
+              <span style="background:var(--brand);color:#fff;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:11.5px;font-weight:700;flex:none">1</span>
+              <span style="font-size:14px;font-weight:650;color:var(--text-heading);flex:1">Stage your first photo</span>
+              <span style="font-size:11.5px;color:var(--muted)">8 min</span>
+              <span class="acc-chev" style="color:var(--muted);font-size:12px">▾</span>
+            </button>
+            <div class="acc-b" style="padding:0 15px 15px;display:block">
+              <p class="m-p" style="margin-bottom:9px">Create a key, buy the 20-credit pack, and post a JPEG. You will have a staged image back inside two minutes.</p>
+              <pre class="m-code" style="margin-bottom:0;font-size:11px">curl https://stagify.ai/api/v1/renders \
+  -H <span class="s">"Authorization: Bearer $KEY"</span> \
+  -F <span class="s">"image=@room.jpg"</span> -F <span class="s">"roomType=Living room"</span></pre>
+            </div>
+          </div>
+          <div class="acc-item" style="border:1px solid var(--border);border-radius:9px;margin-bottom:8px;overflow:hidden">
+            <button class="acc-h" style="width:100%;text-align:left;background:#fff;border:none;padding:13px 15px;cursor:pointer;display:flex;gap:11px;align-items:center;font-family:var(--sans)">
+              <span style="background:var(--brand);color:#fff;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:11.5px;font-weight:700;flex:none">2</span>
+              <span style="font-size:14px;font-weight:650;color:var(--text-heading);flex:1">Never get charged twice</span>
+              <span style="font-size:11.5px;color:var(--muted)">6 min</span>
+              <span class="acc-chev" style="color:var(--muted);font-size:12px">▸</span>
+            </button>
+            <div class="acc-b" style="padding:0 15px 15px;display:none">
+              <p class="m-p" style="margin-bottom:0">A render can take minutes and your socket can die after the work completed. Send an <code style="background:#f1f5f9;padding:1px 5px;border-radius:4px;font-size:11px">Idempotency-Key</code> and retry with the same one.</p>
+            </div>
+          </div>
+          <div class="acc-item" style="border:1px solid var(--border);border-radius:9px;margin-bottom:8px;overflow:hidden">
+            <button class="acc-h" style="width:100%;text-align:left;background:#fff;border:none;padding:13px 15px;cursor:pointer;display:flex;gap:11px;align-items:center;font-family:var(--sans)">
+              <span style="background:var(--brand);color:#fff;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:11.5px;font-weight:700;flex:none">3</span>
+              <span style="font-size:14px;font-weight:650;color:var(--text-heading);flex:1">Handle failures and refunds</span>
+              <span style="font-size:11.5px;color:var(--muted)">5 min</span>
+              <span class="acc-chev" style="color:var(--muted);font-size:12px">▸</span>
+            </button>
+            <div class="acc-b" style="padding:0 15px 15px;display:none">
+              <p class="m-p" style="margin-bottom:0">Every failure refunds the credit automatically. Branch on <code style="background:#f1f5f9;padding:1px 5px;border-radius:4px;font-size:11px">code</code>, never the message.</p>
+            </div>
+          </div>
+          <div class="acc-item" style="border:1px solid var(--border);border-radius:9px;overflow:hidden">
+            <button class="acc-h" style="width:100%;text-align:left;background:#fff;border:none;padding:13px 15px;cursor:pointer;display:flex;gap:11px;align-items:center;font-family:var(--sans)">
+              <span style="background:var(--brand);color:#fff;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:11.5px;font-weight:700;flex:none">4</span>
+              <span style="font-size:14px;font-weight:650;color:var(--text-heading);flex:1">Go to production</span>
+              <span style="font-size:11.5px;color:var(--muted)">9 min</span>
+              <span class="acc-chev" style="color:var(--muted);font-size:12px">▸</span>
+            </button>
+            <div class="acc-b" style="padding:0 15px 15px;display:none">
+              <p class="m-p" style="margin-bottom:0">Rate limits, concurrency, key rotation, and the MLS disclosure rules you are agreeing to.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="note">Accordions are live.</p>
+  </div>
+</section>
+
+<!-- ══ 6 ══════════════════════════════════════════════════════════════════ -->
+<section class="variant" id="v6">
+  <div class="v-head">
+    <div class="v-title"><span class="v-num">06</span><h2>Code Spine — the unconventional swing</h2></div>
+    <p class="v-why">Invert the hierarchy. One annotated request runs down the centre of a dark page as the spine of the whole document, and the prose lives in the margin as numbered annotations hanging off individual lines. Literate programming, applied to an HTTP call. Nobody else's API docs look like this, which is precisely the argument for and against it: it is genuinely memorable and it makes the “one call, one image” story visceral, but it only works because your API is <i>one endpoint</i>, and it will fight you the moment there is a fifth. Propose it knowing it is a swing.</p>
+    <div class="chips">
+      <span class="chip pro">+ Nothing else on the web looks like it</span>
+      <span class="chip pro">+ Perfectly suits a single-call API</span>
+      <span class="chip pro">+ Dark surface is maximally “not marketing”</span>
+      <span class="chip con">− Breaks down past a handful of endpoints</span>
+      <span class="chip con">− Margin annotations are hard on mobile and on screen readers</span>
+    </div>
+    <div class="badges">
+      <span class="badge"><b>MEDIA</b> none</span>
+      <span class="badge"><b>JS</b> ~80 lines: line↔annotation linking and hover sync</span>
+      <span class="badge"><b>MOBILE</b> the weakest — annotations must reflow inline, losing the concept</span>
+      <span class="badge"><b>A11Y</b> hardest: annotation order must make sense linearised</span>
+      <span class="badge"><b>THEME</b> dark-only; needs its own palette outside the site tokens</span>
+      <span class="badge stat"><b>vs today</b> one screen instead of six; highest risk</span>
+    </div>
+  </div>
+  <div class="canvas">
+    <div class="frame" style="border-color:#334155">
+      <div class="frame-bar" style="background:#1e293b;border-color:#334155"><i class="dot" style="background:#475569"></i><i class="dot" style="background:#475569"></i><i class="dot" style="background:#475569"></i><span class="frame-url" style="background:#0f172a;border-color:#334155;color:#94a3b8">stagify.ai/developers.html</span></div>
+      <div style="background:#0b1120;padding:22px 20px;color:#cbd5e1">
+        <div style="font-family:var(--mono);font-size:10.5px;color:#64748b;letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px">Stagify API · one call, one image</div>
+        <h1 style="font-family:var(--mono);font-size:19px;color:#e2e8f0;margin:0 0 18px;font-weight:600">POST /api/v1/renders</h1>
+        <div style="display:flex;gap:18px;flex-wrap:wrap">
+          <pre style="flex:1;min-width:280px;margin:0;font-family:var(--mono);font-size:12px;line-height:2.1;color:#e2e8f0">curl https://stagify.ai/api/v1/renders \
+  -H <span style="color:#86efac">"Authorization: Bearer $KEY"</span> <span class="ann" data-n="1">①</span>
+  -H <span style="color:#86efac">"Idempotency-Key: $(uuidgen)"</span> <span class="ann" data-n="2">②</span>
+  -F <span style="color:#86efac">"image=@living-room.jpg"</span> <span class="ann" data-n="3">③</span>
+  -F <span style="color:#86efac">"roomType=Living room"</span> <span class="ann" data-n="4">④</span>
+  -F <span style="color:#86efac">"labelVirtuallyStaged=true"</span> <span class="ann" data-n="5">⑤</span></pre>
+          <div style="width:290px;flex:none;font-size:12px;line-height:1.65">
+            <div class="anno" data-n="1" style="padding:8px 11px;border-left:2px solid #334155;margin-bottom:7px"><b style="color:#93c5fd">① The key</b><br><span style="color:#94a3b8">Header only, never a query string. A stolen key costs at most your remaining balance.</span></div>
+            <div class="anno" data-n="2" style="padding:8px 11px;border-left:2px solid #334155;margin-bottom:7px"><b style="color:#93c5fd">② Idempotency</b><br><span style="color:#94a3b8">Retry with the <i>same</i> key. This is what guarantees you are never charged twice.</span></div>
+            <div class="anno" data-n="3" style="padding:8px 11px;border-left:2px solid #334155;margin-bottom:7px"><b style="color:#93c5fd">③ The photo</b><br><span style="color:#94a3b8">JPEG, PNG or WebP, up to 25 MB. MIME type is what's checked.</span></div>
+            <div class="anno" data-n="4" style="padding:8px 11px;border-left:2px solid #334155;margin-bottom:7px"><b style="color:#93c5fd">④ Case matters</b><br><span style="color:#94a3b8">Eight values. <code style="color:#fca5a5">Living&nbsp;Room</code> is not <code style="color:#86efac">Living&nbsp;room</code> — the wrong one isn't rejected, it's pasted into the prompt.</span></div>
+            <div class="anno" data-n="5" style="padding:8px 11px;border-left:2px solid #334155"><b style="color:#93c5fd">⑤ Disclosure</b><br><span style="color:#94a3b8">Burns the MLS/NAR label into the pixels. If it can't be applied the image is withheld and refunded.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="note">Hover a ① marker or an annotation — they highlight each other.</p>
+  </div>
+</section>
+
+<!-- ══ 7 ══════════════════════════════════════════════════════════════════ -->
+<section class="variant" id="v7">
+  <div class="v-head">
+    <div class="v-title"><span class="v-num">07</span><h2>Endpoint Explorer (OpenAPI-shaped)</h2></div>
+    <p class="v-why">Every endpoint is a collapsed row — method badge, path, one-line summary — and expands in place to parameters, responses and a sample. It looks auto-generated, which is a compliment in this context: it signals a spec exists behind the page. Pick it if you plan to publish an OpenAPI document, because then this page becomes a rendering of the spec rather than prose that can drift from it. The honest downside is that generated-looking docs are also generated-<i>feeling</i> — there is nowhere natural to explain <i>why</i> credits are refunded or why the disclosure cannot be switched off.</p>
+    <div class="chips">
+      <span class="chip pro">+ Whole API visible in one screen</span>
+      <span class="chip pro">+ Natural home for a real OpenAPI spec</span>
+      <span class="chip pro">+ Adding an endpoint is adding a row</span>
+      <span class="chip con">− No room for the reasoning that makes your API trustworthy</span>
+      <span class="chip con">− Reads as impersonal / boilerplate</span>
+    </div>
+    <div class="badges">
+      <span class="badge"><b>MEDIA</b> none</span>
+      <span class="badge"><b>JS</b> ~50 lines of disclosure; or generate from a spec at build time</span>
+      <span class="badge"><b>MOBILE</b> good — rows collapse naturally</span>
+      <span class="badge"><b>MAINT</b> best long-term if the spec becomes the source of truth</span>
+      <span class="badge stat"><b>vs today</b> 5 endpoints on one screen vs. scattered across 6 sections</span>
+    </div>
+  </div>
+  <div class="canvas">
+    <div class="frame">
+      <div class="frame-bar"><i class="dot"></i><i class="dot"></i><i class="dot"></i><span class="frame-url">stagify.ai/developers.html</span></div>
+      <div class="m-topnav"><span class="m-brand">Stagify<span>.ai</span></span><span class="m-navlinks"><span class="on">API</span></span><span class="m-spacer"></span><span class="m-pill mono-sm">openapi 3.1 ↓</span></div>
+      <div style="padding:18px 20px" class="scrollbox">
+        <h1 class="m-h1" style="font-size:20px;margin-bottom:3px">Endpoints</h1>
+        <p class="m-lede" style="margin-bottom:14px">Base URL <code style="background:#f1f5f9;padding:1px 6px;border-radius:4px;font-size:11.5px">https://stagify.ai/api/v1</code></p>
+        <div class="ep" style="border:1px solid var(--border);border-radius:8px;margin-bottom:7px;overflow:hidden">
+          <button class="ep-h" style="width:100%;display:flex;gap:11px;align-items:center;padding:10px 13px;background:#fff;border:none;cursor:pointer;text-align:left;font-family:var(--sans)">
+            <span class="m-meth post">POST</span><span class="m-req" style="flex:1">/renders</span>
+            <span style="font-size:11.5px;color:var(--muted)">Stage one photo</span><span style="color:var(--muted);font-size:11px">▾</span>
+          </button>
+          <div class="ep-b" style="display:block;padding:0 13px 13px;border-top:1px solid #f1f5f9">
+            <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:11px">
+              <div style="flex:1;min-width:230px">
+                <div style="font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;margin-bottom:6px">Parameters</div>
+                <table class="m-tbl" style="margin:0"><tr><td style="width:42%"><code>image</code></td><td>file · <b>required</b></td></tr>
+                <tr><td><code>roomType</code></td><td>enum · 8 values</td></tr>
+                <tr><td><code>furnitureStyle</code></td><td>enum · 8 values</td></tr>
+                <tr><td><code>variations</code></td><td>integer · only <code>1</code></td></tr></table>
+              </div>
+              <div style="flex:1;min-width:230px">
+                <div style="font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;margin-bottom:6px">Responses</div>
+                <table class="m-tbl" style="margin:0">
+                <tr><td style="width:24%"><b style="color:var(--ok)">200</b></td><td>The staged image</td></tr>
+                <tr><td><b style="color:var(--warn)">402</b></td><td><code>INSUFFICIENT_CREDITS</code></td></tr>
+                <tr><td><b style="color:var(--warn)">409</b></td><td><code>REQUEST_IN_FLIGHT</code></td></tr>
+                <tr><td><b style="color:var(--danger)">500</b></td><td><code>RENDER_FAILED</code> · refunded</td></tr></table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="ep" style="border:1px solid var(--border);border-radius:8px;margin-bottom:7px;overflow:hidden">
+          <button class="ep-h" style="width:100%;display:flex;gap:11px;align-items:center;padding:10px 13px;background:#fff;border:none;cursor:pointer;text-align:left;font-family:var(--sans)">
+            <span class="m-meth get">GET</span><span class="m-req" style="flex:1">/renders/{id}</span>
+            <span style="font-size:11.5px;color:var(--muted)">Status of one render</span><span style="color:var(--muted);font-size:11px">▸</span>
+          </button>
+          <div class="ep-b" style="display:none;padding:0 13px 13px;border-top:1px solid #f1f5f9"><p class="m-p" style="margin:11px 0 0">Owner-scoped. A stranger's id and a nonexistent id both answer 404.</p></div>
+        </div>
+        <div class="ep" style="border:1px solid var(--border);border-radius:8px;margin-bottom:7px;overflow:hidden">
+          <button class="ep-h" style="width:100%;display:flex;gap:11px;align-items:center;padding:10px 13px;background:#fff;border:none;cursor:pointer;text-align:left;font-family:var(--sans)">
+            <span class="m-meth get">GET</span><span class="m-req" style="flex:1">/options</span>
+            <span style="font-size:11.5px;color:#166534;background:#f0fdf4;border:1px solid #bbf7d0;padding:1px 7px;border-radius:999px">no key required</span><span style="color:var(--muted);font-size:11px">▸</span>
+          </button>
+          <div class="ep-b" style="display:none;padding:0 13px 13px;border-top:1px solid #f1f5f9"><p class="m-p" style="margin:11px 0 0">Every accepted enum value, so a client can build its own dropdowns.</p></div>
+        </div>
+        <div class="ep" style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
+          <button class="ep-h" style="width:100%;display:flex;gap:11px;align-items:center;padding:10px 13px;background:#fff;border:none;cursor:pointer;text-align:left;font-family:var(--sans)">
+            <span class="m-meth get">GET</span><span class="m-req" style="flex:1">/credits</span>
+            <span style="font-size:11.5px;color:var(--muted)">Balance and lifetime totals</span><span style="color:var(--muted);font-size:11px">▸</span>
+          </button>
+          <div class="ep-b" style="display:none;padding:0 13px 13px;border-top:1px solid #f1f5f9"><p class="m-p" style="margin:11px 0 0">Also on every response as <code style="background:#f1f5f9;padding:1px 5px;border-radius:4px;font-size:11px">X-Stagify-Credits-Remaining</code>.</p></div>
+        </div>
+      </div>
+    </div>
+    <p class="note">Rows expand — click any of them.</p>
+  </div>
+</section>
+
+<!-- ══ 8 ══════════════════════════════════════════════════════════════════ -->
+<section class="variant" id="v8">
+  <div class="v-head">
+    <div class="v-title"><span class="v-num">08</span><h2>Ladder + Reference Drawer</h2></div>
+    <p class="v-why">Keep one loud job above the fold — a three-rung ladder from “no account” to “first staged image”, with copy buttons and a visible progress state — and push the entire reference into a slide-over drawer opened from a persistent “API reference” button. It is the only direction that treats the two audiences separately instead of averaging them: the evaluator gets a landing page that converts, the integrator gets a reference that never makes them scroll past marketing. The cost is that reference material in a drawer is not linkable or indexable unless you do extra work, which matters for a page you want ranking on “virtual staging API”.</p>
+    <div class="chips">
+      <span class="chip pro">+ Serves evaluator and integrator without compromise</span>
+      <span class="chip pro">+ Reference is one click from anywhere on the page</span>
+      <span class="chip pro">+ Keeps the site's visual identity intact</span>
+      <span class="chip con">− Drawer content is weak for SEO and deep links</span>
+      <span class="chip con">− Two shells to maintain instead of one</span>
+    </div>
+    <div class="badges">
+      <span class="badge"><b>MEDIA</b> optional before/after in rung 3</span>
+      <span class="badge"><b>JS</b> ~70 lines: drawer, focus trap, copy buttons</span>
+      <span class="badge"><b>MOBILE</b> drawer goes full-screen; ladder stacks well</span>
+      <span class="badge"><b>SEO</b> weakest — reference must still render in the DOM to be indexed</span>
+      <span class="badge"><b>A11Y</b> drawer needs a proper focus trap and Escape</span>
+      <span class="badge stat"><b>vs today</b> above-the-fold does one job instead of four</span>
+    </div>
+  </div>
+  <div class="canvas">
+    <div class="frame">
+      <div class="frame-bar"><i class="dot"></i><i class="dot"></i><i class="dot"></i><span class="frame-url">stagify.ai/developers.html</span></div>
+      <div class="m-topnav"><span class="m-brand">Stagify<span>.ai</span></span><span class="m-navlinks"><span>Home</span><span>Guides</span></span><span class="m-spacer"></span>
+        <button id="v8open" style="background:var(--ink);color:#fff;border:none;padding:5px 12px;border-radius:7px;font-size:11.5px;font-weight:650;cursor:pointer;font-family:var(--sans)">API reference →</button></div>
+      <div style="position:relative;overflow:hidden">
+        <div style="padding:22px;text-align:center;background:linear-gradient(#fff,#f8fafc)">
+          <h1 class="m-h1" style="font-size:22px;margin-bottom:5px">From nothing to a staged photo in 3 steps</h1>
+          <p class="m-lede" style="margin:0 auto 18px;max-width:52ch">$0.15 an image, prepaid. No subscription, no minimum.</p>
+          <div style="display:flex;gap:11px;justify-content:center;flex-wrap:wrap;text-align:left">
+            <div style="flex:1;min-width:180px;max-width:230px;border:1px solid var(--border);border-radius:10px;padding:13px;background:#fff">
+              <div style="width:22px;height:22px;border-radius:50%;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:11.5px;font-weight:700;margin-bottom:8px">1</div>
+              <div style="font-size:13px;font-weight:650;color:var(--text-heading);margin-bottom:4px">Create a key</div>
+              <div style="font-size:11.5px;color:var(--slate-deep);line-height:1.55">Shown once. Store it server-side.</div>
+            </div>
+            <div style="flex:1;min-width:180px;max-width:230px;border:1px solid var(--border);border-radius:10px;padding:13px;background:#fff">
+              <div style="width:22px;height:22px;border-radius:50%;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:11.5px;font-weight:700;margin-bottom:8px">2</div>
+              <div style="font-size:13px;font-weight:650;color:var(--text-heading);margin-bottom:4px">Buy 20 credits</div>
+              <div style="font-size:11.5px;color:var(--slate-deep);line-height:1.55">$3.00. Twenty images. No expiry.</div>
+            </div>
+            <div style="flex:1;min-width:180px;max-width:230px;border:2px solid var(--brand);border-radius:10px;padding:13px;background:var(--brand-wash)">
+              <div style="width:22px;height:22px;border-radius:50%;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:11.5px;font-weight:700;margin-bottom:8px">3</div>
+              <div style="font-size:13px;font-weight:650;color:var(--text-heading);margin-bottom:4px">Send the request</div>
+              <div style="font-size:11.5px;color:var(--slate-deep);line-height:1.55">One call. One image back.</div>
+            </div>
+          </div>
+          <pre class="m-code" style="text-align:left;margin:16px auto 0;max-width:520px;position:relative;font-size:11px">curl https://stagify.ai/api/v1/renders \
+  -H <span class="s">"Authorization: Bearer $KEY"</span> \
+  -F <span class="s">"image=@room.jpg"</span> -F <span class="s">"roomType=Living room"</span><button id="v8copy" style="position:absolute;top:9px;right:9px;background:#334155;color:#cbd5e1;border:none;border-radius:5px;padding:3px 9px;font-size:10.5px;cursor:pointer;font-family:var(--sans)">Copy</button></pre>
+        </div>
+        <div id="v8drawer" style="position:absolute;inset:0 0 0 32%;background:#fff;border-left:1px solid var(--border);box-shadow:-14px 0 34px -18px rgba(15,23,42,.45);transform:translateX(101%);transition:transform .28s cubic-bezier(.4,0,.2,1);overflow-y:auto">
+          <div style="display:flex;align-items:center;padding:11px 14px;border-bottom:1px solid var(--border);position:sticky;top:0;background:#fff">
+            <b style="font-size:13.5px;color:var(--text-heading);flex:1">API reference</b>
+            <button id="v8close" style="background:none;border:1px solid var(--border);border-radius:6px;width:24px;height:24px;cursor:pointer;color:var(--muted)">✕</button>
+          </div>
+          <div style="padding:13px 15px">
+            <div style="font-family:var(--mono);font-size:12px;margin-bottom:9px"><span class="m-meth post">POST</span> /api/v1/renders</div>
+            <table class="m-tbl">
+              <tr><td style="width:44%"><code>image</code></td><td>file · required</td></tr>
+              <tr><td><code>roomType</code></td><td>8 values · case-sensitive</td></tr>
+              <tr><td><code>furnitureStyle</code></td><td>8 values · lowercase</td></tr>
+              <tr><td><code>stampScale</code></td><td>0.7–1.6 · clamped</td></tr>
+            </table>
+            <div class="m-callout" style="margin-top:6px">Every response carries <code class="mono-sm">X-Stagify-Credits-Remaining</code>.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="note">Click <b>API reference →</b> in the mock nav to slide the drawer open.</p>
+  </div>
+</section>
+
+<!-- ══ TODAY ══════════════════════════════════════════════════════════════ -->
+<section class="current" id="today">
+  <h3>For comparison — the page today</h3>
+  <p>Translucent rounded cards on the site's lavender radial gradient, over a background video, with a centred hero and a big CTA button. Every individual element is fine; together they say “landing page”. Note that all eight directions above start by removing the gradient behind the content and the card-per-section rhythm — that is the shared root cause, and the cheapest possible fix (variant 3) is almost entirely subtraction.</p>
+  <div class="today">
+    <div class="hero"><h2>Stagify API documentation</h2><span class="btn">Your API dashboard</span></div>
+    <div class="card"><h4>Quickstart</h4><p>One HTTP call, one staged photo. Prepaid credits at <b>$0.15 an image</b>. No subscription, no minimum, and no bill that can run away from you.</p></div>
+    <div class="card"><h4>Request parameters</h4><p>POST /api/v1/renders, sent as multipart/form-data…</p></div>
+    <div class="card"><h4>Errors</h4><p>Every failure answers { "error": "…", "code": "…" }…</p></div>
+  </div>
+</section>
+
+</div>
+
+<script>
+/* ── v2: language tabs ─────────────────────────────────────────────────── */
+var V2 = {
+  curl: 'curl -X POST https://stagify.ai/api/v1/renders \\\n  -H <span class="s">"Authorization: Bearer $KEY"</span> \\\n  -F <span class="s">"image=@room.jpg"</span> \\\n  -F <span class="s">"roomType=Living room"</span>',
+  node: 'const fd = <span class="k">new</span> FormData();\nfd.append(<span class="s">"image"</span>, file);\nfd.append(<span class="s">"roomType"</span>, <span class="s">"Living room"</span>);\n\n<span class="k">await</span> fetch(url, {\n  method: <span class="s">"POST"</span>,\n  headers: { Authorization: `Bearer ${key}` },\n  body: fd\n});',
+  py: '<span class="k">import</span> requests\n\nrequests.post(\n  <span class="s">"https://stagify.ai/api/v1/renders"</span>,\n  headers={<span class="s">"Authorization"</span>: <span class="s">f"Bearer {key}"</span>},\n  files={<span class="s">"image"</span>: <span class="k">open</span>(<span class="s">"room.jpg"</span>, <span class="s">"rb"</span>)},\n  data={<span class="s">"roomType"</span>: <span class="s">"Living room"</span>},\n)'
+};
+document.querySelectorAll('.v2t').forEach(function(b){
+  b.addEventListener('click', function(){
+    document.querySelectorAll('.v2t').forEach(function(x){
+      x.classList.remove('on'); x.style.color='#94a3b8'; x.style.background='none'; x.style.borderColor='transparent';
+    });
+    b.classList.add('on'); b.style.color='#e2e8f0'; b.style.background='#1e293b'; b.style.borderColor='#334155';
+    document.getElementById('v2code').innerHTML = V2[b.dataset.l];
+  });
+});
+
+/* ── v4: live request builder ──────────────────────────────────────────── */
+function t_build(){
+  var room = document.getElementById('t-room').value;
+  var style = document.getElementById('t-style').value;
+  var stamp = document.getElementById('t-stamp').checked;
+  var s = 'curl https://stagify.ai/api/v1/renders \\\n'
+    + '  -H <span class="s">"Authorization: Bearer $STAGIFY_API_KEY"</span> \\\n'
+    + '  -H <span class="s">"Idempotency-Key: $(uuidgen)"</span> \\\n'
+    + '  -F <span class="s">"image=@living-room.jpg"</span> \\\n'
+    + '  -F <span class="s">"roomType=' + room + '"</span> \\\n'
+    + '  -F <span class="s">"furnitureStyle=' + style + '"</span>'
+    + (stamp ? ' \\\n  -F <span class="s">"labelVirtuallyStaged=true"</span>' : '');
+  document.getElementById('t-curl').innerHTML = s;
+}
+['t-room','t-style','t-stamp'].forEach(function(id){
+  document.getElementById(id).addEventListener('change', t_build);
+});
+t_build();
+document.getElementById('t-send').addEventListener('click', function(){
+  var out = document.getElementById('t-out');
+  out.innerHTML = '<span style="color:var(--muted)">Rendering… (up to 2 min in production)</span>';
+  setTimeout(function(){
+    out.innerHTML = '<b style="color:#15803d">200 OK</b> · <span style="font-family:var(--mono);font-size:11px">req_8Kd2mQ</span> · 1 credit charged · '
+      + '<span style="font-family:var(--mono);font-size:11px">X-Stagify-Credits-Remaining: 19</span>';
+  }, 900);
+});
+
+/* ── v5 + v7: disclosure ───────────────────────────────────────────────── */
+document.querySelectorAll('.acc-h').forEach(function(h){
+  h.addEventListener('click', function(){
+    var b = h.nextElementSibling, c = h.querySelector('.acc-chev');
+    var open = b.style.display !== 'none';
+    b.style.display = open ? 'none' : 'block';
+    c.textContent = open ? '▸' : '▾';
+  });
+});
+document.querySelectorAll('.ep-h').forEach(function(h){
+  h.addEventListener('click', function(){
+    var b = h.nextElementSibling, c = h.lastElementChild;
+    var open = b.style.display !== 'none';
+    b.style.display = open ? 'none' : 'block';
+    c.textContent = open ? '▸' : '▾';
+  });
+});
+
+/* ── v6: annotation ↔ line hover sync ──────────────────────────────────── */
+function v6sync(n, on){
+  document.querySelectorAll('.ann[data-n="'+n+'"]').forEach(function(e){
+    e.style.background = on ? '#1d4ed8' : 'transparent';
+    e.style.borderRadius = '4px'; e.style.padding = '0 3px'; e.style.cursor = 'default';
+  });
+  document.querySelectorAll('.anno[data-n="'+n+'"]').forEach(function(e){
+    e.style.borderLeftColor = on ? '#60a5fa' : '#334155';
+    e.style.background = on ? 'rgba(37,99,235,.12)' : 'transparent';
+  });
+}
+document.querySelectorAll('.ann,.anno').forEach(function(e){
+  e.style.transition = 'background .15s, border-color .15s';
+  if (e.classList.contains('ann')) { e.style.color = '#60a5fa'; e.style.fontSize = '13px'; }
+  e.addEventListener('mouseenter', function(){ v6sync(e.dataset.n, true); });
+  e.addEventListener('mouseleave', function(){ v6sync(e.dataset.n, false); });
+});
+
+/* ── v8: drawer + copy ─────────────────────────────────────────────────── */
+var dr = document.getElementById('v8drawer');
+document.getElementById('v8open').addEventListener('click', function(){ dr.style.transform = 'translateX(0)'; });
+document.getElementById('v8close').addEventListener('click', function(){ dr.style.transform = 'translateX(101%)'; });
+document.getElementById('v8copy').addEventListener('click', function(){
+  var b = document.getElementById('v8copy');
+  b.textContent = 'Copied'; b.style.background = '#15803d'; b.style.color = '#fff';
+  setTimeout(function(){ b.textContent = 'Copy'; b.style.background = '#334155'; b.style.color = '#cbd5e1'; }, 1400);
+});
+</script>
+</body>
+</html>

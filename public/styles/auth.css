@@ -3,21 +3,10 @@
   display: none !important;
 }
 
-a.brand,
-a.brand:link,
-a.brand:visited,
-a.brand:hover,
-a.brand:active {
-  color: var(--brand);
-  text-decoration: none;
-  cursor: pointer;
-  box-sizing: border-box;
-}
-a.brand:focus-visible {
-  outline: 2px solid var(--brand);
-  outline-offset: 2px;
-  border-radius: 12px;
-}
+/* The `a.brand` group has MOVED to styles.css, beside `.brand`. It carried the only
+   text-decoration:none reaching the wordmark, so parking it in a sheet thirteen pages
+   lazy-load meant the logo painted underlined for the first frames. Same bug as the
+   account button below — see the note above `.profile-menu-dropdown`. */
 
 /* Auth modal + account (matches Stagify blue glass style) */
 .auth-modal {
@@ -333,19 +322,16 @@ body:has(#auth-modal:not(.hidden)) .language-picker-container {
   flex-shrink: 0;
 }
 
-/* Top-right profile menu */
-.nav-trailing {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
-  min-width: 0;
-}
-@media (min-width: 769px) {
-  .nav-trailing .mobile-test-text {
-    display: none !important;
-  }
-}
+/* `.nav-trailing`'s base box has MOVED to styles.css, beside `.nav-actions` — its mobile
+   grid placement was moved there years earlier (see the note further down), and this was
+   the last of the nav geometry the three warnings in this file kept asking not to leave
+   here. Low stakes on desktop, where its only child is display:none, but on mobile that
+   child paints, and flex-vs-block for it should not depend on when a sheet arrives. */
+/* The `@media (min-width:769px) { .nav-trailing .mobile-test-text { display:none } }`
+   that sat here is GONE rather than moved: styles.css sets `.mobile-test-text{display:none}`
+   unconditionally at the top level, and re-shows it only inside `max-width:768px` blocks.
+   So a display:none above 769px could never change an outcome — it restated a value that
+   already held at every width it matched. */
 /* The `body.page-home .hero { padding-top: 46px }` that used to live here has MOVED
    to index.css. index.html lazy-loads this file, so a homepage layout rule kept here
    paints wrong until the sheet swaps in — the same trap the comment further down at
@@ -368,48 +354,19 @@ body:has(#auth-modal:not(.hidden)) .language-picker-container {
     max-height: calc(100dvh - 28px);
   }
 }
-.profile-menu-wrap {
-  position: relative;
-  flex-shrink: 0;
-}
-.profile-menu-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 42px;
-  height: 42px;
-  padding: 0;
-  border-radius: 999px;
-  border: none;
-  background-color: var(--brand);
-  color: var(--bg-elevated);
-  cursor: pointer;
-  transition: all 0.18s ease;
-  box-shadow: none;
-  position: relative;
-  overflow: hidden;
-}
-.profile-menu-btn:hover {
-  background-color: var(--brand-strong);
-  transform: translateY(-1px);
-}
-.profile-menu-btn:focus-visible {
-  outline: 2px solid var(--brand);
-  outline-offset: 2px;
-}
-@media (min-width: 769px) {
-  .profile-menu-btn {
-    background: var(--cta-gradient);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  }
-  .profile-menu-btn:hover {
-    background: var(--cta-gradient-hover);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-  }
-}
-.profile-menu-btn__icon {
-  display: block;
-}
+/* The account BUTTON itself — `.profile-menu-wrap`, `.profile-menu-btn` and its icon —
+   has MOVED to styles.css, beside `.nav-actions`. Same reason as the three notes above:
+   thirteen pages lazy-load this sheet, and unlike the dropdown below, the button is
+   painted from the very first frame. Left here it had NO authored CSS at first paint —
+   not merely the wrong geometry — so it rendered as a bare UA <button> (grey ButtonFace,
+   2px outset border, square, ~26px) with a BLACK icon, because the inline SVG is
+   stroke="currentColor" and that inherits ButtonText. Then it snapped to a 42px gradient
+   circle when this sheet swapped in. `test/frontend/header-chrome-css.test.js` now fails
+   if any of the three selectors comes back to a lazy sheet.
+
+   Everything BELOW this line is the dropdown, and it stays: `.hidden` is display:none in
+   styles.css, so the panel generates no box until the button is clicked. Deferring it is
+   the entire point of the split. */
 .profile-menu-dropdown {
   position: absolute;
   top: calc(100% + 8px);
@@ -571,15 +528,13 @@ body:has(#auth-modal:not(.hidden)) .language-picker-container {
   /* `.nav .nav-trailing` grid placement has MOVED to styles.css, next to the
      `.nav .nav-center` rule the comment above points at — it was the one piece of
      nav geometry still being lazy-loaded on the home page, so the header
-     re-placed itself when this sheet swapped in. Only sizing/skin lives here now. */
-  .profile-menu-btn {
-    width: 32px;
-    height: 32px;
-  }
-  .profile-menu-btn__icon {
-    width: 17px;
-    height: 17px;
-  }
+     re-placed itself when this sheet swapped in. It said "only sizing/skin lives here
+     now", which was itself the remaining bug: the account button's sizing and skin were
+     ALSO painted in the first frame. Those have since followed. What is left in this
+     block is only the dropdown-OPEN state below. */
+  /* The button's 32px mobile size has MOVED to styles.css's own (max-width:768px)
+     block, with the base rule — see the note above `.profile-menu-dropdown`. Only the
+     dropdown-OPEN state below is still this sheet's business. */
   body:has(#profile-menu-dropdown:not(.hidden)) .language-picker-container {
     display: none !important;
   }

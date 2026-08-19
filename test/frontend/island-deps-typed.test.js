@@ -63,12 +63,14 @@ const UNTYPED_DEPS = [];
 // admin panels and the profile-menu pieces were all already typed when this
 // guard landed, and should stay that way.
 const ALL_FACTORIES = [
+  'admin/danger.js#createDangerSection',
   'admin/emails.js#createEmailsPanel',
   'admin/grant.js#createGrantSection',
   'admin/insights.js#createInsights',
   'admin/overview.js#createOverview',
   'admin/referrals.js#createReferralsPanel',
   'admin/renderers.js#createRenderers',
+  'admin/renders-panel.js#createRendersPanel',
   'admin/signals.js#createSignals',
   'admin/status-panel.js#createStatusPanel',
   'ai-designer/chat-messages.js#createChatMessages',
@@ -109,6 +111,8 @@ const ALL_FACTORIES = [
   'gallery/delete-confirm.js#createDeleteConfirm',
   'gallery/rename.js#createRenameRow',
   'gallery/share-panel.js#createSharePanel',
+  'api-keys/create-key-dialog.js#createKeyDialog',
+  'profile-menu/api-keys-row.js#createApiSummary',
   'profile-menu/auth-modal.js#createAuthModal',
   'profile-menu/google-signin.js#createGoogleSignIn',
   'profile-menu/report-issue-modal.js#createReportIssueModal',

@@ -4,6 +4,192 @@
     "description": "Transformez des pièces vides grâce au home staging par IA. Importez vos photos et obtenez un rendu meublé professionnel en quelques secondes. Home staging par IA gratuit pour les agents immobiliers, vendeurs et acheteurs.",
     "keywords": "home staging IA, home staging, valorisation immobilière, staging virtuel, home staging par IA, mise en valeur de biens, photographie immobilière, outil de staging, mobilier virtuel"
   },
+    "apiKeys": {
+      "title": "Clés d’API et crédits",
+      "docs": "Documentation",
+      "searchLabel": "Rechercher des clés",
+      "searchPlaceholder": "Rechercher des clés…",
+      "listLabel": "Compte et clés",
+      "createKey": "Créer une clé",
+      "gone": "Cette clé n’appartient plus à ce compte.",
+      "signedOut": {
+        "title": "Connectez-vous pour gérer vos clés d’API",
+        "body": "Vos clés et votre solde de crédits sont dans votre compte Stagify.",
+        "cta": "Se connecter"
+      },
+      "group": {
+        "account": "Compte",
+        "keys": "Clés · {count} actives"
+      },
+      "nav": {
+        "usage": "Utilisation",
+        "billing": "Crédits et facturation"
+      },
+      "list": {
+        "credits": {
+          "one": "{count} crédit",
+          "other": "{count} crédits"
+        },
+        "rendersWeek": {
+          "one": "{count} image cette semaine",
+          "other": "{count} images cette semaine"
+        },
+        "thisWeek": "{count} cette semaine",
+        "none": "Pas encore de clés.",
+        "noMatch": "Aucune clé ne correspond à « {query} »."
+      },
+      "status": {
+        "live": "active",
+        "idle": "en veille",
+        "revoked": "révoquée"
+      },
+      "ago": {
+        "never": "jamais",
+        "justNow": "à l’instant",
+        "minutes": {
+          "one": "il y a {count} minute",
+          "other": "il y a {count} minutes"
+        },
+        "hours": {
+          "one": "il y a {count} heure",
+          "other": "il y a {count} heures"
+        },
+        "days": {
+          "one": "il y a {count} jour",
+          "other": "il y a {count} jours"
+        }
+      },
+      "value": {
+        "never": "Jamais",
+        "none": "n. d."
+      },
+      "unit": {
+        "seconds": "{value} s",
+        "minutes": "{value} min",
+        "percent": "{value} %"
+      },
+      "key": {
+        "fallbackName": "Clé d’API",
+        "lastUsed": "dernière utilisation {ago}",
+        "rename": "Renommer",
+        "nameLabel": "Nom de la clé",
+        "save": "Enregistrer",
+        "cancel": "Annuler",
+        "chart": {
+          "one": "Images · dernier jour",
+          "other": "Images · {count} derniers jours"
+        },
+        "prefix": "Préfixe de la clé",
+        "created": "Créée",
+        "lastUsedField": "Dernière utilisation",
+        "revokedField": "Révoquée",
+        "revokedNote": "Révoquée le {when}. La ligne reste ici pour que cette clé corresponde encore à un nom dans un journal d’accès.",
+        "danger": {
+          "title": "Révoquer cette clé",
+          "body": "Tout ce qui l’utilise cessera de fonctionner immédiatement, et c’est irréversible. La clé restera ensuite dans la liste, pour que vous puissiez la reconnaître dans un journal d’accès.",
+          "cta": "Révoquer la clé"
+        },
+        "confirm": "Révoquer cette clé ? Tout ce qui l’utilise cessera de fonctionner immédiatement."
+      },
+      "stat": {
+        "renders": "Images · {days} j",
+        "delivered": "Livrées",
+        "median": "Médiane par image",
+        "creditsSpent": "Crédits dépensés",
+        "balance": "Solde",
+        "purchased": "Achetés",
+        "spent": "Dépensés",
+        "runway": "Autonomie"
+      },
+      "note": {
+        "lastSeven": "{count} sur les 7 derniers jours",
+        "usageUnavailable": "utilisation indisponible",
+        "refunded": "{count} remboursées",
+        "refundedAuto": "{count} remboursées automatiquement",
+        "noFailures": "aucune image en échec",
+        "nothingYet": "rien n’a encore été généré",
+        "inFlight": "{count} en cours",
+        "endToEnd": "de bout en bout",
+        "throughKey": "via cette clé",
+        "inWindow": "sur cette période",
+        "allTime": "au total",
+        "images": {
+          "one": "image",
+          "other": "images"
+        },
+        "runwayDays": {
+          "one": "≈ {count} jour",
+          "other": "≈ {count} jours"
+        },
+        "weekPace": "au rythme de cette semaine",
+        "noBurn": "aucune image la semaine dernière"
+      },
+      "usage": {
+        "title": "Utilisation",
+        "lede": {
+          "one": "Dernier jour, sur toutes les clés du compte.",
+          "other": "{count} derniers jours, sur toutes les clés du compte."
+        },
+        "failedTitle": "Impossible de charger l’utilisation pour le moment.",
+        "failedBody": "Vos clés et votre solde ne sont pas affectés. Ce volet compte les requêtes, et seul ce comptage manque. Rechargez la page pour réessayer.",
+        "perDay": "Images par jour",
+        "byKey": "Par clé",
+        "thKey": "Clé",
+        "thRefunded": "Remboursées",
+        "thMedian": "Médiane",
+        "thCredits": "Crédits",
+        "deletedKey": "Clé supprimée",
+        "empty": "Aucune requête sur cette période.",
+        "sampleNote": "Médiane mesurée sur les {count} dernières images livrées. Les jours sont en UTC."
+      },
+      "billing": {
+        "title": "Crédits et facturation",
+        "lede": "Prépayé. Un crédit vaut une image livrée, et une image en échec est remboursée automatiquement.",
+        "suspended": "Ce compte est suspendu et ne peut plus générer d’images. Écrivez à <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a>.",
+        "buy": "Acheter des crédits",
+        "buyCta": "Acheter",
+        "activity": "Activité récente",
+        "thWhen": "Quand",
+        "thWhat": "Quoi",
+        "thChange": "Variation",
+        "empty": "Rien pour l’instant."
+      },
+      "ledger": {
+        "purchase": "Crédits achetés",
+        "debit": "Image",
+        "refund": "Image en échec, remboursée",
+        "clawback": "Paiement annulé",
+        "grant": "Crédits offerts",
+        "adjustment": "Ajustement",
+        "activity": "Activité"
+      },
+      "chart": {
+        "empty": "Pas encore de requêtes.",
+        "tip": {
+          "one": "{day} UTC · {count} requête",
+          "other": "{day} UTC · {count} requêtes"
+        },
+        "tipRefunded": "{day} UTC · {count} requêtes · {refunded} remboursées"
+      },
+      "dialog": {
+        "title": "Créer une clé d’API",
+        "label": "Donnez-lui un nom, pour distinguer vos clés",
+        "placeholder": "Serveur de production",
+        "revealTitle": "Copiez votre clé maintenant",
+        "revealWarn": "C’est la seule fois où elle sera affichée. Nous stockons une empreinte, pas la clé, donc si vous la perdez il faudra en créer une autre.",
+        "copy": "Copier",
+        "copied": "Copiée",
+        "copyFallback": "Sélectionnez et copiez",
+        "done": "Je l’ai enregistrée",
+        "close": "Fermer",
+        "error": "La clé n’a pas pu être créée. Veuillez réessayer."
+      },
+      "error": {
+        "checkout": "Le paiement n’a pas pu être lancé. Veuillez réessayer.",
+        "billing": "Le service de facturation est injoignable. Veuillez réessayer.",
+        "server": "Le serveur est injoignable. Veuillez réessayer."
+      }
+    },
   "navigation": {
     "home": "Accueil",
     "about": "À propos",
@@ -42,68 +228,356 @@
       "item5": "Tirage abstrait géométrique encadré",
       "items": {
         "standard": {
-          "bedroom": ["Lit plateforme chêne clair, linge blanc", "Large commode chêne 6 tiroirs", "Grand tapis beige sous le lit", "Trois tirages noir et blanc encadrés", "Fauteuil crème près de la fenêtre"],
-          "livingRoom": ["Grand canapé crème 3 places", "Tapis à motifs gris et ivoire", "Meuble TV blanc et chêne", "Deux fauteuils gris piètement métal", "Figuier lyre en pot de terre cuite"],
-          "diningRoom": ["Table 6 places nappée de lin ivoire", "Six chaises tapissées crème", "Buffet chêne clair sur pieds", "Toile abstraite au-dessus du buffet", "Orchidée blanche en centre de table"],
-          "kitchen": ["Îlot blanc à retombée avec évier", "Enfilade de meubles blancs sans poignée", "Frigo inox et four encastré", "Quatre tabourets de bar gris", "Deux tirages géométriques encadrés"],
-          "office": ["Bureau rectangulaire blanc sur pieds", "Étagère ouverte en chêne", "Fauteuil de bureau résille noir", "Meuble de rangement bas gris", "Deux œuvres abstraites encadrées"],
-          "bathroom": ["Meuble-vasque blanc suspendu", "Douche à l’italienne, ciel de pluie", "WC suspendu blanc", "Tapis de bain gris anthracite", "Miroir fin encadré au mur"]
+          "bedroom": [
+            "Lit plateforme chêne clair, linge blanc",
+            "Large commode chêne 6 tiroirs",
+            "Grand tapis beige sous le lit",
+            "Trois tirages noir et blanc encadrés",
+            "Fauteuil crème près de la fenêtre"
+          ],
+          "livingRoom": [
+            "Grand canapé crème 3 places",
+            "Tapis à motifs gris et ivoire",
+            "Meuble TV blanc et chêne",
+            "Deux fauteuils gris piètement métal",
+            "Figuier lyre en pot de terre cuite"
+          ],
+          "diningRoom": [
+            "Table 6 places nappée de lin ivoire",
+            "Six chaises tapissées crème",
+            "Buffet chêne clair sur pieds",
+            "Toile abstraite au-dessus du buffet",
+            "Orchidée blanche en centre de table"
+          ],
+          "kitchen": [
+            "Îlot blanc à retombée avec évier",
+            "Enfilade de meubles blancs sans poignée",
+            "Frigo inox et four encastré",
+            "Quatre tabourets de bar gris",
+            "Deux tirages géométriques encadrés"
+          ],
+          "office": [
+            "Bureau rectangulaire blanc sur pieds",
+            "Étagère ouverte en chêne",
+            "Fauteuil de bureau résille noir",
+            "Meuble de rangement bas gris",
+            "Deux œuvres abstraites encadrées"
+          ],
+          "bathroom": [
+            "Meuble-vasque blanc suspendu",
+            "Douche à l’italienne, ciel de pluie",
+            "WC suspendu blanc",
+            "Tapis de bain gris anthracite",
+            "Miroir fin encadré au mur"
+          ]
         },
         "modern": {
-          "bedroom": ["Lit plateforme noyer, linge blanc", "Longue commode noyer 6 tiroirs", "Tapis crème quadrillé sous le lit", "Fauteuil bouclé près de la fenêtre", "Tirage abstrait géométrique encadré"],
-          "livingRoom": ["Canapé d’angle gris en L", "Tapis géométrique bleu et gris", "Table basse en pierre blanche", "Lampadaire arc noir", "Triptyque marin en trois panneaux"],
-          "diningRoom": ["Table blanche, pieds noirs", "Six chaises tapissées grises", "Buffet en chêne clair", "Deux tirages bleu nuit et or encadrés", "Pampa séchée dans un vase"],
-          "kitchen": ["Îlot blanc, plan de travail gris", "Meubles hauts et colonnes blancs", "Trois tabourets de bar fil noir", "Fours inox encastrés superposés", "Coupe noire de pommes vertes"],
-          "office": ["Bureau blanc à pieds chromés", "Étagère ouverte à cadre noir", "Grand écran sur le bureau", "Fauteuil résille gris à roulettes", "Meuble de rangement bas blanc"],
-          "bathroom": ["Double meuble-vasque suspendu blanc", "Douche à l’italienne vitrée", "Grand strelitzia en pot", "WC suspendu blanc", "Tapis de bain gris à losanges"]
+          "bedroom": [
+            "Lit plateforme noyer, linge blanc",
+            "Longue commode noyer 6 tiroirs",
+            "Tapis crème quadrillé sous le lit",
+            "Fauteuil bouclé près de la fenêtre",
+            "Tirage abstrait géométrique encadré"
+          ],
+          "livingRoom": [
+            "Canapé d’angle gris en L",
+            "Tapis géométrique bleu et gris",
+            "Table basse en pierre blanche",
+            "Lampadaire arc noir",
+            "Triptyque marin en trois panneaux"
+          ],
+          "diningRoom": [
+            "Table blanche, pieds noirs",
+            "Six chaises tapissées grises",
+            "Buffet en chêne clair",
+            "Deux tirages bleu nuit et or encadrés",
+            "Pampa séchée dans un vase"
+          ],
+          "kitchen": [
+            "Îlot blanc, plan de travail gris",
+            "Meubles hauts et colonnes blancs",
+            "Trois tabourets de bar fil noir",
+            "Fours inox encastrés superposés",
+            "Coupe noire de pommes vertes"
+          ],
+          "office": [
+            "Bureau blanc à pieds chromés",
+            "Étagère ouverte à cadre noir",
+            "Grand écran sur le bureau",
+            "Fauteuil résille gris à roulettes",
+            "Meuble de rangement bas blanc"
+          ],
+          "bathroom": [
+            "Double meuble-vasque suspendu blanc",
+            "Douche à l’italienne vitrée",
+            "Grand strelitzia en pot",
+            "WC suspendu blanc",
+            "Tapis de bain gris à losanges"
+          ]
         },
         "scandinavian": {
-          "bedroom": ["Lit plateforme chêne clair, linge blanc", "Commode chêne 6 tiroirs contre le mur", "Tapis rond en jute sous le lit", "Chevets chêne arrondis, deux lampes", "Deux tirages abstraits encadrés"],
-          "livingRoom": ["Canapé gris 3 places sous la fenêtre", "Grand tapis en jute tressé", "Table basse chêne blond, plateau épais", "Deux fauteuils en corde tressée", "Monstera et figuier lyre en pot"],
-          "diningRoom": ["Longue table chêne, chemin en lin", "Six chaises en chêne clair", "Buffet en chêne contre le mur", "Table dressée, assiettes et verres", "Branches séchées dans une coupe"],
-          "kitchen": ["Îlot chêne, plan en pierre claire", "Enfilade de meubles hauts chêne clair", "Four blanc encastré sous le plan", "Trois tabourets de bar en chêne", "Crédence en carreaux métro blancs"],
-          "office": ["Bureau en chêne massif à la fenêtre", "Bibliothèque ouverte fine en chêne", "Fauteuil chêne à galette grise", "Caisson à tiroirs blanc à roulettes", "Lampe laiton et herbes en pot"],
-          "bathroom": ["Douche à l’italienne vitrée", "Meuble-vasque chêne suspendu", "Ciel de pluie noir mat", "Tapis de bain beige sur le parquet", "Panier à linge tressé et serviettes"]
+          "bedroom": [
+            "Lit plateforme chêne clair, linge blanc",
+            "Commode chêne 6 tiroirs contre le mur",
+            "Tapis rond en jute sous le lit",
+            "Chevets chêne arrondis, deux lampes",
+            "Deux tirages abstraits encadrés"
+          ],
+          "livingRoom": [
+            "Canapé gris 3 places sous la fenêtre",
+            "Grand tapis en jute tressé",
+            "Table basse chêne blond, plateau épais",
+            "Deux fauteuils en corde tressée",
+            "Monstera et figuier lyre en pot"
+          ],
+          "diningRoom": [
+            "Longue table chêne, chemin en lin",
+            "Six chaises en chêne clair",
+            "Buffet en chêne contre le mur",
+            "Table dressée, assiettes et verres",
+            "Branches séchées dans une coupe"
+          ],
+          "kitchen": [
+            "Îlot chêne, plan en pierre claire",
+            "Enfilade de meubles hauts chêne clair",
+            "Four blanc encastré sous le plan",
+            "Trois tabourets de bar en chêne",
+            "Crédence en carreaux métro blancs"
+          ],
+          "office": [
+            "Bureau en chêne massif à la fenêtre",
+            "Bibliothèque ouverte fine en chêne",
+            "Fauteuil chêne à galette grise",
+            "Caisson à tiroirs blanc à roulettes",
+            "Lampe laiton et herbes en pot"
+          ],
+          "bathroom": [
+            "Douche à l’italienne vitrée",
+            "Meuble-vasque chêne suspendu",
+            "Ciel de pluie noir mat",
+            "Tapis de bain beige sur le parquet",
+            "Panier à linge tressé et serviettes"
+          ]
         },
         "coastal": {
-          "bedroom": ["Lit plateforme blanc à lattes", "Commode en bois blanchi", "Tapis de passage rayé turquoise", "Fauteuil en rotin près de la fenêtre", "Trois tirages de coquillages encadrés"],
-          "livingRoom": ["Deux canapés blancs à housses", "Grand tapis en sisal tressé", "Table basse en bois patiné", "Deux fauteuils en osier", "Bout de canapé gainé de corde"],
-          "diningRoom": ["Longue table en bois cérusé gris", "Six chaises en jonc de mer tressé", "Buffet blanc patiné", "Banc en osier à assise rayée", "Toile encadrée d’une vague"],
-          "kitchen": ["Enfilade de meubles blancs shaker", "Îlot blanc à plan retombant", "Trois tabourets de bar tressés", "Fours inox encastrés superposés", "Planche en bois près de l’évier"],
-          "office": ["Bureau tréteaux en bois rustique", "Quatre toiles marines encadrées", "Classeur vert menthe", "Chaise de bureau en rotin tressé", "Lampe en céramique vert d’eau"],
-          "bathroom": ["Meuble-vasque simple blanc", "Grand palmier en panier", "Tapis de bain marbré turquoise", "Miroir encadré au-dessus du lavabo", "Plafonnier tambour nickel brossé"]
+          "bedroom": [
+            "Lit plateforme blanc à lattes",
+            "Commode en bois blanchi",
+            "Tapis de passage rayé turquoise",
+            "Fauteuil en rotin près de la fenêtre",
+            "Trois tirages de coquillages encadrés"
+          ],
+          "livingRoom": [
+            "Deux canapés blancs à housses",
+            "Grand tapis en sisal tressé",
+            "Table basse en bois patiné",
+            "Deux fauteuils en osier",
+            "Bout de canapé gainé de corde"
+          ],
+          "diningRoom": [
+            "Longue table en bois cérusé gris",
+            "Six chaises en jonc de mer tressé",
+            "Buffet blanc patiné",
+            "Banc en osier à assise rayée",
+            "Toile encadrée d’une vague"
+          ],
+          "kitchen": [
+            "Enfilade de meubles blancs shaker",
+            "Îlot blanc à plan retombant",
+            "Trois tabourets de bar tressés",
+            "Fours inox encastrés superposés",
+            "Planche en bois près de l’évier"
+          ],
+          "office": [
+            "Bureau tréteaux en bois rustique",
+            "Quatre toiles marines encadrées",
+            "Classeur vert menthe",
+            "Chaise de bureau en rotin tressé",
+            "Lampe en céramique vert d’eau"
+          ],
+          "bathroom": [
+            "Meuble-vasque simple blanc",
+            "Grand palmier en panier",
+            "Tapis de bain marbré turquoise",
+            "Miroir encadré au-dessus du lavabo",
+            "Plafonnier tambour nickel brossé"
+          ]
         },
         "farmhouse": {
-          "bedroom": ["Lit en planches de pin rustique", "Commode blanchie 6 tiroirs", "Courtepointe fleurie et plaid patchwork", "Rocking-chair à barreaux tressé", "Trois tirages d’animaux de ferme"],
-          "livingRoom": ["Canapé crème 3 places à housses", "Grand tapis en jute tressé", "Table basse en bois recyclé", "Deux fauteuils en lin", "Mur de planches botaniques encadrées"],
-          "diningRoom": ["Longue table en chêne patiné", "Buffet blanc patiné", "Nappe vichy rouge", "Six chaises tapissées à fleurs", "Bocaux de fleurs orange du jardin"],
-          "kitchen": ["Enfilade de meubles shaker blanchis", "Évier de ferme à tablier", "Bar en billot de boucher", "Trois tabourets de bar en bois brut", "Étagères ouvertes, pots et herbes"],
-          "office": ["Bureau massif en bois recyclé", "Haute bibliothèque en pin garnie", "Fauteuil cuir brun à roulettes", "Classeur métallique noir", "Horloge murale ronde de grange"],
-          "bathroom": ["Baignoire à pattes de lion", "Lavabo blanc sur colonne, robinet", "Douche d’angle vitrée", "Tapis ovale tressé", "Pancarte en bois peinte au mur"]
+          "bedroom": [
+            "Lit en planches de pin rustique",
+            "Commode blanchie 6 tiroirs",
+            "Courtepointe fleurie et plaid patchwork",
+            "Rocking-chair à barreaux tressé",
+            "Trois tirages d’animaux de ferme"
+          ],
+          "livingRoom": [
+            "Canapé crème 3 places à housses",
+            "Grand tapis en jute tressé",
+            "Table basse en bois recyclé",
+            "Deux fauteuils en lin",
+            "Mur de planches botaniques encadrées"
+          ],
+          "diningRoom": [
+            "Longue table en chêne patiné",
+            "Buffet blanc patiné",
+            "Nappe vichy rouge",
+            "Six chaises tapissées à fleurs",
+            "Bocaux de fleurs orange du jardin"
+          ],
+          "kitchen": [
+            "Enfilade de meubles shaker blanchis",
+            "Évier de ferme à tablier",
+            "Bar en billot de boucher",
+            "Trois tabourets de bar en bois brut",
+            "Étagères ouvertes, pots et herbes"
+          ],
+          "office": [
+            "Bureau massif en bois recyclé",
+            "Haute bibliothèque en pin garnie",
+            "Fauteuil cuir brun à roulettes",
+            "Classeur métallique noir",
+            "Horloge murale ronde de grange"
+          ],
+          "bathroom": [
+            "Baignoire à pattes de lion",
+            "Lavabo blanc sur colonne, robinet",
+            "Douche d’angle vitrée",
+            "Tapis ovale tressé",
+            "Pancarte en bois peinte au mur"
+          ]
         },
         "luxury": {
-          "bedroom": ["Lit à tête capitonnée bleu nuit", "Commode acajou 6 tiroirs", "Deux panneaux marbre cadre doré", "Deux lampes de chevet en verre", "Coussins en velours aux tons joyaux"],
-          "livingRoom": ["Canapé d’angle velours bleu nuit", "Table basse bloc en marbre blanc", "Deux fauteuils tonneau velours crème", "Tapis abstrait bleu et or", "Triptyque en cadres dorés au mur"],
-          "diningRoom": ["Longue table nappée", "Six chaises en velours bleu", "Buffet marqueté à plateau de marbre", "Candélabre en cristal, centre de table", "Chemin de table en brocart doré"],
-          "kitchen": ["Cuisine en L en chêne clair", "Îlot quartz à plan retombant", "Deux tabourets de bar crème", "Double four inox encastré", "Orchidée blanche en vase de verre"],
-          "office": ["Bureau en marbre et or", "Bibliothèque en bois sculpté garnie", "Fauteuil cuir vert capitonné", "Figuier lyre en cache-pot laiton", "Lampe de bureau cristal cannelé"],
-          "bathroom": ["Baignoire îlot ovale", "Douche d’angle vitrée", "Double meuble-vasque bois foncé", "Robinet de baignoire au sol, laiton", "WC suspendu près de la fenêtre"]
+          "bedroom": [
+            "Lit à tête capitonnée bleu nuit",
+            "Commode acajou 6 tiroirs",
+            "Deux panneaux marbre cadre doré",
+            "Deux lampes de chevet en verre",
+            "Coussins en velours aux tons joyaux"
+          ],
+          "livingRoom": [
+            "Canapé d’angle velours bleu nuit",
+            "Table basse bloc en marbre blanc",
+            "Deux fauteuils tonneau velours crème",
+            "Tapis abstrait bleu et or",
+            "Triptyque en cadres dorés au mur"
+          ],
+          "diningRoom": [
+            "Longue table nappée",
+            "Six chaises en velours bleu",
+            "Buffet marqueté à plateau de marbre",
+            "Candélabre en cristal, centre de table",
+            "Chemin de table en brocart doré"
+          ],
+          "kitchen": [
+            "Cuisine en L en chêne clair",
+            "Îlot quartz à plan retombant",
+            "Deux tabourets de bar crème",
+            "Double four inox encastré",
+            "Orchidée blanche en vase de verre"
+          ],
+          "office": [
+            "Bureau en marbre et or",
+            "Bibliothèque en bois sculpté garnie",
+            "Fauteuil cuir vert capitonné",
+            "Figuier lyre en cache-pot laiton",
+            "Lampe de bureau cristal cannelé"
+          ],
+          "bathroom": [
+            "Baignoire îlot ovale",
+            "Douche d’angle vitrée",
+            "Double meuble-vasque bois foncé",
+            "Robinet de baignoire au sol, laiton",
+            "WC suspendu près de la fenêtre"
+          ]
         },
         "midcentury": {
-          "bedroom": ["Lit noyer, tête de lit grise", "Longue commode teck 6 tiroirs", "Fauteuil lounge en cuir noir", "Couvre-lit géométrique, plaid moutarde", "Affiches de voyage encadrées au mur"],
-          "livingRoom": ["Canapé 3 places capitonné bleu canard", "Tapis à motifs or et orange", "Deux fauteuils lounge en palissandre", "Table basse noyer surbaissée", "Grille de six tirages abstraits"],
-          "diningRoom": ["Table ronde à nappe fleurie", "Quatre chaises coque moulée", "Long buffet teck sur pieds", "Deuxième suspension tambour au-dessus", "Verres ambrés et fleurs séchées"],
-          "kitchen": ["Îlot blanc à plan retombant", "Mur de meubles hauts blancs lisses", "Trois tabourets de bar vinyle orange", "Réfrigérateur en inox", "Fougère sur sellette blanche"],
-          "office": ["Bureau noyer à caisson de tiroirs", "Fauteuil pivotant cuir fauve", "Étagère ouverte en teck", "Lampe de bureau dôme chromée", "Trois tirages abstraits encadrés"],
-          "bathroom": ["Meuble noyer à vasque blanche", "Douche d’angle vitrée", "Grande plante sur sellette", "Tapis de passage à motifs au sol", "Corbeille en bois près du meuble"]
+          "bedroom": [
+            "Lit noyer, tête de lit grise",
+            "Longue commode teck 6 tiroirs",
+            "Fauteuil lounge en cuir noir",
+            "Couvre-lit géométrique, plaid moutarde",
+            "Affiches de voyage encadrées au mur"
+          ],
+          "livingRoom": [
+            "Canapé 3 places capitonné bleu canard",
+            "Tapis à motifs or et orange",
+            "Deux fauteuils lounge en palissandre",
+            "Table basse noyer surbaissée",
+            "Grille de six tirages abstraits"
+          ],
+          "diningRoom": [
+            "Table ronde à nappe fleurie",
+            "Quatre chaises coque moulée",
+            "Long buffet teck sur pieds",
+            "Deuxième suspension tambour au-dessus",
+            "Verres ambrés et fleurs séchées"
+          ],
+          "kitchen": [
+            "Îlot blanc à plan retombant",
+            "Mur de meubles hauts blancs lisses",
+            "Trois tabourets de bar vinyle orange",
+            "Réfrigérateur en inox",
+            "Fougère sur sellette blanche"
+          ],
+          "office": [
+            "Bureau noyer à caisson de tiroirs",
+            "Fauteuil pivotant cuir fauve",
+            "Étagère ouverte en teck",
+            "Lampe de bureau dôme chromée",
+            "Trois tirages abstraits encadrés"
+          ],
+          "bathroom": [
+            "Meuble noyer à vasque blanche",
+            "Douche d’angle vitrée",
+            "Grande plante sur sellette",
+            "Tapis de passage à motifs au sol",
+            "Corbeille en bois près du meuble"
+          ]
         },
         "custom": {
-          "bedroom": ["Tête de lit velours vert festonnée", "Tapis géométrique vert et crème", "Commode noyer 6 tiroirs", "Chevet noir à poignées laiton", "Banc vert capitonné au pied du lit"],
-          "livingRoom": ["Canapé courbe velours émeraude", "Buffet laqué noir marqueté", "Deux fauteuils pivotants rose poudré", "Tapis à motif éventail vert", "Miroir soleil doré au mur"],
-          "diningRoom": ["Table ronde en marbre blanc", "Buffet noyer cannelé", "Six chaises en velours vert", "Tapis rond vert à médaillon", "Bouquet de roses blanches en vase"],
-          "kitchen": ["Desserte noire à plateau laiton", "Palmier en cache-pot laiton", "Tapis de passage à feuilles vertes", "Trois croquis en cadres dorés", "Boîtes en cuivre et verrerie"],
-          "office": ["Bureau bois cannelé, piètement laiton", "Haute bibliothèque noire vitrée", "Tapis à chevrons verts", "Chaise coque velours vert", "Lampe laiton, abat-jour verre vert"],
-          "bathroom": ["Baignoire îlot ovale", "Meuble-vasque noyer cannelé", "Estrade en marbre sous la baignoire", "Palmier en cache-pot laiton sur pied", "Tapis de bain à motif organique vert"]
+          "bedroom": [
+            "Tête de lit velours vert festonnée",
+            "Tapis géométrique vert et crème",
+            "Commode noyer 6 tiroirs",
+            "Chevet noir à poignées laiton",
+            "Banc vert capitonné au pied du lit"
+          ],
+          "livingRoom": [
+            "Canapé courbe velours émeraude",
+            "Buffet laqué noir marqueté",
+            "Deux fauteuils pivotants rose poudré",
+            "Tapis à motif éventail vert",
+            "Miroir soleil doré au mur"
+          ],
+          "diningRoom": [
+            "Table ronde en marbre blanc",
+            "Buffet noyer cannelé",
+            "Six chaises en velours vert",
+            "Tapis rond vert à médaillon",
+            "Bouquet de roses blanches en vase"
+          ],
+          "kitchen": [
+            "Desserte noire à plateau laiton",
+            "Palmier en cache-pot laiton",
+            "Tapis de passage à feuilles vertes",
+            "Trois croquis en cadres dorés",
+            "Boîtes en cuivre et verrerie"
+          ],
+          "office": [
+            "Bureau bois cannelé, piètement laiton",
+            "Haute bibliothèque noire vitrée",
+            "Tapis à chevrons verts",
+            "Chaise coque velours vert",
+            "Lampe laiton, abat-jour verre vert"
+          ],
+          "bathroom": [
+            "Baignoire îlot ovale",
+            "Meuble-vasque noyer cannelé",
+            "Estrade en marbre sous la baignoire",
+            "Palmier en cache-pot laiton sur pied",
+            "Tapis de bain à motif organique vert"
+          ]
         }
       }
     },
@@ -398,9 +872,19 @@
       "stat2": "utilisent déjà l’IA pour générer le contenu de leurs annonces",
       "source": "Chiffres issus de l’enquête technologique 2025 de la National Association of Realtors auprès des agents immobiliers.",
       "sourceCite": "Source : National Association of Realtors, enquête technologique 2025",
-      "usageAria": "Utilisation de l’IA chez les agents : 20 % tous les jours, 22 % chaque semaine, 27 % quelques fois par mois, 32 % pas encore"
+      "usageAria": "Utilisation de l’IA chez les agents : 20 % tous les jours, 22 % chaque semaine, 27 % quelques fois par mois, 32 % pas encore",
+      "yearsLabel": "Année de l’enquête",
+      "y2024": {
+        "stat1": "des agents ont utilisé ChatGPT au cours des 12 derniers mois",
+        "stat2": "utilisent des outils d’IA et d’apprentissage automatique dans leur activité",
+        "usageAria": "Utilisation de l’IA chez les agents : 9 % tous les jours, 17 % chaque semaine, 30 % quelques fois par mois, 45 % pas encore"
+      }
     },
     "plus": {
+      "api": {
+        "text": "Vous travaillez avec votre propre logiciel ? Faites du staging par programmation avec l’API Stagify.",
+        "link": "Consulter la documentation de l’API"
+      },
       "title": "Allez plus loin avec Stagify+",
       "pro": {
         "name": "Stagify+",
@@ -860,6 +1344,7 @@
     "terms": "Conditions d’utilisation",
     "contact": "Contact",
     "status": "Statut",
+    "developers": "API",
     "copyright": "Stagify.ai"
   },
   "auth": {
@@ -920,6 +1405,8 @@
     "signOut": "Se déconnecter",
     "manageBillingAria": "Gérer la facturation dans Stripe",
     "stripeHelp": "Centre d’aide Stripe",
+    "apiKeys": "Clés API et crédits",
+    "stagifyApi": "Stagify API",
     "reportIssue": "Signaler un problème",
     "report": {
       "title": "Signaler un problème",
@@ -1259,11 +1746,11 @@
       "description": "Contactez l’équipe Stagify.ai pour de l’assistance, des partenariats ou des questions sur notre outil gratuit de home staging par IA."
     },
     "stagifyPlus": {
-      "title": "Stagify+ — Forfaits et tarifs | Stagify.ai",
+      "title": "Stagify+ Forfaits et tarifs | Stagify.ai",
       "description": "Stagify+ : suppression des meubles, le Designer IA, le Studio de Masquage, des modèles de meilleure qualité et un home staging illimité. Voir les offres et les tarifs."
     },
     "enterprise": {
-      "title": "Stagify Enterprise — Staging par IA à l’usage pour les équipes",
+      "title": "Stagify Enterprise | Staging par IA à l’usage pour les équipes",
       "description": "Offrez à toute votre équipe un staging par IA illimité avec une facturation à l’usage de 0,15 $ par génération. Une seule facture, sans frais par utilisateur."
     },
     "maskingStudio": {
@@ -1275,6 +1762,10 @@
       "title": "Studio Extérieur | Stagify.ai - Amélioration de photos de façade par IA",
       "description": "Transformez une photo d’extérieur grise et encombrée en l’image que l’annonce mérite. Changez l’heure, dégagez le ciel et supprimez voitures et poubelles, pendant que le bien reste exactement tel qu’il a été photographié.",
       "keywords": "attrait extérieur, retouche photo extérieur, amélioration photo immobilière, remplacement de ciel, supprimer voitures photo, photo crépusculaire immobilier, heure dorée, éditeur photo IA, façade, Stagify"
+    },
+    "developers": {
+      "title": "API Stagify pour les développeurs | Stagify.ai",
+      "description": "Mettez en scène des photos immobilières depuis votre code. Un appel HTTP par image, crédits prépayés à 0,15 $ l’image, sans abonnement ni minimum."
     }
   },
   "basicMask": {
@@ -1797,5 +2288,100 @@
     "heading": "Cette page n’existe pas",
     "body": "Le lien est peut-être rompu, ou la page a été déplacée. Tout le reste est exactement là où vous l’avez laissé.",
     "homeCta": "Retour à l’accueil"
+  },
+  "developers": {
+    "crumb": "Documentation de l’API",
+    "lede": "Mettez en scène une photo immobilière depuis votre propre code. Un appel HTTP renvoie une image meublée. Crédits prépayés à 0,15 $ l’image, sans abonnement, sans minimum et sans facture qui s’emballe.",
+    "toc": "Sur cette page",
+    "contact": "Questions, limites plus élevées ou facture au lieu d’une carte : <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a>.",
+    "facts": {
+      "baseUrl": "URL de base",
+      "auth": "Authentification",
+      "contentType": "Type de contenu"
+    },
+    "intro": {
+      "h2": "Introduction",
+      "p1": "L’API expose une seule chose : le moteur de mise en scène derrière l’application web. Vous envoyez la photo d’une pièce, indiquez un type de pièce et un style de mobilier, et recevez l’image meublée dans la même réponse. Il n’y a pas de file d’attente ni rien à interroger sur le chemin normal.",
+      "p2": "Les crédits sont des images entières. Vous les achetez d’avance et chaque rendu réussi en consomme un. Un rendu qui échoue est remboursé automatiquement : vous ne payez que pour une photo que vous avez reçue. Et comme le solde est prépayé, une clé volée vous coûte au plus ce qu’il en reste. Aucune facture en fin de mois.",
+      "note": "Les clés sont prévues pour un usage serveur à serveur. L’API n’envoie aucun en-tête CORS, donc un navigateur ne peut pas l’appeler directement ; c’est délibéré, et une clé accessible depuis du JavaScript de navigateur est une clé divulguée. Nous affichons une clé une seule fois, n’en stockons qu’un hachage et la révoquons immédiatement."
+    },
+    "quickstart": {
+      "h2": "Démarrage rapide",
+      "p1": "Créez une clé sur votre <a href=\"api-keys.html\">page de clés d’API</a>, achetez un pack de crédits, puis envoyez une photo. La réponse contient l’image meublée sous forme de data URL.",
+      "note": "Un rendu peut prendre quelques minutes. Réglez le délai de lecture de votre client sur <strong>300 secondes</strong> et réessayez avec la <em>même</em> <code>Idempotency-Key</code>. C’est ce qui garantit que vous n’êtes jamais facturé deux fois pour une photo.",
+      "packs": "Packs de crédits"
+    },
+    "packs": {
+      "loading": "Chargement des tarifs…",
+      "images": "images",
+      "each": "l’image",
+      "empty": "Les packs de crédits ne sont pas disponibles pour le moment. <a href=\"contact.html\">Contactez-nous</a> et nous arrangerons cela."
+    },
+    "params": {
+      "h2": "Paramètres de la requête",
+      "lede": "<code>POST /api/v1/renders</code>, envoyé en <code>multipart/form-data</code>. Toutes les valeurs acceptées ci-dessous sont également servies en JSON par <code>GET /api/v1/options</code>, qui ne demande aucune clé d’API : un client peut donc remplir ses propres listes déroulantes au lieu de figer ce tableau dans son code.",
+      "thField": "Champ",
+      "thType": "Type",
+      "thNotes": "Notes",
+      "image": "<strong>Obligatoire.</strong> La photo de la pièce. JPEG, PNG ou WebP, jusqu’à 25 Mo. C’est le type MIME qui est vérifié, pas l’extension du fichier.",
+      "roomType": "<code>Bedroom</code>, <code>Living room</code>, <code>Dining room</code>, <code>Kitchen</code>, <code>Office</code>, <code>Bathroom</code>, <code>Outdoors</code>, <code>Dorm</code>. Par défaut <code>Living room</code>. <strong>Sensible à la casse et aux espaces</strong>, et une valeur non reconnue <strong>n’est pas rejetée</strong>. Elle est écrite telle quelle dans le prompt, donc <code>Living Room</code> n’est pas <code>Living room</code>.",
+      "furnitureStyle": "<code>standard</code>, <code>modern</code>, <code>midcentury</code>, <code>scandinavian</code>, <code>luxury</code>, <code>coastal</code>, <code>farmhouse</code>, <code>custom</code>. Par défaut <code>standard</code>, qui est aussi ce que devient silencieusement une valeur non reconnue. <code>custom</code> utilise votre <code>additionalPrompt</code> à la place du texte de style intégré.",
+      "additionalPrompt": "Consignes en texte libre pour ce rendu.",
+      "removeFurniture": "Vider la pièce avant de la meubler. Envoyez <code>true</code> ou <code>on</code> ; tout le reste, y compris <code>1</code> et <code>yes</code>, vaut faux.",
+      "keepFurniture": "Texte libre indiquant ce qu’il faut conserver, par ex. <code>keep the dining table and the built-in shelves</code>. Lu uniquement lorsque <code>removeFurniture</code> est activé. 500 caractères.",
+      "furnitureImage": "Jusqu’à 5 photos de référence de mobilier à imiter. Mêmes formats et même limite de taille que <code>image</code>.",
+      "labelVirtuallyStaged": "Grave la mention « Virtually staged » dans l’image produite.",
+      "stampStyle": "<code>dark</code>, <code>light</code>, <code>minimal</code>, <code>banner</code>. Par défaut <code>dark</code>. Insensible à la casse ; une valeur non reconnue revient à la valeur par défaut.",
+      "stampScale": "De <code>0.7</code> à <code>1.6</code>, par défaut <code>1</code>. Les valeurs hors plage sont ramenées à la borne plutôt que refusées.",
+      "stampLang": "La langue du badge : <code>english</code>, <code>spanish</code>, <code>french</code>, <code>german</code>, <code>chinese</code>, <code>korean</code>, <code>portuguese</code>, <code>russian</code>, <code>italian</code>, <code>japanese</code>, <code>dutch</code>. Par défaut <code>english</code>.",
+      "variations": "Seul <code>1</code> est accepté. Lancez des requêtes simultanées pour en obtenir davantage."
+    },
+    "idem": {
+      "h2": "Idempotence",
+      "p1": "Un rendu garde la connexion ouverte plusieurs minutes, ce qui veut dire que la panne qui vous touchera vraiment est un socket coupé après la fin du travail : facturé, les mains vides. Envoyez un en-tête <code>Idempotency-Key</code> à chaque requête et réessayez avec la <em>même</em> valeur.",
+      "thHave": "Ce que nous avons en base",
+      "thRetry": "Ce que fait une nouvelle tentative",
+      "r1a": "Une requête réussie, mêmes paramètres",
+      "r1b": "Renvoie le résultat stocké avec <code>X-Stagify-Replayed: true</code>. Pas de second débit.",
+      "r2a": "Une requête encore en cours",
+      "r2b": "<code>409 REQUEST_IN_FLIGHT</code>. Attendez, puis réessayez.",
+      "r3a": "Une requête abandonnée en plein rendu",
+      "r3b": "Relancée sur le débit existant, jusqu’à trois tentatives.",
+      "r4a": "La même clé avec des paramètres différents",
+      "r4b": "<code>422 IDEMPOTENCY_KEY_REUSED</code>. Utilisez une nouvelle clé.",
+      "note": "Omettre l’en-tête est autorisé et signifie aucune protection contre les rejeux, ce qui est le comportement honnête par défaut. Nous ne dérivons pas de clé à partir de votre photo : deux rendus réellement distincts de la même pièce entreraient en collision et le second appelant recevrait l’image du premier."
+    },
+    "disclosure": {
+      "h2": "Mentions de mise en scène",
+      "p1": "De nombreuses règles MLS et NAR exigent qu’une photo meublée virtuellement le signale. <code>labelVirtuallyStaged</code> grave cette mention dans les pixels plutôt que de l’attacher en métadonnée qu’un outil en aval peut retirer.",
+      "note": "Si la mention ne peut pas être appliquée, l’image est <strong>retenue plutôt que livrée sans étiquette</strong>, l’appel répond <code>500 DISCLOSURE_STAMP_FAILED</code> et votre crédit est remboursé. Ce comportement ne peut pas être désactivé, et aucune valeur par défaut par clé ne le neutralise en silence."
+    },
+    "errors": {
+      "h2": "Erreurs",
+      "lede": "Chaque échec répond <code>{ \"error\": \"…\", \"code\": \"…\" }</code>. Branchez sur <code>code</code>, jamais sur le message. Les messages changent, pas les codes.",
+      "thStatus": "Statut",
+      "thCode": "Code",
+      "thAction": "Que faire",
+      "keyMissing": "Vérifiez l’en-tête <code>Authorization</code>, ou créez une nouvelle clé.",
+      "noCredits": "Rechargez. Le corps contient <code>credits_remaining</code>.",
+      "suspended": "Contactez le support.",
+      "variations": "Cette API produit une image par requête. Lancez plutôt des requêtes simultanées.",
+      "inFlight": "Cette clé d’idempotence est encore en cours. Attendez, puis réessayez.",
+      "concurrency": "Trop de rendus en même temps. Réessayez dans quelques secondes.",
+      "keyReused": "Vous avez réutilisé une clé avec des paramètres différents. Utilisez-en une nouvelle.",
+      "noImage": "Le modèle n’a rien renvoyé. Remboursé ; réessayez ou changez de photo.",
+      "rateLimited": "Ralentissez, puis réessayez.",
+      "stampFailed": "La mention n’a pas pu être appliquée, l’image a donc été retenue. Remboursé.",
+      "renderFailed": "Remboursé. Indiquez le <code>ref</code> si vous contactez le support."
+    },
+    "other": {
+      "h2": "Autres points de terminaison",
+      "options": "<code>GET /api/v1/options</code> : les valeurs acceptées de chaque énumération ci-dessus. Aucune clé d’API requise.",
+      "me": "<code>GET /api/v1/me</code> : ma clé fonctionne-t-elle ? Renvoie le compte et le solde.",
+      "credits": "<code>GET /api/v1/credits</code> : solde et totaux cumulés.",
+      "render": "<code>GET /api/v1/renders/{id}</code> : l’état d’un rendu.",
+      "note": "Chaque réponse porte <code>X-Stagify-Credits-Remaining</code>, ce qui vous permet de voir le solde baisser sans l’interroger."
+    },
+    "dashboard": "Tableau de bord API"
   }
 }

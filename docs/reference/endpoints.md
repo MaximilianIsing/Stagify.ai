@@ -410,6 +410,89 @@ Notes that bite:
 
 ---
 
+## Public developer API (`/api/v1/*`, API key + prepaid credits)
+
+The only customer-facing machine interface. Authenticated by a per-account **API key**
+(`Authorization: Bearer stg_live_…`, header only — never a query parameter), and paid for
+with **prepaid credits**: one credit per delivered image, $0.15 at the smallest pack.
+
+Three properties are worth knowing before reading the table:
+
+* **A caller with no credits is refused before any model call.** The debit is a
+  conditional `UPDATE … WHERE balance >= cost` (`lib/data/api-billing.js`), so the 402 is
+  answered without spending a Gemini request. A limit that can be raced is not a limit.
+* **A failed render is refunded, automatically and idempotently.** The band in
+  `lib/staging/api-render-billing.js` settles from *two* paths — a `try/catch` and
+  `res.on('finish')` — because `handleVirtualStagingMultipart` answers some errors
+  in-band. Both route into one refund guarded by a status transition, so a double call
+  changes nothing.
+* **One credit is one generation.** The API passes `skipQualityReview: true`, so the
+  quality-gate retry loop that can turn one delivered image into three model calls on the
+  web tier does not run here. That is what makes $0.15 an honest price on this path and
+  the reason it must not be "helpfully" re-enabled.
+
+| Method | Path | Notes |
+| --- | --- | --- |
+| POST | `/api/v1/renders` | multipart. Same field names as `/api/process-image`. `variations` accepts only `1`. Honours `Idempotency-Key`. |
+| GET | `/api/v1/options` | **No API key.** The accepted values for `roomType`, `furnitureStyle` and the stamp fields, derived from the renderer's own tables. |
+| GET | `/api/v1/renders/:id` | Owner-scoped status. A stranger's id and a nonexistent id both 404 — not an oracle. |
+| GET | `/api/v1/credits` | Balance and lifetime totals. |
+| GET | `/api/v1/me` | The cheap "is my key working" call. |
+
+Chain on the render route, in order: `apiRenderLimiter` → `requireApiKey` →
+`concurrencyGate` → `stagingProcessUpload` → handler. Multer is **last** so 25MB is never
+buffered for a caller who was going to be refused anyway.
+
+`/api/v1/*` is deliberately **not** in `ALLOWED_ORIGINS`: it sends no CORS headers because
+a key reachable from browser JavaScript is a leaked key.
+
+`GET /api/v1/options` is the one route here with **no** `requireApiKey`. An integrator
+needs the vocabulary while deciding whether to buy credits, which is before they have a
+key to send, and `public/developers.html` renders against it as an anonymous visitor.
+Nothing in the body is account-specific. It is still rate-limited.
+
+Why it exists at all: every enum on the render route **fails soft**. An unrecognised
+`furnitureStyle` silently resolves to `standard`, and an unrecognised `roomType` is not
+rejected but interpolated into the prompt as free text — so a typo costs a credit and
+returns a plausible-but-wrong image with a 200. A browser user picks from a dropdown and
+cannot make that mistake; an API caller has nothing but the docs. `lib/staging/api-options.js`
+derives every list from `promptMatrix` / `stamp-disclosure.js` / `locales.js` rather than
+restating them, and `test/staging/api-options.test.js` plus
+`test/frontend/developers-parameter-table.test.js` fail the build if the endpoint, the
+docs table, or the quickstart curl drift from those tables.
+
+**One credit is one image, enforced in `lib/staging/api-render-billing.js`.** The router
+answers 400 `VARIATIONS_UNSUPPORTED` for `variations` *and* `variationCount`, and the
+billing band then pins `variationCount` and strips `model` regardless. Both are needed:
+the handler reads `variationCount`, not the documented `variations`, and `treatAsPro: true`
+disables the `if (!isPro) variationCount = 1` demotion that would otherwise have caught it.
+`model` is dropped silently rather than refused by name, because refusing it advertises a
+parameter that is never going to be supported.
+
+Error codes: `API_KEY_MISSING` / `API_KEY_INVALID` / `API_KEY_REVOKED` (401),
+`INSUFFICIENT_CREDITS` (402, carries `credits_remaining`), `ACCOUNT_SUSPENDED` (403),
+`VARIATIONS_UNSUPPORTED` (400), `REQUEST_IN_FLIGHT` / `CONCURRENCY_LIMIT` (409),
+`IDEMPOTENCY_KEY_REUSED` / `NO_IMAGE_GENERATED` (422), `RATE_LIMITED` (429),
+`DISCLOSURE_STAMP_FAILED` / `RENDER_FAILED` (500). The last four refund.
+
+### Account surface (session auth) — `routes/api-keys.js`
+
+| Method | Path | Notes |
+| --- | --- | --- |
+| GET | `/api/api-keys` | List. Never carries a key, only the display prefix. |
+| POST | `/api/api-keys` | Mint. **The only response in the product that ever contains a plaintext key.** |
+| DELETE | `/api/api-keys/:id` | Revoke. Another account's id → 404. |
+| PATCH | `/api/api-keys/:id` | Rename. |
+| GET | `/api/api-credits` | Balance, lifetime totals, live key count, last 50 ledger rows. |
+| GET | `/api/api-credits/packs` | Public pricing. Carries no Stripe price ids. |
+| POST | `/api/api-credits/checkout` | Stripe Checkout in `payment` mode → `{ url }`. |
+
+Credits arrive through the existing webhook: a paid one-time session carrying
+`metadata.stagify_api_pack` is dispatched into `lib/services/stripe-credit-topup.js`,
+which verifies `amount_total` against our own pack table before crediting anything.
+`charge.refunded` / `charge.dispute.created` claw the credits back and suspend the account
+on a shortfall — without that, spend-then-chargeback is a free render.
+
 ## Log download / admin (header key)
 
 These routes use **`protectLogs`**: a shared secret `LOGS_ACCESS_KEY` from `endpointkey.txt` or `process.env.endpoint_key`, supplied in the **`X-Stagify-Endpoint-Key` header** — **never** the query string (a key in the URL leaks via access logs, proxies, browser history, and `Referer`). **If the server has no key configured:** `500`. **If the header is missing/invalid:** `403`.
@@ -441,6 +524,8 @@ The same `LOGS_ACCESS_KEY` authenticates several endpoints. All of them now take
 | `POST` | `/api/admin/grant-plus` | **Comp Stagify+.** Body `{ userId }` or `{ email }`. Gives a **currently-free** account one calendar month of `plan: 'pro'` with **no Stripe subscription** — no card, no invoice, no webhook (`lib/data/pro-grants.js`). Refused (`400`) if the account already has Stagify+ or has a Stripe subscription. Returns `{ ok, userId, email, expiresAt }`. Expiry is enforced on **read**, so the account reverts to free by itself. |
 | `POST` | `/api/admin/delete-user` | **GDPR erasure.** Body `{ userId }` or `{ email }`, plus optional `force: true`. Erases the account row and **everything keyed to it** — sessions, password-reset tokens, memories, and a pending registration for the same address — in one transaction (this DB has no foreign keys, so nothing cascades on its own), then redacts that person's identifying cells in the CSV logs. An address with only an unverified signup can be erased on its own. **Refused with `400 ACTIVE_SUBSCRIPTION`** if a Stripe subscription is still attached — cancel it in Stripe first, or pass `force` once that is done out of band. `404 NOT_FOUND` for an unknown account, `400` with no identifier. Returns `{ ok, userId, email, rows, logs }` — per-table row counts and a per-file redaction report. Irreversible; see [`data-stores.md`](data-stores.md#erasing-one-persons-data). |
 | `POST` | `/api/admin/revoke-plus` | Body `{ userId }`. Ends a running comp grant immediately. Refused (`400`) if there is no active grant, or if the account is on a Stripe subscription (cancel that in Stripe). |
+| `GET` | `/api/admin/renders` | `?userId=&limit=&offset=` → `{ enabled, total, limit, offset, entries[] }`. One account’s renders for the operator console, **including** the failed, pending and evicted rows the owner’s gallery filters out. Entries carry `source` / `sourceName` (which surface made the render — `api` is how the paid API is told apart from studio usage) and short-lived presigned URLs, so the response is `no-store`; an evicted row gets empty URLs. `{ enabled: false }` when no object store is configured — that is a deployment without a gallery, not an error. `storage_key` and `user_id` are never serialized. |
+| `POST` | `/api/admin/revoke-sessions` | Body `{ userId }` → `{ ok, userId, email, revoked }`. Drops every live session for one account — “sign out everywhere”. The password is **not** changed and a live password-reset token is **not** invalidated. `404` for an unknown account. `revoked` may legitimately be `0`. |
 | `GET` | `/api/admin/metrics` | **Signals tab.** Read-only SQL aggregates over the shared database — renders by source/status keyed on a **real `user_id`** (unlike the render log’s `email`, which is `unknown` whenever the client did not send one), storage bytes per account, share-link engagement, session and pending-registration counts, Stripe/reaper queue health, and CSV log sizes. Every window is a **duration**, never a calendar day — day keys are local to the reader and the server cannot know that timezone. Fails **open**: an unconfigured reader answers `200 {metrics: null}` so the tab degrades to its browser-computed half. Statements are prepared once at factory time; see the N+1 guard in `test/analytics/admin-metrics.test.js`. |
 | `POST` | `/api/admin/brief` | **Signals tab.** Body `{ findings }` — the **finished** findings the browser already computed, never raw log rows. Returns `{ summary }`, two to four sentences restating them. The payload is projected through an allowlist and scrubbed of anything email- or IP-shaped before a model sees it ([`lib/services/admin-brief.js`](../../lib/services/admin-brief.js)), so account names never leave the browser. `temperature: 0`, capped output, body capped at 256kb, and `protectLogs` runs **before** the body parser. Never 500s: no key, a timeout or an empty completion all return `200 {summary: null, reason}`. |
 | `GET` | `/api/admin/email-previews` | **Emails tab gallery.** Returns `{ emails: [{ id, label, category, description, subject, html, text }] }` — every user-facing email, built from the same renderers the senders use ([`lib/services/email-catalog.js`](../../lib/services/email-catalog.js)). Read-only; nothing is sent. |
@@ -461,6 +546,8 @@ The same `LOGS_ACCESS_KEY` authenticates several endpoints. All of them now take
 ## Admin dashboard & image hosting
 
 The admin dashboard (`admin.html`) collects the `LOGS_ACCESS_KEY` client-side once, exchanges it for a session token, and calls these image-hosting APIs (and the log exports above) with the `X-Stagify-Admin-Session` header. Hosted images are served publicly at `GET /i/:id` (see Public pages).
+
+**The danger zone.** The same expanded row ends with a danger section ([`public/scripts/admin/danger.js`](../../public/scripts/admin/danger.js)) holding *Sign out everywhere* (`revoke-sessions` above) and *Delete account* (`delete-user`). Deletion is gated on the operator typing the account’s own address — `confirm()` is one mis-click from erasing the wrong row, and there is no undo. The `force` flag that overrides the live-subscription refusal is never sent automatically; it appears as a second, separately-confirmed step carrying the server’s message.
 
 **Comp Stagify+ grants.** In the **Users** tab, expanding a row shows a *Stagify+ Grant* section ([`public/scripts/admin/grant.js`](../../public/scripts/admin/grant.js)) that calls `POST /api/admin/grant-plus` / `revoke-plus` above. It renders one of four states: a free account gets a *Grant 1 month of Stagify+* button; a running grant shows its end date plus *Revoke now*; a Stripe subscriber and an enterprise-covered account are read-only. Nothing here touches Stripe — the grant expires on its own (see [`data-stores.md`](data-stores.md)), so there is no follow-up action to remember.
 

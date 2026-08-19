@@ -46,6 +46,7 @@ const read = (file) => fs.readFileSync(path.join(PUBLIC, file), 'utf8');
  * that grows a page-entity block must be removed from it rather than sitting here.
  */
 const NO_PAGE_ENTITY = new Map([
+  ['developers.html', 'carries only a BreadcrumbList — a trail is navigation, not a subject, and the page is English-only so nothing here is localized'],
   ['enterprise.html', 'carries only a BreadcrumbList — a trail is navigation, not a subject'],
   ['guides.html', 'a BreadcrumbList plus six HowTo blocks, one per guide; none of them is the page'],
   ['privacy.html', 'carries only a BreadcrumbList — a trail is navigation, not a subject'],

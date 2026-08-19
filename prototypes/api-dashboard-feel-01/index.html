@@ -1,0 +1,1740 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>API dashboard — design directions | Stagify.ai</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ───────────────────────────────────────────────────────────────────────────
+   Tokens lifted verbatim from public/styles/styles.css :root, so every canvas
+   below is painted in the real Stagify palette rather than a generic blue.
+   ─────────────────────────────────────────────────────────────────────────── */
+:root{
+  --bg:#ddeeff; --bg-elevated:#ffffff; --fg:#1f2937; --muted:#6b7280; --border:#e5e7eb;
+  --primary:#1e40af; --primary-light:#3b82f6; --text-heading:#111827;
+  --brand:#2563eb; --brand-strong:#1d4ed8; --brand-deep:#1e3a8a; --brand-soft:#60a5fa;
+  --brand-pale:#93c5fd; --brand-tint:#dbeafe; --brand-wash:#eff6ff;
+  --slate:#64748b; --slate-deep:#475569; --muted-light:#9ca3af; --danger:#b91c1c;
+  --ok:#15803d; --warn:#d97706; --ink:#0f172a;
+  --cta-gradient:
+    radial-gradient(circle at 20% 50%, var(--primary-light) 0, transparent 50%),
+    radial-gradient(circle at 80% 20%, var(--brand-strong) 0, transparent 50%),
+    radial-gradient(circle at 40% 80%, var(--brand) 0, transparent 50%),
+    radial-gradient(circle at 0 100%, var(--primary) 0, transparent 50%),
+    radial-gradient(circle at 100% 0, var(--brand-soft) 0, transparent 50%),
+    var(--brand-deep);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  color:var(--fg); background:#eaf2fb; -webkit-font-smoothing:antialiased;
+}
+code,kbd,.mono{font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+a{color:var(--brand)}
+
+/* ── Explorer chrome ─────────────────────────────────────────────────────── */
+.pv-top{
+  position:sticky; top:0; z-index:60; background:rgba(255,255,255,.92);
+  backdrop-filter:blur(10px); border-bottom:1px solid var(--border);
+}
+.pv-top__inner{max-width:1320px;margin:0 auto;padding:10px 20px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.pv-top__brand{font-weight:800;color:var(--brand-deep);font-size:15px;white-space:nowrap}
+.pv-jump{display:flex;gap:6px;overflow-x:auto;flex:1;padding-bottom:2px}
+.pv-jump a{
+  flex:0 0 auto;font-size:12.5px;font-weight:600;text-decoration:none;color:var(--slate-deep);
+  border:1px solid var(--border);border-radius:999px;padding:5px 11px;background:#fff;white-space:nowrap;
+}
+.pv-jump a:hover{border-color:var(--brand);color:var(--brand);background:var(--brand-wash)}
+
+.pv-head{max-width:1320px;margin:0 auto;padding:36px 20px 8px}
+.pv-head h1{margin:0 0 10px;font-size:clamp(26px,4vw,38px);line-height:1.12;color:var(--text-heading);letter-spacing:-.02em}
+.pv-request{
+  margin:0 0 14px;padding:14px 16px;border-left:3px solid var(--brand);background:#fff;
+  border-radius:0 10px 10px 0;font-size:15.5px;line-height:1.5;color:var(--slate-deep);
+  box-shadow:0 1px 2px rgba(15,23,42,.05);
+}
+.pv-request b{color:var(--text-heading)}
+.pv-meta{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin:0 0 6px}
+.pv-note{
+  max-width:1320px;margin:0 auto;padding:0 20px 26px;font-size:13.5px;color:var(--slate);
+  line-height:1.6;
+}
+.pv-note strong{color:var(--slate-deep)}
+
+.pv-variant{max-width:1320px;margin:0 auto;padding:26px 20px 8px;scroll-margin-top:64px}
+.pv-variant__no{
+  display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:8px;
+  background:var(--brand-deep);color:#fff;font-size:13px;font-weight:800;margin-right:10px;flex:0 0 auto;
+}
+.pv-variant h2{display:flex;align-items:center;margin:0 0 8px;font-size:23px;color:var(--text-heading);letter-spacing:-.01em}
+.pv-why{margin:0 0 12px;max-width:76ch;font-size:14.5px;line-height:1.62;color:var(--slate-deep)}
+.pv-chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+.chip{font-size:12px;font-weight:600;border-radius:999px;padding:4px 10px;border:1px solid}
+.chip--pro{background:#f0fdf4;border-color:#bbf7d0;color:#14532d}
+.chip--con{background:#fff7ed;border-color:#fed7aa;color:#9a3412}
+.pv-badges{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px}
+.badge{
+  font-size:11.5px;border-radius:6px;padding:4px 9px;background:#fff;border:1px solid var(--border);color:var(--slate);
+}
+.badge b{color:var(--slate-deep);font-weight:700;letter-spacing:.04em;text-transform:uppercase;font-size:10.5px;margin-right:5px}
+.badge--stat{background:var(--brand-wash);border-color:var(--brand-tint);color:var(--brand-deep)}
+.badge--stat b{color:var(--brand-deep)}
+
+.canvas{
+  border:1px solid #cddcf0;border-radius:16px;overflow:hidden;background:#f7fafd;
+  box-shadow:0 10px 30px rgba(15,23,42,.07);
+}
+.canvas__bar{
+  display:flex;align-items:center;gap:8px;padding:9px 14px;background:#f1f5f9;border-bottom:1px solid #dbe6f3;
+}
+.canvas__dot{width:10px;height:10px;border-radius:50%;background:#cbd5e1}
+.canvas__url{
+  flex:1;font-size:11.5px;color:var(--muted);background:#fff;border:1px solid var(--border);
+  border-radius:6px;padding:3px 10px;max-width:420px;
+}
+.canvas__body{padding:0}
+
+/* ── Shared dashboard atoms used inside the canvases ─────────────────────── */
+.d-btn{
+  display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border:1px solid rgba(37,99,235,.35);
+  border-radius:9px;background:#fff;color:var(--brand);font:600 13.5px Inter,sans-serif;cursor:pointer;
+  text-decoration:none;transition:.16s ease;
+}
+.d-btn:hover{background:var(--brand-wash);border-color:var(--brand)}
+.d-btn--primary{background:var(--cta-gradient);border-color:transparent;color:#fff}
+.d-btn--primary:hover{filter:brightness(1.07);background:var(--cta-gradient)}
+.d-btn--danger{border-color:rgba(185,28,28,.35);color:var(--danger)}
+.d-btn--danger:hover{background:#fef2f2;border-color:var(--danger)}
+.d-btn--sm{padding:5px 10px;font-size:12.5px;border-radius:7px}
+.d-btn--ghost{border-color:var(--border);color:var(--slate-deep);}
+
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;border-radius:999px;padding:3px 9px}
+.pill--live{background:#f0fdf4;color:#14532d}
+.pill--live::before{content:"";width:6px;height:6px;border-radius:50%;background:#16a34a}
+.pill--idle{background:#f8fafc;color:var(--slate)}
+.pill--idle::before{content:"";width:6px;height:6px;border-radius:50%;background:#94a3b8}
+.pill--dead{background:#fef2f2;color:var(--danger)}
+.pill--dead::before{content:"";width:6px;height:6px;border-radius:50%;background:#dc2626}
+.pill--warn{background:#fffbeb;color:#92400e}
+
+.mut{color:var(--muted)}
+.num{font-variant-numeric:tabular-nums}
+.kicker{font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+
+table.d-tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+table.d-tbl th{
+  text-align:left;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
+  font-weight:700;padding:8px 12px;border-bottom:1px solid var(--border);
+}
+table.d-tbl td{padding:10px 12px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+table.d-tbl tr:last-child td{border-bottom:0}
+.pos{color:var(--ok);font-weight:600}
+.neg{color:var(--slate-deep)}
+
+.spark{display:flex;align-items:flex-end;gap:2px;height:38px}
+.spark i{flex:1;background:var(--brand-pale);border-radius:2px 2px 0 0;min-height:2px}
+.spark i.hi{background:var(--brand)}
+
+/* ══ V1 — Console Rail ═══════════════════════════════════════════════════ */
+.v1{display:grid;grid-template-columns:214px 1fr;background:#fff;min-height:560px}
+.v1__rail{background:#f8fafc;border-right:1px solid var(--border);padding:16px 12px;display:flex;flex-direction:column;gap:2px}
+.v1__railhead{display:flex;align-items:center;gap:8px;padding:2px 8px 14px}
+.v1__logo{width:24px;height:24px;border-radius:7px;background:var(--cta-gradient)}
+.v1__railhead span{font-weight:800;color:var(--brand-deep);font-size:14px}
+.v1__nav{display:flex;flex-direction:column;gap:2px}
+.v1__nav button{
+  display:flex;align-items:center;gap:9px;width:100%;text-align:left;padding:8px 10px;border:0;border-radius:8px;
+  background:none;font:600 13.5px Inter,sans-serif;color:var(--slate-deep);cursor:pointer;
+}
+.v1__nav button:hover{background:var(--brand-wash);color:var(--brand-deep)}
+.v1__nav button[aria-selected=true]{background:var(--brand-tint);color:var(--brand-deep)}
+.v1__nav .dotc{margin-left:auto;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.v1__railfoot{margin-top:auto;padding:12px 10px 0;border-top:1px solid var(--border);font-size:12px;color:var(--muted);line-height:1.5}
+.v1__main{padding:18px 22px 26px;min-width:0}
+.v1__crumb{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.v1__crumb h3{margin:0;font-size:19px;color:var(--text-heading)}
+.v1__kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.kpi{border:1px solid var(--border);border-radius:12px;padding:12px 14px;background:#fff}
+.kpi__l{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.03em}
+.kpi__v{font-size:24px;font-weight:800;color:var(--text-heading);letter-spacing:-.02em;margin:3px 0 2px;font-variant-numeric:tabular-nums}
+.kpi__d{font-size:11.5px;color:var(--muted)}
+.kpi__d .up{color:var(--ok);font-weight:600}
+.kpi__d .down{color:var(--warn);font-weight:600}
+.kpi--accent{background:linear-gradient(160deg,#eff6ff,#fff);border-color:var(--brand-tint)}
+.v1__panel{border:1px solid var(--border);border-radius:12px;background:#fff;overflow:hidden;margin-bottom:14px}
+.v1__panelhead{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border)}
+.v1__panelhead h4{margin:0;font-size:14px;color:var(--text-heading)}
+.v1__pane[hidden]{display:none}
+@media(max-width:860px){
+  .v1{grid-template-columns:1fr}
+  .v1__rail{flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--border)}
+  .v1__railhead,.v1__railfoot{display:none}
+  .v1__nav{flex-direction:row}
+  .v1__kpis{grid-template-columns:repeat(2,1fr)}
+}
+
+/* ══ V2 — Bento Deck ═════════════════════════════════════════════════════ */
+.v2{background:#f8fafc;padding:18px;display:grid;gap:12px;grid-template-columns:repeat(4,1fr)}
+.v2 .cell{background:#fff;border:1px solid var(--border);border-radius:14px;padding:16px}
+.v2 .cell--hero{grid-column:span 2;grid-row:span 2;background:var(--cta-gradient);color:#fff;border-color:transparent;display:flex;flex-direction:column}
+.v2 .cell--wide{grid-column:span 2}
+.v2 .cell--full{grid-column:1/-1}
+.v2__bal{font-size:56px;font-weight:800;line-height:1;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.v2__runway{margin-top:auto;padding-top:14px;border-top:1px solid rgba(255,255,255,.25);font-size:13px;color:#dbeafe;line-height:1.55}
+.v2__meter{height:7px;border-radius:99px;background:rgba(255,255,255,.25);margin:9px 0 8px;overflow:hidden}
+.v2__meter i{display:block;height:100%;background:#fff;border-radius:99px;width:26%}
+.v2 .cell h4{margin:0 0 10px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.v2__bars{display:flex;align-items:flex-end;gap:3px;height:74px}
+.v2__bars i{flex:1;border-radius:3px 3px 0 0;background:var(--brand-pale);position:relative}
+.v2__bars i.fail{background:#fecaca}
+.v2__bars i:hover{background:var(--brand)}
+.v2__keyline{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:13px}
+.v2__keyline:last-child{border-bottom:0}
+.v2__keyline code{font-size:12px;color:var(--slate-deep);background:#f8fafc;border-radius:5px;padding:2px 6px}
+.v2__packs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.v2__pack{border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;cursor:pointer;transition:.15s}
+.v2__pack:hover{border-color:var(--brand);background:var(--brand-wash);transform:translateY(-1px)}
+.v2__pack b{display:block;font-size:19px;color:var(--text-heading)}
+.v2__pack span{font-size:11.5px;color:var(--muted)}
+@media(max-width:900px){.v2{grid-template-columns:repeat(2,1fr)}.v2 .cell--hero{grid-column:1/-1;grid-row:auto}.v2__packs{grid-template-columns:repeat(2,1fr)}}
+
+/* ══ V3 — Key-First accordion ════════════════════════════════════════════ */
+.v3{background:#fff;padding:0}
+.v3__ribbon{
+  display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:11px 20px;
+  background:var(--brand-deep);color:#fff;font-size:13.5px;
+}
+.v3__ribbon b{font-size:16px;font-variant-numeric:tabular-nums}
+.v3__ribbon .sep{width:1px;height:18px;background:rgba(255,255,255,.25)}
+.v3__ribbon .grow{flex:1}
+.v3__head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:20px 20px 12px;flex-wrap:wrap}
+.v3__head h3{margin:0;font-size:20px;color:var(--text-heading)}
+.v3__list{border-top:1px solid var(--border)}
+.v3__row{border-bottom:1px solid var(--border)}
+.v3__sum{
+  display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:center;width:100%;
+  padding:14px 20px;background:none;border:0;cursor:pointer;text-align:left;font-family:inherit;
+}
+.v3__sum:hover{background:var(--brand-wash)}
+.v3__sum .nm{font-weight:700;font-size:14.5px;color:var(--text-heading);display:flex;align-items:center;gap:8px}
+.v3__sum .mt{font-size:12.5px;color:var(--muted);margin-top:3px}
+.v3__sum .chev{transition:transform .2s;color:var(--muted)}
+.v3__row.open .chev{transform:rotate(180deg)}
+.v3__detail{display:none;padding:0 20px 20px;background:#fbfdff}
+.v3__row.open .v3__detail{display:block}
+.v3__grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:4px 0 14px}
+.v3__stat{background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 12px}
+.v3__stat b{display:block;font-size:19px;color:var(--text-heading);font-variant-numeric:tabular-nums}
+.v3__stat span{font-size:11px;color:var(--muted)}
+.v3__snippet{background:var(--ink);color:#e2e8f0;border-radius:10px;padding:12px 14px;font-size:12.5px;overflow-x:auto;position:relative;white-space:pre;line-height:1.7}
+.v3__snippet .k{color:#7dd3fc}.v3__snippet .s{color:#bef264}
+.v3__actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.v3__foot{padding:16px 20px 22px}
+.v3__disc summary{cursor:pointer;font-weight:600;font-size:14px;color:var(--brand-deep);padding:10px 0}
+@media(max-width:760px){.v3__grid{grid-template-columns:repeat(2,1fr)}.v3__sum{grid-template-columns:1fr auto}}
+</style>
+</head>
+<body>
+
+<nav class="pv-top">
+  <div class="pv-top__inner">
+    <span class="pv-top__brand">Stagify — API dashboard directions</span>
+    <div class="pv-jump">
+      <a href="#v1">1 · Console Rail</a>
+      <a href="#v2">2 · Bento Deck</a>
+      <a href="#v3">3 · Key-First</a>
+      <a href="#v4">4 · Quickstart Cockpit</a>
+      <a href="#v5">5 · Usage-First</a>
+      <a href="#v6">6 · Inspector</a>
+      <a href="#v7">7 · Console Mode</a>
+      <a href="#v8">8 · Runway</a>
+      <a href="#v9">9 · Adaptive</a>
+    </div>
+  </div>
+</nav>
+
+<header class="pv-head">
+  <h1>API dashboard — 9 design directions</h1>
+  <p class="pv-request">
+    <b>Request:</b> “The stagify api dashboad at api-keys.html feels really lackluster. It doesn’t feel
+    like an actual dashboard. Use the prototype skill to improve this.”
+  </p>
+  <p class="pv-meta">
+    <span>18 Aug 2026</span>
+    <span>Target: <code>public/api-keys.html</code> + <code>public/styles/developers.css</code></span>
+    <span>Palette + gradient lifted from <code>styles.css :root</code></span>
+  </p>
+</header>
+
+<p class="pv-note">
+  <strong>Today it is four stacked cards</strong> — balance, keys, packs, ledger — in a 980px column, each
+  one a flat white box of the same weight, so nothing is the headline and there is no sense of an
+  instrument reading out a live system. Every number below is either already returned by
+  <code>/api/api-credits</code> and <code>/api/api-keys</code>, or already sitting in the
+  <code>api_requests</code> table (<code>key_id</code>, <code>status</code>, <code>credits_charged</code>,
+  <code>attempts</code>, <code>claimed_at</code>) with no read endpoint yet — the variants that show usage
+  charts assume one new <code>GET /api/api-usage</code> and say so in their badges.
+</p>
+
+<!-- ═══════════════════ V1 ═══════════════════ -->
+<section class="pv-variant" id="v1">
+  <h2><span class="pv-variant__no">1</span>Console Rail</h2>
+  <p class="pv-why">
+    Pick this when the goal is “stop feeling like a settings page and start feeling like a product you
+    log into.” A persistent left rail turns four sections into five destinations, so the page can grow —
+    logs, webhooks, team — without ever getting taller. The KPI strip is doing the real work: it answers
+    “is my integration healthy right now?” before you have scrolled, which is the question today’s page
+    never even asks. The cost is that it is the most conventional answer here; nobody will be excited,
+    everybody will know how to use it.
+  </p>
+  <div class="pv-chips">
+    <span class="chip chip--pro">+ Room to grow without new pages</span>
+    <span class="chip chip--pro">+ Health answered above the fold</span>
+    <span class="chip chip--pro">+ Familiar to anyone who uses Stripe/Vercel</span>
+    <span class="chip chip--con">− Rail is dead weight at 5 sections</span>
+    <span class="chip chip--con">− Reads as generic SaaS, not as Stagify</span>
+  </div>
+  <div class="pv-badges">
+    <span class="badge"><b>Media</b> none</span>
+    <span class="badge"><b>JS</b> tab switcher, ~40 lines over today’s islands</span>
+    <span class="badge"><b>Mobile</b> rail collapses to a scrolling tab strip</span>
+    <span class="badge"><b>API</b> needs GET /api/api-usage for the KPI strip</span>
+    <span class="badge"><b>A11y</b> tablist/tabpanel, straightforward</span>
+    <span class="badge badge--stat"><b>vs today</b> 4 stacked cards → 1 screen, 0 scroll to keys</span>
+  </div>
+
+  <div class="canvas">
+    <div class="canvas__bar"><span class="canvas__dot"></span><span class="canvas__dot"></span><span class="canvas__dot"></span><span class="canvas__url">stagify.ai/api-keys.html</span></div>
+    <div class="canvas__body">
+      <div class="v1">
+        <aside class="v1__rail">
+          <div class="v1__railhead"><span class="v1__logo"></span><span>Stagify API</span></div>
+          <div class="v1__nav" role="tablist" data-v1nav>
+            <button role="tab" aria-selected="true" data-pane="ov">Overview</button>
+            <button role="tab" aria-selected="false" data-pane="keys">API keys <span class="dotc">2</span></button>
+            <button role="tab" aria-selected="false" data-pane="usage">Usage</button>
+            <button role="tab" aria-selected="false" data-pane="bill">Credits</button>
+            <button role="tab" aria-selected="false" data-pane="docs">Docs ↗</button>
+          </div>
+          <div class="v1__railfoot">
+            <span class="pill pill--live">All systems normal</span><br>
+            <span style="display:inline-block;margin-top:8px">v1 · us-east</span>
+          </div>
+        </aside>
+
+        <div class="v1__main">
+          <div class="v1__crumb">
+            <h3 data-v1title>Overview</h3>
+            <div style="display:flex;gap:8px">
+              <button class="d-btn d-btn--sm">Last 7 days ▾</button>
+              <button class="d-btn d-btn--sm d-btn--primary">Buy credits</button>
+            </div>
+          </div>
+
+          <div class="v1__kpis">
+            <div class="kpi kpi--accent">
+              <div class="kpi__l">Credit balance</div>
+              <div class="kpi__v num">1,284</div>
+              <div class="kpi__d">≈ 11 days at current burn</div>
+            </div>
+            <div class="kpi">
+              <div class="kpi__l">Renders · 7 days</div>
+              <div class="kpi__v num">826</div>
+              <div class="kpi__d"><span class="up">▲ 18%</span> vs prior week</div>
+            </div>
+            <div class="kpi">
+              <div class="kpi__l">Success rate</div>
+              <div class="kpi__v num">99.2%</div>
+              <div class="kpi__d">7 failed · all refunded</div>
+            </div>
+            <div class="kpi">
+              <div class="kpi__l">Spend · 7 days</div>
+              <div class="kpi__v num">$107.38</div>
+              <div class="kpi__d">$0.130 an image</div>
+            </div>
+          </div>
+
+          <div class="v1__pane" data-pane="ov">
+            <div class="v1__panel">
+              <div class="v1__panelhead"><h4>Renders per day</h4><span class="mut" style="font-size:12px">30 days</span></div>
+              <div style="padding:14px"><div class="spark" data-spark="30" style="height:96px"></div></div>
+            </div>
+            <div class="v1__panel">
+              <div class="v1__panelhead"><h4>Recent activity</h4><a href="#" style="font-size:12.5px">View ledger</a></div>
+              <table class="d-tbl">
+                <thead><tr><th>When</th><th>What</th><th>Key</th><th style="text-align:right">Change</th><th style="text-align:right">Balance</th></tr></thead>
+                <tbody>
+                  <tr><td class="mut num">Aug 18, 09:41</td><td>Render</td><td><code style="font-size:12px">stg_live_9f3a…</code></td><td class="num neg" style="text-align:right">−1</td><td class="num" style="text-align:right">1,284</td></tr>
+                  <tr><td class="mut num">Aug 18, 09:41</td><td>Render</td><td><code style="font-size:12px">stg_live_9f3a…</code></td><td class="num neg" style="text-align:right">−1</td><td class="num" style="text-align:right">1,285</td></tr>
+                  <tr><td class="mut num">Aug 18, 09:38</td><td>Render failed — refunded</td><td><code style="font-size:12px">stg_live_9f3a…</code></td><td class="num pos" style="text-align:right">+1</td><td class="num" style="text-align:right">1,286</td></tr>
+                  <tr><td class="mut num">Aug 17, 22:04</td><td>Credits purchased</td><td class="mut">—</td><td class="num pos" style="text-align:right">+500</td><td class="num" style="text-align:right">1,742</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="v1__pane" data-pane="keys" hidden>
+            <div class="v1__panel">
+              <div class="v1__panelhead"><h4>API keys</h4><button class="d-btn d-btn--sm d-btn--primary">Create key</button></div>
+              <table class="d-tbl">
+                <thead><tr><th>Name</th><th>Key</th><th>Last used</th><th>Renders · 7d</th><th></th></tr></thead>
+                <tbody>
+                  <tr><td><b>Production server</b><br><span class="mut" style="font-size:12px">Created 4 Mar 2026</span></td><td><code style="font-size:12px">stg_live_9f3a2c…</code></td><td><span class="pill pill--live">2 min ago</span></td><td class="num">791</td><td style="text-align:right"><button class="d-btn d-btn--sm d-btn--danger">Revoke</button></td></tr>
+                  <tr><td><b>Staging / CI</b><br><span class="mut" style="font-size:12px">Created 11 Jun 2026</span></td><td><code style="font-size:12px">stg_live_71bd04…</code></td><td><span class="pill pill--idle">6 days ago</span></td><td class="num">35</td><td style="text-align:right"><button class="d-btn d-btn--sm d-btn--danger">Revoke</button></td></tr>
+                  <tr style="opacity:.6"><td><b>Zapier integration</b><br><span class="mut" style="font-size:12px">Revoked 22 Jul 2026</span></td><td><code style="font-size:12px">stg_live_44c1ef…</code></td><td><span class="pill pill--dead">Revoked</span></td><td class="num">0</td><td></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="v1__pane" data-pane="usage" hidden>
+            <div class="v1__panel">
+              <div class="v1__panelhead"><h4>Renders by key</h4><span class="mut" style="font-size:12px">30 days</span></div>
+              <div style="padding:14px 16px 18px">
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px"><span>Production server</span><span class="num mut">3,102</span></div>
+                <div style="height:9px;border-radius:99px;background:#eef2f7;margin-bottom:14px"><i style="display:block;height:100%;width:88%;border-radius:99px;background:var(--brand)"></i></div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px"><span>Staging / CI</span><span class="num mut">421</span></div>
+                <div style="height:9px;border-radius:99px;background:#eef2f7"><i style="display:block;height:100%;width:12%;border-radius:99px;background:var(--brand-soft)"></i></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="v1__pane" data-pane="bill" hidden>
+            <div class="v1__panel">
+              <div class="v1__panelhead"><h4>Buy credits</h4><span class="mut" style="font-size:12px">Fixed price per image, failures refunded</span></div>
+              <div style="padding:14px" class="v2__packs">
+                <div class="v2__pack"><b>20</b><span>images</span><div style="margin-top:6px;font-weight:700">$3.00</div><span>$0.150 each</span></div>
+                <div class="v2__pack"><b>50</b><span>images</span><div style="margin-top:6px;font-weight:700">$7.00</div><span>$0.140 each</span></div>
+                <div class="v2__pack"><b>100</b><span>images</span><div style="margin-top:6px;font-weight:700">$13.00</div><span>$0.130 each</span></div>
+                <div class="v2__pack" style="border-color:var(--brand);background:var(--brand-wash)"><b>500</b><span>images</span><div style="margin-top:6px;font-weight:700">$60.00</div><span>$0.120 each</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="v1__pane" data-pane="docs" hidden>
+            <div class="v1__panel"><div style="padding:20px"><p style="margin:0;font-size:14px;color:var(--slate-deep)">Jumps to <code>developers.html</code> — kept in the rail so the docs are never more than one click from a key.</p></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ V2 ═══════════════════ -->
+<section class="pv-variant" id="v2">
+  <h2><span class="pv-variant__no">2</span>Bento Deck</h2>
+  <p class="pv-why">
+    Pick this when you want the page to feel like an instrument the moment it paints, with no navigation
+    to learn. Everything lives on one screen at different weights: the balance is enormous and gradient-filled
+    so it reads as the headline, usage is a glanceable bar field, keys shrink to two lines, and packs become
+    a buy strip rather than a section. It is the direction that makes the strongest first impression in a
+    screenshot — and the one that will fight you hardest the day you add a sixth thing to show.
+  </p>
+  <div class="pv-chips">
+    <span class="chip chip--pro">+ Feels designed, not assembled</span>
+    <span class="chip chip--pro">+ Zero navigation to learn</span>
+    <span class="chip chip--pro">+ Buying is one click from anywhere</span>
+    <span class="chip chip--con">− Grid breaks down as content grows</span>
+    <span class="chip chip--con">− Long ledgers have nowhere to live</span>
+  </div>
+  <div class="pv-badges">
+    <span class="badge"><b>Media</b> none — the gradient does the lifting</span>
+    <span class="badge"><b>JS</b> lightest of the nine; today’s islands re-slotted</span>
+    <span class="badge"><b>Mobile</b> 4-col → 2-col → stacked; hero first</span>
+    <span class="badge"><b>API</b> usage tile needs GET /api/api-usage</span>
+    <span class="badge badge--stat"><b>vs today</b> ~2,100px page → ~640px, no scroll on a laptop</span>
+  </div>
+
+  <div class="canvas">
+    <div class="canvas__bar"><span class="canvas__dot"></span><span class="canvas__dot"></span><span class="canvas__dot"></span><span class="canvas__url">stagify.ai/api-keys.html</span></div>
+    <div class="canvas__body">
+      <div class="v2">
+        <div class="cell cell--hero">
+          <div class="kicker" style="color:#bfdbfe">Credit balance</div>
+          <div class="v2__bal num">1,284</div>
+          <div style="font-size:14px;color:#dbeafe;margin-top:4px">images ready to render</div>
+          <div class="v2__runway">
+            <div style="display:flex;justify-content:space-between;font-size:12px"><span>Runway</span><span>≈ 11 days</span></div>
+            <div class="v2__meter"><i></i></div>
+            5,000 purchased · 3,716 spent · burn 118/day
+            <div style="margin-top:12px"><button class="d-btn" style="background:#fff;color:var(--brand-deep);border-color:#fff">Buy credits</button></div>
+          </div>
+        </div>
+
+        <div class="cell cell--wide">
+          <h4>Renders · last 30 days</h4>
+          <div class="v2__bars" data-bars="30"></div>
+          <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:12px;color:var(--muted)">
+            <span>3,523 renders</span><span>99.2% delivered · 27 refunded</span>
+          </div>
+        </div>
+
+        <div class="cell">
+          <h4>Success</h4>
+          <div style="font-size:32px;font-weight:800;letter-spacing:-.02em" class="num">99.2%</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px">A failed render refunds itself. You have never paid for one.</div>
+        </div>
+
+        <div class="cell">
+          <h4>P50 render time</h4>
+          <div style="font-size:32px;font-weight:800;letter-spacing:-.02em" class="num">14.6s</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px">P95 26.1s · no queue right now</div>
+        </div>
+
+        <div class="cell cell--wide">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <h4 style="margin:0">Keys</h4><button class="d-btn d-btn--sm">+ Create</button>
+          </div>
+          <div class="v2__keyline"><span class="pill pill--live"></span><b style="flex:1">Production server</b><code>stg_live_9f3a2c…</code><span class="mut" style="font-size:12px">2 min ago</span></div>
+          <div class="v2__keyline"><span class="pill pill--idle"></span><b style="flex:1">Staging / CI</b><code>stg_live_71bd04…</code><span class="mut" style="font-size:12px">6 days ago</span></div>
+          <div class="v2__keyline" style="opacity:.55"><span class="pill pill--dead"></span><b style="flex:1">Zapier integration</b><code>stg_live_44c1ef…</code><span class="mut" style="font-size:12px">revoked</span></div>
+        </div>
+
+        <div class="cell cell--wide">
+          <h4>Latest requests</h4>
+          <table class="d-tbl">
+            <tbody>
+              <tr><td class="mut num" style="padding-left:0">09:41:22</td><td><span class="pill pill--live">200</span></td><td>living-room-04.jpg</td><td class="num" style="text-align:right;padding-right:0">−1</td></tr>
+              <tr><td class="mut num" style="padding-left:0">09:41:03</td><td><span class="pill pill--live">200</span></td><td>living-room-03.jpg</td><td class="num" style="text-align:right;padding-right:0">−1</td></tr>
+              <tr><td class="mut num" style="padding-left:0">09:38:55</td><td><span class="pill pill--dead">502</span></td><td>kitchen-11.jpg</td><td class="num pos" style="text-align:right;padding-right:0">+1</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="cell cell--full">
+          <h4>Top up</h4>
+          <div class="v2__packs">
+            <div class="v2__pack"><b>20</b><span>images · $3.00</span></div>
+            <div class="v2__pack"><b>50</b><span>images · $7.00</span></div>
+            <div class="v2__pack"><b>100</b><span>images · $13.00</span></div>
+            <div class="v2__pack" style="border-color:var(--brand);background:var(--brand-wash)"><b>500</b><span>images · $60.00 · best rate</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ V3 ═══════════════════ -->
+<section class="pv-variant" id="v3">
+  <h2><span class="pv-variant__no">3</span>Key-First</h2>
+  <p class="pv-why">
+    Pick this if you believe the page has exactly one job — managing keys — and the other three cards are
+    supporting cast that got equal billing by accident. The balance shrinks to a ribbon that is always on
+    screen, and each key becomes an expandable unit that carries its own stats, its own ready-to-paste curl
+    with its own prefix, and its own danger zone. It is the least “dashboard-looking” option here, and it is
+    also the one that makes the most sense the fifth time you visit rather than the first.
+  </p>
+  <div class="pv-chips">
+    <span class="chip chip--pro">+ Every action is where the object is</span>
+    <span class="chip chip--pro">+ Scales to 25 keys without redesign</span>
+    <span class="chip chip--pro">+ Smallest diff from today’s markup</span>
+    <span class="chip chip--con">− Weak first impression; still list-shaped</span>
+    <span class="chip chip--con">− Account-wide health is only a ribbon</span>
+  </div>
+  <div class="pv-badges">
+    <span class="badge"><b>Media</b> none</span>
+    <span class="badge"><b>JS</b> accordion + copy-to-clipboard; keeps key-list.js</span>
+    <span class="badge"><b>Mobile</b> best of the nine — rows collapse naturally</span>
+    <span class="badge"><b>API</b> per-key usage from api_requests.key_id</span>
+    <span class="badge"><b>A11y</b> aria-expanded rows; no new focus traps</span>
+    <span class="badge badge--stat"><b>vs today</b> revoke/rotate/test 3 clicks → 1 row</span>
+  </div>
+
+  <div class="canvas">
+    <div class="canvas__bar"><span class="canvas__dot"></span><span class="canvas__dot"></span><span class="canvas__dot"></span><span class="canvas__url">stagify.ai/api-keys.html</span></div>
+    <div class="canvas__body">
+      <div class="v3">
+        <div class="v3__ribbon">
+          <span>Balance <b class="num">1,284</b> images</span>
+          <span class="sep"></span>
+          <span style="color:#bfdbfe">≈ 11 days at 118/day</span>
+          <span class="sep"></span>
+          <span style="color:#bfdbfe">826 renders this week</span>
+          <span class="grow"></span>
+          <button class="d-btn d-btn--sm" style="background:#fff;color:var(--brand-deep);border-color:#fff">Buy credits</button>
+        </div>
+
+        <div class="v3__head">
+          <div><h3>API keys</h3><div class="mut" style="font-size:13px;margin-top:3px">2 live of 25 · click a key to open it</div></div>
+          <button class="d-btn d-btn--primary">Create key</button>
+        </div>
+
+        <div class="v3__list" data-v3>
+          <div class="v3__row open">
+            <button class="v3__sum">
+              <span>
+                <span class="nm">Production server <span class="pill pill--live">live</span></span>
+                <span class="mt">stg_live_9f3a2c… · created 4 Mar 2026 · last used 2 minutes ago</span>
+              </span>
+              <span class="num mut" style="font-size:13px">791 renders / 7d</span>
+              <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="v3__detail">
+              <div class="v3__grid">
+                <div class="v3__stat"><b class="num">3,102</b><span>renders all time</span></div>
+                <div class="v3__stat"><b class="num">99.4%</b><span>delivered</span></div>
+                <div class="v3__stat"><b class="num">14.2s</b><span>median render</span></div>
+                <div class="v3__stat"><b class="num">$403.26</b><span>spent through this key</span></div>
+              </div>
+              <div class="v3__snippet mono">curl -X POST https://stagify.ai/api/v1/stage \
+  -H <span class="s">"Authorization: Bearer stg_live_9f3a2c…"</span> \
+  -H <span class="s">"Idempotency-Key: $(uuidgen)"</span> \
+  -F <span class="k">image</span>=@living-room.jpg -F <span class="k">roomType</span>=Living</div>
+              <div class="v3__actions">
+                <button class="d-btn d-btn--sm">Copy snippet</button>
+                <button class="d-btn d-btn--sm">Rename</button>
+                <button class="d-btn d-btn--sm">Rotate</button>
+                <button class="d-btn d-btn--sm d-btn--danger">Revoke</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="v3__row">
+            <button class="v3__sum">
+              <span>
+                <span class="nm">Staging / CI <span class="pill pill--idle">idle</span></span>
+                <span class="mt">stg_live_71bd04… · created 11 Jun 2026 · last used 6 days ago</span>
+              </span>
+              <span class="num mut" style="font-size:13px">35 renders / 7d</span>
+              <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="v3__detail">
+              <div class="v3__grid">
+                <div class="v3__stat"><b class="num">421</b><span>renders all time</span></div>
+                <div class="v3__stat"><b class="num">97.8%</b><span>delivered</span></div>
+                <div class="v3__stat"><b class="num">15.8s</b><span>median render</span></div>
+                <div class="v3__stat"><b class="num">$54.73</b><span>spent through this key</span></div>
+              </div>
+              <div class="v3__actions">
+                <button class="d-btn d-btn--sm">Copy snippet</button>
+                <button class="d-btn d-btn--sm">Rename</button>
+                <button class="d-btn d-btn--sm d-btn--danger">Revoke</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="v3__row" style="opacity:.62">
+            <button class="v3__sum">
+              <span>
+                <span class="nm">Zapier integration <span class="pill pill--dead">revoked</span></span>
+                <span class="mt">stg_live_44c1ef… · revoked 22 Jul 2026 · kept so you can recognise it in a log</span>
+              </span>
+              <span class="num mut" style="font-size:13px">—</span>
+              <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="v3__detail"><p class="mut" style="font-size:13.5px;margin:8px 0 0">Revoked keys keep their history. 612 renders, last one 21 Jul 2026.</p></div>
+          </div>
+        </div>
+
+        <div class="v3__foot">
+          <details class="v3__disc"><summary>Credits &amp; billing · 1,284 images · last purchase 17 Aug</summary>
+            <div class="v2__packs" style="margin-top:8px">
+              <div class="v2__pack"><b>20</b><span>$3.00</span></div>
+              <div class="v2__pack"><b>50</b><span>$7.00</span></div>
+              <div class="v2__pack"><b>100</b><span>$13.00</span></div>
+              <div class="v2__pack" style="border-color:var(--brand);background:var(--brand-wash)"><b>500</b><span>$60.00</span></div>
+            </div>
+          </details>
+          <details class="v3__disc"><summary>Recent activity · 50 entries</summary>
+            <table class="d-tbl" style="margin-top:6px">
+              <thead><tr><th>When</th><th>What</th><th style="text-align:right">Change</th><th style="text-align:right">Balance</th></tr></thead>
+              <tbody>
+                <tr><td class="mut num">Aug 18, 09:41</td><td>Render</td><td class="num neg" style="text-align:right">−1</td><td class="num" style="text-align:right">1,284</td></tr>
+                <tr><td class="mut num">Aug 18, 09:38</td><td>Render failed — refunded</td><td class="num pos" style="text-align:right">+1</td><td class="num" style="text-align:right">1,286</td></tr>
+                <tr><td class="mut num">Aug 17, 22:04</td><td>Credits purchased</td><td class="num pos" style="text-align:right">+500</td><td class="num" style="text-align:right">1,742</td></tr>
+              </tbody>
+            </table>
+          </details>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+/* ══ V4 — Quickstart Cockpit ═════════════════════════════════════════════ */
+.v4{display:grid;grid-template-columns:1.05fr .95fr;background:#fff;min-height:560px}
+.v4__left{padding:22px 24px 26px;border-right:1px solid var(--border);min-width:0}
+.v4__hdr{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px;flex-wrap:wrap}
+.v4__hdr h3{margin:0;font-size:21px;color:var(--text-heading)}
+.v4__bal{font-size:13px;color:var(--slate-deep);background:var(--brand-wash);border:1px solid var(--brand-tint);border-radius:999px;padding:5px 12px}
+.v4__lede{margin:0 0 18px;font-size:14px;color:var(--slate-deep);line-height:1.6;max-width:52ch}
+.v4__step{display:grid;grid-template-columns:26px 1fr;gap:12px;margin-bottom:18px}
+.v4__n{width:26px;height:26px;border-radius:50%;background:var(--brand-tint);color:var(--brand-deep);font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center}
+.v4__step.done .v4__n{background:#dcfce7;color:#14532d}
+.v4__step h5{margin:2px 0 6px;font-size:14.5px;color:var(--text-heading)}
+.v4__step p{margin:0 0 8px;font-size:13px;color:var(--slate);line-height:1.55}
+.v4__code{background:var(--ink);color:#e2e8f0;border-radius:10px;padding:12px 14px;font-size:12.5px;line-height:1.65;overflow-x:auto;position:relative;white-space:pre}
+.v4__code .s{color:#bef264}.v4__code .k{color:#7dd3fc}.v4__code .c{color:#64748b}
+.v4__copy{position:absolute;top:8px;right:8px;font-size:11px;border:1px solid #334155;background:#1e293b;color:#cbd5e1;border-radius:6px;padding:3px 8px;cursor:pointer}
+.v4__copy:hover{background:#334155}
+.v4__sel{font:600 12.5px Inter,sans-serif;border:1px solid var(--border);border-radius:7px;padding:5px 8px;color:var(--slate-deep);background:#fff}
+.v4__right{background:#f8fafc;padding:18px 20px;display:flex;flex-direction:column;min-width:0}
+.v4__rhdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.v4__rhdr h4{margin:0;font-size:14px;color:var(--text-heading)}
+.v4__log{
+  flex:1;background:#fff;border:1px solid var(--border);border-radius:10px;overflow:auto;
+  font-family:"JetBrains Mono",monospace;font-size:11.5px;max-height:340px;
+}
+.v4__log .ln{display:grid;grid-template-columns:64px 44px 1fr auto;gap:8px;padding:7px 10px;border-bottom:1px solid #f1f5f9;align-items:center}
+.v4__log .ln:first-child{background:#f0f9ff}
+.v4__log .t{color:var(--muted)}
+.v4__log .ok{color:#15803d;font-weight:700}
+.v4__log .er{color:var(--danger);font-weight:700}
+.v4__mini{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.v4__mini div{background:#fff;border:1px solid var(--border);border-radius:9px;padding:9px 11px}
+.v4__mini b{display:block;font-size:17px;color:var(--text-heading);font-variant-numeric:tabular-nums}
+.v4__mini span{font-size:11px;color:var(--muted)}
+@media(max-width:900px){.v4{grid-template-columns:1fr}.v4__left{border-right:0;border-bottom:1px solid var(--border)}}
+
+/* ══ V5 — Usage-First + drawer ═══════════════════════════════════════════ */
+.v5{background:#fff;position:relative;overflow:hidden;min-height:560px}
+.v5__top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 22px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.v5__top h3{margin:0;font-size:20px;color:var(--text-heading)}
+.v5__seg{display:inline-flex;border:1px solid var(--border);border-radius:9px;overflow:hidden}
+.v5__seg button{border:0;background:#fff;font:600 12.5px Inter,sans-serif;color:var(--slate-deep);padding:6px 12px;cursor:pointer}
+.v5__seg button[aria-pressed=true]{background:var(--brand-deep);color:#fff}
+.v5__body{padding:20px 22px 26px}
+.v5__chartwrap{border:1px solid var(--border);border-radius:14px;padding:16px 18px 12px;background:linear-gradient(180deg,#fbfdff,#fff)}
+.v5__legend{display:flex;gap:16px;font-size:12px;color:var(--slate-deep);margin-bottom:12px;flex-wrap:wrap}
+.v5__legend i{width:10px;height:10px;border-radius:3px;display:inline-block;margin-right:6px;vertical-align:-1px}
+/* align-items must stay `stretch`: the columns size their bars in % of their own
+   height, and flex-end would shrink each column to its content and resolve those
+   percentages against zero. */
+.v5__chart{display:flex;align-items:stretch;gap:4px;height:190px}
+.v5__col{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;position:relative;cursor:pointer}
+.v5__col .ok{background:var(--brand);border-radius:3px 3px 0 0}
+.v5__col .rf{background:#fca5a5;border-radius:3px 3px 0 0}
+/* The refunded segment caps the stack, so the delivered bar below it loses its own cap. */
+.v5__col .rf + .ok{border-radius:0}
+.v5__col:hover .ok{background:var(--brand-deep)}
+.v5__col .tip{
+  position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;
+  font-size:11px;border-radius:6px;padding:5px 8px;white-space:nowrap;opacity:0;pointer-events:none;transition:.12s;z-index:5;
+}
+.v5__col:hover .tip{opacity:1}
+.v5__axis{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:8px}
+.v5__cols{display:grid;grid-template-columns:1.4fr 1fr;gap:14px;margin-top:16px}
+.v5__box{border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.v5__box h4{margin:0;padding:11px 14px;font-size:13px;color:var(--text-heading);border-bottom:1px solid var(--border);background:#fbfdff}
+.v5__drawer{
+  position:absolute;top:0;right:0;bottom:0;width:min(430px,92%);background:#fff;border-left:1px solid var(--border);
+  box-shadow:-16px 0 40px rgba(15,23,42,.12);transform:translateX(100%);transition:transform .26s cubic-bezier(.4,0,.2,1);
+  z-index:20;display:flex;flex-direction:column;
+}
+.v5.open .v5__drawer{transform:translateX(0)}
+.v5__scrim{position:absolute;inset:0;background:rgba(15,23,42,.28);opacity:0;pointer-events:none;transition:.26s;z-index:15}
+.v5.open .v5__scrim{opacity:1;pointer-events:auto}
+.v5__dhdr{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border)}
+.v5__dhdr h4{margin:0;font-size:16px}
+.v5__dbody{padding:16px 18px;overflow:auto}
+.v5__x{border:0;background:#f1f5f9;border-radius:8px;width:28px;height:28px;cursor:pointer;font-size:16px;color:var(--slate-deep)}
+@media(max-width:820px){.v5__cols{grid-template-columns:1fr}}
+
+/* ══ V6 — Two-pane inspector ═════════════════════════════════════════════ */
+.v6{display:grid;grid-template-columns:290px 1fr;background:#fff;min-height:560px}
+.v6__list{border-right:1px solid var(--border);background:#fbfdff;display:flex;flex-direction:column}
+.v6__search{padding:12px;border-bottom:1px solid var(--border)}
+.v6__search input{width:100%;border:1px solid var(--border);border-radius:8px;padding:7px 10px;font:400 13px Inter,sans-serif}
+.v6__group{padding:12px 12px 4px;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.v6__item{
+  display:block;width:100%;text-align:left;border:0;background:none;padding:10px 12px;cursor:pointer;
+  border-left:3px solid transparent;font-family:inherit;
+}
+.v6__item:hover{background:#f1f5f9}
+.v6__item[aria-current=true]{background:var(--brand-wash);border-left-color:var(--brand)}
+.v6__item b{display:block;font-size:13.5px;color:var(--text-heading)}
+.v6__item span{font-size:11.5px;color:var(--muted)}
+.v6__detail{padding:20px 24px 26px;min-width:0}
+.v6__dhead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.v6__dhead h3{margin:0 0 4px;font-size:21px;color:var(--text-heading)}
+.v6__pane[hidden]{display:none}
+.v6__stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.v6__field{display:grid;grid-template-columns:150px 1fr;gap:12px;padding:10px 0;border-bottom:1px solid #f1f5f9;font-size:13.5px}
+.v6__field dt{color:var(--muted)}
+.v6__danger{margin-top:18px;border:1px solid #fecaca;background:#fef2f2;border-radius:12px;padding:14px 16px}
+.v6__danger h5{margin:0 0 4px;font-size:13.5px;color:var(--danger)}
+.v6__danger p{margin:0 0 10px;font-size:12.5px;color:#7f1d1d;line-height:1.5}
+@media(max-width:860px){.v6{grid-template-columns:1fr}.v6__list{border-right:0;border-bottom:1px solid var(--border)}.v6__stats{grid-template-columns:repeat(2,1fr)}}
+</style>
+
+<!-- ═══════════════════ V4 ═══════════════════ -->
+<section class="pv-variant" id="v4">
+  <h2><span class="pv-variant__no">4</span>Quickstart Cockpit</h2>
+  <p class="pv-why">
+    Pick this if the real problem is not that the page is boring but that it is inert — you get a key and
+    then you are on your own, one tab away in the docs. Here the left half is a live quickstart whose curl
+    is bound to the key you pick from a dropdown, and the right half is your request log streaming in, so
+    the first call you ever make appears on the same screen you copied it from. It is the direction that
+    most improves day one and does the least for day ninety, when you already know the API and just want
+    your balance.
+  </p>
+  <div class="pv-chips">
+    <span class="chip chip--pro">+ Closes the gap between key and first call</span>
+    <span class="chip chip--pro">+ Live log proves the integration works</span>
+    <span class="chip chip--pro">+ Strong dev-rel story; screenshots well</span>
+    <span class="chip chip--con">− Wasted space for a returning user</span>
+    <span class="chip chip--con">− Streaming log needs polling or SSE</span>
+  </div>
+  <div class="pv-badges">
+    <span class="badge"><b>Media</b> none</span>
+    <span class="badge"><b>JS</b> heaviest — poller + snippet binding + clipboard</span>
+    <span class="badge"><b>Mobile</b> stacks; log falls below the fold</span>
+    <span class="badge"><b>API</b> needs GET /api/api-requests (paged) or SSE</span>
+    <span class="badge"><b>I18n</b> code snippets stay English by design</span>
+    <span class="badge badge--stat"><b>vs today</b> key → first successful call: 2 tabs → 1</span>
+  </div>
+
+  <div class="canvas">
+    <div class="canvas__bar"><span class="canvas__dot"></span><span class="canvas__dot"></span><span class="canvas__dot"></span><span class="canvas__url">stagify.ai/api-keys.html</span></div>
+    <div class="canvas__body">
+      <div class="v4">
+        <div class="v4__left">
+          <div class="v4__hdr">
+            <h3>Your API</h3>
+            <span class="v4__bal"><b class="num">1,284</b> credits · ≈11 days</span>
+          </div>
+          <p class="v4__lede">
+            Three steps from key to staged photo. Everything below is bound to the key you choose —
+            paste it and it works.
+          </p>
+
+          <div class="v4__step done">
+            <div class="v4__n">✓</div>
+            <div>
+              <h5>Create a key</h5>
+              <p>You have 2 live keys. Working with <select class="v4__sel" data-v4key><option>Production server</option><option>Staging / CI</option></select></p>
+            </div>
+          </div>
+
+          <div class="v4__step done">
+            <div class="v4__n">✓</div>
+            <div>
+              <h5>Add credits</h5>
+              <p>1,284 images in the tank. A failed render refunds itself automatically.</p>
+            </div>
+          </div>
+
+          <div class="v4__step">
+            <div class="v4__n">3</div>
+            <div>
+              <h5>Stage your first photo</h5>
+              <p>One POST, one image back. The idempotency key makes a retry free.</p>
+              <div class="v4__code mono"><button class="v4__copy" data-copy>Copy</button><span class="c"># <span data-v4label>Production server</span></span>
+curl -X POST https://stagify.ai/api/v1/stage \
+  -H <span class="s">"Authorization: Bearer <span data-v4prefix>stg_live_9f3a2c…</span>"</span> \
+  -H <span class="s">"Idempotency-Key: 8f2c-4a11"</span> \
+  -F <span class="k">image</span>=@living-room.jpg \
+  -F <span class="k">roomType</span>=<span class="s">"Living Room"</span> \
+  -F <span class="k">style</span>=<span class="s">"Modern"</span></div>
+              <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+                <button class="d-btn d-btn--sm d-btn--primary">Send a test render</button>
+                <a class="d-btn d-btn--sm" href="#">Full reference ↗</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="v4__right">
+          <div class="v4__rhdr">
+            <h4>Request log</h4>
+            <span class="pill pill--live">live</span>
+          </div>
+          <div class="v4__log mono" data-v4log>
+            <div class="ln"><span class="t">09:41:22</span><span class="ok">200</span><span>POST /v1/stage · living-room-04.jpg</span><span class="t">14.1s</span></div>
+            <div class="ln"><span class="t">09:41:03</span><span class="ok">200</span><span>POST /v1/stage · living-room-03.jpg</span><span class="t">12.8s</span></div>
+            <div class="ln"><span class="t">09:38:55</span><span class="er">502</span><span>POST /v1/stage · kitchen-11.jpg <span style="color:#15803d">+1 refunded</span></span><span class="t">31.0s</span></div>
+            <div class="ln"><span class="t">09:37:12</span><span class="ok">200</span><span>POST /v1/stage · kitchen-10.jpg</span><span class="t">15.6s</span></div>
+            <div class="ln"><span class="t">09:35:48</span><span class="ok">200</span><span>GET /v1/renders/rnd_4c81</span><span class="t">0.2s</span></div>
+            <div class="ln"><span class="t">09:34:02</span><span class="ok">200</span><span>POST /v1/stage · bedroom-02.jpg</span><span class="t">13.9s</span></div>
+          </div>
+          <div class="v4__mini">
+            <div><b class="num">826</b><span>renders · 7d</span></div>
+            <div><b class="num">99.2%</b><span>delivered</span></div>
+            <div><b class="num">14.6s</b><span>median</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ V5 ═══════════════════ -->
+<section class="pv-variant" id="v5">
+  <h2><span class="pv-variant__no">5</span>Usage-First (keys in a drawer)</h2>
+  <p class="pv-why">
+    Pick this if you accept that keys are a once-a-quarter task and usage is a daily one, and you are
+    willing to demote the thing the page is named after. The chart is the page; keys and billing slide in
+    from the right when you actually need them, which keeps the main surface uncluttered and makes the
+    dashboard worth opening on a Monday morning. The risk is real: someone arriving from the docs looking
+    for “where do I get a key” has to find a button first.
+  </p>
+  <div class="pv-chips">
+    <span class="chip chip--pro">+ Genuinely worth revisiting daily</span>
+    <span class="chip chip--pro">+ Failure spikes are visible, not buried in a ledger</span>
+    <span class="chip chip--pro">+ Drawer keeps rare tasks out of the way</span>
+    <span class="chip chip--con">− Buries the page’s namesake behind a button</span>
+    <span class="chip chip--con">− Empty and sad for a brand-new account</span>
+  </div>
+  <div class="pv-badges">
+    <span class="badge"><b>Media</b> none — chart is CSS bars, no library</span>
+    <span class="badge"><b>JS</b> drawer + range toggle + chart build</span>
+    <span class="badge"><b>Mobile</b> drawer goes full-screen; chart scrolls</span>
+    <span class="badge"><b>API</b> GET /api/api-usage?range= is a hard dependency</span>
+    <span class="badge"><b>A11y</b> drawer needs a real focus trap + Esc</span>
+    <span class="badge badge--stat"><b>vs today</b> 0 → 30 days of history visible at a glance</span>
+  </div>
+
+  <div class="canvas">
+    <div class="canvas__bar"><span class="canvas__dot"></span><span class="canvas__dot"></span><span class="canvas__dot"></span><span class="canvas__url">stagify.ai/api-keys.html</span></div>
+    <div class="canvas__body">
+      <div class="v5" data-v5>
+        <div class="v5__top">
+          <div>
+            <h3>Usage</h3>
+            <div class="mut" style="font-size:12.5px;margin-top:2px">3,523 renders · $458.00 spent · balance 1,284</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <div class="v5__seg" data-v5seg>
+              <button aria-pressed="false">24h</button>
+              <button aria-pressed="false">7d</button>
+              <button aria-pressed="true">30d</button>
+            </div>
+            <button class="d-btn d-btn--sm" data-v5open="keys">Keys (2)</button>
+            <button class="d-btn d-btn--sm d-btn--primary" data-v5open="credits">Buy credits</button>
+          </div>
+        </div>
+
+        <div class="v5__body">
+          <div class="v5__chartwrap">
+            <div class="v5__legend">
+              <span><i style="background:var(--brand)"></i>Delivered</span>
+              <span><i style="background:#fca5a5"></i>Failed &amp; refunded</span>
+              <span class="mut" style="margin-left:auto">Peak 214 on 12 Aug</span>
+            </div>
+            <div class="v5__chart" data-v5chart></div>
+            <div class="v5__axis"><span>20 Jul</span><span>4 Aug</span><span>18 Aug</span></div>
+          </div>
+
+          <div class="v5__cols">
+            <div class="v5__box">
+              <h4>By key</h4>
+              <table class="d-tbl">
+                <thead><tr><th>Key</th><th style="text-align:right">Renders</th><th style="text-align:right">Failed</th><th style="text-align:right">Spend</th></tr></thead>
+                <tbody>
+                  <tr><td><b>Production server</b><br><code class="mut" style="font-size:11.5px">stg_live_9f3a2c…</code></td><td class="num" style="text-align:right">3,102</td><td class="num" style="text-align:right">19</td><td class="num" style="text-align:right">$403.26</td></tr>
+                  <tr><td><b>Staging / CI</b><br><code class="mut" style="font-size:11.5px">stg_live_71bd04…</code></td><td class="num" style="text-align:right">421</td><td class="num" style="text-align:right">8</td><td class="num" style="text-align:right">$54.73</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="v5__box">
+              <h4>Room types staged</h4>
+              <div style="padding:14px 16px 16px">
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px"><span>Living Room</span><span class="mut num">1,614</span></div>
+                <div style="height:8px;border-radius:99px;background:#eef2f7;margin-bottom:12px"><i style="display:block;height:100%;width:46%;border-radius:99px;background:var(--brand)"></i></div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px"><span>Bedroom</span><span class="mut num">1,022</span></div>
+                <div style="height:8px;border-radius:99px;background:#eef2f7;margin-bottom:12px"><i style="display:block;height:100%;width:29%;border-radius:99px;background:var(--brand-soft)"></i></div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px"><span>Kitchen</span><span class="mut num">563</span></div>
+                <div style="height:8px;border-radius:99px;background:#eef2f7;margin-bottom:12px"><i style="display:block;height:100%;width:16%;border-radius:99px;background:var(--brand-pale)"></i></div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px"><span>Other</span><span class="mut num">324</span></div>
+                <div style="height:8px;border-radius:99px;background:#eef2f7"><i style="display:block;height:100%;width:9%;border-radius:99px;background:#cbd5e1"></i></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="v5__scrim" data-v5close></div>
+        <aside class="v5__drawer" aria-label="Keys and billing">
+          <div class="v5__dhdr"><h4 data-v5dtitle>API keys</h4><button class="v5__x" data-v5close aria-label="Close">×</button></div>
+          <div class="v5__dbody">
+            <div data-v5pane="keys">
+              <button class="d-btn d-btn--primary" style="width:100%;justify-content:center;margin-bottom:14px">Create key</button>
+              <div class="v2__keyline" style="padding:12px 0"><span class="pill pill--live"></span><span style="flex:1"><b>Production server</b><br><span class="mut" style="font-size:11.5px">stg_live_9f3a2c… · 2 min ago</span></span><button class="d-btn d-btn--sm d-btn--danger">Revoke</button></div>
+              <div class="v2__keyline" style="padding:12px 0"><span class="pill pill--idle"></span><span style="flex:1"><b>Staging / CI</b><br><span class="mut" style="font-size:11.5px">stg_live_71bd04… · 6 days ago</span></span><button class="d-btn d-btn--sm d-btn--danger">Revoke</button></div>
+              <div class="v2__keyline" style="padding:12px 0;opacity:.55"><span class="pill pill--dead"></span><span style="flex:1"><b>Zapier integration</b><br><span class="mut" style="font-size:11.5px">revoked 22 Jul 2026</span></span></div>
+            </div>
+            <div data-v5pane="credits" hidden>
+              <div style="text-align:center;padding:6px 0 16px">
+                <div class="kicker">Balance</div>
+                <div style="font-size:40px;font-weight:800;letter-spacing:-.03em" class="num">1,284</div>
+                <div class="mut" style="font-size:13px">≈ 11 days at 118 renders/day</div>
+              </div>
+              <div style="display:grid;gap:8px">
+                <div class="v2__pack" style="display:flex;justify-content:space-between;align-items:center;text-align:left"><span><b style="font-size:16px">20 images</b><br><span style="font-size:11.5px">$0.150 each</span></span><b>$3.00</b></div>
+                <div class="v2__pack" style="display:flex;justify-content:space-between;align-items:center;text-align:left"><span><b style="font-size:16px">50 images</b><br><span style="font-size:11.5px">$0.140 each</span></span><b>$7.00</b></div>
+                <div class="v2__pack" style="display:flex;justify-content:space-between;align-items:center;text-align:left"><span><b style="font-size:16px">100 images</b><br><span style="font-size:11.5px">$0.130 each</span></span><b>$13.00</b></div>
+                <div class="v2__pack" style="display:flex;justify-content:space-between;align-items:center;text-align:left;border-color:var(--brand);background:var(--brand-wash)"><span><b style="font-size:16px">500 images</b><br><span style="font-size:11.5px">$0.120 each · best rate</span></span><b>$60.00</b></div>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ V6 ═══════════════════ -->
+<section class="pv-variant" id="v6">
+  <h2><span class="pv-variant__no">6</span>Inspector (master / detail)</h2>
+  <p class="pv-why">
+    Pick this when you expect accounts with a dozen keys — agencies with a key per brokerage — and today’s
+    single flat list would become unreadable. The left column is the account’s whole object graph, including
+    billing as just another selectable thing, and the right is a proper record view with fields, history and
+    a danger zone that is visually walled off. It is the most durable structure here and the coldest: it
+    reads like an admin console, which is fine for an API dashboard and wrong for a marketing surface.
+  </p>
+  <div class="pv-chips">
+    <span class="chip chip--pro">+ Handles 25 keys as gracefully as 2</span>
+    <span class="chip chip--pro">+ Destructive actions properly quarantined</span>
+    <span class="chip chip--pro">+ Deep-linkable per key (#key/stg_live_9f3a)</span>
+    <span class="chip chip--con">− Two clicks to any number; nothing at a glance</span>
+    <span class="chip chip--con">− Master/detail is awkward on a phone</span>
+  </div>
+  <div class="pv-badges">
+    <span class="badge"><b>Media</b> none</span>
+    <span class="badge"><b>JS</b> selection + hash routing; ~70 lines</span>
+    <span class="badge"><b>Mobile</b> weakest — needs a list→detail push view</span>
+    <span class="badge"><b>API</b> per-key stats; rename already exists (PATCH)</span>
+    <span class="badge"><b>A11y</b> listbox semantics; keyboard nav needed</span>
+    <span class="badge badge--stat"><b>vs today</b> scales to 25 keys; today’s list wraps past ~6</span>
+  </div>
+
+  <div class="canvas">
+    <div class="canvas__bar"><span class="canvas__dot"></span><span class="canvas__dot"></span><span class="canvas__dot"></span><span class="canvas__url">stagify.ai/api-keys.html#key/stg_live_9f3a2c</span></div>
+    <div class="canvas__body">
+      <div class="v6" data-v6>
+        <div class="v6__list">
+          <div class="v6__search"><input type="search" placeholder="Search keys…" aria-label="Search keys"></div>
+          <div class="v6__group">Account</div>
+          <button class="v6__item" data-v6item="bill"><b>Credits &amp; billing</b><span>1,284 images · ≈11 days</span></button>
+          <button class="v6__item" data-v6item="usage"><b>Usage</b><span>826 renders this week</span></button>
+          <div class="v6__group">Keys · 2 live</div>
+          <button class="v6__item" aria-current="true" data-v6item="k1"><b>Production server</b><span>● live · 2 minutes ago</span></button>
+          <button class="v6__item" data-v6item="k2"><b>Staging / CI</b><span>○ idle · 6 days ago</span></button>
+          <button class="v6__item" data-v6item="k3"><b style="color:var(--muted)">Zapier integration</b><span>revoked 22 Jul</span></button>
+          <div style="padding:12px;margin-top:auto"><button class="d-btn d-btn--sm d-btn--primary" style="width:100%;justify-content:center">Create key</button></div>
+        </div>
+
+        <div class="v6__detail">
+          <div class="v6__pane" data-v6pane="k1">
+            <div class="v6__dhead">
+              <div>
+                <h3>Production server <span class="pill pill--live" style="vertical-align:3px">live</span></h3>
+                <code class="mut" style="font-size:12.5px">stg_live_9f3a2c…</code>
+              </div>
+              <div style="display:flex;gap:8px"><button class="d-btn d-btn--sm">Rename</button><button class="d-btn d-btn--sm">Rotate</button></div>
+            </div>
+            <div class="v6__stats">
+              <div class="kpi"><div class="kpi__l">Renders · 7d</div><div class="kpi__v num">791</div><div class="kpi__d"><span class="up">▲ 22%</span></div></div>
+              <div class="kpi"><div class="kpi__l">Delivered</div><div class="kpi__v num">99.4%</div><div class="kpi__d">19 refunded</div></div>
+              <div class="kpi"><div class="kpi__l">Median</div><div class="kpi__v num">14.2s</div><div class="kpi__d">P95 25.8s</div></div>
+              <div class="kpi"><div class="kpi__l">Spend</div><div class="kpi__v num">$403</div><div class="kpi__d">all time</div></div>
+            </div>
+            <div style="border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:4px">
+              <div class="kicker" style="margin-bottom:8px">Renders · 14 days</div>
+              <div class="spark" data-spark="14" style="height:56px"></div>
+            </div>
+            <dl style="margin:8px 0 0">
+              <div class="v6__field"><dt>Created</dt><dd style="margin:0">4 Mar 2026 by incognitoising@gmail.com</dd></div>
+              <div class="v6__field"><dt>Last used</dt><dd style="margin:0">18 Aug 2026, 09:41 · 203.0.113.44</dd></div>
+              <div class="v6__field"><dt>Rate limit</dt><dd style="margin:0">60 requests / minute</dd></div>
+              <div class="v6__field"><dt>Scope</dt><dd style="margin:0">Full account · all endpoints</dd></div>
+            </dl>
+            <div class="v6__danger">
+              <h5>Revoke this key</h5>
+              <p>Anything using it stops working immediately. Revoked keys stay listed so you can still recognise them in an access log.</p>
+              <button class="d-btn d-btn--sm d-btn--danger">Revoke key</button>
+            </div>
+          </div>
+
+          <div class="v6__pane" data-v6pane="k2" hidden>
+            <div class="v6__dhead"><div><h3>Staging / CI <span class="pill pill--idle" style="vertical-align:3px">idle</span></h3><code class="mut" style="font-size:12.5px">stg_live_71bd04…</code></div></div>
+            <div class="v6__stats">
+              <div class="kpi"><div class="kpi__l">Renders · 7d</div><div class="kpi__v num">35</div><div class="kpi__d"><span class="down">▼ 61%</span></div></div>
+              <div class="kpi"><div class="kpi__l">Delivered</div><div class="kpi__v num">97.8%</div><div class="kpi__d">8 refunded</div></div>
+              <div class="kpi"><div class="kpi__l">Median</div><div class="kpi__v num">15.8s</div><div class="kpi__d">P95 29.4s</div></div>
+              <div class="kpi"><div class="kpi__l">Spend</div><div class="kpi__v num">$54</div><div class="kpi__d">all time</div></div>
+            </div>
+            <p class="mut" style="font-size:13.5px">Unused for 6 days. If your CI is green and this key is quiet, it may be safe to revoke.</p>
+          </div>
+
+          <div class="v6__pane" data-v6pane="k3" hidden>
+            <div class="v6__dhead"><div><h3 style="color:var(--muted)">Zapier integration <span class="pill pill--dead" style="vertical-align:3px">revoked</span></h3><code class="mut" style="font-size:12.5px">stg_live_44c1ef…</code></div></div>
+            <p class="mut" style="font-size:13.5px">Revoked 22 Jul 2026. 612 renders before it was retired; history is kept so log lines still resolve to a name.</p>
+          </div>
+
+          <div class="v6__pane" data-v6pane="bill" hidden>
+            <div class="v6__dhead"><div><h3>Credits &amp; billing</h3><span class="mut" style="font-size:13px">Prepaid, one credit = one delivered image</span></div><button class="d-btn d-btn--sm d-btn--primary">Buy credits</button></div>
+            <div class="v6__stats">
+              <div class="kpi kpi--accent"><div class="kpi__l">Balance</div><div class="kpi__v num">1,284</div><div class="kpi__d">≈ 11 days</div></div>
+              <div class="kpi"><div class="kpi__l">Purchased</div><div class="kpi__v num">5,000</div><div class="kpi__d">all time</div></div>
+              <div class="kpi"><div class="kpi__l">Spent</div><div class="kpi__v num">3,716</div><div class="kpi__d">all time</div></div>
+              <div class="kpi"><div class="kpi__l">Refunded</div><div class="kpi__v num">27</div><div class="kpi__d">failed renders</div></div>
+            </div>
+            <table class="d-tbl">
+              <thead><tr><th>When</th><th>What</th><th style="text-align:right">Change</th><th style="text-align:right">Balance</th></tr></thead>
+              <tbody>
+                <tr><td class="mut num">Aug 18, 09:41</td><td>Render</td><td class="num neg" style="text-align:right">−1</td><td class="num" style="text-align:right">1,284</td></tr>
+                <tr><td class="mut num">Aug 18, 09:38</td><td>Render failed — refunded</td><td class="num pos" style="text-align:right">+1</td><td class="num" style="text-align:right">1,286</td></tr>
+                <tr><td class="mut num">Aug 17, 22:04</td><td>Credits purchased</td><td class="num pos" style="text-align:right">+500</td><td class="num" style="text-align:right">1,742</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="v6__pane" data-v6pane="usage" hidden>
+            <div class="v6__dhead"><div><h3>Usage</h3><span class="mut" style="font-size:13px">Last 30 days across both live keys</span></div></div>
+            <div style="border:1px solid var(--border);border-radius:12px;padding:16px">
+              <div class="spark" data-spark="30" style="height:120px"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+/* ══ V7 — Console Mode (the swing) ═══════════════════════════════════════ */
+.v7{background:#0b1220;color:#cbd5e1;font-family:"JetBrains Mono",monospace;min-height:560px;display:flex;flex-direction:column}
+.v7__bar{display:flex;align-items:center;gap:10px;padding:9px 16px;border-bottom:1px solid #1e293b;font-size:12px;color:#64748b}
+.v7__bar b{color:#e2e8f0}
+.v7__bar .ok{color:#4ade80}
+.v7__gauge{margin-left:auto;display:flex;align-items:center;gap:8px}
+.v7__gauge .track{width:120px;height:6px;border-radius:99px;background:#1e293b;overflow:hidden}
+.v7__gauge .track i{display:block;height:100%;width:26%;background:linear-gradient(90deg,#38bdf8,#818cf8)}
+.v7__out{flex:1;padding:16px;overflow:auto;font-size:12.5px;line-height:1.75;max-height:420px}
+.v7__out .p{color:#38bdf8}
+.v7__out .cmd{color:#e2e8f0}
+.v7__out .dim{color:#64748b}
+.v7__out .g{color:#4ade80}
+.v7__out .r{color:#f87171}
+.v7__out .y{color:#fbbf24}
+.v7__out table{border-collapse:collapse;margin:6px 0 12px;font-size:12.5px}
+.v7__out th{text-align:left;color:#64748b;font-weight:400;padding:2px 24px 6px 0;border-bottom:1px solid #1e293b}
+.v7__out td{padding:3px 24px 3px 0;color:#cbd5e1}
+.v7__prompt{display:flex;align-items:center;gap:8px;padding:11px 16px;border-top:1px solid #1e293b;background:#0f172a}
+.v7__prompt span{color:#38bdf8;font-size:13px}
+.v7__prompt input{flex:1;background:none;border:0;outline:0;color:#e2e8f0;font-family:inherit;font-size:13px}
+.v7__hints{display:flex;gap:6px;flex-wrap:wrap;padding:10px 16px;border-top:1px solid #1e293b;background:#0b1220}
+.v7__hints button{
+  background:#111c33;border:1px solid #1e293b;color:#7dd3fc;border-radius:6px;padding:4px 9px;
+  font:400 11.5px "JetBrains Mono",monospace;cursor:pointer;
+}
+.v7__hints button:hover{background:#1e293b;color:#e0f2fe}
+.v7__caret{display:inline-block;width:7px;height:14px;background:#38bdf8;vertical-align:-2px;animation:v7b 1.05s steps(1) infinite}
+@keyframes v7b{50%{opacity:0}}
+
+/* ══ V8 — Runway / ops ══════════════════════════════════════════════════ */
+.v8{background:#fff;padding:0;min-height:560px}
+.v8__hero{display:grid;grid-template-columns:300px 1fr;gap:26px;padding:26px 26px 22px;border-bottom:1px solid var(--border);align-items:center}
+.v8__dial{position:relative;width:240px;height:240px;margin:0 auto}
+.v8__dial svg{transform:rotate(-90deg)}
+.v8__dialtxt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.v8__dialtxt b{font-size:44px;font-weight:800;letter-spacing:-.03em;color:var(--text-heading);line-height:1;font-variant-numeric:tabular-nums}
+.v8__dialtxt span{font-size:12.5px;color:var(--muted);margin-top:4px}
+.v8__facts h3{margin:0 0 6px;font-size:24px;color:var(--text-heading);letter-spacing:-.02em}
+.v8__facts p{margin:0 0 16px;font-size:14.5px;color:var(--slate-deep);line-height:1.6;max-width:56ch}
+.v8__row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.v8__burn{border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+.v8__burn .spark{height:52px}
+.v8__auto{
+  border:1px solid var(--brand-tint);background:linear-gradient(140deg,var(--brand-wash),#fff);border-radius:14px;
+  padding:16px 18px;margin:20px 26px;
+}
+.v8__auto h4{margin:0 0 4px;font-size:15px;color:var(--brand-deep)}
+.v8__auto p{margin:0 0 12px;font-size:13px;color:var(--slate-deep);line-height:1.55}
+.v8__rule{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:14px;color:var(--text-heading)}
+.v8__rule select,.v8__rule input{border:1px solid var(--brand-tint);background:#fff;border-radius:8px;padding:6px 9px;font:600 13.5px Inter,sans-serif;color:var(--brand-deep)}
+.sw{position:relative;width:44px;height:25px;border-radius:99px;background:#cbd5e1;border:0;cursor:pointer;transition:.18s;flex:0 0 auto}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:19px;height:19px;border-radius:50%;background:#fff;transition:.18s}
+.sw[aria-checked=true]{background:var(--brand)}
+.sw[aria-checked=true]::after{left:22px}
+.v8__alerts{display:flex;flex-direction:column;gap:10px;margin:0 26px 22px}
+.v8__alert{display:flex;align-items:center;gap:12px;border:1px solid var(--border);border-radius:11px;padding:12px 14px;font-size:13.5px}
+.v8__packs{padding:0 26px 26px}
+@media(max-width:860px){.v8__hero{grid-template-columns:1fr}.v8__row{grid-template-columns:1fr}}
+
+/* ══ V9 — Adaptive states ═══════════════════════════════════════════════ */
+.v9{background:#fff;min-height:520px}
+.v9__switch{display:flex;gap:6px;padding:11px 16px;border-bottom:1px solid var(--border);background:#f8fafc;flex-wrap:wrap;align-items:center}
+.v9__switch small{color:var(--muted);font-size:11.5px;margin-right:6px}
+.v9__switch button{border:1px solid var(--border);background:#fff;border-radius:8px;padding:5px 11px;font:600 12.5px Inter,sans-serif;color:var(--slate-deep);cursor:pointer}
+.v9__switch button[aria-pressed=true]{background:var(--brand-deep);border-color:var(--brand-deep);color:#fff}
+.v9__state{padding:26px}
+.v9__state[hidden]{display:none}
+.v9__zero{max-width:640px;margin:0 auto;text-align:center;padding:20px 0 30px}
+.v9__zero h3{margin:0 0 8px;font-size:27px;color:var(--text-heading);letter-spacing:-.02em}
+.v9__zero p{margin:0 auto 22px;max-width:46ch;font-size:14.5px;color:var(--slate-deep);line-height:1.6}
+.v9__steps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;text-align:left;margin-bottom:22px}
+.v9__stepc{border:1px solid var(--border);border-radius:12px;padding:14px}
+.v9__stepc b{display:block;font-size:13.5px;color:var(--text-heading);margin-bottom:4px}
+.v9__stepc span{font-size:12.5px;color:var(--muted);line-height:1.5;display:block}
+.v9__stepc.on{border-color:var(--brand);background:var(--brand-wash)}
+.v9__banner{
+  display:flex;gap:14px;align-items:flex-start;border-radius:14px;padding:16px 18px;margin-bottom:18px;
+  border:1px solid #fecaca;background:linear-gradient(140deg,#fef2f2,#fff);
+}
+.v9__banner--warn{border-color:#fde68a;background:linear-gradient(140deg,#fffbeb,#fff)}
+.v9__banner h4{margin:0 0 4px;font-size:15.5px;color:#7f1d1d}
+.v9__banner--warn h4{color:#92400e}
+.v9__banner p{margin:0 0 10px;font-size:13.5px;line-height:1.55;color:var(--slate-deep)}
+.v9__ico{width:34px;height:34px;border-radius:10px;background:#fee2e2;display:flex;align-items:center;justify-content:center;font-size:17px;flex:0 0 auto}
+.v9__banner--warn .v9__ico{background:#fef3c7}
+.v9__dim{opacity:.5;pointer-events:none;filter:saturate(.4)}
+@media(max-width:760px){.v9__steps{grid-template-columns:1fr}}
+
+/* ── Footer ─────────────────────────────────────────────────────────────── */
+.pv-foot{max-width:1320px;margin:0 auto;padding:34px 20px 70px;font-size:13.5px;color:var(--slate);line-height:1.7}
+.pv-foot h3{font-size:16px;color:var(--text-heading);margin:0 0 8px}
+.pv-foot ul{margin:0;padding-left:18px}
+</style>
+
+<!-- ═══════════════════ V7 ═══════════════════ -->
+<section class="pv-variant" id="v7">
+  <h2><span class="pv-variant__no">7</span>Console Mode <span style="font-size:12px;font-weight:700;color:#fff;background:var(--danger);border-radius:6px;padding:3px 8px;margin-left:10px;letter-spacing:.04em">THE SWING</span></h2>
+  <p class="pv-why">
+    Pick this if you want the API surface to have a personality the rest of the site cannot have, and you
+    are prepared to defend it. It treats the dashboard as a REPL: <code>keys ls</code>, <code>credits</code>,
+    <code>usage --7d</code>, <code>keys new "Production"</code> — typed or clicked — printing monospace
+    tables that look exactly like what a developer sees in their own terminal. It is genuinely faster once
+    learned and genuinely hostile to anyone who is not a CLI person, which is why it should ship as a
+    <em>mode</em> behind a toggle rather than as the page. Try the buttons; it really runs.
+  </p>
+  <div class="pv-chips">
+    <span class="chip chip--pro">+ Nothing else on the web looks like this</span>
+    <span class="chip chip--pro">+ Keyboard-first; fastest for repeat users</span>
+    <span class="chip chip--pro">+ Commands map 1:1 to a future stagify CLI</span>
+    <span class="chip chip--con">− Hostile to non-CLI users; must be a toggle</span>
+    <span class="chip chip--con">− Screen-reader and i18n story is genuinely poor</span>
+  </div>
+  <div class="pv-badges">
+    <span class="badge"><b>Media</b> none · mono webfont already loaded elsewhere</span>
+    <span class="badge"><b>JS</b> command parser + output renderer, ~200 lines</span>
+    <span class="badge"><b>Mobile</b> poor — an on-screen keyboard fights it</span>
+    <span class="badge"><b>I18n</b> commands stay English; 11 packs untouched</span>
+    <span class="badge"><b>A11y</b> needs a live region + a full non-terminal fallback</span>
+    <span class="badge badge--stat"><b>vs today</b> revoke a key: 4 interactions → 1 typed line</span>
+  </div>
+
+  <div class="canvas">
+    <div class="canvas__bar"><span class="canvas__dot"></span><span class="canvas__dot"></span><span class="canvas__dot"></span><span class="canvas__url">stagify.ai/api-keys.html?mode=console</span></div>
+    <div class="canvas__body">
+      <div class="v7" data-v7>
+        <div class="v7__bar">
+          <b>stagify</b> <span class="dim">api console</span> <span class="ok">● connected</span>
+          <span class="dim">acct_7f21c9</span>
+          <span class="v7__gauge"><span class="dim">1,284 credits</span><span class="track"><i></i></span></span>
+        </div>
+        <div class="v7__out" data-v7out>
+          <div><span class="dim">Stagify API console · type </span><span class="cmd">help</span><span class="dim"> for commands</span></div>
+          <div><span class="p">$</span> <span class="cmd">credits</span></div>
+          <div>balance      <span class="g">1,284</span> images
+            <div class="dim">purchased 5,000 · spent 3,716 · refunded 27 · burn 118/day · runway ~11 days</div>
+          </div>
+          <div style="margin-top:10px"><span class="p">$</span> <span class="cmd">keys ls</span></div>
+          <table>
+            <thead><tr><th>NAME</th><th>PREFIX</th><th>LAST USED</th><th>7D</th><th>STATUS</th></tr></thead>
+            <tbody>
+              <tr><td>Production server</td><td class="dim">stg_live_9f3a2c</td><td>2m ago</td><td>791</td><td class="g">live</td></tr>
+              <tr><td>Staging / CI</td><td class="dim">stg_live_71bd04</td><td>6d ago</td><td>35</td><td class="y">idle</td></tr>
+              <tr><td class="dim">Zapier integration</td><td class="dim">stg_live_44c1ef</td><td class="dim">27d ago</td><td class="dim">0</td><td class="r">revoked</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="v7__prompt"><span>$</span><input data-v7in placeholder="keys ls" aria-label="Console command" autocomplete="off"><span class="v7__caret"></span></div>
+        <div class="v7__hints">
+          <button data-v7cmd="credits">credits</button>
+          <button data-v7cmd="keys ls">keys ls</button>
+          <button data-v7cmd="usage --7d">usage --7d</button>
+          <button data-v7cmd="keys new">keys new "Webhook worker"</button>
+          <button data-v7cmd="buy 500">buy 500</button>
+          <button data-v7cmd="tail">tail</button>
+          <button data-v7cmd="help">help</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ V8 ═══════════════════ -->
+<section class="pv-variant" id="v8">
+  <h2><span class="pv-variant__no">8</span>Runway</h2>
+  <p class="pv-why">
+    Pick this if the failure that actually costs money is running out of credits mid-batch at 2am, and
+    everything else on the page is secondary to preventing it. The dial answers one question — how long
+    until I stop rendering — and the auto-top-up rule turns that from a thing you monitor into a thing you
+    configure once. It is the only variant that adds a feature rather than rearranging pixels, which is
+    both why it is the most valuable and why it is the most expensive: saved cards, a rule engine and a
+    charge-without-checkout path that Stripe Checkout does not currently give us.
+  </p>
+  <div class="pv-chips">
+    <span class="chip chip--pro">+ Prevents the one failure that loses revenue</span>
+    <span class="chip chip--pro">+ Auto-top-up is a retention feature, not decoration</span>
+    <span class="chip chip--pro">+ One number anyone can read in a second</span>
+    <span class="chip chip--con">− Needs saved payment methods + a rule engine</span>
+    <span class="chip chip--con">− Keys become an afterthought on their own page</span>
+  </div>
+  <div class="pv-badges">
+    <span class="badge"><b>Media</b> none — SVG dial, no library</span>
+    <span class="badge"><b>JS</b> dial arc + rule form; modest</span>
+    <span class="badge"><b>Mobile</b> good — dial then stacked cards</span>
+    <span class="badge"><b>Backend</b> largest lift: SetupIntent, off-session charge, cron</span>
+    <span class="badge"><b>Email</b> reuses the admin email catalog for low-balance alerts</span>
+    <span class="badge badge--stat"><b>vs today</b> “am I about to run out?” unanswerable → 1 glance</span>
+  </div>
+
+  <div class="canvas">
+    <div class="canvas__bar"><span class="canvas__dot"></span><span class="canvas__dot"></span><span class="canvas__dot"></span><span class="canvas__url">stagify.ai/api-keys.html</span></div>
+    <div class="canvas__body">
+      <div class="v8">
+        <div class="v8__hero">
+          <div class="v8__dial">
+            <svg width="240" height="240" viewBox="0 0 240 240" aria-hidden="true">
+              <circle cx="120" cy="120" r="100" fill="none" stroke="#eef2f7" stroke-width="18"></circle>
+              <circle cx="120" cy="120" r="100" fill="none" stroke="url(#g8)" stroke-width="18" stroke-linecap="round"
+                      stroke-dasharray="628" stroke-dashoffset="465"></circle>
+              <defs><linearGradient id="g8" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#60a5fa"/><stop offset="1" stop-color="#1e3a8a"/></linearGradient></defs>
+            </svg>
+            <div class="v8__dialtxt"><b class="num">11</b><span>days of renders left</span><span style="color:var(--brand-deep);font-weight:700;margin-top:6px">1,284 credits</span></div>
+          </div>
+          <div class="v8__facts">
+            <h3>You will run dry around 29 Aug</h3>
+            <p>
+              At your current pace — 118 renders a day over the last fortnight — the balance covers about
+              eleven more days. Buying the 500-image pack today pushes that to 25 August + 4 days and drops
+              your unit cost to $0.120.
+            </p>
+            <div class="v8__row">
+              <div class="v8__burn"><div class="kicker">Burn · 14 days</div><div class="spark" data-spark="14"></div><div class="mut" style="font-size:12px;margin-top:6px">118/day average · peak 214</div></div>
+              <div class="v8__burn"><div class="kicker">Spend · month to date</div><div style="font-size:26px;font-weight:800;margin-top:6px" class="num">$458.00</div><div class="mut" style="font-size:12px">3,523 images · $0.130 avg</div></div>
+              <div class="v8__burn"><div class="kicker">Never paid for</div><div style="font-size:26px;font-weight:800;margin-top:6px" class="num">27</div><div class="mut" style="font-size:12px">failed renders, all auto-refunded</div></div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="d-btn d-btn--primary">Buy 500 images — $60.00</button>
+              <button class="d-btn">See all packs</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="v8__auto">
+          <h4>Auto top-up</h4>
+          <p>Stop watching this dial. We will buy more before you run out, using the card on file.</p>
+          <div class="v8__rule">
+            <button class="sw" aria-checked="true" data-sw aria-label="Enable auto top-up"></button>
+            <span>When the balance drops below</span>
+            <select><option>100</option><option selected>250</option><option>500</option></select>
+            <span>images, buy the</span>
+            <select><option>100 pack — $13.00</option><option selected>500 pack — $60.00</option></select>
+            <span>and email me the receipt.</span>
+          </div>
+          <p class="mut" style="font-size:12px;margin:10px 0 0">Last triggered 17 Aug 2026 · +500 images · $60.00 · receipt sent</p>
+        </div>
+
+        <div class="v8__alerts">
+          <div class="v8__alert"><button class="sw" aria-checked="true" data-sw aria-label="Low balance email"></button><span style="flex:1"><b>Low-balance email</b><br><span class="mut" style="font-size:12.5px">One warning at 250 images, one at 50. Never more than one a day.</span></span></div>
+          <div class="v8__alert"><button class="sw" aria-checked="false" data-sw aria-label="Failure spike email"></button><span style="flex:1"><b>Failure-spike email</b><br><span class="mut" style="font-size:12.5px">If more than 5% of renders fail in an hour. Refunds are automatic either way.</span></span></div>
+          <div class="v8__alert" style="border-style:dashed"><span style="flex:1"><b>Keys</b> · 2 live, 1 revoked · last used 2 minutes ago</span><button class="d-btn d-btn--sm">Manage keys</button></div>
+        </div>
+
+        <div class="v8__packs">
+          <div class="kicker" style="margin-bottom:8px">Packs</div>
+          <div class="v2__packs">
+            <div class="v2__pack"><b>20</b><span>images · $3.00</span><div class="mut" style="font-size:11px;margin-top:4px">+2 days</div></div>
+            <div class="v2__pack"><b>50</b><span>images · $7.00</span><div class="mut" style="font-size:11px;margin-top:4px">+4 days</div></div>
+            <div class="v2__pack"><b>100</b><span>images · $13.00</span><div class="mut" style="font-size:11px;margin-top:4px">+8 days</div></div>
+            <div class="v2__pack" style="border-color:var(--brand);background:var(--brand-wash)"><b>500</b><span>images · $60.00</span><div style="font-size:11px;margin-top:4px;color:var(--brand-deep);font-weight:700">+42 days · best rate</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ V9 ═══════════════════ -->
+<section class="pv-variant" id="v9">
+  <h2><span class="pv-variant__no">9</span>Adaptive</h2>
+  <p class="pv-why">
+    Pick this if you think the page feels lackluster mostly because it is the same page for someone with no
+    key, someone shipping 800 renders a week and someone who is suspended — three completely different
+    situations wearing one layout. Here the dashboard changes shape: day zero is a quickstart with the
+    metrics hidden because they would all read zero, active is a real instrument, and trouble takes over the
+    whole surface until it is resolved. The catch is that you are building and maintaining three pages, and
+    testing them means fixtures for each.
+  </p>
+  <div class="pv-chips">
+    <span class="chip chip--pro">+ No empty dashboard on day one</span>
+    <span class="chip chip--pro">+ Suspension is impossible to miss</span>
+    <span class="chip chip--pro">+ Composes with any other variant here</span>
+    <span class="chip chip--con">− Three states to build, test and translate</span>
+    <span class="chip chip--con">− A layout that shifts under you can disorient</span>
+  </div>
+  <div class="pv-badges">
+    <span class="badge"><b>Media</b> none</span>
+    <span class="badge"><b>JS</b> state selection from the data already fetched</span>
+    <span class="badge"><b>Mobile</b> same as whichever base variant it wraps</span>
+    <span class="badge"><b>API</b> nothing new — suspended + keyCount + balance suffice</span>
+    <span class="badge"><b>Test</b> 3 e2e fixtures instead of 1</span>
+    <span class="badge badge--stat"><b>vs today</b> new account sees 4 empty cards → 1 clear next step</span>
+  </div>
+
+  <div class="canvas">
+    <div class="canvas__bar"><span class="canvas__dot"></span><span class="canvas__dot"></span><span class="canvas__dot"></span><span class="canvas__url">stagify.ai/api-keys.html</span></div>
+    <div class="canvas__body">
+      <div class="v9" data-v9>
+        <div class="v9__switch">
+          <small>Preview account state:</small>
+          <button aria-pressed="true" data-v9="new">Day zero</button>
+          <button aria-pressed="false" data-v9="active">Active</button>
+          <button aria-pressed="false" data-v9="risk">Low balance</button>
+          <button aria-pressed="false" data-v9="susp">Suspended</button>
+        </div>
+
+        <div class="v9__state" data-v9state="new">
+          <div class="v9__zero">
+            <h3>Stage photos from your own code</h3>
+            <p>You have not made a call yet. Three steps, about four minutes, and the first twenty images cost $3.</p>
+            <div class="v9__steps">
+              <div class="v9__stepc on"><b>1 · Create a key</b><span>Shown once, stored as a hash. Name it after the thing that will use it.</span></div>
+              <div class="v9__stepc"><b>2 · Add credits</b><span>One credit is one delivered image. Failures refund themselves.</span></div>
+              <div class="v9__stepc"><b>3 · POST a photo</b><span>Multipart image, a room type, a style. An image comes back.</span></div>
+            </div>
+            <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+              <button class="d-btn d-btn--primary">Create your first key</button>
+              <a class="d-btn" href="#">Read the docs ↗</a>
+            </div>
+            <p class="mut" style="font-size:12.5px;margin-top:20px">
+              Usage, spend and activity appear here once you have made a call — no empty charts in the meantime.
+            </p>
+          </div>
+        </div>
+
+        <div class="v9__state" data-v9state="active" hidden>
+          <div class="v1__kpis" style="margin-bottom:16px">
+            <div class="kpi kpi--accent"><div class="kpi__l">Credit balance</div><div class="kpi__v num">1,284</div><div class="kpi__d">≈ 11 days at current burn</div></div>
+            <div class="kpi"><div class="kpi__l">Renders · 7 days</div><div class="kpi__v num">826</div><div class="kpi__d"><span class="up">▲ 18%</span> vs prior week</div></div>
+            <div class="kpi"><div class="kpi__l">Success rate</div><div class="kpi__v num">99.2%</div><div class="kpi__d">7 failed · all refunded</div></div>
+            <div class="kpi"><div class="kpi__l">Spend · 7 days</div><div class="kpi__v num">$107.38</div><div class="kpi__d">$0.130 an image</div></div>
+          </div>
+          <div style="border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px">
+            <div class="kicker" style="margin-bottom:10px">Renders · 30 days</div>
+            <div class="spark" data-spark="30" style="height:90px"></div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="d-btn d-btn--primary">Buy credits</button>
+            <button class="d-btn">Manage keys (2)</button>
+            <button class="d-btn">Export activity CSV</button>
+          </div>
+        </div>
+
+        <div class="v9__state" data-v9state="risk" hidden>
+          <div class="v9__banner v9__banner--warn">
+            <div class="v9__ico">⚠</div>
+            <div style="flex:1">
+              <h4>About 18 hours of renders left</h4>
+              <p>84 credits at 118 renders a day. Batches started after roughly 04:00 tomorrow will start failing with <code>402 insufficient_credits</code>.</p>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button class="d-btn d-btn--primary">Buy 500 images — $60.00</button>
+                <button class="d-btn">Turn on auto top-up</button>
+              </div>
+            </div>
+          </div>
+          <div class="v1__kpis">
+            <div class="kpi" style="border-color:#fde68a;background:#fffbeb"><div class="kpi__l">Credit balance</div><div class="kpi__v num" style="color:#92400e">84</div><div class="kpi__d">≈ 18 hours</div></div>
+            <div class="kpi"><div class="kpi__l">Renders · 7 days</div><div class="kpi__v num">826</div><div class="kpi__d">no slowdown</div></div>
+            <div class="kpi"><div class="kpi__l">Success rate</div><div class="kpi__v num">99.2%</div><div class="kpi__d">healthy</div></div>
+            <div class="kpi"><div class="kpi__l">Spend · 7 days</div><div class="kpi__v num">$107.38</div><div class="kpi__d">$0.130 an image</div></div>
+          </div>
+        </div>
+
+        <div class="v9__state" data-v9state="susp" hidden>
+          <div class="v9__banner">
+            <div class="v9__ico">✕</div>
+            <div style="flex:1">
+              <h4>This account is suspended and cannot render</h4>
+              <p>A payment was reversed on 12 Aug and 500 credits were clawed back. Your keys still exist and your history is intact — every call is answered with <code>403 account_suspended</code> until this is settled.</p>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <a class="d-btn d-btn--primary" href="mailto:team@stagify.ai">Email team@stagify.ai</a>
+                <button class="d-btn">View the reversal</button>
+              </div>
+            </div>
+          </div>
+          <div class="v1__kpis v9__dim">
+            <div class="kpi"><div class="kpi__l">Credit balance</div><div class="kpi__v num">784</div><div class="kpi__d">frozen</div></div>
+            <div class="kpi"><div class="kpi__l">Renders · 7 days</div><div class="kpi__v num">0</div><div class="kpi__d">blocked</div></div>
+            <div class="kpi"><div class="kpi__l">Success rate</div><div class="kpi__v num">—</div><div class="kpi__d">no traffic</div></div>
+            <div class="kpi"><div class="kpi__l">Spend · 7 days</div><div class="kpi__v num">$0.00</div><div class="kpi__d">—</div></div>
+          </div>
+          <p class="mut" style="font-size:12.5px;margin-top:14px">Everything below the banner is dimmed and inert on purpose — nothing here can be acted on until the account is restored.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="pv-foot">
+  <h3>Notes for whoever builds this</h3>
+  <ul>
+    <li><b>What already exists:</b> <code>/api/api-credits</code> returns balance, lifetimePurchased, lifetimeSpent, suspended, keyCount and 50 ledger rows; <code>/api/api-keys</code> returns name, prefix, createdAt, lastUsedAt, revokedAt. Variants 3 and 9 need nothing else.</li>
+    <li><b>What needs one new endpoint:</b> every chart and per-key stat above reads <code>api_requests</code>, which already stores <code>key_id</code>, <code>status</code>, <code>credits_charged</code>, <code>attempts</code>, <code>claimed_at</code> and <code>completed_at</code>. A single <code>GET /api/api-usage?range=</code> covers variants 1, 2, 4, 5 and 6.</li>
+    <li><b>What needs real backend work:</b> only variant 8 — saved cards (SetupIntent), off-session charging, and a rule the webhook path can trigger. Everything else is presentation.</li>
+    <li><b>Styling:</b> the palette, the CTA gradient and the button shapes come from <code>styles.css :root</code> and <code>developers.css</code>. A new sheet is not needed; <code>developers.css</code> is shared with <code>developers.html</code>, so anything added there should stay under a <code>.dev-app</code> scope.</li>
+    <li><b>Not addressed here:</b> localisation. <code>api-keys.html</code> is <code>noindex</code> and English-only today; none of these variants assume otherwise.</li>
+  </ul>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  // Deterministic pseudo-random so the charts look like traffic rather than noise,
+  // and look the same every reload.
+  function series(n, seed) {
+    var out = [], s = seed;
+    for (var i = 0; i < n; i++) {
+      s = (s * 1103515245 + 12345) % 2147483648;
+      var base = 45 + Math.sin(i / 3.1) * 18 + Math.sin(i / 9.7) * 22;
+      var weekend = (i % 7 === 5 || i % 7 === 6) ? -22 : 0;
+      out.push(Math.max(8, Math.round(base + weekend + (s / 2147483648) * 34)));
+    }
+    return out;
+  }
+
+  // ── Sparklines (shared by V1, V6, V8, V9) ──
+  document.querySelectorAll('[data-spark]').forEach(function (host, idx) {
+    var n = parseInt(host.getAttribute('data-spark'), 10) || 20;
+    var vals = series(n, 7919 + idx * 13);
+    var max = Math.max.apply(null, vals);
+    host.innerHTML = vals.map(function (v, i) {
+      return '<i class="' + (i >= n - 3 ? 'hi' : '') + '" style="height:' + Math.round((v / max) * 100) + '%" title="' + v + ' renders"></i>';
+    }).join('');
+  });
+
+  // ── V1 rail tabs ──
+  var v1nav = document.querySelector('[data-v1nav]');
+  if (v1nav) {
+    var titles = { ov: 'Overview', keys: 'API keys', usage: 'Usage', bill: 'Credits', docs: 'Docs' };
+    v1nav.addEventListener('click', function (e) {
+      var btn = e.target.closest('button[data-pane]');
+      if (!btn) return;
+      var pane = btn.getAttribute('data-pane');
+      v1nav.querySelectorAll('button').forEach(function (b) {
+        b.setAttribute('aria-selected', String(b === btn));
+      });
+      document.querySelectorAll('.v1__pane').forEach(function (p) {
+        p.hidden = p.getAttribute('data-pane') !== pane;
+      });
+      var t = document.querySelector('[data-v1title]');
+      if (t) t.textContent = titles[pane] || 'Overview';
+    });
+  }
+
+  // ── V2 bar field ──
+  var bars = document.querySelector('[data-bars]');
+  if (bars) {
+    var v2 = series(30, 4241), v2max = Math.max.apply(null, v2);
+    bars.innerHTML = v2.map(function (v, i) {
+      return '<i class="' + (i === 23 ? 'fail' : '') + '" style="height:' + Math.round((v / v2max) * 100) + '%" title="' + v + ' renders"></i>';
+    }).join('');
+  }
+
+  // ── V3 accordion ──
+  var v3 = document.querySelector('[data-v3]');
+  if (v3) {
+    v3.addEventListener('click', function (e) {
+      var sum = e.target.closest('.v3__sum');
+      if (!sum) return;
+      sum.parentElement.classList.toggle('open');
+    });
+  }
+
+  // ── V4 key binding + fake live log ──
+  var sel = document.querySelector('[data-v4key]');
+  if (sel) {
+    var prefixes = { 'Production server': 'stg_live_9f3a2c…', 'Staging / CI': 'stg_live_71bd04…' };
+    sel.addEventListener('change', function () {
+      var name = sel.value;
+      var p = document.querySelector('[data-v4prefix]');
+      var l = document.querySelector('[data-v4label]');
+      if (p) p.textContent = prefixes[name] || '';
+      if (l) l.textContent = name;
+    });
+  }
+  var copyBtn = document.querySelector('[data-copy]');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', function () {
+      copyBtn.textContent = 'Copied';
+      setTimeout(function () { copyBtn.textContent = 'Copy'; }, 1400);
+    });
+  }
+  var log = document.querySelector('[data-v4log]');
+  if (log) {
+    var files = ['living-room-05.jpg', 'bedroom-03.jpg', 'kitchen-12.jpg', 'dining-01.jpg', 'office-07.jpg'];
+    var tick = 0;
+    setInterval(function () {
+      if (document.hidden) return;
+      tick++;
+      var fail = tick % 7 === 0;
+      var now = new Date();
+      var hh = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0') + ':' + String(now.getSeconds()).padStart(2, '0');
+      var row = document.createElement('div');
+      row.className = 'ln';
+      row.innerHTML = '<span class="t">' + hh + '</span>'
+        + '<span class="' + (fail ? 'er' : 'ok') + '">' + (fail ? '502' : '200') + '</span>'
+        + '<span>POST /v1/stage · ' + files[tick % files.length]
+        + (fail ? ' <span style="color:#15803d">+1 refunded</span>' : '') + '</span>'
+        + '<span class="t">' + (10 + (tick % 9)) + '.' + (tick % 10) + 's</span>';
+      log.insertBefore(row, log.firstChild);
+      while (log.children.length > 12) log.removeChild(log.lastChild);
+    }, 3800);
+  }
+
+  // ── V5 chart, range toggle, drawer ──
+  var chart = document.querySelector('[data-v5chart]');
+  function paintV5(range) {
+    if (!chart) return;
+    var n = range === '24h' ? 24 : range === '7d' ? 7 : 30;
+    var vals = series(n, range === '24h' ? 991 : range === '7d' ? 313 : 4241);
+    var max = Math.max.apply(null, vals);
+    chart.innerHTML = vals.map(function (v, i) {
+      var failed = (i % 9 === 4) ? Math.max(1, Math.round(v * 0.06)) : 0;
+      var okH = Math.round(((v - failed) / max) * 100);
+      var fH = Math.round((failed / max) * 100);
+      return '<div class="v5__col">'
+        + '<span class="tip">' + v + ' renders' + (failed ? ' · ' + failed + ' refunded' : '') + '</span>'
+        + (fH ? '<div class="rf" style="height:' + fH + '%"></div>' : '')
+        + '<div class="ok" style="height:' + okH + '%"></div>'
+        + '</div>';
+    }).join('');
+  }
+  paintV5('30d');
+  var seg = document.querySelector('[data-v5seg]');
+  if (seg) {
+    seg.addEventListener('click', function (e) {
+      var b = e.target.closest('button');
+      if (!b) return;
+      seg.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+      paintV5(b.textContent.trim());
+    });
+  }
+  var v5 = document.querySelector('[data-v5]');
+  if (v5) {
+    v5.addEventListener('click', function (e) {
+      var open = e.target.closest('[data-v5open]');
+      if (open) {
+        var which = open.getAttribute('data-v5open');
+        v5.classList.add('open');
+        v5.querySelector('[data-v5dtitle]').textContent = which === 'keys' ? 'API keys' : 'Buy credits';
+        v5.querySelectorAll('[data-v5pane]').forEach(function (p) {
+          p.hidden = p.getAttribute('data-v5pane') !== which;
+        });
+        return;
+      }
+      if (e.target.closest('[data-v5close]')) v5.classList.remove('open');
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') v5.classList.remove('open');
+    });
+  }
+
+  // ── V6 master/detail ──
+  var v6 = document.querySelector('[data-v6]');
+  if (v6) {
+    v6.addEventListener('click', function (e) {
+      var item = e.target.closest('[data-v6item]');
+      if (!item) return;
+      var id = item.getAttribute('data-v6item');
+      v6.querySelectorAll('[data-v6item]').forEach(function (b) {
+        if (b === item) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current');
+      });
+      v6.querySelectorAll('[data-v6pane]').forEach(function (p) {
+        p.hidden = p.getAttribute('data-v6pane') !== id;
+      });
+    });
+  }
+
+  // ── V7 console ──
+  var out = document.querySelector('[data-v7out]');
+  var input = document.querySelector('[data-v7in]');
+  function print(html) {
+    if (!out) return;
+    var d = document.createElement('div');
+    d.innerHTML = html;
+    out.appendChild(d);
+    out.scrollTop = out.scrollHeight;
+  }
+  var RESPONSES = {
+    'credits': 'balance      <span class="g">1,284</span> images<div class="dim">purchased 5,000 · spent 3,716 · refunded 27 · burn 118/day · runway ~11 days</div>',
+    'keys ls': '<table><thead><tr><th>NAME</th><th>PREFIX</th><th>LAST USED</th><th>7D</th><th>STATUS</th></tr></thead><tbody>'
+      + '<tr><td>Production server</td><td class="dim">stg_live_9f3a2c</td><td>2m ago</td><td>791</td><td class="g">live</td></tr>'
+      + '<tr><td>Staging / CI</td><td class="dim">stg_live_71bd04</td><td>6d ago</td><td>35</td><td class="y">idle</td></tr>'
+      + '<tr><td class="dim">Zapier integration</td><td class="dim">stg_live_44c1ef</td><td class="dim">27d ago</td><td class="dim">0</td><td class="r">revoked</td></tr>'
+      + '</tbody></table>',
+    'usage --7d': 'Mon ████████████████████  142<br>Tue ██████████████████████  164<br>Wed ███████████████████  138<br>'
+      + 'Thu ████████████████████████  178<br>Fri ██████████████████  131<br>Sat ██████  41<br>Sun ████  32'
+      + '<div class="dim">826 renders · 819 delivered · <span class="r">7 failed</span> (all refunded) · $107.38</div>',
+    'keys new': 'created <span class="g">Webhook worker</span><br><span class="y">stg_live_c81f4a7e2d90b3556aa1</span>'
+      + '<div class="dim">Shown once. We store a hash, not the key — copy it now.</div>',
+    'buy 500': 'opening Stripe Checkout…<div class="dim">500 images · $60.00 · $0.120 each — returns here when the payment clears.</div>',
+    'tail': '<span class="dim">09:41:22</span> <span class="g">200</span> POST /v1/stage living-room-04.jpg 14.1s<br>'
+      + '<span class="dim">09:41:03</span> <span class="g">200</span> POST /v1/stage living-room-03.jpg 12.8s<br>'
+      + '<span class="dim">09:38:55</span> <span class="r">502</span> POST /v1/stage kitchen-11.jpg <span class="g">+1 refunded</span><br>'
+      + '<span class="dim">^C to stop following</span>',
+    'help': 'credits              show balance, burn and runway<br>'
+      + 'keys ls              list keys with 7-day usage<br>'
+      + 'keys new "&lt;name&gt;"    mint a key (shown once)<br>'
+      + 'keys rm &lt;prefix&gt;     revoke a key<br>'
+      + 'usage [--24h|--7d|--30d]<br>'
+      + 'buy &lt;20|50|100|500&gt;  open checkout<br>'
+      + 'tail                 follow the request log'
+  };
+  function run(cmd) {
+    print('<span class="p">$</span> <span class="cmd">' + cmd.replace(/</g, '&lt;') + '</span>');
+    var key = cmd.trim().toLowerCase();
+    if (key.indexOf('keys new') === 0) key = 'keys new';
+    if (key.indexOf('buy') === 0) key = 'buy 500';
+    if (key.indexOf('usage') === 0) key = 'usage --7d';
+    if (key === 'clear') { out.innerHTML = ''; return; }
+    print(RESPONSES[key] || '<span class="r">unknown command:</span> ' + cmd.replace(/</g, '&lt;') + ' <span class="dim">— try </span><span class="cmd">help</span>');
+  }
+  document.querySelectorAll('[data-v7cmd]').forEach(function (b) {
+    b.addEventListener('click', function () { run(b.getAttribute('data-v7cmd')); });
+  });
+  if (input) {
+    input.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter' || !input.value.trim()) return;
+      run(input.value.trim());
+      input.value = '';
+    });
+  }
+
+  // ── V8 switches ──
+  document.querySelectorAll('[data-sw]').forEach(function (sw) {
+    sw.addEventListener('click', function () {
+      sw.setAttribute('aria-checked', sw.getAttribute('aria-checked') === 'true' ? 'false' : 'true');
+    });
+  });
+
+  // ── V9 state switcher ──
+  var v9 = document.querySelector('[data-v9]');
+  if (v9) {
+    v9.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-v9]');
+      if (!b || b === v9) return;
+      var state = b.getAttribute('data-v9');
+      v9.querySelectorAll('.v9__switch button').forEach(function (x) {
+        x.setAttribute('aria-pressed', String(x === b));
+      });
+      v9.querySelectorAll('[data-v9state]').forEach(function (p) {
+        p.hidden = p.getAttribute('data-v9state') !== state;
+      });
+    });
+  }
+})();
+</script>
+</body>
+</html>

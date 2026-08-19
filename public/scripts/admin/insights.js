@@ -21,6 +21,10 @@ import {
   trialOutcomes, trialEmailsSent,
 } from './analytics-users.js';
 import {
+  rejectionsByDay, rejectionMix, topReasons, capHitDaysByPerson, capHitCoverage,
+  customerRefusals, credentialGuardHits,
+} from './analytics-rejections.js';
+import {
   areaChart as wideArea, barChart as wideBar,
   rankedBars, donutChart, funnelChart, cohortGrid, chartCard, chartEmpty, fmtNum, PALETTE,
 } from './charts.js';
@@ -346,6 +350,84 @@ export function createInsights({ ctx, effectivePlan }) {
     }));
   }
 
+  // Requests that never became renders. This group is the one place on the
+  // dashboard whose denominator is NOT the render log: a refusal is deliberately
+  // not a row in prompt_logs.csv (see lib/services/logging.js), so nothing here
+  // may be divided by a generation count without saying so.
+  function turnedAwayCards(host, rejectionRows) {
+    // The credential-guard bounces are stripped out FIRST and charted separately.
+    // On the first live dataset this saw they were 1,682 of 1,699 rows, which in
+    // one grid would have drawn a donut that was 99% "Rate limited" and told the
+    // reader nothing about either question. See analytics-rejections.js.
+    const refusals = customerRefusals(rejectionRows);
+    const guarded = credentialGuardHits(rejectionRows);
+
+    // "Nothing recorded" and "a refusal rate of zero" look identical on a chart
+    // and are different claims. A fresh install has refused nothing and its
+    // /rejectionlogs 404s, so the empty case gets a sentence, not a flat line.
+    if (!refusals.length) {
+      host.appendChild(chartCard({
+        title: 'Turned away',
+        sub: 'Requests refused before a render ran — bad uploads, daily caps, rate limits.',
+        body: chartEmpty('No customer refusals recorded yet.'),
+        notes: ['Nothing recorded is not the same as nothing happening — this log may simply be new'],
+      }));
+    } else {
+      host.appendChild(chartCard({
+        title: 'Refusals per day',
+        sub: 'Requests stopped before they reached the model, over the last 30 days.',
+        body: areaChart(rejectionsByDay(refusals, 30), { height: 230, color: PALETTE[3], unit: 'refused', maxLabels: 6 }),
+        notes: [fmtNum(refusals.length) + ' recorded in total'],
+      }));
+
+      host.appendChild(chartCard({
+        title: 'Why they were turned away',
+        sub: 'The coarse buckets. "Photo refused" is the upload gate; the rest are limits.',
+        body: donutChart(rejectionMix(refusals), { centerLabel: 'refusals', colors: [PALETTE[3], PALETTE[5], PALETTE[6], PALETTE[7], PALETTE[1]] }),
+      }));
+
+      const photoReasons = topReasons(refusals, 'unstageable');
+      host.appendChild(chartCard({
+        title: 'Rejected photo reasons',
+        sub: 'The category the upload gate assigned. These are the pictures customers wanted staged.',
+        body: photoReasons.length ? rankedBars(photoReasons, { unit: 'photos', colorful: true }) : chartEmpty('No uploads refused.'),
+      }));
+
+      // Days, not hits: someone who retried eight times one evening met the cap
+      // once. Someone blocked on four separate days keeps coming back and keeps
+      // being stopped, which is the only version of this that means anything.
+      const repeat = capHitDaysByPerson(refusals, { top: 10 });
+      const cov = capHitCoverage(refusals);
+      host.appendChild(chartCard({
+        title: 'Hit the daily cap most often',
+        sub: 'Counted in separate DAYS blocked, not in retries — the same evening twice is one day.',
+        body: repeat.length
+          ? rankedBars(repeat.map((r) => ({ label: r.identity, value: r.days })), { unit: 'days blocked', color: PALETTE[3] })
+          : chartEmpty('Nobody has hit the daily cap.'),
+        notes: [
+          cov.ratio !== null && cov.ratio < 1
+            ? fmtNum(cov.total - cov.attributed) + ' of ' + fmtNum(cov.total) + ' cap hits were anonymous — this ranking is a floor'
+            : '',
+        ].filter(Boolean),
+      }));
+    }
+
+    // A security reading of the same file. Kept in this section rather than its
+    // own because it answers "who was refused" too — just for a different reason,
+    // and the card says which so the two counts are never added together.
+    if (guarded.length) {
+      host.appendChild(chartCard({
+        title: 'Failed credential attempts',
+        sub: 'Wrong admin or API keys. A valid key never enters these buckets, so every one of these is a miss.',
+        body: areaChart(rejectionsByDay(guarded, 30), { height: 230, color: PALETTE[6], unit: 'blocked', maxLabels: 6 }),
+        notes: [
+          fmtNum(guarded.length) + ' recorded in total',
+          'Not counted as customer refusals — these are guesses or your own typos, not lost work',
+        ],
+      }));
+    }
+  }
+
   // Each group gets its own grid rather than all 24 cards sharing one.
   //
   // A single grid sizes every row to its tallest card, so an empty-state card
@@ -379,9 +461,11 @@ export function createInsights({ ctx, effectivePlan }) {
     const chatStamps = stripHeader(ctx.data.chatRows || []).map((r) => r[0]);
     const maskStamps = maskRows.map((r) => r[0]);
     const signupStamps = (ctx.data.users || []).map((u) => u.createdAt);
+    const rejectionRows = stripHeader(ctx.data.rejectionRows || []);
 
     host.innerHTML = '';
     section(host, 'Reliability', (g) => reliabilityCards(g, promptRows));
+    section(host, 'Turned away', (g) => turnedAwayCards(g, rejectionRows));
     section(host, 'Lifecycle', (g) => lifecycleCards(g, promptRows));
     section(host, 'Growth', (g) => growthCards(g, promptStamps, signupStamps));
     section(host, 'Composition', (g) => compositionCards(g, promptRows, chatStamps, maskStamps, promptStamps));

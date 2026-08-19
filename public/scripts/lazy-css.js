@@ -1,8 +1,16 @@
 // Progressive-enhancement loader for non-critical stylesheets. They ship as
 // media="print" (so they don't block first render) and are flipped to media="all"
-// here once available. Loaded as a render-blocking <script src> at the same spot
-// the former inline block occupied — right after the lazy <link>s — so the flip
-// happens as early as before, minus the 'unsafe-inline' the inline version needed.
+// here once available. It sits at the same spot the former inline block occupied —
+// right after the lazy <link>s — minus the 'unsafe-inline' the inline version needed.
+//
+// It is NOT render-blocking, despite what this comment used to claim: every call site
+// loads it as <script type="module">, which implies `defer`, so the flip cannot run
+// until the whole document is parsed (index.html is ~261 KB). Combined with the Lowest
+// fetch priority the browser gives a media="print" sheet, the gap between first paint
+// and the flip is much wider than "as early as before" suggested. That is fine for what
+// belongs here — modals, below-fold animations — but it is why a rule for anything
+// VISIBLE at first paint must not live in a sheet listed below. The account button was
+// exactly that mistake; see the note beside .profile-menu-wrap in styles.css.
 //
 // Shared by every page that defers a stylesheet, not just the homepage (it was named
 // index-lazy-css.js while index.html was the only caller). The selector is

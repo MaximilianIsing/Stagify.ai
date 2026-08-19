@@ -55,6 +55,15 @@ export const COL = {
   CHAT: { TS: 0, USER_ID: 1 },
   MASK: { TS: 0, MODEL: 3, USER_ID: 6 },
   CONTACT: { TS: 0, ROLE: 1, REFERRAL: 2, EMAIL: 3 },
+  // rejection_logs.csv — requests refused BEFORE a render ran. Deliberately a
+  // separate table from PROMPT: every row there is counted as a generation, so
+  // folding refusals in would inflate both the headline volume and the success
+  // rate with work that never happened. KIND is the coarse bucket
+  // ('unstageable' | 'daily_limit' | 'rate_limit' | 'api_concurrency'); CODE is
+  // the specific reason within it, and for a rate_limit row that is the LIMITER
+  // NAME rather than an error code. The aggregators live in
+  // analytics-rejections.js, not here — this file is at its line cap.
+  REJECTION: { TS: 0, KIND: 1, CODE: 2, DETAIL: 3, EMAIL: 4, USER_ID: 5 },
 };
 
 const DAY_MS = 24 * 60 * 60 * 1000;

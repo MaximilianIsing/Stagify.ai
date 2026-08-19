@@ -54,6 +54,7 @@ export function createSignals({ ctx, apiSend, effectivePlan }) {
       now: Date.now(),
       promptRows,
       contactRows: stripHeader(ctx.data.contactRows || []),
+      rejectionRows: stripHeader(ctx.data.rejectionRows || []),
       users: ctx.data.users || [],
       enterprise: ctx.data.enterprise || [],
       metrics: ctx.data.metrics || null,

@@ -437,6 +437,30 @@ router.post('/api/admin/revoke-plus', protectLogs, express.json(), (req, res) =>
   return res.json({ ok: true, userId: result.userId, email: result.email });
 });
 
+// Sign one account out of every device, leaving the password alone.
+//
+// Reversible in the only sense that matters — the owner signs in again — so it sits
+// beside the grant controls rather than in a danger zone. Deliberately does NOT
+// invalidate a live password-reset link: that is the owner's way back in, and an
+// operator clearing a stranger's stolen session must not also break the mail the
+// owner is holding. See lib/data/session-revocation.js.
+router.post('/api/admin/revoke-sessions', protectLogs, express.json(), (req, res) => {
+  const { userId } = req.body || {};
+  if (!userId) {
+    return sendError(res, 400, 'A userId is required');
+  }
+  const result = authStore.revokeUserSessions(String(userId));
+  if (!result.ok) {
+    return sendError(res, result.code === 'NOT_FOUND' ? 404 : 400, result.error || 'Could not revoke the sessions', {
+      code: result.code,
+    });
+  }
+  // The count, not just the act: revoking zero sessions is a legitimate outcome
+  // and the operator has to be able to tell it from a successful one.
+  logger.info('[admin] revoked', result.revoked, 'session(s) for', result.userId);
+  return res.json({ ok: true, userId: result.userId, email: result.email, revoked: result.revoked });
+});
+
 // ── Signals tab ───────────────────────────────────────────────────────────
 //
 // The dashboard has deliberately had no backend — it downloads the CSV/JSON

@@ -18,6 +18,23 @@ STRIPE_PUBLISHABLE_KEY=
 # enterprise billing. File fallback: priceid.txt
 ENTERPRISE_PRICE_ID=
 
+# --- Public developer API (prepaid credits) ---
+# Stripe price ids for the one-time API credit packs (all start with price_). These are
+# a DIFFERENT product from ENTERPRISE_PRICE_ID above, in `payment` mode rather than a
+# metered subscription: an account can hold both, and sharing a price would put one
+# generation on two meters. A pack with no id configured is simply not offered for sale.
+# The suffix is the CREDIT COUNT, not a price: 20 / 50 / 100 / 500 images.
+# File fallbacks: api-credit-price-20.txt / -50.txt / -100.txt / -500.txt
+API_CREDIT_PRICE_20=
+API_CREDIT_PRICE_50=
+API_CREDIT_PRICE_100=
+API_CREDIT_PRICE_500=
+# Simultaneous /api/v1/renders allowed per key and per process. These bound MEMORY, not
+# request volume — each in-flight render holds a 25MB upload buffer plus sharp's working
+# set on a single instance — so raise them only alongside the box.
+# API_CONCURRENCY_PER_KEY=3
+# API_CONCURRENCY_GLOBAL=12
+
 # --- Google Sign-In ---
 # OAuth client id. Enables the "Sign in with Google" button; ID-token sign-in
 # needs only this id. Sign-in is disabled if unset. File fallback: googleclientID.txt
@@ -194,6 +211,26 @@ HIDE_STAGING_BANNER=false
 # which is why the ceiling can be this low. Raise it only if a shared office IP has
 # several people fat-fingering the key.
 # RL_ENDPOINT_KEY=10
+# The public developer API (routes/api-v1.js). All four are sized above any sane
+# integration's steady state, because the real brake on this surface is the CREDIT
+# BALANCE -- a ceiling no rate limiter can express -- plus API_CONCURRENCY_* above,
+# which is what actually protects the box's memory.
+# Render calls / 5 min, keyed by API KEY id (falling back to IP before a key is
+# presented), so one customer's burst cannot spend another customer's budget:
+# RL_API_RENDER=60
+# WRONG API keys, per IP / 15 min. Reject-only, exactly like RL_ENDPOINT_KEY above and
+# for the same reason: a request carrying a VALID key never touches this bucket, so a
+# busy integration cannot lock itself out by being busy. This is the brute-force
+# ceiling on guessing a key.
+# RL_API_KEY_REJECT=20
+# Key create / revoke / rename from the signed-in dashboard, per IP / 15 min. Those
+# routes are session-authenticated already, so this is a cost backstop on the mint
+# path rather than an access control.
+# RL_API_KEY_MANAGE=30
+# Credit-pack checkout sessions, per IP / 60 min. Mirrors RL_CHECKOUT's framing: each
+# accepted call creates a real Stripe Checkout Session, and an abandoned session is
+# litter in the Stripe dashboard rather than a charge, so this bounds noise, not fraud.
+# RL_API_CREDIT_CHECKOUT=10
 # The two limiters on UNAUTHENTICATED endpoints that write to disk. Neither answers
 # 429 past its ceiling -- the response is a real image / a redirect a stranger must
 # still receive -- so going over drops only the row that would have been recorded.
@@ -212,6 +249,14 @@ HIDE_STAGING_BANNER=false
 # and appends to the same volume as the SQLite DB, so past this size it answers 503
 # instead of growing the file. Default 33554432 (32 MB); rotate the CSV to clear it.
 # BUG_REPORT_LOG_MAX_BYTES=33554432
+# The two ceilings on email open-tracking, both in lib/services/email.js. The pixel is
+# unauthenticated (see RL_EMAIL_PIXEL above), so these bound what a stranger hitting it
+# can grow: the CSV's size in bytes, and the number of distinct addresses ever held in
+# the in-memory Map and email_opened.json. A missing or nonsense value falls back to the
+# compiled default rather than disabling the backstop. Defaults 4194304 (4 MB, ~28k
+# rows at ~150 bytes each) and 20000 addresses.
+# EMAIL_OPEN_LOG_MAX_BYTES=4194304
+# EMAIL_OPEN_MAX_ENTRIES=20000
 
 # --- Platform (set automatically — do not set these yourself) ---
 # RENDER is set by Render; the app reads it to use the /data persistent disk.

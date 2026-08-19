@@ -657,3 +657,75 @@ test('a damaged extra_json cannot break the listing or the search', () => {
   assert.doesNotThrow(() => renders.listForUser({ userId: user.id, limit: 10, offset: 0 }));
   assert.doesNotThrow(() => renders.countForUser(user.id, { q: 'bedroom' }));
 });
+
+// ── The operator's listing (listAllForUser) ────────────────────────────────
+//
+// The whole point of this method is that it does NOT share listForUser's filter.
+// If the two are ever "simplified" into one statement, these fail.
+
+/** Record a render and leave it in the given state. */
+function addInState(renders, userId, state, at) {
+  const id = newRenderId();
+  renders.record({
+    render: { id, userId, roomType: 'Bedroom', furnitureStyle: 'modern', model: 'gemini' },
+    blobs: [{ role: 'after', storageKey: keyForRender({ renderId: id, role: 'after' }), bytes: 1000 }],
+    isPro: true,
+    now: at,
+  });
+  if (state === 'ok') renders.markOk(id, { width: 8, height: 8 });
+  if (state === 'failed') renders.markFailed(id);
+  // 'pending' is simply neither call.
+  return id;
+}
+
+test('listAllForUser returns the rows the owner gallery deliberately hides', () => {
+  const { renders, user } = setup();
+  const ok = addInState(renders, user.id, 'ok', 1000);
+  const failed = addInState(renders, user.id, 'failed', 2000);
+  const pending = addInState(renders, user.id, 'pending', 3000);
+
+  const ownerView = renders.listForUser({ userId: user.id }).map((r) => r.id);
+  const adminView = renders.listAllForUser({ userId: user.id }).map((r) => r.id);
+
+  assert.deepEqual(ownerView, [ok], 'the customer sees only the finished render');
+  assert.equal(adminView.length, 3, 'the operator sees all three states');
+  for (const id of [ok, failed, pending]) {
+    assert.ok(adminView.includes(id), `${id} must be visible to the operator`);
+  }
+  assert.equal(renders.countAllForUser(user.id), 3);
+  assert.equal(renders.countForUser(user.id), 1);
+});
+
+test('listAllForUser still returns a render whose bytes were reaped', () => {
+  // An evicted row keeps every parameter and loses only its objects. It is the
+  // answer to "where did my render go", so hiding it defeats the whole feature.
+  const { renders, user } = setup();
+  addInState(renders, user.id, 'ok', 1000);
+  renders.enforceCap({ userId: user.id, isPro: false, cap: 0, now: 5000 });
+
+  assert.deepEqual(renders.listForUser({ userId: user.id }), [], 'gone from the customer gallery');
+  const rows = renders.listAllForUser({ userId: user.id });
+  assert.equal(rows.length, 1, 'still visible to the operator');
+  assert.ok(rows[0].evicted_at, 'and marked as evicted rather than merely absent');
+});
+
+test('listAllForUser never crosses accounts', () => {
+  const { renders, user } = setup();
+  const mine = addInState(renders, user.id, 'ok', 1000);
+  addInState(renders, 'someone-else', 'ok', 1000);
+
+  assert.deepEqual(renders.listAllForUser({ userId: user.id }).map((r) => r.id), [mine]);
+  assert.equal(renders.countAllForUser(user.id), 1);
+  assert.equal(renders.countAllForUser('nobody'), 0);
+});
+
+test('listAllForUser is newest-first and pages', () => {
+  const { renders, user } = setup();
+  const ids = [];
+  for (let i = 0; i < 5; i++) ids.push(addInState(renders, user.id, 'ok', 1000 + i * 1000));
+
+  const all = renders.listAllForUser({ userId: user.id, limit: 10 }).map((r) => r.id);
+  assert.deepEqual(all, ids.slice().reverse(), 'newest first');
+  assert.deepEqual(renders.listAllForUser({ userId: user.id, limit: 2 }).map((r) => r.id), all.slice(0, 2));
+  assert.deepEqual(renders.listAllForUser({ userId: user.id, limit: 2, offset: 2 }).map((r) => r.id), all.slice(2, 4));
+});

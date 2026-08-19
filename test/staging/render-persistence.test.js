@@ -365,3 +365,25 @@ test('the planned keys match what actually gets stored', async () => {
   await persistence.uploadInBackground({ entries: pending.entries, user });
   for (const key of planned) assert.ok(await store.head(key), `${key} was planned and must exist`);
 });
+
+test('an API render persists its source, so it is not pooled with pre-history rows', async () => {
+  // The bug this exists to prevent: lib/staging/api-render-billing.js sets sourceTag 'api',
+  // virtual-staging-handler.js forwards it as extra.source, and buildRenderExtra used to
+  // reject it — nulling extra_json entirely. The render still succeeded and was still
+  // billed, so nothing failed; the paid API simply became invisible, bucketed as 'unknown'
+  // in renders.bySource alongside rows written before the column existed.
+  const { persistence, stagedRenders, user } = setup();
+  const pending = persistence.recordPending({
+    user,
+    isPro: true,
+    natives: [{ buffer: await png() }],
+    params: {},
+    extra: { source: 'api', sourceName: '412-rosewood.jpg' },
+  });
+
+  const row = stagedRenders.get(pending.entries[0].id);
+  assert.ok(row.extra_json, 'the column must not be null — that is the whole bug');
+  const parsed = JSON.parse(row.extra_json);
+  assert.equal(parsed.source, 'api');
+  assert.equal(parsed.sourceName, '412-rosewood', 'the filename rides in the same column');
+});

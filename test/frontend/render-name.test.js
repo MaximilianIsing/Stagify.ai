@@ -116,27 +116,68 @@ test('styleLabel capitalises the slug and survives nothing', () => {
   assert.equal(styleLabel(undefined), '');
 });
 
-test('sourceLabel names the three studios and stays silent for interior', () => {
+test('sourceLabel names every labelled source and stays silent for interior', () => {
   // The detail panel's "Made with" row is omitted for interior renders, where the Room and
   // Style rows underneath already answer the question.
   assert.equal(sourceLabel('exterior'), 'Exterior');
   assert.equal(sourceLabel('masking'), 'Masking Studio');
   assert.equal(sourceLabel('designer'), 'AI Designer');
+  // `api` is labelled but does NOT name a render — the row is the only place an owner
+  // can tell an integration's render from one a colleague made by hand.
+  assert.equal(sourceLabel('api'), 'API');
   assert.equal(sourceLabel('interior'), '');
   assert.equal(sourceLabel(''), '');
   assert.equal(sourceLabel(undefined), '');
 });
 
-test('every named source produces a label and a distinct name', () => {
+test('every named source produces a distinct label', () => {
   // Set equality against the lib side lives in test/data/render-extra.test.js; this is the
   // behavioural half — a rule that exists must actually do something.
-  const names = new Set();
+  //
+  // Split from the naming sweep below because these became two different claims when the
+  // API arrived: EVERY rule owes a unique label, but only a `namesRender` rule owes a
+  // name. Asserting both in one loop is what would force a label-only source to invent a
+  // card name it must not have.
+  const labels = new Set();
   for (const source of NAMED_SOURCES) {
     const label = sourceLabel(source);
     assert.ok(label, `${source} has no label`);
+    assert.ok(!labels.has(label), `${source} shares a label with another source`);
+    labels.add(label);
+  }
+});
+
+test('a source that names renders produces a distinct name; a label-only one does not', () => {
+  const names = new Set();
+  for (const source of NAMED_SOURCES) {
     const name = defaultName({ source }, 'FALLBACK');
-    assert.notEqual(name, 'FALLBACK', `${source} falls through to the fallback`);
+    if (name === 'FALLBACK') continue; // label-only, covered by the case below
     assert.ok(!names.has(name), `${source} shares a name with another studio`);
     names.add(name);
   }
+  // The naming sources still all name something, so the sweep above cannot go vacuous.
+  assert.ok(names.size >= 3, 'the studios that name a render must still do so');
+});
+
+test('an API render keeps the interior name, so no client is shown the word "API"', () => {
+  // THE REGRESSION THIS DESIGN EXISTS TO PREVENT. `defaultName` also feeds the heading of
+  // the public share page (public/scripts/share/view.js), so a rule that named the render
+  // would greet an anonymous client with "API" above their staged living room.
+  const entry = { source: 'api', furnitureStyle: 'scandinavian', roomType: 'Living Room' };
+  const name = defaultName(entry, 'FALLBACK');
+  assert.ok(!/API/i.test(name), `an API render must not be named after the API: ${name}`);
+  assert.match(name, /Living Room/);
+
+  // ...while the owner's private "Made with" row still says where it came from.
+  assert.equal(sourceLabel('api'), 'API');
+});
+
+test('an API render still takes the source-photo suffix that tells two houses apart', () => {
+  // `sourceName` lives in the same column as `source`, so before this fix an unregistered
+  // id nulled BOTH and every API render read "Standard Bedroom" with nothing after it.
+  const name = defaultName(
+    { source: 'api', furnitureStyle: 'standard', roomType: 'Bedroom', sourceName: '412-rosewood' },
+    'FALLBACK',
+  );
+  assert.match(name, /412-rosewood/);
 });

@@ -447,3 +447,68 @@ test('a present CSV log is served, a missing one → 404', async () => {
   const missing = await fetch(app.baseUrl + '/contactlogs', { headers: auth }); // never seeded
   assert.equal(missing.status, 404);
 });
+
+test('the rejection log is downloadable, and its absence is a plain 404', async () => {
+  // The dashboard now loads this feed on every sign-in, so it has to behave like
+  // the other CSV exports. Its 404 is the ordinary state of a deploy that has
+  // never refused a request — the loader swallows it deliberately, which only
+  // works if the route answers 404 rather than throwing.
+  app = await mountAdmin({});
+  const missing = await fetch(app.baseUrl + '/rejectionlogs', { headers: auth });
+  assert.equal(missing.status, 404);
+
+  await app.close();
+  app = await mountAdmin({ dataLogFiles: { 'rejection_logs.csv': 'timestamp,kind,code\n2026-06-01T00:00:00Z,daily_limit,DAILY_LIMIT_REACHED\n' } });
+  const present = await fetch(app.baseUrl + '/rejectionlogs', { headers: auth });
+  assert.equal(present.status, 200);
+  assert.match(await present.text(), /daily_limit/);
+});
+
+// ---- Session revocation ---------------------------------------------------
+
+test('revoke-sessions signs one account out and reports how many were dropped', async () => {
+  app = await mountAdmin({ revokeSessionsResult: { ok: true, userId: 'u_9', email: 'sam@example.com', revoked: 3 } });
+  const res = await fetch(app.baseUrl + '/api/admin/revoke-sessions', {
+    method: 'POST', headers: jsonAuth, body: JSON.stringify({ userId: 'u_9' }),
+  });
+  assert.equal(res.status, 200);
+  const body = await res.json();
+  // The count is the payload, not a nicety: revoking zero sessions is a real
+  // outcome and the operator cannot tell it from success without this number.
+  assert.deepEqual(body, { ok: true, userId: 'u_9', email: 'sam@example.com', revoked: 3 });
+  assert.equal(app.calls.revokeUserSessions.calls, 1);
+});
+
+test('revoke-sessions reports zero as zero rather than as a bare success', async () => {
+  app = await mountAdmin({ revokeSessionsResult: { ok: true, userId: 'u_9', email: 'sam@example.com', revoked: 0 } });
+  const res = await fetch(app.baseUrl + '/api/admin/revoke-sessions', {
+    method: 'POST', headers: jsonAuth, body: JSON.stringify({ userId: 'u_9' }),
+  });
+  assert.equal((await res.json()).revoked, 0);
+});
+
+test('revoke-sessions needs a userId, and an unknown account is a 404', async () => {
+  app = await mountAdmin({});
+  const noId = await fetch(app.baseUrl + '/api/admin/revoke-sessions', {
+    method: 'POST', headers: jsonAuth, body: '{}',
+  });
+  assert.equal(noId.status, 400);
+  assert.equal(app.calls.revokeUserSessions.calls, 0, 'a bodyless call never reaches the store');
+
+  await app.close();
+  app = await mountAdmin({ revokeSessionsResult: { ok: false, error: 'No such user', code: 'NOT_FOUND' } });
+  const missing = await fetch(app.baseUrl + '/api/admin/revoke-sessions', {
+    method: 'POST', headers: jsonAuth, body: JSON.stringify({ userId: 'nope' }),
+  });
+  assert.equal(missing.status, 404, 'NOT_FOUND maps to 404, not to a generic 400');
+  assert.equal((await missing.json()).code, 'NOT_FOUND');
+});
+
+test('revoke-sessions is guarded, and an unauthenticated body is never parsed', async () => {
+  app = await mountAdmin({});
+  const res = await fetch(app.baseUrl + '/api/admin/revoke-sessions', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: 'u_9' }),
+  });
+  assert.equal(res.status, 403);
+  assert.equal(app.calls.revokeUserSessions.calls, 0, 'the guard runs before the handler, and before express.json()');
+});

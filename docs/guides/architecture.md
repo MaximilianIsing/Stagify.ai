@@ -697,3 +697,36 @@ ties them together.
   ship — you deploy from the Render dashboard. The build still runs the test suite, so a
   red test blocks the deploy. See [`../operations/deployment.md`](../operations/deployment.md)
   and [`testing.md`](testing.md).
+
+## The public API is synchronous, on purpose
+
+`POST /api/v1/renders` answers with the image in the same request that asked for it. That
+is a deliberate choice against the obvious alternative (submit → poll), and the reasoning
+is the same single-instance reality the rest of this document describes:
+
+There is no job queue, and adding one *for this* would be worse than not having it. A queue
+whose jobs evaporate on a restart — which is every deploy, since the app is one Render web
+service with SQLite on an attached disk — leaves the customer's credit spent and no socket
+left to tell them. Making async honest would require durable job resumption, which is a
+project, not a feature. A dropped connection, by contrast, is already recoverable: the
+caller retries with the same `Idempotency-Key` and is not charged twice.
+
+Two things replace what a queue would have given us:
+
+* **`Idempotency-Key`**, with Stripe's semantics. The failure mode of a long synchronous
+  request is a socket that dies *after* the work completed — charged, holding nothing. The
+  request record (`api_requests`) makes the charge exactly-once and lets a retry either
+  replay the outcome or re-run without a second debit.
+* **A concurrency gate** (`lib/http/api-concurrency.js`), 3 per key and 12 per process.
+  A rate limiter counts requests over a window and says nothing about how many are in
+  flight at once; on one box, where each render holds a 25MB upload buffer plus sharp's
+  working set, in-flight count is the number that actually matters.
+
+`variations` is capped at 1 for the same reason the money is 1:1 — one request, one credit,
+one debit, one refund. A partial failure of variation 2 of 3 has no clean refund semantics,
+and a client wanting three gets better parallelism issuing three concurrent requests.
+
+The migration to async is kept **additive**: the success body already carries
+`status: "succeeded"` and `GET /api/v1/renders/:id` already exists, so a future
+`status: "queued"` needs no new endpoint. Clients are told from day one to treat any
+status other than `succeeded` as "poll the GET".

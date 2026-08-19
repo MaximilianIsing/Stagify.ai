@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- PC-only page. Render-blocking and BELOW the viewport meta on purpose: the gate
+         reads the layout viewport, and above that line a phone reports the ~980px
+         fallback and nobody is ever redirected. See scripts/developers-gate.js. -->
+    <script src="scripts/developers-gate.js"></script>
+    <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
+    <!-- Google tag (gtag.js) — Google Ads. Config + async loader in scripts/gtag.js. -->
+    <script src="scripts/gtag.js" defer></script>
+    <link rel="icon" type="image/webp" sizes="32x32" href="media-webp/logo/Logo32x32.webp">
+    <link rel="icon" type="image/webp" sizes="64x64" href="media-webp/logo/Logo64x64.webp">
+    <link rel="apple-touch-icon" sizes="180x180" href="media-webp/logo/Logo180x180.webp">
+    <link rel="manifest" href="manifest.json">
+    <title data-lang="pageMeta.developers.title">Stagify API for Developers | Stagify.ai</title>
+    <meta name="description" data-lang-attr="pageMeta.developers.description|content" content="Stage real-estate photos from your own code. One HTTP call per image, prepaid credits at $0.15 an image, no subscription and no minimum.">
+
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <link rel="canonical" href="https://stagify.ai/developers.html">
+    <link rel="alternate" hreflang="en" href="https://stagify.ai/developers.html">
+    <link rel="alternate" hreflang="es" href="https://stagify.ai/es/developers.html">
+    <link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/developers.html">
+    <link rel="alternate" hreflang="de" href="https://stagify.ai/de/developers.html">
+    <link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/developers.html">
+    <link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/developers.html">
+    <link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/developers.html">
+    <link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/developers.html">
+    <link rel="alternate" hreflang="it" href="https://stagify.ai/it/developers.html">
+    <link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/developers.html">
+    <link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/developers.html">
+    <link rel="alternate" hreflang="x-default" href="https://stagify.ai/developers.html">
+
+    <meta property="og:title" content="Stagify API for Developers">
+    <meta property="og:description" content="Stage real-estate photos from your own code. One HTTP call per image, prepaid credits, no subscription.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://stagify.ai/developers.html">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:locale:alternate" content="es_ES">
+    <meta property="og:locale:alternate" content="fr_FR">
+    <meta property="og:locale:alternate" content="de_DE">
+    <meta property="og:locale:alternate" content="zh_CN">
+    <meta property="og:locale:alternate" content="ko_KR">
+    <meta property="og:locale:alternate" content="pt_BR">
+    <meta property="og:locale:alternate" content="ru_RU">
+    <meta property="og:locale:alternate" content="it_IT">
+    <meta property="og:locale:alternate" content="ja_JP">
+    <meta property="og:locale:alternate" content="nl_NL">
+    <meta property="og:site_name" content="Stagify.ai">
+    <meta property="og:image" content="https://stagify.ai/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:alt" content="Stagify.ai — before and after AI virtual staging">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Stagify API for Developers">
+    <meta name="twitter:description" content="Stage real-estate photos from your own code. Prepaid credits, no subscription.">
+    <meta name="twitter:image" content="https://stagify.ai/og-image.png">
+    <meta name="author" content="Stagify.ai">
+    <meta name="theme-color" content="#2563eb">
+
+    <!-- Breadcrumb trail: this page sits one level below the root, so it publishes the
+         two-step list every indexable non-root page carries (test/server/breadcrumbs.test.js). -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://stagify.ai/" },
+        { "@type": "ListItem", "position": 2, "name": "API documentation", "item": "https://stagify.ai/developers.html" }
+      ]
+    }
+    </script>
+
+    <link rel="stylesheet" href="styles/styles.css">
+    <link rel="stylesheet" href="styles/developers.css">
+    <!-- auth.css styles the sign-in modal only, which nothing on this page opens
+         until a user clicks. Shipped as print (non-render-blocking) and promoted to
+         all by lazy-css.js once fetched — the same pattern index.html uses. The swap
+         is JS, not an inline onload= handler, so it passes the CSP’s
+         script-src-attr 'none'. -->
+    <link rel="stylesheet" href="styles/auth.css" media="print" data-lazy-css>
+    <script type="module" src="scripts/lazy-css.js"></script>
+    <noscript>
+      <!-- The promotion above is the only thing that ever loads this sheet, so
+           without this the modal is unstyled with JS off. -->
+      <link rel="stylesheet" href="styles/auth.css">
+    </noscript>
+    <link rel="preload" href="languages/english.json" as="fetch" crossorigin>
+    <script type="module" src="scripts/language-detect.js"></script>
+    <script type="module" src="scripts/language-loader.js"></script>
+    <script type="module" src="scripts/language-switcher.js"></script>
+    <script type="module" src="scripts/nav-pill.js"></script>
+    <!-- auth.js defines window.StagifyAuth, which api-keys-app.js reads for the session
+         token, and profile-menu.js is what makes the account button in the shared header
+         do anything. Both are needed by the chrome, not just by this page. -->
+    <script type="module" src="scripts/auth.js"></script>
+    <script type="module" src="scripts/profile-menu.js"></script>
+    <style>
+      /* Hide AI Designer link on mobile */
+      @media (max-width: 768px) {
+        .desktop-only {
+          display: none !important;
+        }
+      }
+    </style>
+    <!-- Sets html.has-session from the stored token BEFORE first paint, so the nav’s
+         Gallery tab does not pop in a round trip late. Render-blocking on purpose, and
+         last in <head> so it never delays discovery of the CSS above it. -->
+    <script src="scripts/session-class.js"></script>
+  </head>
+  <body class="page-docs">
+    <!-- Background Video -->
+    <video id="background-video" autoplay muted loop playsinline webkit-playsinline preload="metadata" poster="media-webp/background-poster.webp">
+      <source src="background.mp4" type="video/mp4" media="(min-width: 769px)">
+    </video>
+
+    <header class="site-header">
+      <nav class="nav">
+        <a href="index.html" class="brand"><img src="media-webp/logo/Logo64x64.webp" data-lang-attr="navigation.logoAlt|alt" alt="Stagify.ai logo — go to homepage" class="brand-logo" fetchpriority="high"><span class="brand-strong" data-lang="navigation.brand">Stagify</span><span class="brand-light" data-lang="navigation.brandSuffix">.ai</span></a>
+        <div class="nav-center">
+          <a href="index.html" class="nav-link" data-lang="navigation.home">Home</a>
+          <div class="staging-menu" data-staging-menu data-nav-group>
+            <button type="button" class="nav-link staging-menu__trigger" aria-haspopup="true" aria-expanded="false"><span data-lang="navigation.staging">Staging</span><svg class="staging-menu__chevron" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+            <div class="staging-menu__panel" role="menu">
+              <a class="staging-menu__item" href="index.html#stage" role="menuitem" aria-describedby="staging-menu-tip-stage" data-staging-open="stage"><span class="staging-menu__label" data-lang="navigation.imageStaging">Image Staging</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-stage" aria-hidden="true" data-lang="navigation.tips.imageStaging">Stages a whole room from one photo: pick a room type and a furniture style and the AI furnishes it. Best for empty or nearly empty rooms when you want a fast, complete result.</span></a>
+              <a class="staging-menu__item is-locked" href="index.html#basic-mask" role="menuitem" aria-describedby="staging-menu-tip-basic-mask" data-staging-open="basic-mask" data-staging-pro data-staging-preview data-staging-preview-page="basic-mask.html"><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" data-lang-attr="navigation.plusBadge|aria-label" aria-label="Stagify+"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang="navigation.basicMask">Basic Mask</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-basic-mask" aria-hidden="true" data-lang="navigation.tips.basicMask">Paint over one part of a photo, then describe the change you want. Best for small fixes (swap a sofa, clear a countertop) when the rest of the shot is already right.</span></a>
+              <a class="staging-menu__item is-locked desktop-only" href="ai-designer.html" role="menuitem" aria-describedby="staging-menu-tip-designer" data-staging-pro data-staging-preview><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" data-lang-attr="navigation.plusBadge|aria-label" aria-label="Stagify+"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang-html="navigation.pdfTo3d">AI Designer</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-designer" aria-hidden="true" data-lang="navigation.tips.pdfTo3d">Chat with an AI designer that stages, redesigns and keeps iterating on a room with you. Best when you are exploring looks rather than finishing one photo. Desktop only.</span></a>
+              <a class="staging-menu__item is-locked" href="masking-studio.html" role="menuitem" aria-describedby="staging-menu-tip-masking" data-staging-pro data-staging-preview><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" data-lang-attr="navigation.plusBadge|aria-label" aria-label="Stagify+"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang="navigation.maskingStudio">Masking Studio</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-masking" aria-hidden="true" data-lang="navigation.tips.maskingStudio">Highlight several areas in different colors and give each its own furniture photo or prompt, then stage them all at once. Best when you need exact control, since everything outside your highlights stays pixel-perfect.</span></a>
+              <a class="staging-menu__item is-locked" href="exterior-studio.html" role="menuitem" aria-describedby="staging-menu-tip-exterior" data-staging-pro data-staging-preview><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" data-lang-attr="navigation.plusBadge|aria-label" aria-label="Stagify+"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang="navigation.exteriorStudio">Exterior Studio</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-exterior" aria-hidden="true" data-lang="navigation.tips.exteriorStudio">Cleans up an exterior photo of a property: change the time of day, clear the sky, and remove parked cars and clutter. Best for the front elevation, yard and street shots, the ones the staging tools deliberately never touch.</span></a>
+            </div>
+          </div>
+          <a href="gallery.html" class="nav-link desktop-only hidden" data-nav-gallery data-lang="navigation.gallery">Gallery</a>
+          <a href="guides.html" class="nav-link" data-lang="navigation.guides">Guides</a>
+          <a href="contact.html" class="nav-link" data-lang="navigation.contactUs">Contact</a>
+          <div class="profile-menu-wrap">
+            <button type="button" id="profile-menu-btn" class="profile-menu-btn" aria-expanded="false" aria-haspopup="true" data-lang-attr="auth.accountMenu|aria-label" aria-label="Account menu">
+              <svg class="profile-menu-btn__icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </button>
+            <div id="profile-menu-dropdown" class="profile-menu-dropdown hidden" role="menu" aria-hidden="true"></div>
+          </div>
+        </div>
+        <div class="nav-trailing">
+          <div class="mobile-test-text" data-hover-glow>
+            <div data-lang="hero.title.upload">Upload.</div>
+            <div data-lang="hero.title.stage">Stage.</div>
+            <div data-lang="hero.title.imagine">Imagine.</div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <div class="language-picker-container">
+        <div class="language-selector">
+          <label for="language-select" class="sr-only" data-lang="common.selectLanguage">Select language</label>
+          <select id="language-select" class="language-dropdown lang-native-select" tabindex="-1" aria-hidden="true">
+            <option value="english" selected>EN</option>
+            <option value="german">DE</option>
+            <option value="dutch">NL</option>
+            <option value="spanish">ES</option>
+            <option value="french">FR</option>
+            <option value="italian">IT</option>
+            <option value="portuguese">PT</option>
+            <option value="russian">RU</option>
+            <option value="chinese">中文</option>
+            <option value="japanese">日本語</option>
+            <option value="korean">한국어</option>
+          </select>
+          <div class="lang-switch" data-lang-switch>
+            <button type="button" class="lang-switch__trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="Select language" data-lang-attr="common.selectLanguage|aria-label">
+              <img class="lang-switch__flag" src="media-webp/flags/US.svg" alt="" width="20" height="14" />
+              <span class="lang-switch__label">English</span>
+              <svg class="lang-switch__chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <ul class="lang-switch__menu" role="listbox" aria-label="Select language" data-lang-attr="common.selectLanguage|aria-label">
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="english"><img loading="lazy" decoding="async" src="media-webp/flags/US.svg" alt="" width="20" height="14" /><span>English</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="german"><img loading="lazy" decoding="async" src="media-webp/flags/Germany.svg" alt="" width="20" height="14" /><span>Deutsch</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="dutch"><img loading="lazy" decoding="async" src="media-webp/flags/Netherlands.svg" alt="" width="20" height="14" /><span>Nederlands</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="spanish"><img loading="lazy" decoding="async" src="media-webp/flags/Spain.svg" alt="" width="20" height="14" /><span>Español</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="french"><img loading="lazy" decoding="async" src="media-webp/flags/France.svg" alt="" width="20" height="14" /><span>Français</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="italian"><img loading="lazy" decoding="async" src="media-webp/flags/Italy.svg" alt="" width="20" height="14" /><span>Italiano</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="portuguese"><img loading="lazy" decoding="async" src="media-webp/flags/Brazil.svg" alt="" width="20" height="14" /><span>Português</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="russian"><img loading="lazy" decoding="async" src="media-webp/flags/Russia.svg" alt="" width="20" height="14" /><span>Русский</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="chinese"><img loading="lazy" decoding="async" src="media-webp/flags/China.svg" alt="" width="20" height="14" /><span>中文</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="japanese"><img loading="lazy" decoding="async" src="media-webp/flags/Japan.svg" alt="" width="20" height="14" /><span>日本語</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="korean"><img loading="lazy" decoding="async" src="media-webp/flags/Korea.svg" alt="" width="20" height="14" /><span>한국어</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="docs-sheet">
+        <!-- TWO columns, not three. The left rail listed Reference and Concepts, and every
+             entry in it also appeared in the right-hand "On this page" rail — a strict
+             subset of the same anchors, grouped differently. One table of contents is
+             navigation; two is a choice the reader has to make before they can read.
+             api-keys.html reuses `.docs`/`.docs-nav` for its own shell, which is why this
+             is a modifier here rather than a change to the base grid. -->
+        <div class="docs docs--reading">
+          <main class="docs-main">
+            <div class="docs-titlebar">
+              <div class="docs-titlebar__text">
+                <p class="docs-crumb">Stagify.ai &rsaquo; <b data-lang="developers.crumb">API documentation</b></p>
+                <h1>
+                  Stagify API
+                  <img class="docs-h1__logo" src="media-webp/logo/Api64x64.webp" alt="" width="34" height="34" aria-hidden="true" decoding="async">
+                </h1>
+              </div>
+              <!-- The ONLY action on a page that is otherwise pure reference, and now the
+                   only way to the dashboard from here since the left rail went. It is
+                   `desktop-only` because api-keys.html is PC-only and has its own gate, so
+                   offering the link to a phone would be a tap that undoes itself. -->
+              <a class="docs-dash desktop-only" href="api-keys.html" data-lang="developers.dashboard">API dashboard</a>
+            </div>
+            <p class="docs-lede" data-lang="developers.lede">
+              Stage a real-estate photo from your own code. One HTTP call returns one staged
+              image. Prepaid credits at $0.15 an image, with no subscription, no minimum and
+              no bill that can run away from you.
+            </p>
+
+            <dl class="docs-facts">
+              <div class="docs-fact">
+                <dt data-lang="developers.facts.baseUrl">Base URL</dt>
+                <dd>https://stagify.ai/api/v1</dd>
+              </div>
+              <div class="docs-fact">
+                <dt data-lang="developers.facts.auth">Authentication</dt>
+                <dd>Bearer stg_live_&hellip;</dd>
+              </div>
+              <div class="docs-fact">
+                <dt data-lang="developers.facts.contentType">Content type</dt>
+                <dd>multipart/form-data</dd>
+              </div>
+            </dl>
+
+            <section class="docs-sec" id="introduction">
+              <h2 data-lang="developers.intro.h2">Introduction</h2>
+              <p data-lang="developers.intro.p1">
+                The API exposes one thing: the staging pipeline behind the web app. You post a
+                photo of a room, name a room type and a furniture style, and get a staged image
+                back in the same response. There is no job queue and nothing to poll on the
+                happy path.
+              </p>
+              <p data-lang="developers.intro.p2">
+                Credits are whole images. You buy them up front and each successful render
+                spends one. A render that fails is refunded automatically, so you only ever pay
+                for a photo you received. And because the balance is prepaid, a stolen key
+                costs you at most what is left on it. There is no invoice at the end of the
+                month.
+              </p>
+              <p class="dev-note" data-lang="developers.intro.note">
+                Keys are meant for server-to-server use. The API sends no CORS headers, so a
+                browser cannot call it directly; that is deliberate, and a key reachable from
+                browser JavaScript is a leaked key. We show a key once, store only a hash, and
+                revoke immediately.
+              </p>
+            </section>
+
+            <section class="docs-sec" id="quickstart">
+              <h2 data-lang="developers.quickstart.h2">Quickstart</h2>
+              <p data-lang-html="developers.quickstart.p1">
+                Create a key on your <a href="api-keys.html">API keys page</a>, buy a credit
+                pack, then post a photo. The response carries the staged image as a data URL.
+              </p>
+              <pre class="dev-code"><code>curl https://stagify.ai/api/v1/renders \
+  -H "Authorization: Bearer $STAGIFY_API_KEY" \
+  -H "Idempotency-Key: $(uuidgen)" \
+  -F "image=@living-room.jpg" \
+  -F "roomType=Living room" \
+  -F "furnitureStyle=modern" \
+  -F "labelVirtuallyStaged=true"</code></pre>
+              <p class="dev-note" data-lang-html="developers.quickstart.note">
+                A render takes up to a couple of minutes. Set your client&rsquo;s read timeout to
+                <strong>300 seconds</strong> and retry with the <em>same</em>
+                <code>Idempotency-Key</code>. That is what guarantees you are never charged twice
+                for one photo.
+              </p>
+
+              <h3 data-lang="developers.quickstart.packs">Credit packs</h3>
+              <!-- Rendered from GET /api/api-credits/packs rather than hard-coded, so this
+                   table cannot drift from lib/data/credit-packs.js — the thing the webhook
+                   actually charges against. -->
+              <div class="dev-packs" id="dev-packs" data-loading="true">
+                <p class="dev-packs__loading" data-lang="developers.packs.loading">Loading pricing&hellip;</p>
+              </div>
+            </section>
+
+            <section class="docs-sec" id="parameters">
+              <h2 data-lang="developers.params.h2">Request parameters</h2>
+              <p data-lang-html="developers.params.lede"><code>POST /api/v1/renders</code>, sent as <code>multipart/form-data</code>. Every accepted value below is also served as JSON from <code>GET /api/v1/options</code>, which needs no API key, so a client can populate its own dropdowns instead of hard-coding this table.</p>
+              <div class="dev-table-scroll">
+                <table class="dev-table">
+                  <thead>
+                    <tr><th data-lang="developers.params.thField">Field</th><th data-lang="developers.params.thType">Type</th><th data-lang="developers.params.thNotes">Notes</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td><code>image</code></td><td>file</td><td data-lang-html="developers.params.image"><strong>Required.</strong> The room photo. JPEG, PNG or WebP, up to 25 MB. The MIME type is what is checked, not the file extension.</td></tr>
+                    <tr>
+                      <td><code>roomType</code></td><td>enum</td>
+                      <td data-lang-html="developers.params.roomType">
+                        <code>Bedroom</code>, <code>Living room</code>, <code>Dining room</code>,
+                        <code>Kitchen</code>, <code>Office</code>, <code>Bathroom</code>,
+                        <code>Outdoors</code>, <code>Dorm</code>.
+                        Default <code>Living room</code>.
+                        <strong>Case- and space-sensitive</strong>, and an unrecognised value is
+                        <strong>not rejected</strong>. It is written into the prompt as
+                        free text, so <code>Living Room</code> is not <code>Living room</code>.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><code>furnitureStyle</code></td><td>enum</td>
+                      <td data-lang-html="developers.params.furnitureStyle">
+                        <code>standard</code>, <code>modern</code>, <code>midcentury</code>,
+                        <code>scandinavian</code>, <code>luxury</code>, <code>coastal</code>,
+                        <code>farmhouse</code>, <code>custom</code>.
+                        Default <code>standard</code>, which is also what an unrecognised value
+                        silently becomes. <code>custom</code> uses your
+                        <code>additionalPrompt</code> in place of the built-in style text.
+                      </td>
+                    </tr>
+                    <tr><td><code>additionalPrompt</code></td><td>string</td><td data-lang-html="developers.params.additionalPrompt">Free-text direction for this render.</td></tr>
+                    <tr><td><code>removeFurniture</code></td><td>boolean</td><td data-lang-html="developers.params.removeFurniture">Empty the room before staging it. Send <code>true</code> or <code>on</code>; anything else, including <code>1</code> and <code>yes</code>, reads as false.</td></tr>
+                    <tr><td><code>keepFurniture</code></td><td>string</td><td data-lang-html="developers.params.keepFurniture">Free text naming what to leave in place, e.g. <code>keep the dining table and the built-in shelves</code>. Read only when <code>removeFurniture</code> is set. 500 characters.</td></tr>
+                    <tr><td><code>furnitureImage</code></td><td>file[]</td><td data-lang-html="developers.params.furnitureImage">Up to 5 reference photos of furniture to match. Same formats and size limit as <code>image</code>.</td></tr>
+                    <tr><td><code>labelVirtuallyStaged</code></td><td>boolean</td><td data-lang-html="developers.params.labelVirtuallyStaged">Burn the &ldquo;Virtually staged&rdquo; disclosure onto the output.</td></tr>
+                    <tr>
+                      <td><code>stampStyle</code></td><td>enum</td>
+                      <td data-lang-html="developers.params.stampStyle"><code>dark</code>, <code>light</code>, <code>minimal</code>,
+                        <code>banner</code>. Default <code>dark</code>. Case-insensitive;
+                        an unrecognised value falls back to the default.</td>
+                    </tr>
+                    <tr>
+                      <td><code>stampScale</code></td><td>number</td>
+                      <td data-lang-html="developers.params.stampScale"><code>0.7</code> to <code>1.6</code>, default <code>1</code>.
+                        Out-of-range values are clamped rather than refused.</td>
+                    </tr>
+                    <tr>
+                      <td><code>stampLang</code></td><td>enum</td>
+                      <td data-lang-html="developers.params.stampLang">The badge language: <code>english</code>, <code>spanish</code>,
+                        <code>french</code>, <code>german</code>, <code>chinese</code>,
+                        <code>korean</code>, <code>portuguese</code>, <code>russian</code>,
+                        <code>italian</code>, <code>japanese</code>, <code>dutch</code>.
+                        Default <code>english</code>.</td>
+                    </tr>
+                    <tr><td><code>variations</code></td><td>integer</td><td data-lang-html="developers.params.variations">Only <code>1</code> is accepted. Issue concurrent requests for more.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="docs-sec" id="idempotency">
+              <h2 data-lang="developers.idem.h2">Idempotency</h2>
+              <p data-lang-html="developers.idem.p1">
+                A render holds the connection for minutes, which means the failure that will
+                actually bite you is a dead socket after the work completed: charged, holding
+                nothing. Send an <code>Idempotency-Key</code> header on every request and retry
+                with the <em>same</em> value.
+              </p>
+              <div class="dev-table-scroll">
+                <table class="dev-table">
+                  <thead><tr><th data-lang="developers.idem.thHave">What we have on file</th><th data-lang="developers.idem.thRetry">What a retry does</th></tr></thead>
+                  <tbody>
+                    <tr><td data-lang="developers.idem.r1a">A succeeded request, same parameters</td><td data-lang-html="developers.idem.r1b">Returns the stored result with <code>X-Stagify-Replayed: true</code>. No second charge.</td></tr>
+                    <tr><td data-lang="developers.idem.r2a">A request still running</td><td data-lang-html="developers.idem.r2b"><code>409 REQUEST_IN_FLIGHT</code>. Wait, then retry.</td></tr>
+                    <tr><td data-lang="developers.idem.r3a">A request abandoned mid-render</td><td data-lang-html="developers.idem.r3b">Re-runs on the existing charge, up to three attempts.</td></tr>
+                    <tr><td data-lang="developers.idem.r4a">The same key with different parameters</td><td data-lang-html="developers.idem.r4b"><code>422 IDEMPOTENCY_KEY_REUSED</code>. Use a fresh key.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="dev-note" data-lang="developers.idem.note">
+                Omitting the header is allowed and means no replay protection, which is the
+                honest default. We do not derive a key from your photo: two genuinely separate
+                renders of the same room would collide and the second caller would be handed the
+                first one&rsquo;s image.
+              </p>
+            </section>
+
+            <section class="docs-sec" id="disclosure">
+              <h2 data-lang="developers.disclosure.h2">Disclosure labels</h2>
+              <p data-lang-html="developers.disclosure.p1">
+                Many MLS and NAR rules require a staged photo to say that it is staged.
+                <code>labelVirtuallyStaged</code> burns that label into the pixels rather than
+                attaching it as metadata that a downstream tool can strip.
+              </p>
+              <p class="dev-note" data-lang-html="developers.disclosure.note">
+                If the label cannot be applied, the image is <strong>withheld rather than
+                delivered unlabelled</strong>, the call answers <code>500
+                DISCLOSURE_STAMP_FAILED</code>, and your credit is refunded. There is no way to
+                switch that behaviour off, and no per-key default that quietly disables it.
+              </p>
+            </section>
+
+            <section class="docs-sec" id="errors">
+              <h2 data-lang="developers.errors.h2">Errors</h2>
+              <p data-lang-html="developers.errors.lede">
+                Every failure answers <code>{ "error": "&hellip;", "code": "&hellip;" }</code>. Branch on
+                <code>code</code>, never on the message. Messages change, codes do not.
+              </p>
+              <div class="dev-table-scroll">
+                <table class="dev-table">
+                  <thead><tr><th data-lang="developers.errors.thStatus">Status</th><th data-lang="developers.errors.thCode">Code</th><th data-lang="developers.errors.thAction">What to do</th></tr></thead>
+                  <tbody>
+                    <tr><td>401</td><td><code>API_KEY_MISSING</code> / <code>API_KEY_INVALID</code> / <code>API_KEY_REVOKED</code></td><td data-lang-html="developers.errors.keyMissing">Check the <code>Authorization</code> header, or mint a new key.</td></tr>
+                    <tr><td>402</td><td><code>INSUFFICIENT_CREDITS</code></td><td data-lang-html="developers.errors.noCredits">Top up. The body carries <code>credits_remaining</code>.</td></tr>
+                    <tr><td>403</td><td><code>ACCOUNT_SUSPENDED</code></td><td data-lang-html="developers.errors.suspended">Contact support.</td></tr>
+                    <tr><td>400</td><td><code>VARIATIONS_UNSUPPORTED</code></td><td data-lang-html="developers.errors.variations">This API renders one image per request. Issue concurrent requests instead.</td></tr>
+                    <tr><td>409</td><td><code>REQUEST_IN_FLIGHT</code></td><td data-lang-html="developers.errors.inFlight">That idempotency key is still running. Wait, then retry.</td></tr>
+                    <tr><td>409</td><td><code>CONCURRENCY_LIMIT</code></td><td data-lang-html="developers.errors.concurrency">Too many renders at once. Retry in a few seconds.</td></tr>
+                    <tr><td>422</td><td><code>IDEMPOTENCY_KEY_REUSED</code></td><td data-lang-html="developers.errors.keyReused">You reused a key with different parameters. Use a fresh one.</td></tr>
+                    <tr><td>422</td><td><code>NO_IMAGE_GENERATED</code></td><td data-lang-html="developers.errors.noImage">The model returned nothing. Refunded; retry or try another photo.</td></tr>
+                    <tr><td>429</td><td><code>RATE_LIMITED</code></td><td data-lang-html="developers.errors.rateLimited">Back off and retry.</td></tr>
+                    <tr><td>500</td><td><code>DISCLOSURE_STAMP_FAILED</code></td><td data-lang-html="developers.errors.stampFailed">The label could not be applied so the image was withheld. Refunded.</td></tr>
+                    <tr><td>500</td><td><code>RENDER_FAILED</code></td><td data-lang-html="developers.errors.renderFailed">Refunded. Quote the <code>ref</code> if you contact support.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="docs-sec" id="other-endpoints">
+              <h2 data-lang="developers.other.h2">Other endpoints</h2>
+              <ul class="dev-list">
+                <li data-lang-html="developers.other.options"><code>GET /api/v1/options</code>: the accepted values for every enum above. No API key required.</li>
+                <li data-lang-html="developers.other.me"><code>GET /api/v1/me</code>: is my key working? Returns the account and balance.</li>
+                <li data-lang-html="developers.other.credits"><code>GET /api/v1/credits</code>: balance and lifetime totals.</li>
+                <li data-lang-html="developers.other.render"><code>GET /api/v1/renders/{id}</code>: the status of one render.</li>
+              </ul>
+              <p class="dev-note" data-lang-html="developers.other.note">
+                Every response carries <code>X-Stagify-Credits-Remaining</code>, so you can watch the
+                balance fall without polling for it.
+              </p>
+            </section>
+
+            <!-- Outside every section on purpose: a footnote to the whole page, not
+                 another topic. -->
+            <p class="dev-contact" data-lang-html="developers.contact">
+              Questions, higher limits, or an invoice instead of a card:
+              <a href="mailto:team@stagify.ai">team@stagify.ai</a>.
+            </p>
+          </main>
+
+          <!-- Right rail. A convenience, not navigation — it is the first thing dropped
+               when the viewport cannot hold three columns. -->
+          <nav class="docs-toc" aria-label="On this page">
+            <p class="docs-toc__title" data-lang="developers.toc">On this page</p>
+            <a href="#introduction" data-lang="developers.intro.h2">Introduction</a>
+            <a href="#quickstart" data-lang="developers.quickstart.h2">Quickstart</a>
+            <a href="#parameters" data-lang="developers.params.h2">Request parameters</a>
+            <a href="#idempotency" data-lang="developers.idem.h2">Idempotency</a>
+            <a href="#disclosure" data-lang="developers.disclosure.h2">Disclosure labels</a>
+            <a href="#errors" data-lang="developers.errors.h2">Errors</a>
+            <a href="#other-endpoints" data-lang="developers.other.h2">Other endpoints</a>
+          </nav>
+        </div>
+      </div>
+    </main>
+
+    <footer style="text-align:center;padding:20px 16px 28px;font-size:13px;color:#374151;">
+      <a href="privacy.html" style="color:#2563eb;text-decoration:none;" data-lang="footer.privacy">Privacy Policy</a>
+      &nbsp;·&nbsp;
+      <a href="terms.html" style="color:#2563eb;text-decoration:none;" data-lang="footer.terms">Terms of Service</a>
+      &nbsp;·&nbsp;
+      <a href="/status" style="color:#2563eb;text-decoration:none;" data-lang="footer.status">Status</a>
+      <span class="desktop-only">&nbsp;·&nbsp;
+      <a href="developers.html" style="color:#2563eb;text-decoration:none;" data-lang="footer.developers">API</a></span>
+      &nbsp;·&nbsp;
+      © <span class="footer-year">2026</span> <span data-lang="footer.copyright">Stagify.ai</span>
+    </footer>
+
+    <!-- NOT app.js — see scripts/page-chrome.js for why. -->
+    <script type="module" src="scripts/page-chrome.js"></script>
+    <script type="module" src="scripts/hover-glow.js"></script>
+    <script type="module" src="scripts/footer-year.js"></script>
+    <script type="module" src="scripts/developers-pricing.js"></script>
+</body>
+</html>
