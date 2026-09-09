@@ -297,6 +297,39 @@ a { color: var(--brand); }
   font-weight: 600;
 }
 
+/* ---------- Code ------------------------------------------------------------- */
+/* Only the developer-API article quotes a request, but an identifier set in the body
+   serif (`roomType`, `stg_live_…`) is genuinely ambiguous, so both halves live here.
+   The block does NOT wrap: a soft-wrapped curl invites you to paste a broken one, so
+   it scrolls sideways instead, the same bargain .article-table makes. */
+.article-body code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+  font-size: 0.86em;
+  background: #eff6ff;
+  color: var(--brand-ink);
+  /* 3px, not 5: the chip sits inline in a serif sentence, and a wider inset visibly
+     detaches a trailing comma from the term it follows. */
+  padding: 1px 3px;
+  border-radius: 4px;
+}
+.article-code {
+  margin: 1.5rem 0;
+  padding: 16px 18px;
+  overflow-x: auto;
+  background: #0f172a;
+  border-radius: 10px;
+}
+/* Same specificity as the rule above, so this has to stay below it. */
+.article-code code {
+  display: block;
+  padding: 0;
+  background: none;
+  color: #e2e8f0;
+  font-size: 0.85rem;
+  line-height: 1.65;
+  white-space: pre;
+}
+
 /* ---------- Responsive ------------------------------------------------------- */
 @media (max-width: 640px) {
   .blog-hero h1 { font-size: 2rem; }

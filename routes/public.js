@@ -141,6 +141,14 @@ router.get('/blog/new-construction-listing-photos', (req, res) => {
   sendPage(res, path.join(__dirname, 'public', 'blog', 'new-construction-listing-photos.html'));
 });
 
+router.get('/blog/virtual-staging-api', (req, res) => {
+  sendPage(res, path.join(__dirname, 'public', 'blog', 'virtual-staging-api.html'));
+});
+
+router.get('/blog/home-staging-cost', (req, res) => {
+  sendPage(res, path.join(__dirname, 'public', 'blog', 'home-staging-cost.html'));
+});
+
 router.get('/bimi-logo.svg', (req, res) => {
   res.setHeader('Content-Type', 'image/svg+xml');
   res.sendFile(path.join(__dirname, 'public', 'bimi-logo.svg'));

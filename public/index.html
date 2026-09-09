@@ -1687,7 +1687,7 @@
                      not an accident of renaming: it is the homepage’s unlimited-free-
                      generations claim, which deliberately says "free, as often as you
                      like" even though the free tier is capped at FREE_DAILY_LIMIT
-                     (lib/data/auth-store.js, still 50/day). Product decision: 50/day
+                     (lib/data/auth-store.js, now 100/day). Product decision: a cap that high
                      reads as effectively unlimited to a prospect, and naming a cap here
                      scares people off. Same call already applies to the "Unlimited
                      staging generations" row on stagify-plus.html, which is ticked in
@@ -2090,6 +2090,22 @@
           <h2 class="home-section__title" id="blog-teaser-title" data-tx="rise" data-lang="home.blog.title">From the Stagify blog</h2>
         </div>
         <div class="home-blog__grid reveal">
+          <a class="home-blog__card" href="/blog/home-staging-cost">
+            <img class="home-blog__thumb" src="media-webp/blog/cover-14-thumb.webp" alt="A step chart on a dark background: physical staging starts at $4,000 to install and climbs by $900 a month to $6,700 after 120 days on market, while virtual staging stays flat at $0" width="400" height="225" loading="lazy">
+            <div class="home-blog__body">
+              <span class="home-blog__tag">Costs</span>
+              <h3 class="home-blog__title">The Median Staging Bill Is $1,500. Your Quote Won’t Be.</h3>
+              <span class="home-blog__meta">10 min read</span>
+            </div>
+          </a>
+          <a class="home-blog__card" href="/blog/virtual-staging-api">
+            <img class="home-blog__thumb" src="media-webp/blog/cover-13-thumb.webp" alt="A staged home office with a wooden desk and built-in shelves, overlaid with a white card reading “One HTTP call. One staged photo.”" width="400" height="225" loading="lazy">
+            <div class="home-blog__body">
+              <span class="home-blog__tag">Product</span>
+              <h3 class="home-blog__title">The Staging Pipeline Now Has an API. One Call, One Photo.</h3>
+              <span class="home-blog__meta">8 min read</span>
+            </div>
+          </a>
           <a class="home-blog__card" href="/blog/new-construction-listing-photos">
             <img class="home-blog__thumb" src="media-webp/blog/cover-12-thumb.webp" alt="The inside of a house under construction, with bare timber wall studs, below a blue band reading “77% of new homes for sale are unfinished”" width="400" height="225" loading="lazy">
             <div class="home-blog__body">
@@ -2119,22 +2135,6 @@
             <div class="home-blog__body">
               <span class="home-blog__tag">Guides</span>
               <h3 class="home-blog__title">Free Virtual Staging: What “Free” Actually Gets You</h3>
-              <span class="home-blog__meta">8 min read</span>
-            </div>
-          </a>
-          <a class="home-blog__card" href="/blog/curb-appeal-real-estate-photos">
-            <img class="home-blog__thumb" src="media-webp/blog/cover-8-thumb.webp" alt="A two-storey suburban home at golden hour with a freshly mown striped lawn and an empty driveway" width="400" height="225" loading="lazy">
-            <div class="home-blog__body">
-              <span class="home-blog__tag">Real Estate</span>
-              <h3 class="home-blog__title">Curb Appeal Is the Only Photo Every Buyer Sees</h3>
-              <span class="home-blog__meta">9 min read</span>
-            </div>
-          </a>
-          <a class="home-blog__card" href="/blog/prepare-your-listing-for-the-fall-market">
-            <img class="home-blog__thumb" src="media-webp/blog/cover-7-thumb.webp" alt="A warmly staged living room with a lit fireplace, overlaid with a fall listing timeline" width="400" height="225" loading="lazy">
-            <div class="home-blog__body">
-              <span class="home-blog__tag">Real Estate</span>
-              <h3 class="home-blog__title">The Fall Market Is the Hard One. Start Prepping in August.</h3>
               <span class="home-blog__meta">8 min read</span>
             </div>
           </a>
@@ -2275,10 +2275,8 @@
                       <div id="room-type-select" class="custom-select" data-value="Bedroom">
                         <button class="select-trigger" type="button"><span class="select-value" data-lang="roomTypes.bedroom">Bedroom</span><span class="caret">▾</span></button>
                         <div class="select-menu hidden" role="listbox">
-                          <!-- data-lang overwrites textContent, so the label lives in its own
-                               span and the badge sits beside it rather than inside it. -->
-                          <div class="option option--with-badge" data-value="Dorm" role="option"><span class="option-label" data-lang="roomTypes.dorm">Dorm</span><span class="option-badge" data-lang="common.newBadge">New</span></div>
                           <div class="option selected" data-value="Bedroom" role="option" aria-selected="true" data-lang="roomTypes.bedroom">Bedroom</div>
+                          <div class="option" data-value="Dorm" role="option" data-lang="roomTypes.dorm">Dorm</div>
                           <div class="option" data-value="Living room" role="option" data-lang="roomTypes.livingRoom">Living room</div>
                           <div class="option" data-value="Dining room" role="option" data-lang="roomTypes.diningRoom">Dining room</div>
                           <div class="option" data-value="Kitchen" role="option" data-lang="roomTypes.kitchen">Kitchen</div>

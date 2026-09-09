@@ -1336,8 +1336,7 @@
   },
   "common": {
     "close": "閉じる",
-    "selectLanguage": "言語を選択",
-    "newBadge": "新"
+    "selectLanguage": "言語を選択"
   },
   "footer": {
     "privacy": "プライバシーポリシー",

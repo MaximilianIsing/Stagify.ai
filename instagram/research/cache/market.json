@@ -1,6 +1,6 @@
 {
   "key": "market",
-  "fetchedAt": "2026-08-13T19:26:05.294Z",
+  "fetchedAt": "2026-09-03T02:06:53.940Z",
   "ttlDays": 7,
   "queries": [
     "housing market days on market trend",
@@ -8,32 +8,88 @@
   ],
   "findings": [
     {
-      "claim": "Nationally homes are listed roughly 78 days before an accepted offer, against a five year average near 51 days.",
-      "sourceUrl": "https://fred.stlouisfed.org/series/MEDDAYONMARUS",
-      "sourceTitle": "Housing Inventory: Median Days on Market, FRED",
-      "confidence": "reported",
-      "retrievedAt": "2026-08-13"
+      "claim": "Median U.S. days on market was 60 days in August 2026, up 3 days from July and flat year over year, per Realtor.com's August housing report.",
+      "sourceUrl": "https://www.prnewswire.com/news-releases/delistings-trend-below-last-years-pace-as-summer-comes-to-an-end-realtorcom-august-housing-report-302866775.html",
+      "sourceTitle": "Delistings Trend Below Last Year's Pace As Summer Comes to an End: Realtor.com August Housing Report",
+      "retrievedAt": "2026-09-02"
     },
     {
-      "claim": "Inventory has risen substantially year over year in several major metros, giving buyers more options and more negotiating room than a year ago.",
-      "sourceUrl": "https://www.northendhomes.com/post/august-2026-real-estate-market-update",
-      "sourceTitle": "August 2026 Real Estate Market Update",
-      "confidence": "reported",
-      "retrievedAt": "2026-08-13"
+      "claim": "Active listings hit 1,140,035 in August 2026, up 3.6% year over year, while the median list price fell to $424,500, down 1.3% year over year.",
+      "sourceUrl": "https://www.prnewswire.com/news-releases/delistings-trend-below-last-years-pace-as-summer-comes-to-an-end-realtorcom-august-housing-report-302866775.html",
+      "sourceTitle": "Delistings Trend Below Last Year's Pace As Summer Comes to an End: Realtor.com August Housing Report",
+      "retrievedAt": "2026-09-02"
     },
     {
-      "claim": "With more inventory, agents report that pricing, condition, presentation and marketing matter more than they did in a tighter market.",
-      "sourceUrl": "https://www.mynorandassociates.com/august-2026-real-estate-market-update-what-buyers-and-sellers-need-to-know/",
-      "sourceTitle": "August 2026 Real Estate Market Update, Buyers and Sellers",
-      "confidence": "reported",
-      "retrievedAt": "2026-08-13"
+      "claim": "20.4% of active listings carried a price reduction in August 2026, up 0.4 points from July, and contract signings were down 3.7% year over year.",
+      "sourceUrl": "https://www.prnewswire.com/news-releases/delistings-trend-below-last-years-pace-as-summer-comes-to-an-end-realtorcom-august-housing-report-302866775.html",
+      "sourceTitle": "Delistings Trend Below Last Year's Pace As Summer Comes to an End: Realtor.com August Housing Report",
+      "retrievedAt": "2026-09-02"
     },
     {
-      "claim": "Buyers have more time and less competition than a year ago, so a listing that does not stand out sits rather than selling below asking.",
-      "sourceUrl": "https://www.northendhomes.com/post/august-2026-real-estate-market-update",
-      "sourceTitle": "August 2026 Real Estate Market Update",
-      "confidence": "reported",
-      "retrievedAt": "2026-08-13"
+      "claim": "Sellers gave buyers concessions in 46.2% of U.S. home sales in the three months ending May 31, 2026, up from 43.1% a year earlier and the highest spring share since Redfin began tracking in 2019.",
+      "sourceUrl": "https://www.redfin.com/news/home-seller-concessions-record-high-rate/",
+      "sourceTitle": "46% of Home Sellers Gave Concessions to Buyers in May, the Highest Share on Record For That Month",
+      "retrievedAt": "2026-09-02"
+    },
+    {
+      "claim": "Redfin counts roughly 47% more home sellers than buyers in the U.S. market, the imbalance driving record spring concession rates.",
+      "sourceUrl": "https://www.redfin.com/news/home-seller-concessions-record-high-rate/",
+      "sourceTitle": "46% of Home Sellers Gave Concessions to Buyers in May, the Highest Share on Record For That Month",
+      "retrievedAt": "2026-09-02"
+    },
+    {
+      "claim": "Concession rates vary sharply by metro: 75.5% of Nashville sellers gave concessions in the three months ending May 2026 versus 2.9% in New York City.",
+      "sourceUrl": "https://www.redfin.com/news/home-seller-concessions-record-high-rate/",
+      "sourceTitle": "46% of Home Sellers Gave Concessions to Buyers in May, the Highest Share on Record For That Month",
+      "retrievedAt": "2026-09-02"
+    },
+    {
+      "claim": "29% of agents said staging their sellers' homes produced a 1% to 10% increase in the dollar value offered, per NAR's 2025 Profile of Home Staging.",
+      "sourceUrl": "https://www.nar.realtor/press-releases/nar-report-reveals-home-staging-boosts-sale-prices-and-reduces-time-on-market",
+      "sourceTitle": "NAR Report Reveals Home Staging Boosts Sale Prices and Reduces Time on Market",
+      "retrievedAt": "2026-09-02"
+    },
+    {
+      "claim": "83% of buyers' agents said staging made it easier for a buyer to envision the property as their future home, and 30% of sellers' agents saw a slight decrease in time on market while 19% saw a significant reduction.",
+      "sourceUrl": "https://www.nar.realtor/press-releases/nar-report-reveals-home-staging-boosts-sale-prices-and-reduces-time-on-market",
+      "sourceTitle": "NAR Report Reveals Home Staging Boosts Sale Prices and Reduces Time on Market",
+      "retrievedAt": "2026-09-02"
+    },
+    {
+      "claim": "The living room is the room buyers most want staged (37%), followed by the primary bedroom (34%) and kitchen (23%); sellers' agents stage the living room 91% of the time.",
+      "sourceUrl": "https://www.nar.realtor/press-releases/nar-report-reveals-home-staging-boosts-sale-prices-and-reduces-time-on-market",
+      "sourceTitle": "NAR Report Reveals Home Staging Boosts Sale Prices and Reduces Time on Market",
+      "retrievedAt": "2026-09-02"
+    },
+    {
+      "claim": "The median cost of a professional staging service is $1,500, versus $500 when the listing agent stages the home themselves.",
+      "sourceUrl": "https://www.nar.realtor/press-releases/nar-report-reveals-home-staging-boosts-sale-prices-and-reduces-time-on-market",
+      "sourceTitle": "NAR Report Reveals Home Staging Boosts Sale Prices and Reduces Time on Market",
+      "retrievedAt": "2026-09-02"
+    },
+    {
+      "claim": "100% of recent home buyers used the internet at some point in their home search, and 41% started the search online, per NAR data reported by Axios.",
+      "sourceUrl": "https://www.axios.com/2023/11/13/homebuyers-online-data-report-housing-market-nar",
+      "sourceTitle": "100% of buyers now shop for homes online, new report says",
+      "retrievedAt": "2026-09-02"
+    },
+    {
+      "claim": "NAR's 2025 Profile of Home Buyers and Sellers found 81% of buyers rated listing photos the most useful feature of their online home search.",
+      "sourceUrl": "https://aihomedesign.com/blog/real-estate/nar-profile-of-home-buyers-and-sellers/",
+      "sourceTitle": "NAR Profile of Home Buyers and Sellers, 2020-2025: Key Trends",
+      "retrievedAt": "2026-09-02"
+    },
+    {
+      "claim": "First-time buyers fell to just 21% of purchasers, the lowest since records began in 1981, with a median age of 40; all-cash buyers stayed at an all-time-high 26%.",
+      "sourceUrl": "https://www.nar.realtor/blogs/economists-outlook/top-10-takeaways-from-nars-2025-profile-of-home-buyers-and-sellers",
+      "sourceTitle": "Top 10 Takeaways from NAR's 2025 Profile of Home Buyers and Sellers",
+      "retrievedAt": "2026-09-02"
+    },
+    {
+      "claim": "AI virtual staging runs up to about $50 per photo, roughly a tenth of physical staging, and some listing databases now require agents to disclose when AI was used in listing photos.",
+      "sourceUrl": "https://washingtonian.com/2026/04/27/ai-staging-sell-home-real-estate-agents/",
+      "sourceTitle": "Virtual Staging Can Help You Sell Your Home, but at What Cost?",
+      "retrievedAt": "2026-09-02"
     }
   ]
 }

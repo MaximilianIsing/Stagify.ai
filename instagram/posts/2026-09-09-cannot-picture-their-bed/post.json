@@ -1,0 +1,190 @@
+{
+  "id": "2026-09-09-cannot-picture-their-bed",
+  "date": "2026-09-09",
+  "publishedAt": null,
+  "origin": "pipeline",
+  "formats": [
+    "single"
+  ],
+  "template": "inset-before",
+  "featureShown": "furniture-removal",
+  "hookArchetype": "buyer-psychology",
+  "audience": "agents",
+  "roomType": "Bedroom",
+  "style": "luxury",
+  "palette": "deep bronze and oxblood with cream linen",
+  "ctaStyle": "save-this-for-your-next-listing",
+  "topic": "buyers unable to see past the current owner's belongings",
+  "angle": "A buyer walks through a photo of someone else's life and cannot picture their own. Clutter is a conversion problem, not a tidiness one.",
+  "visualSummary": "The staged bedroom fills the whole frame: cream upholstered platform bed under an oxblood velvet throw, a solid walnut chest against the far wall, a low walnut bench at the foot of the bed, under the original sprigged wallpaper, patterned blue carpet, window and ceiling light. The original photograph sits over it in the upper left as a small white edged card with a dark BEFORE pill, showing the room as it was: an antique dark timber bed under a patchwork quilt, woollen long johns pinned to the wall, a wedding photograph and a chamber pot on the carpet. White logo pill top right. Two line headline bottom left over a dark scrim, disclosure and CTA beneath.",
+  "dominantColors": [
+    "#cfc2a8",
+    "#6b1f2a",
+    "#3f6178"
+  ],
+  "copy": {
+    "headline": "They cannot picture their bed there.",
+    "caption": "This bedroom belonged to someone. A buyer sees that in half a second, and it is why they keep scrolling.\n\nNothing structural changed in the photo below the line. Same floral wallpaper, same patterned carpet, same window, same ceiling light. The bed, the wardrobe, the framed photograph, the clothes hanging on the wall and the chamber pot came out, and the room was staged in the luxury preset. Same camera position, same crop.\n\nThat is the part worth looking at. The room is not disguised. It is still recognisably the same room, which is what makes the photo usable on a listing rather than a picture of somewhere else.\n\nBuyers do not stall on an occupied room because it is untidy. They stall because the room is visibly still somebody's. Inherited and probate listings are the hardest version of this, and they are also the ones nobody is willing to empty before the photos go up.\n\nOne honest note on which half is which. Staging an empty room is free on Stagify. Removing what is already in the room first is a Stagify+ feature, because it runs two passes instead of one.\n\nSave this for the listing you take on that nobody wants to clear.\n\nVirtually staged with Stagify.ai",
+    "altText": "One bedroom split diagonally: a previous owner's belongings above, cleared and staged below."
+  },
+  "hashtagSet": [
+    "#virtualstaging",
+    "#homestaging",
+    "#realestate",
+    "#realtorlife",
+    "#realestateagent",
+    "#realestatemarketing",
+    "#realtortips",
+    "#inheritedproperty",
+    "#probatesale",
+    "#stagingtips"
+  ],
+  "data": {
+    "headline": {
+      "lead": "They cannot picture",
+      "accent": "their bed there."
+    },
+    "beforeImage": "/instagram/assets/sources/6c72bf85b115ff5d1dec0c12b0b42ee81bbaced9d69727df2191dd2cc78a1f7e.jpg",
+    "afterImage": "/instagram/assets/sources/cc6441c29209495cb21e3dec18f7eda37aedb7162c7eda76dbeeb350e8c6acf1.webp",
+    "beforeLabel": "BEFORE",
+    "cta": "Save this for your next listing",
+    "disclosure": "Virtually staged with Stagify.ai",
+    "insetCorner": "left",
+    "insetWidth": 330
+  },
+  "images": [
+    {
+      "role": "before",
+      "source": "unsplash",
+      "sha256": "6c72bf85b115ff5d1dec0c12b0b42ee81bbaced9d69727df2191dd2cc78a1f7e",
+      "license": {
+        "type": "stock",
+        "licenseName": "Unsplash License",
+        "attributionRequired": false,
+        "photographer": "Erik Mclean",
+        "sourceUrl": "https://unsplash.com/photos/an-old-fashioned-bedroom-with-a-bed-floral-wallpaper-and-carpet-AUcQjZaIYgE"
+      },
+      "note": "Stock resolved on the first search, so neither fal nor Gemini generation was needed. A real photograph of a real occupied room is the strongest possible before for a removal post, because the clutter is not something the pipeline invented."
+    },
+    {
+      "role": "after",
+      "source": "stagify",
+      "sha256": "cc6441c29209495cb21e3dec18f7eda37aedb7162c7eda76dbeeb350e8c6acf1",
+      "license": {
+        "type": "generated",
+        "licenseName": "Stagify render",
+        "attributionRequired": false
+      },
+      "note": "Third staging pass, chosen by eye from five. Round 1 fixed the shadeless lamp but not the wallpaper, which still changed motif and scale across the wipe. Round 2 pinned the wall as a fixed surface in the prompt and ran five attempts; all five scored 100, so the choice was made by comparing each one crop by crop against the source photograph. try-2 won on two counts: the sprig motif, scale and colour match the source, and every piece of furniture is a solid slab or plinth with no thin members. try-5 matched the wallpaper equally well but grew a truncated bench leg ending in mid air."
+    }
+  ],
+  "generation": [
+    {
+      "step": "stage",
+      "fn": "processStaging",
+      "model": "gemini-3.1-flash-image",
+      "params": {
+        "roomType": "Bedroom",
+        "furnitureStyle": "luxury",
+        "removeFurniture": true,
+        "additionalPrompt": "Upholstered platform bed, solid pedestal nightstands, low plinth bench. No spindly or thin-legged seating, no desk chair, no wire or hairpin legs. Deep bronze and oxblood accents against cream linen."
+      },
+      "quality": {
+        "perfect": true,
+        "bestScore": 100,
+        "attempts": 1,
+        "sourcePhotosTried": 1,
+        "keptAttempt": 1,
+        "defects": []
+      },
+      "note": "The additionalPrompt is a direct mitigation of the advocate's residual risk. The account's documented artifact is forked or floating chair and desk legs (08-14, 08-20, 09-02), so the brief asked for furniture with no thin members. Passed review at 100 on the first attempt, which is the first perfect score in the ledger."
+    },
+    {
+      "step": "stage",
+      "fn": "processStaging",
+      "model": "gemini-3.1-flash-image",
+      "round": 2,
+      "params": {
+        "roomType": "Bedroom",
+        "furnitureStyle": "luxury",
+        "removeFurniture": true,
+        "additionalPrompt": "Preserve the existing floral wallpaper, its scale and colour, plus the carpet, window, curtain, ceiling and ceiling light. Stage sparsely: upholstered platform bed, one low solid bench, one solid chest. No table or floor lamps, no chairs, no thin or spindly legs. Every piece rests flat on the floor with a visible contact shadow."
+      },
+      "quality": {
+        "perfect": true,
+        "bestScore": 100,
+        "attempts": 1,
+        "sourcePhotosTried": 1,
+        "keptAttempt": 1,
+        "defects": []
+      },
+      "note": "Three briefs were run against the same source photograph and all three were opened by hand. Pinning the wall and floor surfaces in the prompt fixed the repapering, and dropping lamps entirely removed the shadeless-lamp failure class rather than asking the model to get a shade right on retry. Chosen by eye, not by score: the two rejected briefs scored 70 and this one scored 100, but the first render also scored 100 and was wrong."
+    },
+    {
+      "step": "stage",
+      "fn": "processStaging",
+      "model": "gemini-3.1-flash-image",
+      "round": 3,
+      "params": {
+        "roomType": "Bedroom",
+        "furnitureStyle": "luxury",
+        "removeFurniture": true,
+        "additionalPrompt": "This is a virtual staging edit, not a redecoration. Walls, wallpaper, floor and ceiling are FIXED SURFACES and must be reproduced exactly as photographed: a small dense floral sprig with blue flower heads and olive leaves on warm cream, same motif, colour and repeat size on every wall and in every corner, sharp everywhere. Change only the furniture and belongings. Stage sparsely with an upholstered platform bed, one low solid bench and one solid chest. No lamps, no chairs, no thin legs. Everything flat on the floor with a contact shadow."
+      },
+      "quality": {
+        "perfect": true,
+        "bestScore": 100,
+        "attempts": 1,
+        "sourcePhotosTried": 1,
+        "keptAttempt": 1,
+        "defects": [],
+        "attemptsGenerated": 5
+      },
+      "note": "The automated score is not load bearing here. Six renders across three rounds all scored 100 and three of them carried a defect a human caught: two shipped a repapered wall, one shipped a floating bench leg. Selection was by hand comparison of the wall crop against the source, plus a magnified check of every floor contact."
+    }
+  ],
+  "devilsAdvocate": {
+    "winner": "i13",
+    "consideredCount": 20,
+    "whyThisOne": "Chosen by the user over the advocate's own pick (i01, a dorm style grid). The advocate shortlisted i13 as the strongest idea on the list that was not new, and killed 15 of 20 candidates mostly on feasibility: every languages and client-share-links idea needed a screenshot of the product interface rather than a room render, and both cad-to-3d ideas needed a real plan drawing as the before, which would mean fabricating the input half of a before and after.",
+    "whyItEarnsAClick": "It reframes clutter as a conversion problem rather than a tidiness one, and whether the reconstruction survives on the agent's own probate listing can only be learned by uploading it.",
+    "howItDiffers": "Furniture removal has been posted once, on 08-13, as a dining room of cardboard boxes framed as the seller who will not tidy up. This inverts the hook to the buyer's side and shows a different species of occupancy: not mess, but a room that visibly still belongs to a person. No bedroom has shipped under this feature.",
+    "residualRisk": "At thumbnail size this is the 2026-08-13 frame again: same seam, same feature, same direction of travel. The reviewers have twice named the blue diagonal split as the account's over-used default. Accepted knowingly by the user at the checkpoint.",
+    "notableKill": "i09 and i14 both asked a stat-card to carry a number the account has never measured (days a broker review sat unopened, months before completion). The metrics file is empty, so those numerals would have been invented on the deep blue field."
+  },
+  "review": {
+    "verdict": "pass",
+    "rounds": 2,
+    "accepted": true,
+    "acceptedBy": "model",
+    "blocking": [
+      {
+        "issue": "Wallpaper changed motif, scale and colour exactly at the wipe line",
+        "where": "Right hand wall below the diagonal, approx x 860-1060 / y 450-590",
+        "resolution": "Fixed in round 2. Round 1 re-staged with the wall named as a fixed surface but still regenerated it. Round 2 pinned the paper explicitly (small dense sprig, blue flower heads, olive leaves, warm cream, same repeat on every wall) and generated five candidates. Each was cropped at the same wall region and compared against the source photograph by eye. The chosen render matches motif, density and colour; a residual difference in texture remains at 5x magnification and is not visible at feed size."
+      },
+      {
+        "issue": "Left bedside lamp rendered as a lit crystal base with no shade, no harp and no bulb",
+        "where": "Staged half, approx x 500-585 / y 590-710 in the first render",
+        "resolution": "Fixed in round 1 by removing lamps from the brief entirely rather than asking the model to render a shade correctly on retry. The staged half now has no bedside lamp on either side, which the second reviewer noted as underselling the staging. Accepted: a missing lamp is a styling choice, a half eaten lamp is a defect."
+      },
+      {
+        "issue": "Wall behind the window corner degraded to a blurred grey mottle with invented panel seams",
+        "where": "Approx x 540-720 / y 600-780 in the round 1 render",
+        "resolution": "Fixed in round 2. The area is now a backlit sheer curtain over a bright window, which is photographically correct, with sharp matching wallpaper to its right."
+      }
+    ],
+    "nits": [
+      "No contact shadow under the bed base where it meets the carpet, though it sits inside the darkened lower vignette.",
+      "The bench front edge is partly behind the headline scrim, so its floor contact is not fully readable.",
+      "The hanging long johns are cut flat by the diagonal with nothing continuing below.",
+      "A soft grey vertical band occupies the rightmost 35 to 40px for the full height. It is in the source photograph, present in both halves, not a seam artifact.",
+      "Disclosure line is legible at full size and near illegible at thumbnail size. Present and correctly worded."
+    ],
+    "dashAudit": "Two independent reviewers scanned the headline, both pills, the lockup, the CTA and the disclosure. No hyphen, en dash or em dash rendered anywhere. The only non letter marks in the copy are three full stops.",
+    "samenessNote": "Nearest relative is 08-18, which shares the BEFORE and AFTER pill pair and a near identical CTA sentence, but 08-18 is a vertical split inside a rounded card on the deep blue ground while this is full bleed with a rising diagonal. Separately flagged: this is the second headline in the window built on the pronoun plus cannot construction after 08-19, with the same white to blue two line break. A third would be a pattern.",
+    "processNote": "Six renders across three staging rounds every one of which scored 100 from the automated quality reviewer. Three of those six carried a defect a human caught. The score was not informative on this post and selection was done by hand.",
+    "designChanges": "Wipe steepened from 66/30 to 92/30 after the user reported the before and after read as confusing. The shallower angle cut the frame between the two beds, so the period bed sat above the line and the staged bed below it at a different scale and position, and the pair read as one room containing two beds rather than one bed changing. The steep wipe runs lengthwise along the bed instead, so the old quilt becomes new linen on the same footprint, which is the transformation the template exists to show. Same geometry the 08-13 post settled on for the same reason. Then replaced the template entirely. The user rejected the seam itself, not its weight, and they were right: diagonal-reveal needs the two photographs to share a footprint, and this pair does not, because the staging moved the bed. Every wipe angle therefore read as one room containing two beds. Built a new template, inset-before, in which the staged render fills the frame and the original sits over it as a small labelled card. The two photographs no longer have to register, the hero render gets the full 1080x1350 instead of a triangle of it, and which one is which is unambiguous. New layout family inset, added to config.json."
+  },
+  "layoutFamily": "inset"
+}

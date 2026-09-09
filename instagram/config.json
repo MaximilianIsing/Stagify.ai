@@ -165,6 +165,7 @@
     "card": "A discrete card is the subject, such as a quote or a pair of panels.",
     "annotated": "One image marked up in place.",
     "sequence": "Ordered steps or slides that build.",
+    "inset": "One photograph fills the frame and the other sits over it as a small labelled card. A before and after for pairs that do not register, where a seam would read as two rooms.",
     "illustrated": "Drawn or composited elements carry the frame rather than photography."
   },
 

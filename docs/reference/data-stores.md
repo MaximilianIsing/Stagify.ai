@@ -92,7 +92,7 @@ store factory. It began as the auth store, so the file is still named `auth-stor
   the hash rotation), 15-minute
   registration codes, and the
   **free-tier daily generation counter** (`usage_day` / `usage_count` on `users`, which
-  enforces the 50-generations/day free cap). The separate `mobile_ip_usage` table is a
+  enforces the 100-generations/day free cap). The separate `mobile_ip_usage` table is a
   **dormant legacy** table: no route writes to it anymore (staging now requires sign-in),
   and it is retained only so the backup/export shape stays 1:1 for rollback.
 - **Admin comp grants** ([`lib/data/pro-grants.js`](../../lib/data/pro-grants.js)): the admin
@@ -300,6 +300,13 @@ credit, a double debit and a double refund impossible even if the code tried;
 `idx_api_requests_idem (key_id, idempotency_key)` is what the idempotency claim races
 against. Both are asserted to exist, and to actually bite, rather than merely being
 declared.
+
+**A third index serves the operator console.** `idx_api_requests_user (user_id,
+claimed_at)` is left-anchored on the account, so it cannot serve the admin dashboard's
+site-wide reads (`lib/analytics/api-usage.js`), which filter on `claimed_at` alone —
+those would scan the table on every operator page load. `idx_api_requests_claimed
+(claimed_at)` is what they use. Cheap to carry: `api_requests` is append-mostly, and
+both settle paths update by primary key rather than by that column.
 
 All four are registered in `USER_ID_TABLES` (`lib/data/user-deletion.js`), so an erasure
 takes the keys and the billing history with the account. The billing rows are treated as

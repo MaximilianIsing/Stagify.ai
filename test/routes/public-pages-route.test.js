@@ -100,6 +100,8 @@ const DOCUMENT_ROUTES = [
   ['/blog/virtual-staging-disclosure-laws-by-state', 'blog/virtual-staging-disclosure-laws-by-state.html', 'text/html'],
   ['/blog/fsbo-listing-photos', 'blog/fsbo-listing-photos.html', 'text/html'],
   ['/blog/new-construction-listing-photos', 'blog/new-construction-listing-photos.html', 'text/html'],
+  ['/blog/virtual-staging-api', 'blog/virtual-staging-api.html', 'text/html'],
+  ['/blog/home-staging-cost', 'blog/home-staging-cost.html', 'text/html'],
 ];
 
 test('every document route serves its file, with the no-cache policy sendPage exists for', async (t) => {

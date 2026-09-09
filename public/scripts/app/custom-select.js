@@ -22,9 +22,9 @@ export function initCustomSelect(rootSelector, options = {}) {
       function setValue(val) {
         root.dataset.value = val;
         const opt = optionEls.find(o => o.dataset.value === val);
-        // An option may carry trailing chrome (e.g. the "New" badge on Dorm). When it
-        // does, the label lives in its own .option-label span — read that, or the whole
-        // option's text would land in the trigger as "DormNew".
+        // An option may carry trailing chrome (a badge, say). When it does, the label
+        // lives in its own .option-label span — read that, or the badge's text would
+        // land in the trigger glued to the label.
         const labelEl = opt?.querySelector('.option-label') || opt;
         valueEl.textContent = labelEl?.textContent?.trim() || val;
         // Carry the label's i18n key onto the trigger too. Without this the trigger keeps

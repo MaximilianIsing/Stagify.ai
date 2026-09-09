@@ -26,6 +26,7 @@ import { createRenderRefs } from './lib/data/render-refs.js';
 import { createGalleryShares } from './lib/data/gallery-shares.js';
 import { getDb } from './lib/data/db.js';
 import { createAdminMetrics } from './lib/analytics/admin-metrics.js';
+import { createApiUsageStats } from './lib/analytics/api-usage.js';
 import { createAdminBrief } from './lib/services/admin-brief.js';
 import createGalleryRouter from './routes/gallery.js';
 import createSharePublicRouter from './routes/share-public.js';
@@ -41,6 +42,7 @@ import createChatRouter from './routes/chat.js';
 import createStagingRouter from './routes/staging.js';
 import createAdminRouter from './routes/admin.js';
 import { createAdminRendersRouter } from './routes/admin-renders.js';
+import { createAdminApiUsageRouter } from './routes/admin-api-usage.js';
 import createAuthRouter from './routes/auth.js';
 import { DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, IS_STAGING, HIDE_STAGING_BANNER, SHOW_STAGING_BANNER, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS } from './lib/config/runtime-flags.js';
 import createNotFoundHandler from './lib/http/not-found.js';
@@ -438,9 +440,16 @@ app.use(createAuthRouter({ authStore, googleOAuthClient, resend, LOGS_ACCESS_KEY
 // above, which are what create the tables it prepares against.
 const adminMetrics = createAdminMetrics({ db: getDb(__dirname), getDataLogDir });
 const adminBrief = createAdminBrief({ openai });
+// Site-wide reads of the public render API, for the console's API usage tab. Built
+// here for the same reason adminMetrics is: it prepares its statements once, at
+// construction, so it must come after the stores that create the tables it reads.
+const apiUsageStats = createApiUsageStats({ db: getDb(__dirname) });
 // The render inspector rides beside the admin router rather than inside it —
 // routes/admin.js is at its line cap. Same guard, same tab, separate file.
 app.use(createAdminRendersRouter({ stagedRenders, objectStore, protectLogs, setSensitiveHeaders }));
+// Same reasoning again: routes/admin.js is full, so the API usage tab's one endpoint
+// rides beside it rather than inside it.
+app.use(createAdminApiUsageRouter({ apiUsageStats, protectLogs, setSensitiveHeaders }));
 app.use(createAdminRouter({ authStore, uptimeMonitor, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, deleteUser, getDataLogDir, hostedImages, protectLogs, requireEndpointKey, adminSessions, __dirname, HOSTED_IMAGE_MIME_EXT, emailCatalog, sendTestEmail, referralLinks, adminMetrics, adminBrief }));
 
 // staging routes (routes/staging.js)

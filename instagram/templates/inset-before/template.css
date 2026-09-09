@@ -1,0 +1,117 @@
+/* Inset before.
+ *
+ * One full-bleed photo, the staged render, with the original sitting over it as a small
+ * card in a top corner. There is deliberately no seam: this layout exists for pairs whose
+ * two photographs do NOT share a footprint, where any split frame reads as two rooms.
+ *
+ * The card is a real photograph on the page rather than a graphic device, so it gets a
+ * white edge and a drop shadow and nothing else. It has to read as "an older photo of this
+ * room", which is a thing people already understand, so the less styling the better.
+ */
+
+.photo {
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+/* The inset ---------------------------------------------------------------- */
+
+.inset {
+  position: absolute;
+  top: 148px;
+  width: var(--inset-w);
+  margin: 0;
+  z-index: 3;
+  border-radius: 18px;
+  /* The white edge is what separates the card from whatever it lands on. Without it a pale
+   * before photo over a pale render loses its own boundary. */
+  border: 5px solid #fff;
+  box-shadow: 0 18px 44px rgba(15, 23, 42, .45);
+  overflow: hidden;
+}
+
+.frame--inset-left .inset { left: 52px; }
+.frame--inset-right .inset { right: 52px; }
+
+.inset__photo {
+  height: var(--inset-h);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+/* The label sits on the card, not beside it, so the pairing is unambiguous. */
+.inset__label {
+  position: absolute;
+  left: 16px;
+  top: 16px;
+  margin: 0;
+}
+
+/* Chrome ------------------------------------------------------------------- */
+
+.top {
+  position: absolute;
+  top: 52px;
+  left: 52px;
+  right: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  z-index: 4;
+}
+
+.frame--inset-right .top { justify-content: flex-start; }
+
+.scrim {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 46%;
+  background: linear-gradient(
+    180deg,
+    rgba(15, 23, 42, 0) 0%,
+    rgba(15, 23, 42, .55) 42%,
+    rgba(15, 23, 42, .93) 100%
+  );
+  z-index: 2;
+}
+
+.bottom {
+  position: absolute;
+  left: 52px;
+  right: 52px;
+  bottom: 48px;
+  z-index: 4;
+}
+
+.hl {
+  margin: 0 0 34px;
+  font-size: 84px;
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: -.028em;
+}
+.hl .hl-lead,
+.hl .hl-accent { display: block; }
+.hl .hl-lead { color: #fff; }
+.hl .hl-accent { color: var(--brand-soft); }
+
+.footer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+/* Story and reel are 570px taller. The extra height goes to the photograph, and the chrome
+ * moves inward so the platform's own overlays do not sit on it. */
+.frame--tall .top { top: 150px; }
+.frame--tall .inset { top: 246px; }
+.frame--tall .bottom { bottom: 220px; }
+.frame--tall .hl { font-size: 92px; }
+.frame--tall .scrim { height: 38%; }

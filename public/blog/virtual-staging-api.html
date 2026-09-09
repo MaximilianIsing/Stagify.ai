@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
+    <!-- Google tag (gtag.js) for Google Ads. Config + async loader in scripts/gtag.js. -->
+    <script src="/scripts/gtag.js" defer></script>
+    <link rel="icon" type="image/webp" sizes="32x32" href="/media-webp/logo/Logo32x32.webp">
+    <link rel="icon" type="image/webp" sizes="64x64" href="/media-webp/logo/Logo64x64.webp">
+    <link rel="apple-touch-icon" sizes="180x180" href="/media-webp/logo/Logo180x180.webp">
+    <link rel="manifest" href="/manifest.json">
+
+    <title>The Staging Pipeline Now Has an API. One Call, One Photo. | Stagify.ai</title>
+    <meta name="description" content="Our virtual staging API is live: one HTTP call returns one staged room photo, paid for with prepaid credits from $0.15 an image. No subscription, no job queue, and a disclosure label you cannot switch off.">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <meta name="author" content="Stagify.ai">
+    <link rel="canonical" href="https://stagify.ai/blog/virtual-staging-api">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="The Staging Pipeline Now Has an API. One Call, One Photo.">
+    <meta property="og:description" content="A virtual staging API with no subscription, no job queue and no minimum: post a room photo, get a staged one back in the same response, and pay by the image.">
+    <meta property="og:url" content="https://stagify.ai/blog/virtual-staging-api">
+    <meta property="og:site_name" content="Stagify.ai">
+    <meta property="og:image" content="https://stagify.ai/media-webp/blog/cover-13-og.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="article:published_time" content="2026-09-02">
+    <meta property="article:modified_time" content="2026-09-02">
+    <meta property="article:publisher" content="https://stagify.ai">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="The Staging Pipeline Now Has an API. One Call, One Photo.">
+    <meta name="twitter:description" content="A virtual staging API with no subscription, no job queue and no minimum: post a room photo, get a staged one back in the same response, and pay by the image.">
+    <meta name="twitter:image" content="https://stagify.ai/media-webp/blog/cover-13-og.jpg">
+
+    <link rel="stylesheet" href="/styles/blog.css">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://stagify.ai/blog/virtual-staging-api"
+      },
+      "headline": "The Staging Pipeline Now Has an API. One Call, One Photo.",
+      "description": "Our virtual staging API is live: one HTTP call returns one staged room photo, paid for with prepaid credits from $0.15 an image. No subscription, no job queue, and a disclosure label you cannot switch off.",
+      "image": "https://stagify.ai/media-webp/blog/cover-13-og.jpg",
+      "datePublished": "2026-09-02",
+      "dateModified": "2026-09-02",
+      "author": { "@type": "Organization", "name": "Stagify.ai", "url": "https://stagify.ai/" },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Stagify.ai",
+        "url": "https://stagify.ai/",
+        "logo": { "@type": "ImageObject", "url": "https://stagify.ai/media-webp/logo/Logo180x180.webp" }
+      }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://stagify.ai/" },
+        { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://stagify.ai/blog/" },
+        { "@type": "ListItem", "position": 3, "name": "Developer API", "item": "https://stagify.ai/blog/virtual-staging-api" }
+      ]
+    }
+    </script>
+  </head>
+  <body>
+    <header class="blog-topbar">
+      <a class="blog-brand" href="/">
+        <img src="/media-webp/logo/Logo64x64.webp" alt="Stagify.ai logo">
+        <span>Stagify.ai</span>
+      </a>
+      <a class="blog-cta-btn" href="/">Try Stagify Free</a>
+    </header>
+
+    <main class="article-wrap">
+      <nav class="blog-crumbs" aria-label="Breadcrumb">
+        <a href="/">Home</a><span>›</span><a href="/blog/">Blog</a><span>›</span>Developer API
+      </nav>
+
+      <span class="article-eyebrow">Product</span>
+      <h1 class="article-title">The Staging Pipeline Now Has an API. One Call, One Photo.</h1>
+      <p class="article-meta">By <strong>Stagify.ai</strong> · September 2, 2026 · 8 min read</p>
+
+      <figure class="article-figure">
+        <img src="/media-webp/blog/cover-13.webp" alt="A staged home office with a wooden desk and built-in shelves, overlaid with a white card headed “One HTTP call. One staged photo.” listing $0.15 per image and no subscription" width="1600" height="900">
+      </figure>
+
+      <div class="article-body">
+        <p class="lead">The staging engine behind the web app is now available as an HTTP API. You post a photo of a room, name a room type and a furniture style, and the staged image comes back in the same response. It costs $0.15 an image, there is no subscription, no minimum and no monthly invoice, and the reference documentation is at <a href="/developers.html">stagify.ai/developers.html</a>.</p>
+
+        <p>This post is the part a reference page cannot be: why the API is shaped the way it is, and the handful of things that will trip you up on the first afternoon.</p>
+
+        <h2>The whole API is one endpoint</h2>
+
+        <p>There is exactly one call that costs money.</p>
+
+        <pre class="article-code"><code>curl https://stagify.ai/api/v1/renders \
+  -H "Authorization: Bearer $STAGIFY_API_KEY" \
+  -H "Idempotency-Key: $(uuidgen)" \
+  -F "image=@living-room.jpg" \
+  -F "roomType=Living room" \
+  -F "furnitureStyle=modern" \
+  -F "labelVirtuallyStaged=true"</code></pre>
+
+        <p>That is the integration. The response carries the staged image as a data URL, along with a status and a request id. Everything else in the API is free and read-only: <code>GET /api/v1/options</code> hands you the accepted values for every enum, <code>GET /api/v1/me</code> tells you whether your key works, <code>GET /api/v1/credits</code> reports the balance, and <code>GET /api/v1/renders/{id}</code> looks one render back up.</p>
+
+        <p>Requests are <code>multipart/form-data</code>, because you are uploading a photograph and base64 in a JSON body would cost you a third more bytes for nothing. Images are JPEG, PNG or WebP up to 25 MB, and it is the MIME type that is checked, not the file extension.</p>
+
+        <h2>Why there is no job queue</h2>
+
+        <p>The obvious design for a slow image API is to accept the request, return a job id, and make the client poll for the result. We deliberately did not do that, and the reason is worth stating, because from the outside it looks like a shortcut and it isn’t.</p>
+
+        <p>This app has no job queue at all. Adding one purely for the API would mean introducing a queue whose jobs live in a single process, on a host that restarts on every deploy. When that happens mid-render, the customer’s credit is already spent and there is no socket left to tell them anything. That failure is strictly worse than a dropped connection, because a dropped connection can be retried against the same idempotency key and cost nothing.</p>
+
+        <p>So a render holds the connection until it finishes, which takes anywhere from a few seconds to a couple of minutes. <strong>Set your client’s read timeout to 300 seconds.</strong> The default in most HTTP libraries is 30 or 60, and a client that gives up at 30 seconds will look like an API that fails constantly while quietly spending credits on renders it never collects.</p>
+
+        <div class="article-callout">
+          <strong>Built to move later without breaking you:</strong> the success body already carries <code>status: "succeeded"</code>, and <code>GET /api/v1/renders/{id}</code> already exists. If we ever do add a queue, it arrives as a new <code>status</code> value on the same endpoint, not as a new API. Treat any status other than <code>succeeded</code> as “go poll the GET” and your client is already future-proof.
+        </div>
+
+        <p>The same reasoning caps <code>variations</code> at 1. One request is one credit is one image is one refund, with no partial-fanout arithmetic anywhere in the money. If you want three looks at a room, issue three concurrent requests: you get better parallelism that way than the fan-out ever gave you.</p>
+
+        <h2>Prepaid credits, and why that is a security feature</h2>
+
+        <p>You buy credits up front. Each successful render spends one, and a render that fails is refunded automatically, so you never pay for a photo you did not receive. Packs start at 20 credits for $3, and the per-image price falls as they get larger, down to $0.12 an image on the 500-credit pack. The live table is on the <a href="/developers.html">API documentation page</a>, rendered from the same data the payment webhook charges against, so it cannot drift from what you are actually billed.</p>
+
+        <p>Metered billing would have been easier to build. Prepaid is better for you in one specific way: <strong>a stolen key can cost you at most the balance left on it.</strong> There is no invoice at the end of the month, no overage, and no scenario where a leaked key becomes a four-figure bill before anyone notices. The hard stop at zero is the point rather than a limitation, which is also why every response carries an <code>X-Stagify-Credits-Remaining</code> header: you can watch the wall approach without polling for it.</p>
+
+        <p>Keys are meant for server-to-server use only. <strong>The API sends no CORS headers,</strong> so browser JavaScript cannot call it, and that is deliberate rather than an omission we intend to fix. A key reachable from a browser is a leaked key. We show a new key exactly once, store only a hash of it, and revoke on the spot from the <a href="/api-keys.html">API keys dashboard</a>.</p>
+
+        <h2>Four things that will trip you up</h2>
+
+        <p>Every API has behaviours that are perfectly reasonable once explained and baffling before. Here are ours, stated plainly rather than left in a parameter table.</p>
+
+        <ol>
+          <li><strong><code>roomType</code> is case- and space-sensitive, and a wrong value is not rejected.</strong> It is written into the prompt as free text, so <code>Living Room</code> is not <code>Living room</code>. You will get a render, just not the one you meant, and you will have paid for it. The accepted set is <code>Bedroom</code>, <code>Living room</code>, <code>Dining room</code>, <code>Kitchen</code>, <code>Office</code>, <code>Bathroom</code>, <code>Outdoors</code> and <code>Dorm</code>. Pull it from <code>GET /api/v1/options</code> rather than retyping it into your own dropdown.</li>
+          <li><strong>An unrecognised <code>furnitureStyle</code> silently becomes <code>standard</code>.</strong> Same class of problem, quieter symptom: a typo in a style name does not error, it just gives you the default look on every image in the batch.</li>
+          <li><strong><code>removeFurniture</code> accepts <code>true</code> or <code>on</code>, and nothing else.</strong> Not <code>1</code>, not <code>yes</code>. Both of those read as false, and you get a staged photo with the old sofa still in it. Its companion <code>keepFurniture</code> takes free text naming what to leave in place, up to 500 characters, and is only read when <code>removeFurniture</code> is actually set.</li>
+          <li><strong>Send an <code>Idempotency-Key</code> on every request.</strong> Omitting it is allowed and means no replay protection, which is the honest default; we will not derive one from your photo, because two genuinely separate renders of the same room would then collide and the second caller would be handed the first one’s image. Retry with the same value and a completed request replays from storage with <code>X-Stagify-Replayed: true</code> and no second charge. Reuse one with <em>different</em> parameters and you get <code>422 IDEMPOTENCY_KEY_REUSED</code>, which is the API telling you your key generator has a bug.</li>
+        </ol>
+
+        <p>Beyond those, the parameters worth knowing mirror the web app: <code>additionalPrompt</code> for free-text direction, and up to five <code>furnitureImage</code> reference photos for the model to match against.</p>
+
+        <h2>The disclosure label cannot be switched off</h2>
+
+        <p>Most MLS rules, and the NAR guidance behind them, require a staged listing photo to say that it is staged; since January 2026 California’s AB 723 requires it by statute. We have <a href="/blog/virtual-staging-disclosure-laws-by-state">written the state-by-state version of that</a> at length.</p>
+
+        <p><code>labelVirtuallyStaged</code> burns the disclosure into the pixels rather than attaching it as metadata, because metadata is stripped by roughly every downstream tool an image passes through on its way to a portal. You control how it looks: <code>stampStyle</code> picks between <code>dark</code>, <code>light</code>, <code>minimal</code> and <code>banner</code>, <code>stampScale</code> sizes it between 0.7 and 1.6, and <code>stampLang</code> renders it in any of eleven languages.</p>
+
+        <p>What you do not control is the failure mode. If the label is requested and cannot be applied, <strong>the image is withheld rather than delivered unlabelled.</strong> The call answers <code>500 DISCLOSURE_STAMP_FAILED</code> and your credit is refunded. There is no flag to disable that, and no per-key default that quietly turns it off. The alternative is shipping an unlabelled staged photo to a customer who explicitly asked for it to be labelled, which is the one bug in this system that could put somebody in front of a regulator.</p>
+
+        <h2>Errors, and the one rule about them</h2>
+
+        <p>Every failure answers with a JSON body carrying both an <code>error</code> string and a <code>code</code>. <strong>Branch on the code, never on the message.</strong> Messages get rewritten; codes do not.</p>
+
+        <p>The ones you will actually meet in production are <code>402 INSUFFICIENT_CREDITS</code> (top up; the body carries the remaining balance), <code>409 CONCURRENCY_LIMIT</code> (too many renders in flight on one key; the default allowance is three at a time, so back off a second and retry), <code>409 REQUEST_IN_FLIGHT</code> (you retried an idempotency key that is still running, so wait rather than escalating), <code>429 RATE_LIMITED</code>, and <code>422 NO_IMAGE_GENERATED</code>, which means the model returned nothing and is refunded automatically. The render rate limit is currently 60 per key per five minutes; if you need more than that, or an invoice instead of a card, email us.</p>
+
+        <p>Notice the pattern across all of those: <strong>anything that fails after a charge is refunded.</strong> That invariant is the reason the API is synchronous and the reason <code>variations</code> is capped at one, and it is the thing we would give up features to keep.</p>
+
+        <h2>Who this is for, and who it isn’t</h2>
+
+        <p>The API exists for the cases where staging is a step in somebody else’s pipeline rather than something a person sits down to do:</p>
+
+        <ul>
+          <li><strong>Listing platforms and IDX vendors</strong> staging on ingest, so an agent’s empty-room photo is already furnished by the time it reaches a search grid.</li>
+          <li><strong>Photographers’ delivery tooling.</strong> If you already have a script that renames, resizes and uploads a shoot, staging becomes one more step in it rather than an evening in a web app.</li>
+          <li><strong>PropTech products</strong> that want staging as a feature without building the model plumbing, the disclosure stamping and the failure handling behind it.</li>
+          <li><strong>Batch work of any size,</strong> because the price is per image and the floor is $3.</li>
+        </ul>
+
+        <p>It is emphatically not for a person staging one house. If that is you, the web app does more than the API does, since <a href="/blog/masking-studio-and-ai-designer">Masking Studio and the AI Designer</a> have no API equivalent, and it is <a href="/blog/free-virtual-staging">free, with no watermark</a>. Paying $0.15 to do in code what you can do for nothing in a browser would be a strange choice, and we would rather say so than sell you a credit pack.</p>
+
+        <h2>Getting started</h2>
+
+        <p>Create a key on the <a href="/api-keys.html">API keys page</a>, buy the smallest pack, and spend one credit on a photo you already know the answer for. Then read the <a href="/developers.html">reference</a> properly before you write the batch loop, particularly the idempotency table. Twenty credits is $3, and that is more than enough to find out whether this fits your pipeline.</p>
+
+        <h3>Sources &amp; notes</h3>
+        <ul>
+          <li><a href="/developers.html">Stagify API documentation</a>. The authoritative reference for endpoints, parameters, error codes and current credit-pack pricing. Where this article and that page disagree, that page is right: its pricing table is generated from the same data the payment webhook charges against, and this one is prose written on a particular day.</li>
+          <li><a href="/api-keys.html">API keys &amp; credits dashboard</a>. Create and revoke keys, buy packs, and read the balance. Desktop only.</li>
+          <li>Rate limits, the per-key concurrency allowance and pack prices quoted here are the defaults at the time of writing and are subject to change. Higher limits and invoiced billing are available on request at <a href="mailto:team@stagify.ai">team@stagify.ai</a>.</li>
+          <li>California AB 723 and the MLS disclosure rules referenced above are covered with citations in <a href="/blog/virtual-staging-disclosure-laws-by-state">Do You Have to Disclose Virtual Staging?</a> rather than repeated here.</li>
+        </ul>
+      </div>
+
+      <div class="article-cta">
+        <h2>Stage a room from your own code</h2>
+        <p>One HTTP call returns one staged photo. Prepaid credits from $0.15 an image, no subscription, no minimum, and the disclosure label included.</p>
+        <a href="/developers.html">Read the API docs →</a>
+      </div>
+
+      <p class="article-disclaimer">This article is for general informational purposes only and is neither legal nor technical advice. API behaviour, parameters, error codes, rate limits and pricing described here reflect Stagify.ai at the time of writing and may change; the <a href="/developers.html">API documentation</a> is the current reference and takes precedence over anything stated above. Disclosure requirements for virtually staged listing photographs vary by state, by MLS and by brokerage; the <code>labelVirtuallyStaged</code> parameter is a tool for meeting them and not a determination that you have, so check your own MLS’s photo and advertising policy and consult a qualified professional where required.</p>
+    </main>
+
+    <footer class="blog-footer">
+      <div class="row">
+        <a href="/">Home</a>·<a href="/blog/">Blog</a>·<a href="/guides.html">Guides</a>·<a href="/contact.html">Contact</a>
+      </div>
+      <div>© <span class="footer-year">2026</span> Stagify.ai</div>
+    </footer>
+
+    <script type="module" src="/scripts/footer-year.js"></script>
+  </body>
+</html>

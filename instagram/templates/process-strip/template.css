@@ -23,6 +23,7 @@
 .hl .hl-accent { color: var(--brand-pale); }
 
 .steps { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 18px; }
+.steps--sparse { gap: 24px; }
 
 .step {
   flex: 1 1 0;
@@ -64,3 +65,35 @@
 
 .frame--tall .step__title { font-size: 38px; }
 .frame--tall .steps { gap: 24px; }
+
+/* Two bands rather than three to five.
+ *
+ * The band heights are set by the flex distribution, not by their contents, so at two steps
+ * each card is roughly twice as tall as the copy inside it. Left alone that reads as a
+ * three band template with a band missing: a number marooned in one corner, a title and note
+ * floating in the middle of an otherwise empty card, and edges too faint to say where the
+ * container is. So the sparse case gets its own scale rather than the dense one stretched.
+ */
+.steps--sparse .step {
+  align-items: center;
+  gap: 30px;
+  padding: 30px;
+  background: rgba(255, 255, 255, .1);
+  border-color: rgba(255, 255, 255, .2);
+}
+
+.steps--sparse .step__body { gap: 14px; }
+.steps--sparse .step__num { margin-bottom: 4px; }
+.steps--sparse .step__title { font-size: 42px; }
+.steps--sparse .step__note { font-size: 28px; line-height: 1.36; color: rgba(255, 255, 255, .82); }
+/* .step centres its children in sparse mode, so the photo has to ask for the full band height
+ * back or it lays out at zero and the renderer refuses the frame. */
+.steps--sparse .step__shot {
+  flex: 0 0 41%;
+  align-self: stretch;
+  border-radius: 16px;
+  /* The band is a little taller than a 4:5 photo wants, so cover trims a sliver. Take it off
+   * the sky rather than off the middle: the foreground is where the furniture meets the floor,
+   * which is the whole thing a staging post is asking you to look at. */
+  background-position: 50% 72%;
+}

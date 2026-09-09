@@ -1336,8 +1336,7 @@
   },
   "common": {
     "close": "Sluiten",
-    "selectLanguage": "Selecteer taal",
-    "newBadge": "Nieuw"
+    "selectLanguage": "Selecteer taal"
   },
   "footer": {
     "privacy": "Privacybeleid",

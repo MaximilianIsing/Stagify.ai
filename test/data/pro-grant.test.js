@@ -128,7 +128,7 @@ test('a lapsed grant reads as free everywhere, with no sweep job', () => {
   });
   assert.equal(user.plan, 'free', 'findUserByEmail downgrades the lapsed grant');
   assert.equal(store.exportStore().users[0].plan, 'free', 'the admin snapshot agrees');
-  assert.equal(store.freeGenerationStatus('u_seed').limit, 50, 'free daily cap applies again');
+  assert.equal(store.freeGenerationStatus('u_seed').limit, store.FREE_DAILY_LIMIT, 'free daily cap applies again');
 });
 
 test('an unexpired grant still reads as pro', () => {

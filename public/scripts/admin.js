@@ -2,6 +2,7 @@ import { createRenderers } from './admin/renderers.js';
 import { createEmailsPanel } from './admin/emails.js';
 import { createReferralsPanel } from './admin/referrals.js';
 import { createStatusPanel } from './admin/status-panel.js';
+import { createApiUsagePanel } from './admin/api-usage.js';
 import { qs, qsa, el, parseCSV, copyToClipboard } from './admin/helpers.js';
 import { showErrorToast } from './toast.js';
 
@@ -54,6 +55,8 @@ import { showErrorToast } from './toast.js';
   referralsPanel.init();
   var statusPanel = createStatusPanel({ apiSend: apiSend });
   statusPanel.init();
+  var apiUsagePanel = createApiUsagePanel({ apiSend: apiSend });
+  apiUsagePanel.init();
 
   // ── Secure fetch: credential sent in a header, never the URL ──
 
@@ -173,6 +176,9 @@ import { showErrorToast } from './toast.js';
       if(refPanel&&refPanel.classList.contains('active'))referralsPanel.ensureLoaded();
       var statusPanelEl=qs('#panel-status');
       if(statusPanelEl&&statusPanelEl.classList.contains('active'))statusPanel.ensureLoaded();
+      apiUsagePanel.reset();
+      var apiPanel=qs('#panel-api-usage');
+      if(apiPanel&&apiPanel.classList.contains('active'))apiUsagePanel.ensureLoaded();
     }).catch(function(err){
       console.error('Load failed',err);
       if(String(err).indexOf('403')!==-1){signOut();return}
@@ -214,6 +220,9 @@ import { showErrorToast } from './toast.js';
     // Status is live data, so opening the tab always refetches rather than showing
     // whatever was true when it was last looked at.
     if(btn.dataset.tab==='status')statusPanel.ensureLoaded();
+    // Lazy like the two above: one aggregate query, fetched on first open and
+    // whenever the range changes, rather than riding along in the loadAll() burst.
+    if(btn.dataset.tab==='api-usage')apiUsagePanel.ensureLoaded();
     // Panels are display:none while inactive, so a tab that was hidden during the
     // last render starts scrolled wherever the previous one was.
     //
@@ -380,6 +389,7 @@ import { showErrorToast } from './toast.js';
     emailsPanel.reset();
     referralsPanel.reset();
     statusPanel.reset();
+    apiUsagePanel.reset();
     // The findings are derived from ctx.data, and the brief is a paid-for
     // summary of them — both have to go with it, or the next operator to sign
     // in sees the previous one's account names before the first fetch lands.

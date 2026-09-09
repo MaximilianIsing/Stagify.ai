@@ -9,7 +9,7 @@
 // (whyUs.stagify.features.free) deliberately says "unlimited" while the server still
 // enforces FREE_DAILY_LIMIT — a product decision (2026-08-07) extending the same call
 // already made for the "Unlimited staging generations" row on stagify-plus.html, which
-// is ticked in BOTH columns (2026-08-01): 50/day reads as effectively unlimited and
+// is ticked in BOTH columns (2026-08-01): a cap that high reads as effectively unlimited and
 // naming a cap scares prospects off. So this file no longer pins that bullet to the
 // figure. What it pins instead is the INVERSE — that no pack reintroduces a number
 // there — because a figure in that bullet is read as a ceiling whatever it says, and a

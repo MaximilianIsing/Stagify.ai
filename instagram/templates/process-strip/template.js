@@ -41,12 +41,19 @@ export function render(data, { format, brandCss, slideIndex = 0, slideCount = 1 
   const offset = carousel ? slideIndex % steps.length : 0;
   const tall = format === 'story' || format === 'reel';
 
+  // Two bands make each one about twice as tall as the copy it holds, so the number lifts out
+  // of its own column and stacks above the title rather than stranding itself in the corner
+  // with a field of empty ground between it and the words it belongs to.
+  const sparse = shown.length <= 2;
+
   const rows = shown
     .map((step, i) => {
       if (!step.title) throw new Error('every process step needs a title');
+      const num = `<span class="step__num">${offset + i + 1}</span>`;
       return `<div class="step">
-        <span class="step__num">${offset + i + 1}</span>
+        ${sparse ? '' : num}
         <div class="step__body">
+          ${sparse ? num : ''}
           <div class="step__title">${escapeHtml(step.title)}</div>
           ${step.note ? `<div class="step__note">${escapeHtml(step.note)}</div>` : ''}
         </div>
@@ -59,7 +66,7 @@ export function render(data, { format, brandCss, slideIndex = 0, slideCount = 1 
   <div class="stack">
     ${fieldHeader(data.eyebrow ?? 'AI VIRTUAL STAGING')}
     ${headline(data.headline)}
-    <div class="steps">
+    <div class="steps${sparse ? ' steps--sparse' : ''}">
       ${rows}
     </div>
     ${fieldFooter({

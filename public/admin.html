@@ -60,6 +60,13 @@
             <span class="adm-tab-lbl">Signals</span>
             <span class="adm-tab-count" id="tc-signals">0</span>
           </button>
+          <!-- No count chip: chips are written by updateTabCounts() during the
+               loadAll() burst, and the data here is fetched lazily on open, so a
+               chip here would sit at 0 until you clicked it. -->
+          <button class="adm-tab" data-tab="api-usage" data-title="API usage" data-sub="Traffic, customers and credits on the public render API." role="tab" aria-selected="false">
+            <svg class="adm-tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 17-5-5 5-5"/><path d="m15 7 5 5-5 5"/></svg>
+            <span class="adm-tab-lbl">API usage</span>
+          </button>
 
           <p class="adm-nav-group">Accounts</p>
           <button class="adm-tab" data-tab="users" data-title="Users" data-sub="Every account, with its plan and activity." role="tab" aria-selected="false">
@@ -175,6 +182,31 @@
             </div>
             <div class="adm-table-wrap adm-table-wrap--short" id="adm-recent-signups"></div>
           </div>
+        </div>
+      </div>
+
+      <!-- API usage. Everything here comes from ONE call to /api/admin/api-usage,
+           aggregated in SQL over api_requests / api_credit_* / api_keys and rendered
+           by scripts/admin/api-usage.js. The range selector refetches rather than
+           re-filtering, because the aggregation happens server-side. -->
+      <div class="adm-panel" id="panel-api-usage">
+        <div class="adm-range" id="adm-api-range"></div>
+        <div class="adm-stats" id="adm-api-stats"></div>
+        <div class="adm-chart-stack" id="adm-api-charts"></div>
+        <div class="adm-card">
+          <div class="adm-card-head">
+            <h2>Accounts using the API</h2>
+            <span class="adm-count-chip" id="adm-api-account-count">0</span>
+          </div>
+          <p class="adm-card-sub">Every account that called the API in the selected window, busiest first. &ldquo;In flight&rdquo; is a request that was charged and has not settled yet &mdash; a persistent one is a render that died mid-flight and is waiting to be reclaimed.</p>
+          <div class="adm-table-wrap" id="adm-api-accounts"></div>
+        </div>
+        <div class="adm-card">
+          <div class="adm-card-head">
+            <h2>Credits</h2>
+          </div>
+          <p class="adm-card-sub">Prepaid credit movement. Credits <em>sold</em> and credits <em>granted</em> are kept apart on purpose: both let someone render, but only one of them was paid for. The outstanding balance is a liability &mdash; renders already bought and still owed.</p>
+          <div id="adm-api-economics"></div>
         </div>
       </div>
 
