@@ -63,6 +63,7 @@ const UNTYPED_DEPS = [];
 // admin panels and the profile-menu pieces were all already typed when this
 // guard landed, and should stay that way.
 const ALL_FACTORIES = [
+  'admin/api-usage.js#createApiUsagePanel',
   'admin/danger.js#createDangerSection',
   'admin/emails.js#createEmailsPanel',
   'admin/grant.js#createGrantSection',

@@ -1336,8 +1336,7 @@
   },
   "common": {
     "close": "关闭",
-    "selectLanguage": "选择语言",
-    "newBadge": "新"
+    "selectLanguage": "选择语言"
   },
   "footer": {
     "privacy": "隐私政策",

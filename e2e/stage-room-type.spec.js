@@ -2,18 +2,8 @@
 //
 // index.spec.js proves the dropdown OPENS; nothing anywhere proved that picking an
 // option does the right thing, or that the value the API receives is the one the user
-// chose. Both gaps matter more since "Dorm" landed, because it is the first option
-// carrying extra chrome (a "New" badge) and the first whose label and submitted value
-// are structurally different nodes:
-//
-//   <div class="option option--with-badge" data-value="Dorm">
-//     <span class="option-label" data-lang="roomTypes.dorm">Dorm</span>
-//     <span class="option-badge" data-lang="common.newBadge">New</span>
-//   </div>
-//
-// The naive `option.textContent` read that initCustomSelect used to do yields "DormNew"
-// here, and the translated label must never leak into the request — the API contract is
-// the untranslated data-value. Both are asserted below.
+// chose. "Dorm" is the option under test because the translated label must never leak
+// into the request — the API contract is the untranslated data-value.
 //
 // /api/validate-image and /api/process-image are mocked — no real Gemini call, no cost.
 import { test, expect } from '@playwright/test';
@@ -52,20 +42,15 @@ test.describe('Main tool — room-type selection', () => {
     );
   });
 
-  test('the Dorm option renders a New badge and does not leak it into the trigger', async ({ page }) => {
+  test('picking Dorm updates the trigger, the value and the highlight', async ({ page }) => {
     await openStageModal(page);
 
     const select = page.locator('#room-type-select');
     const dorm = select.locator('.option[data-value="Dorm"]');
     await select.locator('.select-trigger').click();
 
-    // The badge is real, visible chrome — not just markup.
-    await expect(dorm.locator('.option-badge')).toBeVisible();
-    await expect(dorm.locator('.option-badge')).toHaveText(PACKS('english').common.newBadge);
-
     await dorm.click();
 
-    // The regression this guards: reading the whole option's textContent gives "DormNew".
     await expect(select.locator('.select-value')).toHaveText(PACKS('english').roomTypes.dorm);
     await expect(select).toHaveAttribute('data-value', 'Dorm');
     await expect(select.locator('.select-menu')).toHaveClass(/hidden/);
@@ -119,9 +104,6 @@ test.describe('Main tool — room-type selection', () => {
     const select = await pickRoomType(page, 'Dorm');
     // Server-rendered Spanish label, English wire value.
     await expect(select.locator('.select-value')).toHaveText(PACKS('spanish').roomTypes.dorm);
-    await expect(select.locator('.option[data-value="Dorm"] .option-badge')).toHaveText(
-      PACKS('spanish').common.newBadge,
-    );
 
     await page.locator('#stage-file-input').setInputFiles({
       name: 'room.png',

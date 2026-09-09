@@ -1336,8 +1336,7 @@
   },
   "common": {
     "close": "Chiudi",
-    "selectLanguage": "Seleziona lingua",
-    "newBadge": "Nuovo"
+    "selectLanguage": "Seleziona lingua"
   },
   "footer": {
     "privacy": "Informativa sulla privacy",

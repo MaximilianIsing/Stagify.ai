@@ -42,7 +42,7 @@ globalThis.document = /** @type {any} */ ({
 });
 
 const {
-  areaChart, barChart, rankedBars, donutChart, sparkline, legend,
+  areaChart, barChart, stackedBarChart, rankedBars, donutChart, sparkline, legend,
   funnelChart, cohortGrid, chartCard, chartEmpty, fmtNum, fmtCompact, niceMax, PALETTE,
 } = await import('../../../public/scripts/admin/charts.js');
 
@@ -207,6 +207,80 @@ test('barChart: an all-zero series still draws its full axis and every bucket', 
   const chart = barChart(pts([0, 0, 0]));
   assert.equal(findAllByClass(chart, 'adm-chart-bar').length, 3);
   assert.ok(findAllByClass(chart, 'adm-grid-line').length > 0);
+});
+
+// ---- Stacked bar chart -----------------------------------------------------
+//
+// The shape behind the admin API-usage chart. Its whole job is that the column
+// height stays the TOTAL — a refunded render is a charged request handed back, not
+// separate traffic — so the invariants worth pinning are about the stack, not the
+// pixels.
+
+const stack = (rows) => rows.map((values, i) => ({ label: 'L' + i, values }));
+
+test('stackedBarChart: segments sum to the column, and the axis scales to the TOTAL', () => {
+  // Two buckets, totals 10 and 5. If the axis were scaled to either SERIES rather
+  // than the stack, the taller column would overflow its own plot area.
+  const chart = stackedBarChart(stack([[8, 2], [4, 1]]));
+  const bars = findAllByClass(chart, 'adm-chart-bar');
+  assert.equal(bars.length, 4, 'one rect per non-zero segment');
+
+  const h = bars.map((b) => Number(b.attrs.height));
+  const col1 = h[0] + h[1];
+  const col2 = h[2] + h[3];
+  assert.ok(Math.abs(col1 - col2 * 2) < 0.001, 'a column twice the total must be twice as tall');
+});
+
+test('stackedBarChart: the second segment sits ON the first, not beside it', () => {
+  const chart = stackedBarChart(stack([[6, 3]]));
+  const [bottom, top] = findAllByClass(chart, 'adm-chart-bar');
+
+  // Same column: identical x. Stacked: the top segment's baseline is the bottom's top.
+  assert.equal(bottom.attrs.x, top.attrs.x, 'a stacked segment shares its column');
+  const topOfBottom = Number(bottom.attrs.y);
+  const bottomOfTop = Number(top.attrs.y) + Number(top.attrs.height);
+  assert.ok(Math.abs(bottomOfTop - topOfBottom) < 0.001, 'the segments must not overlap or leave a gap');
+});
+
+test('stackedBarChart: a zero segment draws nothing at all', () => {
+  // Not a sliver: a zero-height cap would imply refunds on a day that had none.
+  const chart = stackedBarChart(stack([[5, 0]]));
+  assert.equal(findAllByClass(chart, 'adm-chart-bar').length, 1);
+});
+
+test('stackedBarChart: an empty bucket still offers a hover target', () => {
+  // A quiet day must report "0", not be a hole in the chart that reports nothing.
+  const chart = stackedBarChart(stack([[0, 0], [3, 0]]), { unit: 'requests' });
+  assert.equal(findAllByClass(chart, 'adm-chart-bar').length, 1);
+  assert.equal(findAllByClass(chart, 'adm-chart-hit').length, 1);
+  assert.ok(tooltips(chart).some((t) => t === 'L0: 0 requests'), tooltips(chart).join(' | '));
+});
+
+test('stackedBarChart: tooltips name the series, not just the number', () => {
+  const chart = stackedBarChart(stack([[7, 2]]), {
+    labels: ['Delivered', 'Refunded'], unit: 'requests',
+  });
+  const tips = tooltips(chart);
+  assert.ok(tips.some((t) => t === 'L0 · Delivered: 7 requests'), tips.join(' | '));
+  assert.ok(tips.some((t) => t === 'L0 · Refunded: 2 requests'), tips.join(' | '));
+});
+
+test('stackedBarChart: only the top segment is rounded', () => {
+  // Rounding an inner segment cuts a notch out of the column it sits flush against.
+  const [bottom, top] = findAllByClass(stackedBarChart(stack([[6, 3]])), 'adm-chart-bar');
+  assert.equal(Number(bottom.attrs.rx), 0);
+  assert.ok(Number(top.attrs.rx) > 0);
+});
+
+test('stackedBarChart: colors follow the series index and cycle', () => {
+  const chart = stackedBarChart(stack([[1, 1, 1]]), { colors: ['#111', '#222'] });
+  const fills = findAllByClass(chart, 'adm-chart-bar').map((b) => b.attrs.fill);
+  assert.deepEqual(fills, ['#111', '#222', '#111']);
+});
+
+test('stackedBarChart: no points degrades to a placeholder', () => {
+  assert.ok(hasClass(stackedBarChart([]), 'adm-chart-empty'));
+  assert.ok(hasClass(stackedBarChart(/** @type {any} */ (null)), 'adm-chart-empty'));
 });
 
 // ---- Ranked bars -----------------------------------------------------------

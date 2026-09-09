@@ -307,6 +307,74 @@ export function barChart(points, opts = {}) {
 }
 
 /**
+ * Vertical bars with two segments stacked, sharing one column.
+ *
+ * The stack is the point: where {@link barChart} would need two charts side by side
+ * to show "delivered" and "refunded", this keeps the column height meaning TOTAL
+ * REQUESTS and colours the part of it that did not deliver. A refunded render is not
+ * separate traffic — it is a request that was charged and then given back — so
+ * putting it beside rather than above would double-count the day's volume. This is
+ * the same reasoning, and the same shape, as the customer-facing chart in
+ * scripts/api-keys/usage-chart.js; the two views must not disagree.
+ *
+ * The axis maximum is taken from the STACK TOTAL, not from either series, or a day
+ * that was mostly refunds would overflow its column.
+ * @param {Array<{label: string, short?: string, values: number[]}>} points - Segments per bucket, bottom first.
+ * @param {{height?: number, width?: number, colors?: string[], labels?: string[], unit?: string, maxLabels?: number}} [opts]
+ * @returns {SVGElement|HTMLElement}
+ */
+export function stackedBarChart(points, opts = {}) {
+  if (!points || !points.length) return chartEmpty();
+  const height = opts.height || 240;
+  const vbW = opts.width || VB_W;
+  const colors = opts.colors || PALETTE;
+  const names = opts.labels || [];
+  const unit = opts.unit || '';
+  const left = 44;
+  const top = 12;
+  const bottom = 30;
+  const plotW = vbW - left - 16;
+  const plotH = height - top - bottom;
+  const sum = (p) => p.values.reduce((a, b) => a + (Number(b) || 0), 0);
+  const max = niceMax(Math.max.apply(null, points.map(sum)));
+  const slot = plotW / points.length;
+  const barW = Math.max(2, Math.min(slot * 0.68, 46));
+
+  const root = svg('svg', { viewBox: '0 0 ' + vbW + ' ' + height, class: 'adm-chart-svg', role: 'img' });
+  root.appendChild(gridLines(top, plotH, plotW, left, max, 4));
+
+  points.forEach((p, i) => {
+    const x = left + slot * i + (slot - barW) / 2;
+    // Walk from the baseline up, so segment n sits on the total of those below it.
+    let base = 0;
+    p.values.forEach((raw, s) => {
+      const value = Number(raw) || 0;
+      if (value <= 0) return;
+      const h = plotH * (value / max);
+      const y = top + plotH - plotH * (base / max) - h;
+      root.appendChild(svg('rect', {
+        x, y, width: barW, height: Math.max(h, 2),
+        // Only the top segment of a stack gets rounded corners; rounding an inner
+        // one would cut a notch out of the column it is supposed to be flush with.
+        rx: s === p.values.length - 1 ? Math.min(4, barW / 2) : 0,
+        fill: colors[s % colors.length], class: 'adm-chart-bar',
+      }, [tip(p.label + ' · ' + (names[s] || 'series ' + (s + 1)) + ': ' + fmtNum(value) + (unit ? ' ' + unit : ''))]));
+      base += value;
+    });
+    // A zero-total bucket still needs a hover target, or a quiet day is a hole in
+    // the chart that reports nothing rather than reporting nothing happened.
+    if (sum(p) === 0) {
+      root.appendChild(svg('rect', {
+        x, y: top, width: barW, height: plotH, class: 'adm-chart-hit',
+      }, [tip(p.label + ': 0' + (unit ? ' ' + unit : ''))]));
+    }
+  });
+
+  root.appendChild(xLabels(points, top, plotH, plotW, left, opts.maxLabels || 12));
+  return root;
+}
+
+/**
  * Horizontal ranked bars — the readable shape for a category axis with long,
  * variable-length labels (room types, styles, referral sources).
  * @param {Array<{label: string, value: number}>} rows

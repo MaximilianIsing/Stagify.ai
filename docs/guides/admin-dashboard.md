@@ -71,6 +71,7 @@ owns auth/fetch/wiring, each island owns one cohesive concern.
 | [`scripts/admin/emails.js`](../../public/scripts/admin/emails.js) | The **Emails** tab: the preview gallery + per-template test send. Lazy-loaded on first open. |
 | [`scripts/admin/status-panel.js`](../../public/scripts/admin/status-panel.js) | The **Server status** tab: the live monitor view and the incident composer. Lazy-loaded on first open, then polls while its tab is visible. |
 | [`scripts/admin/referrals.js`](../../public/scripts/admin/referrals.js) | The **Referrals** tab: one card per campaign short-URL. Lazy-loaded on first open; `Refresh` invalidates it. |
+| [`scripts/admin/api-usage.js`](../../public/scripts/admin/api-usage.js) | The **API usage** tab: traffic, customers and credit economics for the public render API. Lazy-loaded on first open and on each range change; `Refresh` invalidates it. The only admin panel whose aggregation happens entirely server-side. |
 | [`scripts/admin/helpers.js`](../../public/scripts/admin/helpers.js) | DOM/format helpers + the icon set. `esc` is re-exported from the shared [`scripts/escape-html.js`](../../public/scripts/escape-html.js). |
 | [`styles/admin.css`](../../public/styles/admin.css) | Page styles: the token block, the shell, and everything the SVG charts are painted with. |
 
@@ -114,6 +115,25 @@ so its window is fixed and zero-filled — a dead week must *look* dead. The all
 the shape of the whole history, so it re-buckets itself as history grows
 (`pickGranularity`: ≤70 days → daily, ≤550 → weekly, beyond → monthly), keeping the point
 count in a readable 20–90 band at every scale.
+
+**API usage** — a **range selector** (`#adm-api-range`: 7 / 30 / 90 days), then
+`#adm-api-stats` (6 stat cards), `#adm-api-charts`, `#adm-api-accounts` and
+`#adm-api-economics`:
+
+| Chart | Source |
+|---|---|
+| Daily API requests | `usage.buckets`, zero-filled UTC days, **stacked** bars |
+| Busiest accounts | `usage.accounts`, ranked bars |
+
+The range **refetches** rather than re-filtering — unlike Overview's, whose rows are
+already in `ctx.data`. The aggregation is SQL, so a wider window is a new query.
+
+The daily chart is the one place `charts.js#stackedBarChart` is used. Refunded requests
+are stacked **on top of** delivered rather than drawn beside them, so a column's height
+stays "requests that day": a refunded render is a request that was charged and handed
+back, not separate traffic. That is the same decision, for the same reason, as the
+customer-facing chart in `scripts/api-keys/usage-chart.js`; the two views must not
+disagree about what a day's volume was.
 
 **Insights** — `#adm-insights`, seven labelled sections, **each with its own grid**:
 
@@ -373,6 +393,11 @@ source of truth — if a writer gains a column, update `COL` and this table.
 | `/email-open-logs` | `lib/services/email.js` | `timestamp, email, ipAddress, userAgent` |
 | `/enterprise-domains` | `lib/data/enterprise-store.js` | JSON — `{domains: [...]}` |
 | `/api/hosted-images` | `lib/image/hosted-images.js` | JSON — `{images: [...]}` |
+
+One endpoint sits **outside** that burst: `/api/admin/api-usage`
+([`routes/admin-api-usage.js`](../../routes/admin-api-usage.js)) is fetched lazily by the
+API usage tab, and answers a single pre-aggregated JSON payload rather than a CSV — see
+that tab's section below.
 
 Three conventions the aggregators depend on:
 
@@ -807,6 +832,91 @@ to type instead.
 **The one hardcoded thing left** is the seed: `/columbia` predates links being data, so it is
 inserted once behind a `meta` guard. The guard matters — without it, deleting that link would
 resurrect it on the next boot.
+
+## API usage tab
+
+The operator's counterpart to the developer console at `/api-keys.html`. That page
+answers *"how is my integration doing"* for one customer; this tab answers the three
+questions nothing in the console could ask at all: how much traffic the public render
+API carries, which accounts carry it, and whether the prepaid credits behind it were
+**sold** or **given away**.
+
+Before it existed, the only cross-account signal was `qRendersBySource` in
+[`lib/analytics/admin-metrics.js`](../../lib/analytics/admin-metrics.js), which counts
+`staged_renders` rows tagged `source: 'api'`. That says how many API renders happened
+and nothing else — not who called, not what it earned, not whether anyone's integration
+is failing.
+
+**One endpoint, one query set.** `GET /api/admin/api-usage?days=N` →
+[`routes/admin-api-usage.js`](../../routes/admin-api-usage.js) →
+[`lib/analytics/api-usage.js`](../../lib/analytics/api-usage.js). It reads four tables —
+`api_requests`, `api_credit_balances`, `api_credit_ledger`, `api_keys` — plus a
+`LEFT JOIN users` for the account email, all of which live in the one shared SQLite
+connection.
+
+It is a **sibling router** because [`routes/admin.js`](../../routes/admin.js) is at its
+650-line lint cap, exactly as [`routes/admin-renders.js`](../../routes/admin-renders.js)
+is. Same guard (`protectLogs`), same tab strip, separate file.
+
+### Why it is not a flag on `usageSummary`
+
+[`api-billing.js#usageSummary`](../../lib/data/api-billing.js) already aggregates this
+data — per **key**, for one account. Every one of its three statements is anchored on
+`user_id`, which is what lets `idx_api_requests_user (user_id, claimed_at)` serve them.
+Dropping that predicate would change both which index the planner picks and which
+grouping is meaningful (per key is the customer's mental model; per account is the
+operator's), so the admin reader is a sibling with its own statements.
+
+That left every site-wide query filtering on `claimed_at` alone, which the composite
+index cannot serve — it is left-anchored on `user_id`. Hence
+`idx_api_requests_claimed`, added to `api-billing.js`'s `SCHEMA`. It is a
+`CREATE INDEX IF NOT EXISTS` on the existing `db.exec(SCHEMA)`, so there is no
+migration step.
+
+### The statement count is fixed
+
+Like `admin-metrics.js`, every statement is prepared **once, at construction**. This is
+analytical SQL pointed at the production database on an operator's click, so an N+1
+here turns a tab into a table scan per account. `test/analytics/api-usage.test.js`
+counts `prepare()` calls across datasets three orders of magnitude apart and asserts
+`summary()` prepares nothing at all.
+
+### What it deliberately does not return
+
+No key ids, no key prefixes, no idempotency keys, no request fingerprints. A key prefix
+is the half of a credential a support ticket quotes, and none of it is needed to answer
+"how busy is the API". The response is a shaped aggregate — it never touches an
+individual `api_requests` row, so there is no row here to leak a column at a time. The
+body still carries customer emails and spend, so it is `no-store` behind
+`setSensitiveHeaders`.
+
+### Sold is not granted
+
+`api_credit_ledger.reason` separates `purchase` (Stripe) from `grant` (issued by hand).
+Both add balance and both let someone render; only one of them was paid for, so the tab
+reports them on separate lines and never as one "credits added" figure. The
+**outstanding balance** is framed as a liability for the same kind of reason: those are
+renders already bought and still owed, not revenue.
+
+### Absence is not zero
+
+The rule the whole dashboard runs on (see *Silence must be honest* above) has three
+specific applications here:
+
+- A median with **no completed renders** is `null`, rendered as an em dash. `0` would
+  claim every render finished instantly.
+- A **refund rate on zero traffic** is absent, not `0%` — an idle API has not proved
+  anything about its reliability.
+- An account that did not call in the window is **missing from the table**, not present
+  with a row of zeros. A zeroed row reads as "this customer stopped working".
+
+A fresh deployment has no API traffic at all, so the empty state is the one this tab is
+most likely to be seen in first — which is why it is asserted directly rather than left
+to whatever the formatters happen to do.
+
+The account table is capped at the top 50 by volume and **says so** when it is hiding
+anyone; the headline totals come from the request table rather than from summing that
+capped list, or they would under-report the moment there are 51 API customers.
 
 ## Conventions when editing
 

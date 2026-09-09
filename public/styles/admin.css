@@ -1082,6 +1082,43 @@ body.page-admin main { flex: 0 0 auto; overflow: visible; width: 100% }
   .adm-topbar-right { margin-left: 0 }
 }
 
+/* ── API usage tab ────────────────────────────────────────────────────────
+   Two additions only; everything else on the tab reuses .adm-stat, .adm-table
+   and the chart-card furniture. Colours come from the .page-admin token block
+   above — test/frontend/css-tokens.test.js fails on a duplicated literal. */
+
+/* The account cell stacks the email over its plan badge, so a long address does
+   not push the seven numeric columns off the right edge of the table. */
+.adm-api-acct { display: block; font-weight: 600; color: var(--adm-ink); word-break: break-all }
+.adm-api-plan {
+  display: inline-block; margin-top: .15rem; padding: .05rem .4rem;
+  font-size: .6875rem; text-transform: uppercase; letter-spacing: .04em;
+  color: var(--adm-muted); background: var(--adm-sunken);
+  border: 1px solid var(--adm-line); border-radius: 4px;
+}
+.adm-api-table td { vertical-align: top }
+
+/* Credit economics: label / value / explanation, one row each. The hint is not
+   decoration — several of these numbers (granted vs. sold, outstanding as a
+   liability) are misread without it, so it gets its own line rather than a title
+   attribute nobody hovers. */
+.adm-api-econ { display: grid; gap: .1rem }
+.adm-api-econ-row {
+  display: grid; grid-template-columns: minmax(0, 12rem) minmax(0, 6rem) 1fr;
+  align-items: baseline; gap: .5rem;
+  padding: .6rem .25rem; border-bottom: 1px solid var(--adm-line-soft);
+}
+.adm-api-econ-row:last-child { border-bottom: 0 }
+.adm-api-econ-lbl { color: var(--adm-ink-2); font-weight: 600; font-size: .8125rem }
+.adm-api-econ-val { color: var(--adm-ink); font-weight: 700; font-variant-numeric: tabular-nums }
+.adm-api-econ-hint { color: var(--adm-faint); font-size: .75rem }
+
+@media (max-width: 720px) {
+  /* Three columns will not fit; the value leads and the hint wraps under it. */
+  .adm-api-econ-row { grid-template-columns: 1fr auto; row-gap: .2rem }
+  .adm-api-econ-hint { grid-column: 1 / -1 }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .adm-panel.active { animation: none }
   .adm-stat, .adm-dl-btn, .adm-host-item, .adm-ranked-fill, .adm-funnel-fill { transition: none }

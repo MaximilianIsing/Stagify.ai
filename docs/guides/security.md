@@ -27,7 +27,7 @@ Backed by SQLite (`auth-store.db`, [`lib/data/auth-store.js`](../../lib/data/aut
   for any request without a valid session — there is **no** anonymous/"mobile UA"
   staging path (that former per-IP bypass was removed to close the IP-rotation
   cost-abuse vector).
-- **Free-tier daily cap:** free accounts are capped at **`FREE_DAILY_LIMIT` (50)
+- **Free-tier daily cap:** free accounts are capped at **`FREE_DAILY_LIMIT` (100)
   generations per UTC day**, enforced server-side **before** any paid AI call
   (`freeGenerationStatus` in `lib/data/auth-store.js`); over-cap requests get
   `429 DAILY_LIMIT_REACHED`. Pro accounts are uncapped; enterprise-domain users are

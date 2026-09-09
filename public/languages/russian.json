@@ -1346,8 +1346,7 @@
   },
   "common": {
     "close": "Закрыть",
-    "selectLanguage": "Выбрать язык",
-    "newBadge": "Новое"
+    "selectLanguage": "Выбрать язык"
   },
   "footer": {
     "privacy": "Политика конфиденциальности",

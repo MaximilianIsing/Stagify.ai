@@ -117,13 +117,3 @@ test('no language pack carries a room type the app cannot stage', () => {
     }
   }
 });
-
-test('every language pack translates the "New" option badge', () => {
-  // The badge is markup-driven (data-lang="common.newBadge"); a missing key leaves the
-  // English "New" sitting in an otherwise fully translated dropdown.
-  for (const lang of LANGS) {
-    const value = packFor(lang).common?.newBadge;
-    assert.equal(typeof value, 'string', `${lang}.json is missing common.newBadge`);
-    assert.ok(value.trim().length > 0, `${lang}.json has an empty common.newBadge`);
-  }
-});

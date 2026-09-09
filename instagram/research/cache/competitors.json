@@ -1,6 +1,6 @@
 {
   "key": "competitors",
-  "fetchedAt": "2026-08-14T01:09:50.342Z",
+  "fetchedAt": "2026-09-03T02:06:54.213Z",
   "ttlDays": 14,
   "queries": [
     "virtual staging companies social media",
@@ -8,82 +8,94 @@
   ],
   "findings": [
     {
-      "claim": "BoxBrownie.com runs an active brand Instagram account (@boxbrowniecom) with roughly 16K followers, making it one of the largest direct virtual-staging competitor accounts; its feed is built around its service lines (virtual staging, image enhancement, virtual tours, floor plans).",
-      "sourceUrl": "https://www.instagram.com/boxbrowniecom/?hl=en",
-      "sourceTitle": "BoxBrownie.com (@boxbrowniecom) - Instagram",
-      "retrievedAt": "2026-08-13"
-    },
-    {
-      "claim": "Before/after transformation visuals are the dominant recommended format for virtual staging companies on social media: the standard advice is to post paired before and after listing images to show the transformation.",
-      "sourceUrl": "https://www.applydesign.io/post/social-media-and-virtual-staging-a-powerful-marketing-combination",
-      "sourceTitle": "Virtual Staging and Social Media - Top Property Marketing Duo (ApplyDesign)",
-      "retrievedAt": "2026-08-13"
-    },
-    {
-      "claim": "Trolto is an AI virtual staging startup built specifically for social media marketing: it turns a staged image into a custom-branded cinematic fly-through video with one click, aimed at Instagram Reels and TikTok distribution.",
-      "sourceUrl": "https://www.housingwire.com/articles/virtual-staging-companies-apps/",
-      "sourceTitle": "Virtual Staging: The Best Apps for 2026 + Mind-Blowing AI picks (HousingWire)",
-      "retrievedAt": "2026-08-13"
-    },
-    {
-      "claim": "Home stagers are advised to use carousels for side-by-side transformations and short Reels for the lived-in to market-ready shift, with practitioners reporting that 20-30% of leads come from a well-executed before/after Reel.",
+      "claim": "Before/after Reels are the leading discovery format for home stager accounts, performing best when paired with trending audio and result statistics rendered as on-screen text or in the caption.",
       "sourceUrl": "https://www.socialmon.ai/blog/68-home-stager-instagram-post-ideas-with-examples-that-sell-listings",
-      "sourceTitle": "68 Home stager Instagram post ideas with examples that sell listings (Socialmon)",
-      "retrievedAt": "2026-08-13"
+      "sourceTitle": "68 Home stager Instagram post ideas with examples that sell listings",
+      "retrievedAt": "2026-09-02"
     },
     {
-      "claim": "The recommended posting rhythm for a growing home-stager account is 4-5 feed posts per week mixing Reels and carousels, daily Stories during active project seasons, and at least one educational piece per week that realtors can reshare to clients.",
+      "claim": "Educational carousels about staging ROI and staging misconceptions drive high save rates among home stager accounts, because realtors bookmark them to share with clients.",
       "sourceUrl": "https://www.socialmon.ai/blog/68-home-stager-instagram-post-ideas-with-examples-that-sell-listings",
-      "sourceTitle": "68 Home stager Instagram post ideas with examples that sell listings (Socialmon)",
-      "retrievedAt": "2026-08-13"
+      "sourceTitle": "68 Home stager Instagram post ideas with examples that sell listings",
+      "retrievedAt": "2026-09-02"
     },
     {
-      "claim": "For hook-driven staging formats such as before/after or mistake-fix swaps, the recommended Reel length is 15-35 seconds.",
+      "claim": "A polished 'after' shot posted without business context (the before, the timeline, the result) reads as interior decoration rather than a business solution and consistently underperforms.",
       "sourceUrl": "https://www.socialmon.ai/blog/68-home-stager-instagram-post-ideas-with-examples-that-sell-listings",
-      "sourceTitle": "68 Home stager Instagram post ideas with examples that sell listings (Socialmon)",
-      "retrievedAt": "2026-08-13"
+      "sourceTitle": "68 Home stager Instagram post ideas with examples that sell listings",
+      "retrievedAt": "2026-09-02"
     },
     {
-      "claim": "Numbered educational carousels in the staging niche (for example '5 staging mistakes that hurt your sale price') are cited as the format that gets bookmarked and forwarded to clients, versus pure visual transformation posts.",
+      "claim": "A booking CTA laid over a beautiful photo consistently underperforms educational or story-led captions in the home staging niche.",
       "sourceUrl": "https://www.socialmon.ai/blog/68-home-stager-instagram-post-ideas-with-examples-that-sell-listings",
-      "sourceTitle": "68 Home stager Instagram post ideas with examples that sell listings (Socialmon)",
-      "retrievedAt": "2026-08-13"
+      "sourceTitle": "68 Home stager Instagram post ideas with examples that sell listings",
+      "retrievedAt": "2026-09-02"
     },
     {
-      "claim": "On 2026 Instagram benchmarks, carousels lead engagement rate at about 0.55%, ahead of Reels at 0.50-0.52% and single images at 0.35-0.37%, a ranking that has held since 2023.",
-      "sourceUrl": "https://www.socialinsider.io/social-media-benchmarks/instagram",
-      "sourceTitle": "2026 Instagram Organic Engagement Benchmarks (Socialinsider)",
-      "retrievedAt": "2026-08-13"
+      "claim": "Stories, not the feed, are where home stager accounts generate the most realtor DMs, with the 'before-the-reveal tease' (post the cluttered before walkthrough, reveal the finished result later) as a recurring format.",
+      "sourceUrl": "https://www.socialmon.ai/blog/68-home-stager-instagram-post-ideas-with-examples-that-sell-listings",
+      "sourceTitle": "68 Home stager Instagram post ideas with examples that sell listings",
+      "retrievedAt": "2026-09-02"
     },
     {
-      "claim": "Format roles differ by objective: Reels reach roughly 2.25x more people than static posts and 1.36x more than carousels, while carousels win saves (about nine times more saves than single images).",
-      "sourceUrl": "https://collabkit.me/blog/instagram-reels-vs-carousels-vs-images-data-study-2026",
-      "sourceTitle": "Instagram Reels vs Carousels vs Images: A Data-Driven Study of 10,000 (Collabkit)",
-      "retrievedAt": "2026-08-13"
+      "claim": "Home stager accounts commonly recommend six post types: before/after, educational, seller-objection, brand/humanization, conversion (testimonials and walkthroughs), and Stories polls or question boxes.",
+      "sourceUrl": "https://socialsavvystagers.com/10-home-staging-instagram-post-ideas-to-grow-your-following/",
+      "sourceTitle": "10 Home Staging Instagram Post Ideas to Grow Your Following",
+      "retrievedAt": "2026-09-02"
     },
     {
-      "claim": "The recommended 2026 format mix is roughly 60-70% short-form video for discovery plus 20-30% carousels built for saves, with carousels prioritized for accounts over 10K followers that are selling something.",
-      "sourceUrl": "https://contentdrips.com/blog/2026/06/instagram-reels-vs-carousels-2026-guide/",
-      "sourceTitle": "Reels vs. Carousels: The Complete 2026 Guide to Engagement on Instagram (Contentdrips)",
-      "retrievedAt": "2026-08-13"
+      "claim": "The stated weak point of home stager accounts is not creativity but consistency and distinguishing posts meant to attract attention from posts meant to bring in inquiries.",
+      "sourceUrl": "https://socialsavvystagers.com/10-home-staging-instagram-post-ideas-to-grow-your-following/",
+      "sourceTitle": "10 Home Staging Instagram Post Ideas to Grow Your Following",
+      "retrievedAt": "2026-09-02"
     },
     {
-      "claim": "Adjacent AI interior-design tools position around consumer-facing outputs that translate directly into social content: ReimagineHome markets uploading a room photo to get personalized designs plus shoppable products curated to space, style and budget.",
-      "sourceUrl": "https://www.reimaginehome.ai/",
-      "sourceTitle": "ReimagineHome | AI Interior Design Ideas and Virtual Staging",
-      "retrievedAt": "2026-08-13"
+      "claim": "Virtual staging vendors advise clients to repurpose staged stills into swipeable carousels and dynamic before/after GIFs rather than posting single staged images.",
+      "sourceUrl": "https://www.bellavirtual.com/blogs/news/best-practices-for-marketing-virtually-staged-homes",
+      "sourceTitle": "Marketing Virtually Staged Homes: Best Practices | Bella",
+      "retrievedAt": "2026-09-02"
     },
     {
-      "claim": "Competing AI staging brands lead marketing with speed and conversion claims rather than craft: Collov AI headlines that its listings sell 73% faster and boost online engagement, and is cited at pricing as low as about 23 cents per image at volume.",
-      "sourceUrl": "https://collov.ai/",
-      "sourceTitle": "Virtual Staging AI : Elevate Your Real Estate Listings | Collov AI",
-      "retrievedAt": "2026-08-13"
+      "claim": "Vendor guidance for virtually staged images is to add a discreet corner label reading 'virtually staged', with many MLS systems additionally requiring a disclosure near the start of the public remarks.",
+      "sourceUrl": "https://www.bellavirtual.com/blogs/news/best-practices-for-marketing-virtually-staged-homes",
+      "sourceTitle": "Marketing Virtually Staged Homes: Best Practices | Bella",
+      "retrievedAt": "2026-09-02"
     },
     {
-      "claim": "Human-edited incumbents differentiate on turnaround and revisions rather than social presence: BoxBrownie sells staging at about $24 per image with 48-hour delivery and unlimited revisions for two months, while Styldod undercuts at about $16 per room with 24-hour turnaround.",
-      "sourceUrl": "https://www.styldod.com/blog/styldod-boxbrownie-features-price-comparison",
-      "sourceTitle": "Styldod vs BoxBrownie: Features and Price Comparison",
-      "retrievedAt": "2026-08-13"
+      "claim": "Since July 2025 Instagram applies an 'AI Info' label to fully AI-generated content, and manual disclosure is still required when AI elements are added in non-C2PA-compliant editors.",
+      "sourceUrl": "https://influencermarketinghub.com/ai-disclosure-rules/",
+      "sourceTitle": "AI Disclosure Rules by Platform: YouTube, Instagram/Facebook, and TikTok Labeling Guide",
+      "retrievedAt": "2026-09-02"
+    },
+    {
+      "claim": "In the adjacent real estate photography niche, feeds of near-identical sunny exteriors are named as the oversaturated pattern, and photographer-jargon captions are called out as appealing only to peers.",
+      "sourceUrl": "https://www.socialmon.ai/blog/63-real-estate-photographer-instagram-post-ideas-with-examples",
+      "sourceTitle": "63 Real estate photographer Instagram post ideas with examples",
+      "retrievedAt": "2026-09-02"
+    },
+    {
+      "claim": "Neglected formats in the adjacent real estate photography niche are doubt-clearing posts answering objections such as 'can my agent just use their phone', agent-focused teaching posts, and seasonal listing-cycle positioning.",
+      "sourceUrl": "https://www.socialmon.ai/blog/63-real-estate-photographer-instagram-post-ideas-with-examples",
+      "sourceTitle": "63 Real estate photographer Instagram post ideas with examples",
+      "retrievedAt": "2026-09-02"
+    },
+    {
+      "claim": "Real estate Reels are reported to generate roughly 67% more engagement than static images, with transformation content (before/after, twilight conversions, drone reveals) working on mute.",
+      "sourceUrl": "https://www.socialmon.ai/blog/63-real-estate-photographer-instagram-post-ideas-with-examples",
+      "sourceTitle": "63 Real estate photographer Instagram post ideas with examples",
+      "retrievedAt": "2026-09-02"
+    },
+    {
+      "claim": "Per Socialinsider 2026 benchmarks, carousels lead engagement at 0.55% versus roughly 0.50-0.52% for Reels, while Reels get about 36% more reach; the recommended mix is 60-70% Reels and 20-30% carousels.",
+      "sourceUrl": "https://www.icekulfi.com/blogs/instagram-reels-vs-carousels-engagement-guide-2026",
+      "sourceTitle": "Reels vs Carousels 2026: Which Gets More Reach? [10K Post Study]",
+      "retrievedAt": "2026-09-02"
+    },
+    {
+      "claim": "Established adjacent accounts sit in the tens of thousands of followers and are geographically anchored: C&B Home Staging (@cb_staging, 42K, Columbus OH), Ivy Lane Home Staging (@ivylanehome, 39K, Boulder/Denver/Fort Collins), Home Staging Gals (@homestaginggals, Tampa Bay).",
+      "sourceUrl": "https://www.instagram.com/cb_staging/",
+      "sourceTitle": "C&B Home Staging (@cb_staging) - Instagram photos and videos",
+      "retrievedAt": "2026-09-02"
     }
   ]
 }
