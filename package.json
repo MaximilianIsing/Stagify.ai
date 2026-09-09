@@ -28,10 +28,10 @@
     "form-data": "^4.0.4",
     "google-auth-library": "^10.9.0",
     "helmet": "^8.2.0",
-    "multer": "^2.0.2",
+    "multer": "^2.3.0",
     "openai": "^4.28.0",
     "resend": "^6.6.0",
-    "sharp": "^0.35.3",
+    "sharp": "^0.35.4",
     "stripe": "^21.0.1"
   },
   "devDependencies": {
@@ -51,5 +51,8 @@
   },
   "engines": {
     "node": ">=22.8.0"
+  },
+  "overrides": {
+    "qs": "^6.16.0"
   }
 }
