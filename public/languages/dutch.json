@@ -1237,7 +1237,7 @@
       "studios": {
         "label": "De Studios",
         "question": "Wat kan Stagify nog meer?",
-        "answer": "Behoorlijk veel. De AI Designer herontwerpt een hele kamer in gesprek, dus je vraagt om een warmer palet of een grotere bank en blijft verfijnen. De Masking Studio geeft controle tot op de pixel over welke gebieden mogen veranderen. De Exterior Studio werkt aan de aanblik van buiten in plaats van het interieur. De Listing Studio haalt een hele fotoset in één keer door en levert een link die je de verkoper ter goedkeuring stuurt. Alles belandt in je galerij."
+        "answer": "Behoorlijk veel. De AI Designer herontwerpt een hele kamer in gesprek, dus je vraagt om een warmer palet of een grotere bank en blijft verfijnen. De Masking Studio geeft controle tot op de pixel over welke gebieden mogen veranderen. De Exterior Studio werkt aan de aanblik van buiten in plaats van het interieur. Alles belandt in je galerij."
       },
       "control": {
         "label": "Controle",
@@ -1634,11 +1634,11 @@
       },
       "i2": {
         "q": "Welk plan of welke tool moet ik gebruiken?",
-        "a": "Gratis is perfect voor snelle losse kamers. <a href=\"stagify-plus.html\">Stagify+</a> ontgrendelt onbeperkte generaties, hogere-kwaliteitsmodellen, de maskeertool en de Prompt Bar. <a href=\"ai-designer.html\">AI-Designer</a> herontwerpt een hele kamer vanuit een korte chat, en dat is het best wanneer je wilt dat het de beslissingen voor je neemt."
+        "a": "Gratis is perfect voor snelle losse kamers. <a href=\"stagify-plus.html\">Stagify+</a> ontgrendelt hogere-kwaliteitsmodellen, de maskeertool en de Prompt Bar. <a href=\"ai-designer.html\">AI-Designer</a> herontwerpt een hele kamer vanuit een korte chat, en dat is het best wanneer je wilt dat het de beslissingen voor je neemt."
       },
       "i3": {
         "q": "Kan ik het meubilair en de indeling bepalen?",
-        "a": "Ja. Met <a href=\"stagify-plus.html\">Stagify+</a> laat de Prompt Bar je details beschrijven zoals \"voeg een hoekbank en een groot vloerkleed toe,\" en de Meubel-tool brengt je eigen stukken in. Als slechts één gebied er verkeerd uitziet, maskeer het en genereer alleen die plek opnieuw in plaats van de hele afbeelding over te doen."
+        "a": "Ja. In het gratis plan neemt het veld voor aanvullende instructies elk verzoek in je eigen woorden aan. Met <a href=\"stagify-plus.html\">Stagify+</a> laat de Prompt Bar je details beschrijven zoals \"voeg een hoekbank en een groot vloerkleed toe,\" en de Meubel-tool brengt je eigen stukken in. Als slechts één gebied er verkeerd uitziet, maskeer het en genereer alleen die plek opnieuw in plaats van de hele afbeelding over te doen."
       },
       "masking": {
         "title": "Style met exacte precisie",
@@ -1914,7 +1914,7 @@
   },
   "status": {
     "pageTitle": "Status & Uptime | Stagify.ai",
-    "pageDescription": "Live status en uptime voor Stagify.ai — beschikbaarheid over 24 uur en 7 dagen met historische percentages.",
+    "pageDescription": "Live status en uptime voor Stagify.ai — beschikbaarheid over 24 uur, 7 dagen en 30 dagen met historische percentages.",
     "heading": "Serverstatus",
     "subheading": "Live beschikbaarheid en uptime-geschiedenis voor Stagify.ai.",
     "checking": "Status controleren…",

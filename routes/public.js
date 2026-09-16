@@ -37,14 +37,17 @@ import { logger } from '../lib/logger.js';
  *   getPromptCount: typeof import('../lib/data/counters.js').getPromptCount,
  *   getContactCount: typeof import('../lib/data/counters.js').getContactCount,
  *   incContactCount: typeof import('../lib/data/counters.js').incContactCount,
+ *   blogViews?: ReturnType<typeof import('../lib/data/blog-views.js').createBlogViews>,
  *   __dirname: string,
  * }} deps - Stores, injected email client, the email rate-limit + health-check
  *   middleware, debug/stat flags, and hosted-image / logging / counter helpers.
  *   `emailPixelLimiter` is a test seam only: omitted (or null) it falls back to the
  *   shared `emailPixelLimiter`, so the open-tracking pixel is never mounted unlimited.
+ *   `blogViews` is OPTIONAL: absent, the articles are served exactly as before and
+ *   simply go uncounted, so the router still mounts without the store.
  */
 export default function createPublicRouter(deps) {
-  const { authStore, uptimeMonitor, resend, LOGS_ACCESS_KEY, endpointKeyMatches, emailLimiter, emailPixelLimiter, RESEND_FROM_EMAIL, DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS, hostedImages, email: emailService, healthHandler, getPromptCount, getContactCount, incContactCount , __dirname } = deps;
+  const { authStore, uptimeMonitor, resend, LOGS_ACCESS_KEY, endpointKeyMatches, emailLimiter, emailPixelLimiter, RESEND_FROM_EMAIL, DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS, hostedImages, email: emailService, healthHandler, getPromptCount, getContactCount, incContactCount , blogViews, __dirname } = deps;
   const router = createAsyncRouter();
   const pixelLimiter = emailPixelLimiter ?? defaultEmailPixelLimiter;
 
@@ -66,6 +69,37 @@ export default function createPublicRouter(deps) {
   const sendPage = (res, file) => {
     res.setHeader('Cache-Control', 'no-cache');
     res.sendFile(file);
+  };
+
+  /**
+   * Send a blog article, counting the open on the way past.
+   *
+   * The count happens HERE rather than in a script inside the article because
+   * these pages are static HTML that runs no analytics of its own: the route is
+   * the only place every reader passes through, including the ones a beacon
+   * would miss (reader modes, content blockers, clients that never run the
+   * script). lib/data/blog-views.js explains what is and isn't recorded — no IP,
+   * no stored user-agent, referrer reduced to host + path.
+   *
+   * `recordView` never throws and the article is sent regardless: a counter must
+   * not be able to cost a reader their page.
+   *
+   * @param {import('express').Request} req
+   * @param {import('express').Response} res
+   * @param {string} slug Article slug, which is also its file name in public/blog/.
+   */
+  const sendPost = (req, res, slug) => {
+    try {
+      if (blogViews) {
+        blogViews.recordView({ slug, referer: req.get('referer'), userAgent: req.get('user-agent') });
+      }
+    } catch (err) {
+      // The store swallows its own write errors; this catches the ones it cannot
+      // (an unopenable database at construction, a store injected half-built).
+      // Belt and braces on purpose: the article is what the reader came for.
+      logger.error('[blog] could not count a view of', slug, '-', err && err.message ? err.message : err);
+    }
+    sendPage(res, path.join(__dirname, 'public', 'blog', slug + '.html'));
   };
 
 router.get('/robots.txt', (req, res) => {
@@ -94,59 +128,63 @@ router.get('/status', (req, res) => {
 // express.static (mounted ahead of this router) 301-redirects /blog → /blog/. Individual
 // articles have no matching file/dir, so they fall through to these clean, extensionless routes.
 router.get('/blog/is-virtual-staging-allowed-on-the-mls', (req, res) => {
-  sendPage(res, path.join(__dirname, 'public', 'blog', 'is-virtual-staging-allowed-on-the-mls.html'));
+  sendPost(req, res, 'is-virtual-staging-allowed-on-the-mls');
 });
 
 router.get('/blog/masking-studio-and-ai-designer', (req, res) => {
-  sendPage(res, path.join(__dirname, 'public', 'blog', 'masking-studio-and-ai-designer.html'));
+  sendPost(req, res, 'masking-studio-and-ai-designer');
 });
 
 router.get('/blog/does-virtual-staging-help-sell-homes', (req, res) => {
-  sendPage(res, path.join(__dirname, 'public', 'blog', 'does-virtual-staging-help-sell-homes.html'));
+  sendPost(req, res, 'does-virtual-staging-help-sell-homes');
 });
 
 router.get('/blog/stagify-vs-other-virtual-staging-tools', (req, res) => {
-  sendPage(res, path.join(__dirname, 'public', 'blog', 'stagify-vs-other-virtual-staging-tools.html'));
+  sendPost(req, res, 'stagify-vs-other-virtual-staging-tools');
 });
 
 router.get('/blog/top-10-ai-virtual-staging-sites-2026', (req, res) => {
-  sendPage(res, path.join(__dirname, 'public', 'blog', 'top-10-ai-virtual-staging-sites-2026.html'));
+  sendPost(req, res, 'top-10-ai-virtual-staging-sites-2026');
 });
 
 router.get('/blog/dorm-room-design-ai-college-freshmen', (req, res) => {
-  sendPage(res, path.join(__dirname, 'public', 'blog', 'dorm-room-design-ai-college-freshmen.html'));
+  sendPost(req, res, 'dorm-room-design-ai-college-freshmen');
 });
 
 router.get('/blog/prepare-your-listing-for-the-fall-market', (req, res) => {
-  sendPage(res, path.join(__dirname, 'public', 'blog', 'prepare-your-listing-for-the-fall-market.html'));
+  sendPost(req, res, 'prepare-your-listing-for-the-fall-market');
 });
 
 router.get('/blog/curb-appeal-real-estate-photos', (req, res) => {
-  sendPage(res, path.join(__dirname, 'public', 'blog', 'curb-appeal-real-estate-photos.html'));
+  sendPost(req, res, 'curb-appeal-real-estate-photos');
 });
 
 router.get('/blog/free-virtual-staging', (req, res) => {
-  sendPage(res, path.join(__dirname, 'public', 'blog', 'free-virtual-staging.html'));
+  sendPost(req, res, 'free-virtual-staging');
 });
 
 router.get('/blog/virtual-staging-disclosure-laws-by-state', (req, res) => {
-  sendPage(res, path.join(__dirname, 'public', 'blog', 'virtual-staging-disclosure-laws-by-state.html'));
+  sendPost(req, res, 'virtual-staging-disclosure-laws-by-state');
 });
 
 router.get('/blog/fsbo-listing-photos', (req, res) => {
-  sendPage(res, path.join(__dirname, 'public', 'blog', 'fsbo-listing-photos.html'));
+  sendPost(req, res, 'fsbo-listing-photos');
 });
 
 router.get('/blog/new-construction-listing-photos', (req, res) => {
-  sendPage(res, path.join(__dirname, 'public', 'blog', 'new-construction-listing-photos.html'));
+  sendPost(req, res, 'new-construction-listing-photos');
 });
 
 router.get('/blog/virtual-staging-api', (req, res) => {
-  sendPage(res, path.join(__dirname, 'public', 'blog', 'virtual-staging-api.html'));
+  sendPost(req, res, 'virtual-staging-api');
 });
 
 router.get('/blog/home-staging-cost', (req, res) => {
-  sendPage(res, path.join(__dirname, 'public', 'blog', 'home-staging-cost.html'));
+  sendPost(req, res, 'home-staging-cost');
+});
+
+router.get('/blog/remove-furniture-from-listing-photos', (req, res) => {
+  sendPost(req, res, 'remove-furniture-from-listing-photos');
 });
 
 router.get('/bimi-logo.svg', (req, res) => {

@@ -38,12 +38,15 @@
       el = null; // a malformed %-escape in the fragment
     }
     if (!el) return null;
-    // #ai-designer-demo is a panel of the studio showcase carousel, absolutely
+    // A studio showcase panel (#staging-studio-demo, #ai-designer-demo,
+    // #masking-studio-demo, #exterior-studio-demo, #gallery-showcase) is absolutely
     // positioned and 3D-transformed, so its own box is a poor scroll target — scroll
     // the section that contains it. studio-showcase.js separately reads the hash and
-    // brings this panel to the front. Falls back to the element itself so this keeps
-    // working if the carousel is ever unwound back into plain sections.
-    if (el.id === 'ai-designer-demo') return el.closest('.home-section') || el;
+    // brings the panel to the front. Matched on the CLASS rather than one id: all five
+    // are the same kind of element and four of them used to get the raw UA scroll.
+    // Falls back to the element itself so this keeps working if the carousel is ever
+    // unwound back into plain sections.
+    if (el.closest('.shw__panel')) return el.closest('.home-section') || el;
     // Everything else is scrolled exactly where the UA would have scrolled it, so this
     // only ever CORRECTS a landing, never invents a different one.
     return el;

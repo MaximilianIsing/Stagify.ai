@@ -116,6 +116,16 @@
         backdrop-filter: blur(10px);
         text-align: center;
       }
+      /* Pre-paint guess, surrendered by the first applyStripeCheckout() render.
+         A stored token (scripts/session-class.js sets html.has-session from it before the
+         first paint) means /api/auth/me will almost certainly come back signed in, and the
+         hint ships with the signed-out copy — so hide it until the real answer lands and
+         scripts/stagify-plus.js removes sp-hint--pending. display:none, not
+         visibility:hidden: reserving the space would trade the flash for a permanent gap,
+         and not moving the card is the whole point. */
+      html.has-session .sp-hint--pending {
+        display: none;
+      }
       .sp-plan {
         position: relative;
         border-radius: 24px;

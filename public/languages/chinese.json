@@ -1237,7 +1237,7 @@
       "studios": {
         "label": "工作室",
         "question": "Stagify 还能做什么？",
-        "answer": "相当多。AI Designer 通过对话重新设计整个房间，您可以要求更暖的色调或更大的沙发，并持续微调。Masking Studio 以像素级精度控制哪些区域可以改动。Exterior Studio 处理的是外观而非室内。Listing Studio 一次处理整组照片，并生成可发给卖家确认的链接。所做的一切都会进入您的图库。"
+        "answer": "相当多。AI Designer 通过对话重新设计整个房间，您可以要求更暖的色调或更大的沙发，并持续微调。Masking Studio 以像素级精度控制哪些区域可以改动。Exterior Studio 处理的是外观而非室内。所做的一切都会进入您的图库。"
       },
       "control": {
         "label": "掌控",
@@ -1634,11 +1634,11 @@
       },
       "i2": {
         "q": "我应该使用哪个套餐或工具？",
-        "a": "免费版非常适合偶尔布置单个房间。<a href=\"stagify-plus.html\">Stagify+</a> 解锁无限次生成、更高质量的模型、遮罩工具和提示词栏。<a href=\"ai-designer.html\">AI Designer</a> 通过简短对话重新设计整个房间，当你希望由它做决定时最为合适。"
+        "a": "免费版非常适合偶尔布置单个房间。<a href=\"stagify-plus.html\">Stagify+</a> 解锁更高质量的模型、遮罩工具和提示词栏。<a href=\"ai-designer.html\">AI Designer</a> 通过简短对话重新设计整个房间，当你希望由它做决定时最为合适。"
       },
       "i3": {
         "q": "我能控制家具和布局吗？",
-        "a": "可以。使用 <a href=\"stagify-plus.html\">Stagify+</a> 的提示词栏，你可以描述具体细节，例如“添加一张组合沙发和一块大地毯”，而家具工具可导入你自己的家具。如果只有某个区域看起来不对，遮罩该处并仅重新生成那一部分，无需重做整张图片。"
+        "a": "可以。免费版也能在“额外提示”框里用自己的话写下任何要求。使用 <a href=\"stagify-plus.html\">Stagify+</a> 的提示词栏，你可以描述具体细节，例如“添加一张组合沙发和一块大地毯”，而家具工具可导入你自己的家具。如果只有某个区域看起来不对，遮罩该处并仅重新生成那一部分，无需重做整张图片。"
       },
       "masking": {
         "title": "精准布置，分毫不差",
@@ -1914,7 +1914,7 @@
   },
   "status": {
     "pageTitle": "状态和可用性 | Stagify.ai",
-    "pageDescription": "Stagify.ai 的实时状态和可用性 — 提供 24 小时和 7 天可用性及历史百分比。",
+    "pageDescription": "Stagify.ai 的实时状态和可用性 — 提供 24 小时、7 天和 30 天可用性及历史百分比。",
     "heading": "服务器状态",
     "subheading": "Stagify.ai 的实时可用性和运行时间历史记录。",
     "checking": "正在检查状态…",

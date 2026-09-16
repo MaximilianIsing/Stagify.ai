@@ -525,6 +525,55 @@ test('fullscreen degrades and does not fight the carousel', () => {
   assert.ok(bails >= 2, `drag and wheel must both bail while fullscreen (found ${bails})`);
 });
 
+/* The regression this guards: .shw__media:fullscreen used to pin height:100% on the
+   ratio carriers and cap the width with max-width:100%. Once the ratio-derived width
+   exceeded the available width the cap won, the height stayed pinned, and the box
+   rendered at the viewport's ratio instead of its own. .sdp__img is object-fit:cover,
+   so the capture got cropped while .sdp__area kept positioning itself in percentages
+   of the un-cropped frame box — every highlight in the walkthrough drifted off its
+   target, but only in fullscreen. The sizing has to derive WIDTH from the viewport
+   height and leave the height to aspect-ratio, which cannot be squashed. */
+test('fullscreen derives the demo width from the height, never the reverse', () => {
+  const css = fs.readFileSync(path.join(ROOT, 'public', 'styles', 'home.css'), 'utf8');
+  const code = css.replace(/\/\*[\s\S]*?\*\//g, '');
+  // Every :fullscreen rule that sizes a box carrying an aspect ratio.
+  const rules = [...code.matchAll(/\.shw__media:fullscreen\s+[^{}]*\{([^}]*)\}/g)]
+    .map((m) => ({ sel: m[0].slice(0, m[0].indexOf('{')), body: m[1] }))
+    .filter((r) => /\.ba\b|\.designer-demo\b|\.sdp\b/.test(r.sel));
+  assert.ok(rules.length >= 2, 'the ratio carriers are sized under :fullscreen');
+  for (const r of rules) {
+    assert.ok(
+      !/height:\s*100%/.test(r.body),
+      `a definite height distorts the box once max-width clamps: ${r.sel.trim()}`
+    );
+  }
+  const demo = rules.find((r) => /\.designer-demo\b/.test(r.sel));
+  assert.ok(demo, '.designer-demo is sized under :fullscreen');
+  // --ar is the player's own ratio, set inline on the .sdp root by demo-player.js.
+  assert.match(demo.body, /var\(--ar/, 'the width comes from the demo aspect ratio');
+  assert.match(demo.body, /100vh/, 'and from the viewport height, not the container width');
+  assert.match(demo.body, /height:\s*auto/, 'so aspect-ratio computes the height back');
+});
+
+/* The callout card is placed in frame PIXELS and the player only recomputes it on
+   window.resize, which entering element-fullscreen is not guaranteed to fire (and
+   never fires when the browser is already in F11 fullscreen). guides.js reflows its
+   players on fullscreenchange; the homepage did not, and threw away the instance
+   mount() returns, so it had nothing to reflow. */
+test('the showcase keeps its players and reflows them on fullscreen change', () => {
+  const mount = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'designer-demo.js'), 'utf8');
+  assert.match(
+    mount,
+    /__player\s*=\s*SupademoPlayer\.mount\(/,
+    'designer-demo.js must keep the mounted instance for the host page'
+  );
+  const js = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'studio-showcase.js'), 'utf8');
+  assert.match(js, /__player\.reflow\(\)/, 'the showcase reflows the mounted player');
+  const handler = js.match(/'fullscreenchange',[\s\S]*?\n {2}\}\);/);
+  assert.ok(handler, 'the fullscreenchange handler exists');
+  assert.match(handler[0], /reflow/, 'and it reflows the demos');
+});
+
 test('fullscreen sizes the element that actually carries the aspect ratio', () => {
   // The subtle one. .ba has aspect-ratio directly, but .designer-shell does NOT — the
   // walkthrough's ratio sits on .designer-demo before the player mounts and moves to

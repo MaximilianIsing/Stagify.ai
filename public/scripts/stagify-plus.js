@@ -107,6 +107,18 @@ export function applyStripeCheckout(user) {
   var link = /** @type {HTMLAnchorElement} */ (document.getElementById('stagify-plus-checkout-link'));
   var manageWrap = document.getElementById('sp-manage-subscription-wrap');
   var manageBtn = /** @type {HTMLButtonElement} */ (document.getElementById('sp-manage-subscription-btn'));
+
+  // Hand the hint over from the pre-paint guess to the real answer. The markup ships
+  // sp-hint--pending and stagify-plus.css hides it while html.has-session is set, so a
+  // subscriber never paints the signed-out "create an account first" copy; from here on
+  // .hidden below is the only thing that decides. Dropped for EVERY viewer and before the
+  // early return, because each branch past this point is a different hint (or none) and a
+  // branch that skipped this would leave a token-holder with a permanently invisible one —
+  // including the staging branch, whose hint is aimed at signed-in visitors, and the
+  // expired-token case, where fetchMe() clears the session and the signed-out hint is right
+  // after all.
+  if (hint) hint.classList.remove('sp-hint--pending');
+
   if (!link) return;
 
   needsAccount = false;

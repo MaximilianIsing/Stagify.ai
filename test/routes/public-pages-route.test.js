@@ -68,6 +68,8 @@ async function mount(opts = {}) {
       // Real repo root by default, so `res.sendFile` resolves the ACTUAL public/ documents
       // and a missing file surfaces as a 404 rather than passing against a stub.
       __dirname: opts.__dirname || REPO_ROOT,
+      // Optional in production too: absent, articles are served uncounted.
+      blogViews: opts.blogViews,
       ...(opts.stats || {}),
     }),
   );
@@ -102,6 +104,7 @@ const DOCUMENT_ROUTES = [
   ['/blog/new-construction-listing-photos', 'blog/new-construction-listing-photos.html', 'text/html'],
   ['/blog/virtual-staging-api', 'blog/virtual-staging-api.html', 'text/html'],
   ['/blog/home-staging-cost', 'blog/home-staging-cost.html', 'text/html'],
+  ['/blog/remove-furniture-from-listing-photos', 'blog/remove-furniture-from-listing-photos.html', 'text/html'],
 ];
 
 test('every document route serves its file, with the no-cache policy sendPage exists for', async (t) => {
@@ -129,6 +132,35 @@ test('every blog route points at an HTML file that actually exists', async () =>
     .map(([url, file]) => ({ url, file, abs: path.join(REPO_ROOT, 'public', file) }))
     .filter(({ abs }) => !fs.existsSync(abs));
   assert.deepEqual(missing.map((m) => `${m.url} -> public/${m.file}`), [], 'routes pointing at files that do not exist');
+});
+
+test('serving a blog article records one view, with the reader headers the counter needs', async (t) => {
+  // The dashboard's Blog tab is fed from here: if the route stops calling the
+  // counter, every article reads as unopened and nothing else in the suite notices.
+  const seen = [];
+  const srv = await mount({ blogViews: { recordView: (arg) => { seen.push(arg); return { ok: true }; } } });
+  t.after(() => srv.close());
+
+  const res = await fetch(srv.url + '/blog/home-staging-cost', {
+    headers: { referer: 'https://news.ycombinator.com/item?id=1', 'user-agent': 'TestAgent/1.0' },
+  });
+  await res.arrayBuffer();
+
+  assert.equal(res.status, 200);
+  assert.equal(seen.length, 1, 'exactly one view per request');
+  assert.equal(seen[0].slug, 'home-staging-cost', 'the slug must match the article actually served');
+  assert.equal(seen[0].referer, 'https://news.ycombinator.com/item?id=1');
+  assert.equal(seen[0].userAgent, 'TestAgent/1.0');
+});
+
+test('a counter that throws still serves the article', async (t) => {
+  // The store swallows its own errors, but the contract the route depends on is
+  // stated here: a broken counter must never cost a reader their page.
+  const srv = await mount({ blogViews: { recordView: () => { throw new Error('db is gone'); } } });
+  t.after(() => srv.close());
+  const res = await fetch(srv.url + '/blog/home-staging-cost');
+  await res.arrayBuffer();
+  assert.equal(res.status, 200);
 });
 
 test('the BIMI logo route serves an SVG', async (t) => {

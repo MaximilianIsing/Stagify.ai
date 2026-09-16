@@ -73,6 +73,17 @@ export function createSignals({ ctx, apiSend, effectivePlan }) {
     return ctx.signalsResult;
   }
 
+  /**
+   * Opens the analyst drawer on one finding. Late-bound rather than injected,
+   * because the dependency is genuinely circular: the analyst reads this module's
+   * findings through `currentResult`, and this module needs the analyst's opener
+   * for the per-card button. Construct both, then wire this.
+   * @type {((f: any) => void)|null}
+   */
+  let askAbout = null;
+  /** @param {(f: any) => void} fn */
+  function setAskHandler(fn) { askAbout = fn; }
+
   // ── Card pieces ───────────────────────────────────────────────────────────
 
   function severityPill(severity) {
@@ -136,6 +147,14 @@ export function createSignals({ ctx, apiSend, effectivePlan }) {
       el('span', { className: 'adm-sig-action-label', textContent: 'Next step' }),
       el('p', { className: 'adm-sig-action-text', textContent: f.action }),
     ]));
+
+    // The card states a conclusion; this is how you interrogate it. Only rendered
+    // when an analyst is wired, so a deployment without one shows no dead button.
+    if (askAbout) {
+      const ask = el('button', { type: 'button', className: 'adm-sig-ask', textContent: 'Ask about this' });
+      ask.addEventListener('click', () => askAbout && askAbout(f));
+      card.appendChild(ask);
+    }
     return card;
   }
 
@@ -317,5 +336,5 @@ export function createSignals({ ctx, apiSend, effectivePlan }) {
     ctx.signalsBrief = null;
   }
 
-  return { render, renderTeaser, actionableCount, reset };
+  return { render, renderTeaser, actionableCount, reset, currentResult, setAskHandler };
 }

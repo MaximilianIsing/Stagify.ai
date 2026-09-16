@@ -1237,7 +1237,7 @@
       "studios": {
         "label": "Les Studios",
         "question": "Que fait Stagify d’autre ?",
-        "answer": "Beaucoup de choses. L’AI Designer redessine une pièce entière par la conversation : vous demandez une palette plus chaude ou un canapé plus grand et vous affinez. Le Masking Studio donne un contrôle au pixel près sur les zones modifiables. L’Exterior Studio travaille l’attrait extérieur plutôt que l’intérieur. Le Listing Studio traite tout un lot de photos en une passe et produit un lien à envoyer au vendeur pour validation. Tout arrive dans votre galerie."
+        "answer": "Beaucoup de choses. L’AI Designer redessine une pièce entière par la conversation : vous demandez une palette plus chaude ou un canapé plus grand et vous affinez. Le Masking Studio donne un contrôle au pixel près sur les zones modifiables. L’Exterior Studio travaille l’attrait extérieur plutôt que l’intérieur. Tout arrive dans votre galerie."
       },
       "control": {
         "label": "Contrôle",
@@ -1634,11 +1634,11 @@
       },
       "i2": {
         "q": "Quel forfait ou outil dois-je utiliser ?",
-        "a": "La version gratuite est parfaite pour des pièces ponctuelles. <a href=\"stagify-plus.html\">Stagify+</a> débloque les générations illimitées, des modèles de meilleure qualité, l’outil de masquage et la barre de consignes. <a href=\"ai-designer.html\">Designer IA</a> redessine une pièce entière à partir d’une courte conversation, ce qui est idéal quand vous voulez qu’il prenne les décisions à votre place."
+        "a": "La version gratuite est parfaite pour des pièces ponctuelles. <a href=\"stagify-plus.html\">Stagify+</a> débloque des modèles de meilleure qualité, l’outil de masquage et la barre de consignes. <a href=\"ai-designer.html\">Designer IA</a> redessine une pièce entière à partir d’une courte conversation, ce qui est idéal quand vous voulez qu’il prenne les décisions à votre place."
       },
       "i3": {
         "q": "Puis-je contrôler le mobilier et l’agencement ?",
-        "a": "Oui. Avec <a href=\"stagify-plus.html\">Stagify+</a>, la barre de consignes vous permet de décrire des détails comme « ajouter un canapé d’angle et un grand tapis », et l’outil Mobilier intègre vos propres pièces. Si une seule zone semble incorrecte, masquez-la et régénérez uniquement cet endroit au lieu de refaire toute l’image."
+        "a": "Oui. Avec la formule gratuite, le champ de consignes supplémentaires accepte n’importe quelle demande formulée avec vos mots. Avec <a href=\"stagify-plus.html\">Stagify+</a>, la barre de consignes vous permet de décrire des détails comme « ajouter un canapé d’angle et un grand tapis », et l’outil Mobilier intègre vos propres pièces. Si une seule zone semble incorrecte, masquez-la et régénérez uniquement cet endroit au lieu de refaire toute l’image."
       },
       "masking": {
         "title": "Meublez avec une précision exacte",
@@ -1914,7 +1914,7 @@
   },
   "status": {
     "pageTitle": "État et disponibilité | Stagify.ai",
-    "pageDescription": "État et disponibilité en direct de Stagify.ai — disponibilité sur 24 heures et 7 jours avec pourcentages historiques.",
+    "pageDescription": "État et disponibilité en direct de Stagify.ai — disponibilité sur 24 heures, 7 jours et 30 jours avec pourcentages historiques.",
     "heading": "État du serveur",
     "subheading": "Disponibilité en direct et historique de disponibilité de Stagify.ai.",
     "checking": "Vérification de l’état…",

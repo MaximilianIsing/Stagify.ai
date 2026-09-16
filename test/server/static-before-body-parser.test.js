@@ -76,9 +76,18 @@ test('every HTML/document route in routes/public.js goes through sendPage', () =
     'sendPage must set no-cache before sending',
   );
 
-  // The fourteen blog articles plus /, /privacy, /status, robots.txt and sitemap.xml.
+  // /, /privacy, /status, robots.txt and sitemap.xml call sendPage directly. The
+  // fifteen blog articles go through sendPost, which counts the read and then
+  // delegates to sendPage — so it is the sixth call site, and covers all of them.
   const sendPageCalls = (publicRoutes.match(/sendPage\(res,/g) || []).length;
-  assert.equal(sendPageCalls, 19, `expected 19 sendPage() call sites, found ${sendPageCalls}`);
+  assert.equal(sendPageCalls, 6, `expected 6 sendPage() call sites, found ${sendPageCalls}`);
+  assert.match(
+    publicRoutes,
+    /const sendPost = \(req, res, slug\) => \{[\s\S]*?sendPage\(res, path\.join\(__dirname, 'public', 'blog'/,
+    'sendPost must delegate to sendPage, or the articles lose the no-cache policy',
+  );
+  const sendPostCalls = (publicRoutes.match(/sendPost\(req, res,/g) || []).length;
+  assert.equal(sendPostCalls, 15, `expected 15 blog routes via sendPost, found ${sendPostCalls}`);
 
   // The remaining bare res.sendFile calls are deliberate, and each one is a NON-document
   // response that already owns its caching:

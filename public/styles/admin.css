@@ -271,6 +271,7 @@ body.page-admin main { flex: 0 0 auto; overflow: visible; width: 100% }
 }
 .adm-pill--blue { color: var(--adm-accent-deep); border-color: var(--adm-accent-tint); background: var(--adm-accent-wash) }
 .adm-pill--green { color: var(--adm-pos); border-color: var(--adm-pos-line); background: var(--adm-pos-wash) }
+.adm-pill--warn { color: var(--adm-warn); border-color: var(--adm-warn-line); background: var(--adm-warn-wash) }
 
 /* ── Controls: segmented groups, buttons, fields ───────────────────────── */
 
@@ -880,6 +881,15 @@ body.page-admin main { flex: 0 0 auto; overflow: visible; width: 100% }
 .adm-ref-action--danger { color: var(--adm-neg); border-color: var(--adm-neg-line); background: var(--adm-neg-wash) }
 .adm-ref-action--danger:hover { background: var(--bg-elevated) }
 
+/* ── Blog readership ───────────────────────────────────────────────────── */
+
+/* Rows are clickable like the referral list, and reuse its row classes. Only the
+   title cell is new: article titles are long, so the column wraps rather than
+   stretching the table past the panel. */
+.adm-blog-title { font-weight: 600; color: var(--adm-ink); margin-right: .4rem }
+.adm-blog-table td:first-child { max-width: 28rem; white-space: normal; line-height: 1.35 }
+.adm-blog-table a { color: inherit }
+
 /* Per-link detail. The chart card nested inside brings its own surface and border,
    so it sits flush rather than looking like a second panel floating in this one. */
 .adm-ref-card { margin-top: 1rem }
@@ -1117,6 +1127,137 @@ body.page-admin main { flex: 0 0 auto; overflow: visible; width: 100% }
   /* Three columns will not fit; the value leads and the hint wraps under it. */
   .adm-api-econ-row { grid-template-columns: 1fr auto; row-gap: .2rem }
   .adm-api-econ-hint { grid-column: 1 / -1 }
+}
+
+/* ── The analyst drawer ────────────────────────────────────────────────────
+
+   A slide-over rather than a tab, because the question is almost always about
+   the panel currently underneath it. It is fixed to the viewport and outside
+   .adm-content for that reason: it must survive a tab change.
+
+   Everything here composes the token block at the top of this sheet. The one
+   local decision is the drawer width, which is a clamp rather than a percentage
+   — a conversation set to 40% of a 27" display is unreadable line lengths, and
+   set to 40% of a laptop is too narrow for a table. */
+
+.adm-ask {
+  display: inline-flex; align-items: center; gap: .4rem;
+  padding: .4rem .75rem; font-size: .78125rem; font-weight: 550; font-family: inherit;
+  color: var(--adm-accent-deep); background: var(--adm-accent-wash);
+  border: 1px solid var(--adm-accent-tint); border-radius: var(--adm-r-sm);
+  cursor: pointer; white-space: nowrap;
+  transition: background .14s, border-color .14s;
+}
+.adm-ask svg { width: 14px; height: 14px }
+.adm-ask:hover { background: var(--adm-accent-tint); border-color: var(--adm-accent) }
+
+.adm-analyst {
+  position: fixed; top: 0; right: 0; bottom: 0; z-index: 60;
+  width: clamp(340px, 34vw, 560px);
+  display: flex; flex-direction: column;
+  background: var(--adm-surface); border-left: 1px solid var(--adm-line-strong);
+  box-shadow: var(--adm-shadow-lift);
+  /* Translated rather than display:none so it can animate, and so the textarea
+     keeps its value across an open/close cycle. */
+  transform: translateX(101%);
+  transition: transform .22s cubic-bezier(.4, 0, .2, 1);
+}
+.adm-analyst.adm-an--open { transform: none }
+
+.adm-an-head {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
+  padding: 1rem 1.15rem .85rem; border-bottom: 1px solid var(--adm-line);
+}
+.adm-an-titles h2 { margin: 0; font-size: 1rem; font-weight: 650; color: var(--adm-ink) }
+.adm-an-sub { margin: .2rem 0 0; font-size: .75rem; color: var(--adm-muted); line-height: 1.4 }
+.adm-an-close {
+  flex: none; display: inline-flex; padding: .35rem; color: var(--adm-muted);
+  background: none; border: 1px solid transparent; border-radius: var(--adm-r-sm); cursor: pointer;
+}
+.adm-an-close svg { width: 16px; height: 16px }
+.adm-an-close:hover { background: var(--adm-sunken); border-color: var(--adm-line); color: var(--adm-ink) }
+
+.adm-an-log { flex: 1; overflow-y: auto; padding: 1.15rem; display: flex; flex-direction: column; gap: .9rem }
+
+.adm-an-empty { margin: 0; font-size: .8125rem; line-height: 1.55; color: var(--adm-muted) }
+.adm-an-suggestions { display: flex; flex-direction: column; gap: .4rem; margin-top: .3rem }
+.adm-an-suggestion {
+  text-align: left; padding: .55rem .7rem; font-size: .78125rem; font-family: inherit; line-height: 1.45;
+  color: var(--adm-ink-2); background: var(--adm-sunken);
+  border: 1px solid var(--adm-line); border-radius: var(--adm-r-md); cursor: pointer;
+  transition: background .14s, border-color .14s;
+}
+.adm-an-suggestion:hover { background: var(--adm-accent-wash); border-color: var(--adm-accent-tint) }
+
+.adm-an-turn { font-size: .8125rem; line-height: 1.6 }
+.adm-an-turn--user {
+  align-self: flex-end; max-width: 85%;
+  padding: .5rem .75rem; color: var(--adm-ink);
+  background: var(--adm-accent-wash); border: 1px solid var(--adm-accent-tint);
+  border-radius: var(--adm-r-md);
+}
+.adm-an-turn--answer { color: var(--adm-ink-2) }
+.adm-an-para { margin: 0 0 .6rem }
+.adm-an-para:last-child { margin-bottom: 0 }
+
+/* An account name the drawer resolved locally. Tinted so it is legible at a
+   glance that this word was never sent anywhere — see analyst-identity.js. */
+.adm-an-acct {
+  padding: 0 .2rem; font-weight: 550; color: var(--adm-accent-deep);
+  background: var(--adm-accent-wash); border-radius: 4px;
+}
+
+.adm-an-trace { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; margin-top: .55rem }
+.adm-an-trace-label { font-size: .6875rem; color: var(--adm-faint) }
+.adm-an-tool {
+  padding: .1rem .35rem; font-size: .6875rem; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--adm-muted); background: var(--adm-sunken);
+  border: 1px solid var(--adm-line); border-radius: 5px;
+}
+
+.adm-an-thinking { margin: 0; font-size: .8125rem; color: var(--adm-muted) }
+.adm-an-thinking::after { content: ''; animation: adm-an-dots 1.2s steps(4, end) infinite }
+@keyframes adm-an-dots { 0% { content: '' } 25% { content: '.' } 50% { content: '..' } 75% { content: '...' } }
+
+.adm-an-error {
+  margin: 0; padding: .55rem .7rem; font-size: .78125rem; line-height: 1.5;
+  color: var(--adm-neg); background: var(--adm-neg-wash);
+  border: 1px solid var(--adm-neg-line); border-radius: var(--adm-r-md);
+}
+
+.adm-an-form {
+  display: flex; align-items: flex-end; gap: .5rem;
+  padding: .75rem 1.15rem 1rem; border-top: 1px solid var(--adm-line);
+}
+.adm-an-input {
+  flex: 1; resize: none; padding: .55rem .7rem;
+  font-size: .8125rem; font-family: inherit; line-height: 1.5; color: var(--adm-ink);
+  background: var(--adm-sunken); border: 1px solid var(--adm-line-strong);
+  border-radius: var(--adm-r-md);
+}
+.adm-an-input:focus { outline: none; border-color: var(--adm-accent); background: var(--adm-surface) }
+.adm-an-send {
+  flex: none; display: inline-flex; padding: .55rem;
+  color: var(--bg-elevated); background: var(--adm-accent); border: 1px solid var(--adm-accent-deep);
+  border-radius: var(--adm-r-md); cursor: pointer;
+}
+.adm-an-send svg { width: 16px; height: 16px }
+.adm-an-send:hover { background: var(--adm-accent-deep) }
+
+/* The per-card opener on the Signals tab. */
+.adm-sig-ask {
+  margin-top: .75rem; padding: .35rem .6rem;
+  font-size: .75rem; font-weight: 550; font-family: inherit;
+  color: var(--adm-muted); background: none;
+  border: 1px solid var(--adm-line-strong); border-radius: var(--adm-r-sm); cursor: pointer;
+  transition: background .14s, border-color .14s, color .14s;
+}
+.adm-sig-ask:hover { color: var(--adm-accent-deep); background: var(--adm-accent-wash); border-color: var(--adm-accent-tint) }
+
+/* Below this the drawer would cover the panel it is about, so it takes the whole
+   screen instead of pretending to be a side panel on a phone. */
+@media (max-width: 720px) {
+  .adm-analyst { width: 100% }
 }
 
 @media (prefers-reduced-motion: reduce) {

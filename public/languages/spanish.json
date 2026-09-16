@@ -1237,7 +1237,7 @@
       "studios": {
         "label": "Los Estudios",
         "question": "¿Qué más hace Stagify?",
-        "answer": "Bastante. El AI Designer rediseña una habitación entera conversando, así que puedes pedir una paleta más cálida o un sofá más grande e ir refinando. El Masking Studio da control píxel a píxel sobre qué zonas pueden cambiar. El Exterior Studio trabaja el atractivo exterior en lugar del interior. El Listing Studio procesa un lote entero de fotos de una pasada y genera un enlace que puedes enviar al vendedor para su visto bueno. Todo acaba en tu galería."
+        "answer": "Bastante. El AI Designer rediseña una habitación entera conversando, así que puedes pedir una paleta más cálida o un sofá más grande e ir refinando. El Masking Studio da control píxel a píxel sobre qué zonas pueden cambiar. El Exterior Studio trabaja el atractivo exterior en lugar del interior. Todo acaba en tu galería."
       },
       "control": {
         "label": "Control",
@@ -1634,11 +1634,11 @@
       },
       "i2": {
         "q": "¿Qué plan o herramienta debería usar?",
-        "a": "Free es perfecto para habitaciones puntuales. <a href=\"stagify-plus.html\">Stagify+</a> desbloquea generaciones ilimitadas, modelos de mayor calidad, la herramienta de máscara y la barra de prompts. <a href=\"ai-designer.html\">AI Designer</a> rediseña una habitación entera a partir de un chat breve, ideal cuando quieres que él tome las decisiones."
+        "a": "Free es perfecto para habitaciones puntuales. <a href=\"stagify-plus.html\">Stagify+</a> desbloquea modelos de mayor calidad, la herramienta de máscara y la barra de prompts. <a href=\"ai-designer.html\">AI Designer</a> rediseña una habitación entera a partir de un chat breve, ideal cuando quieres que él tome las decisiones."
       },
       "i3": {
         "q": "¿Puedo controlar los muebles y la distribución?",
-        "a": "Sí. Con <a href=\"stagify-plus.html\">Stagify+</a> la barra de prompts te permite describir detalles como \"añade un sofá seccional y una alfombra grande\", y la herramienta de Muebles incorpora tus propias piezas. Si solo una zona se ve mal, enmascárala y regenera solo ese punto en lugar de rehacer toda la imagen."
+        "a": "Sí. En el plan gratuito, el cuadro de indicaciones adicionales admite cualquier petición con tus propias palabras. Con <a href=\"stagify-plus.html\">Stagify+</a> la barra de prompts te permite describir detalles como \"añade un sofá seccional y una alfombra grande\", y la herramienta de Muebles incorpora tus propias piezas. Si solo una zona se ve mal, enmascárala y regenera solo ese punto en lugar de rehacer toda la imagen."
       },
       "masking": {
         "title": "Prepara con precisión exacta",
@@ -1914,7 +1914,7 @@
   },
   "status": {
     "pageTitle": "Estado y disponibilidad | Stagify.ai",
-    "pageDescription": "Estado y disponibilidad en vivo de Stagify.ai — disponibilidad de las últimas 24 horas y 7 días con porcentajes históricos.",
+    "pageDescription": "Estado y disponibilidad en vivo de Stagify.ai — disponibilidad de las últimas 24 horas, 7 días y 30 días con porcentajes históricos.",
     "heading": "Estado del servidor",
     "subheading": "Disponibilidad en vivo e historial de tiempo activo de Stagify.ai.",
     "checking": "Comprobando el estado…",

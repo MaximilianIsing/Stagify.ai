@@ -28,6 +28,7 @@ import { getDb } from './lib/data/db.js';
 import { createAdminMetrics } from './lib/analytics/admin-metrics.js';
 import { createApiUsageStats } from './lib/analytics/api-usage.js';
 import { createAdminBrief } from './lib/services/admin-brief.js';
+import { createAdminAnalyst } from './lib/services/admin-analyst.js';
 import createGalleryRouter from './routes/gallery.js';
 import createSharePublicRouter from './routes/share-public.js';
 import { createRenderPersistence } from './lib/staging/render-persistence.js';
@@ -43,6 +44,8 @@ import createStagingRouter from './routes/staging.js';
 import createAdminRouter from './routes/admin.js';
 import { createAdminRendersRouter } from './routes/admin-renders.js';
 import { createAdminApiUsageRouter } from './routes/admin-api-usage.js';
+import { createAdminAnalystRouter } from './routes/admin-analyst.js';
+import { createAdminBlogRouter } from './routes/admin-blog.js';
 import createAuthRouter from './routes/auth.js';
 import { DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, IS_STAGING, HIDE_STAGING_BANNER, SHOW_STAGING_BANNER, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS } from './lib/config/runtime-flags.js';
 import createNotFoundHandler from './lib/http/not-found.js';
@@ -70,6 +73,7 @@ import { createLifecycleEmails } from './lib/services/lifecycle-emails.js';
 import { createTrialLifecycle } from './lib/services/trial-lifecycle.js';
 import { createEmailCatalog } from './lib/services/email-catalog.js';
 import { createReferralLinks } from './lib/data/referral-links.js';
+import { createBlogViews } from './lib/data/blog-views.js';
 import { createAdminSessions } from './lib/data/admin-sessions.js';
 import { createApiKeys } from './lib/data/api-keys.js';
 import { createApiBilling } from './lib/data/api-billing.js';
@@ -95,6 +99,9 @@ const stripeEvents = createStripeEventLog(__dirname);
 // lib/data/referral-links.js for the registry that drives both the routes and the
 // dashboard panel.
 const referralLinks = createReferralLinks(__dirname);
+// Blog readership. Written by the public router as it serves each article, read by
+// the dashboard's Blog tab. See lib/data/blog-views.js for what is (and isn't) kept.
+const blogViews = createBlogViews(__dirname);
 // Admin-console sessions: the operator trades the master key for a scoped,
 // expiring, revocable token once, instead of retyping the key on every page load.
 // See lib/data/admin-sessions.js for why the key itself is never persisted.
@@ -440,6 +447,10 @@ app.use(createAuthRouter({ authStore, googleOAuthClient, resend, LOGS_ACCESS_KEY
 // above, which are what create the tables it prepares against.
 const adminMetrics = createAdminMetrics({ db: getDb(__dirname), getDataLogDir });
 const adminBrief = createAdminBrief({ openai });
+// The Signals drawer's analyst. Same client, opposite instrument: the brief restates
+// findings that are already computed, this one answers a question by calling tools
+// the browser then runs against the data it already holds.
+const adminAnalyst = createAdminAnalyst({ openai });
 // Site-wide reads of the public render API, for the console's API usage tab. Built
 // here for the same reason adminMetrics is: it prepares its statements once, at
 // construction, so it must come after the stores that create the tables it reads.
@@ -450,6 +461,11 @@ app.use(createAdminRendersRouter({ stagedRenders, objectStore, protectLogs, setS
 // Same reasoning again: routes/admin.js is full, so the API usage tab's one endpoint
 // rides beside it rather than inside it.
 app.use(createAdminApiUsageRouter({ apiUsageStats, protectLogs, setSensitiveHeaders }));
+// And once more: the analyst drawer's single endpoint is a sibling for the same
+// reason. It is reachable from every tab, so it is wired beside the router rather
+// than inside the Signals tab's.
+app.use(createAdminAnalystRouter({ adminAnalyst, protectLogs, setSensitiveHeaders }));
+app.use(createAdminBlogRouter({ blogViews, protectLogs, __dirname }));
 app.use(createAdminRouter({ authStore, uptimeMonitor, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, deleteUser, getDataLogDir, hostedImages, protectLogs, requireEndpointKey, adminSessions, __dirname, HOSTED_IMAGE_MIME_EXT, emailCatalog, sendTestEmail, referralLinks, adminMetrics, adminBrief }));
 
 // staging routes (routes/staging.js)
@@ -495,7 +511,7 @@ app.use(createChatRouter({ openai, genLimiter, chatUpload, DEBUG_MODE, requirePr
 app.use(createI18nRouter({ __dirname, DEBUG_MODE }));
 
 // public routes (routes/public.js)
-app.use(createPublicRouter({ authStore, uptimeMonitor, resend, LOGS_ACCESS_KEY, endpointKeyMatches, emailLimiter, RESEND_FROM_EMAIL, DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS, hostedImages, email, healthHandler, getPromptCount, getContactCount, incContactCount , __dirname }));
+app.use(createPublicRouter({ authStore, uptimeMonitor, resend, LOGS_ACCESS_KEY, endpointKeyMatches, emailLimiter, RESEND_FROM_EMAIL, DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS, hostedImages, email, healthHandler, getPromptCount, getContactCount, incContactCount , blogViews, __dirname }));
 
 // The owner's gallery (routes/gallery.js) and the public share page
 // (routes/share-public.js). Two routers rather than one because they answer to very

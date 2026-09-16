@@ -1237,7 +1237,7 @@
       "studios": {
         "label": "The Studios",
         "question": "What else can Stagify do?",
-        "answer": "Quite a lot. The AI Designer redesigns a whole room conversationally, so you can ask for a warmer palette or a bigger sofa and keep refining. The Masking Studio gives pixel-level control over which areas may change. The Exterior Studio works on curb appeal rather than interiors. The Listing Studio takes a whole set of photos through in one pass and produces a link you can send a seller for sign-off. Everything you make lands in your gallery."
+        "answer": "Quite a lot. The AI Designer redesigns a whole room conversationally, so you can ask for a warmer palette or a bigger sofa and keep refining. The Masking Studio gives pixel-level control over which areas may change. The Exterior Studio works on curb appeal rather than interiors. Everything you make lands in your gallery."
       },
       "control": {
         "label": "Control",
@@ -1634,11 +1634,11 @@
       },
       "i2": {
         "q": "Which plan or tool should I use?",
-        "a": "Free is perfect for quick one-off rooms. <a href=\"stagify-plus.html\">Stagify+</a> unlocks unlimited generations, higher-quality models, the masking tool and the Prompt Bar. <a href=\"ai-designer.html\">AI Designer</a> redesigns an entire room from a short chat, which is best when you want it to make the decisions for you."
+        "a": "Free is perfect for quick one-off rooms. <a href=\"stagify-plus.html\">Stagify+</a> unlocks higher-quality models, the masking tool and the Prompt Bar. <a href=\"ai-designer.html\">AI Designer</a> redesigns an entire room from a short chat, which is best when you want it to make the decisions for you."
       },
       "i3": {
         "q": "Can I control the furniture and layout?",
-        "a": "Yes. With <a href=\"stagify-plus.html\">Stagify+</a> the Prompt Bar lets you describe specifics like “add a sectional sofa and a large area rug,” and the Furniture tool brings in your own pieces. If just one area looks off, mask it and regenerate only that spot instead of redoing the whole image."
+        "a": "Yes. On the free plan the Additional prompting box takes any request in your own words. With <a href=\"stagify-plus.html\">Stagify+</a> the Prompt Bar lets you describe specifics like “add a sectional sofa and a large area rug,” and the Furniture tool brings in your own pieces. If just one area looks off, mask it and regenerate only that spot instead of redoing the whole image."
       },
       "masking": {
         "title": "Stage with exact precision",
@@ -1914,7 +1914,7 @@
   },
   "status": {
     "pageTitle": "Status & Uptime | Stagify.ai",
-    "pageDescription": "Live status and uptime for Stagify.ai — 24-hour and 7-day availability with historical percentages.",
+    "pageDescription": "Live status and uptime for Stagify.ai — 24-hour, 7-day and 30-day availability with historical percentages.",
     "heading": "Server Status",
     "subheading": "Live availability and uptime history for Stagify.ai.",
     "checking": "Checking status…",
