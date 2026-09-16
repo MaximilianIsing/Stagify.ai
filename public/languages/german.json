@@ -1237,7 +1237,7 @@
       "studios": {
         "label": "Die Studios",
         "question": "Was kann Stagify sonst noch?",
-        "answer": "Einiges. Der AI Designer gestaltet einen ganzen Raum im Dialog um, Sie können also eine wärmere Farbpalette oder ein größeres Sofa verlangen und weiter verfeinern. Das Masking Studio gibt pixelgenaue Kontrolle darüber, welche Bereiche sich ändern dürfen. Das Exterior Studio kümmert sich um die Außenwirkung statt um Innenräume. Das Listing Studio bringt einen ganzen Fotosatz in einem Durchgang durch und erzeugt einen Link, den Sie Verkäufern zur Freigabe schicken. Alles landet in Ihrer Galerie."
+        "answer": "Einiges. Der AI Designer gestaltet einen ganzen Raum im Dialog um, Sie können also eine wärmere Farbpalette oder ein größeres Sofa verlangen und weiter verfeinern. Das Masking Studio gibt pixelgenaue Kontrolle darüber, welche Bereiche sich ändern dürfen. Das Exterior Studio kümmert sich um die Außenwirkung statt um Innenräume. Alles landet in Ihrer Galerie."
       },
       "control": {
         "label": "Kontrolle",
@@ -1634,11 +1634,11 @@
       },
       "i2": {
         "q": "Welchen Tarif oder welches Tool sollte ich verwenden?",
-        "a": "Die kostenlose Version ist perfekt für schnelle einzelne Räume. <a href=\"stagify-plus.html\">Stagify+</a> schaltet unbegrenzte Generierungen, hochwertigere Modelle, das Maskierungstool und die Prompt-Leiste frei. <a href=\"ai-designer.html\">KI-Designer</a> gestaltet einen ganzen Raum aus einem kurzen Chat neu – am besten, wenn die KI die Entscheidungen für Sie treffen soll."
+        "a": "Die kostenlose Version ist perfekt für schnelle einzelne Räume. <a href=\"stagify-plus.html\">Stagify+</a> schaltet hochwertigere Modelle, das Maskierungstool und die Prompt-Leiste frei. <a href=\"ai-designer.html\">KI-Designer</a> gestaltet einen ganzen Raum aus einem kurzen Chat neu – am besten, wenn die KI die Entscheidungen für Sie treffen soll."
       },
       "i3": {
         "q": "Kann ich Möbel und Layout steuern?",
-        "a": "Ja. Mit <a href=\"stagify-plus.html\">Stagify+</a> können Sie über die Prompt-Leiste Details beschreiben wie „ein Ecksofa und einen großen Teppich hinzufügen“, und das Möbel-Tool bringt Ihre eigenen Stücke ein. Wenn nur ein Bereich nicht stimmt, maskieren Sie ihn und erzeugen Sie nur diese Stelle neu, statt das ganze Bild zu wiederholen."
+        "a": "Ja. Im kostenlosen Tarif nimmt das Feld für zusätzliche Anweisungen jede Anfrage in Ihren eigenen Worten entgegen. Mit <a href=\"stagify-plus.html\">Stagify+</a> können Sie über die Prompt-Leiste Details beschreiben wie „ein Ecksofa und einen großen Teppich hinzufügen“, und das Möbel-Tool bringt Ihre eigenen Stücke ein. Wenn nur ein Bereich nicht stimmt, maskieren Sie ihn und erzeugen Sie nur diese Stelle neu, statt das ganze Bild zu wiederholen."
       },
       "masking": {
         "title": "Einrichten mit exakter Präzision",
@@ -1914,7 +1914,7 @@
   },
   "status": {
     "pageTitle": "Status & Verfügbarkeit | Stagify.ai",
-    "pageDescription": "Live-Status und Verfügbarkeit von Stagify.ai — Verfügbarkeit der letzten 24 Stunden und 7 Tage mit historischen Prozentwerten.",
+    "pageDescription": "Live-Status und Verfügbarkeit von Stagify.ai — Verfügbarkeit der letzten 24 Stunden, 7 Tage und 30 Tage mit historischen Prozentwerten.",
     "heading": "Serverstatus",
     "subheading": "Live-Verfügbarkeit und Verlaufsdaten für Stagify.ai.",
     "checking": "Status wird geprüft…",

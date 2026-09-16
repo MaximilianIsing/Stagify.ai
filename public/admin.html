@@ -34,7 +34,7 @@
 
     <!-- DASHBOARD -->
     <div class="adm-dash hidden" id="adm-dash">
-      <!-- Fixed rail. The 11 sections wrapped onto three rows as pill tabs; a rail
+      <!-- Fixed rail. The 12 sections wrapped onto three rows as pill tabs; a rail
            gives each one a stable position and room for a label, an icon and a count. -->
       <aside class="adm-side">
         <div class="adm-side-brand">
@@ -102,6 +102,11 @@
             <svg class="adm-tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 13h6M8 16.5h4"/></svg>
             <span class="adm-tab-lbl">Templates</span>
           </button>
+          <button class="adm-tab" data-tab="blog" data-title="Blog" data-sub="How often each article is opened, and which ones are working." role="tab" aria-selected="false">
+            <svg class="adm-tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3.5h9l5 5V20a1.5 1.5 0 0 1-1.5 1.5h-12A1.5 1.5 0 0 1 4 20V5a1.5 1.5 0 0 1 1-1.5Z"/><path d="M14 3.5V9h5"/><path d="M8.5 13h7M8.5 16.5h4.5"/></svg>
+            <span class="adm-tab-lbl">Blog</span>
+            <span class="adm-tab-count" id="tc-blog">0</span>
+          </button>
           <button class="adm-tab" data-tab="referrals" data-title="Referral links" data-sub="Campaign short-URLs and where the clicks come from." role="tab" aria-selected="false">
             <svg class="adm-tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13.5a4 4 0 0 0 5.7.4l3-3a4 4 0 0 0-5.7-5.7l-1.7 1.7"/><path d="M14 10.5a4 4 0 0 0-5.7-.4l-3 3a4 4 0 0 0 5.7 5.7l1.7-1.7"/></svg>
             <span class="adm-tab-lbl">Referrals</span>
@@ -147,6 +152,10 @@
             <button class="adm-refresh" id="adm-refresh" type="button" title="Reload all data">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-.6 4"/><path d="M20 4v7h-7"/></svg>
               Refresh
+            </button>
+            <button class="adm-ask" id="adm-an-open" type="button" title="Ask about this data" aria-expanded="false" aria-controls="adm-analyst">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.4A8 8 0 1 1 21 12z"/><path d="M9.2 9.5a2.8 2.8 0 0 1 5.4.9c0 1.9-2.8 2.4-2.8 2.4"/><path d="M12 16.5h.01"/></svg>
+              Ask
             </button>
           </div>
         </header>
@@ -306,6 +315,31 @@
         </div>
       </div>
 
+      <div class="adm-panel" id="panel-blog">
+        <div class="adm-card">
+          <div class="adm-card-head">
+            <h2>Blog readership</h2>
+          </div>
+          <p class="adm-card-sub">How often each article at <code>/blog/</code> is opened. Reads are counted on the server as the page is served, so nothing is missed by content blockers or reader modes &mdash; and automated traffic (search crawlers, link-preview bots) is detected and kept out of the counts. No IP addresses are stored; referrers are reduced to the site and page that sent the reader.</p>
+          <div class="adm-range" id="adm-blog-range">
+            <span class="adm-range-label">Window</span>
+            <!-- Filled by scripts/admin/blog.js; switching refetches, since the
+                 ranking is by reads inside the selected window. -->
+            <span id="adm-blog-window"></span>
+          </div>
+          <div id="adm-blog-summary"></div>
+        </div>
+        <div class="adm-card">
+          <div class="adm-card-head">
+            <h2>Articles</h2>
+            <span class="adm-count-chip" id="adm-blog-count">0</span>
+          </div>
+          <!-- Ranked list; selecting a row fills #adm-blog-detail below. -->
+          <div class="adm-table-wrap" id="adm-blog-list"></div>
+        </div>
+        <div id="adm-blog-detail"></div>
+      </div>
+
       <div class="adm-panel" id="panel-referrals">
         <div class="adm-card">
           <div class="adm-card-head">
@@ -457,6 +491,28 @@
         </div>
       </div>
     </div>
+
+  <!-- The analyst drawer. Outside .adm-content on purpose: it is reachable from
+       every tab, so it must not live inside any one panel. Hidden from assistive
+       tech until opened; scripts/admin/analyst.js owns everything inside it. -->
+  <aside class="adm-analyst" id="adm-analyst" aria-hidden="true" aria-label="Ask about this data">
+    <header class="adm-an-head">
+      <div class="adm-an-titles">
+        <h2>Ask</h2>
+        <p class="adm-an-sub">Answers are computed from your data, in your browser.</p>
+      </div>
+      <button class="adm-an-close" id="adm-an-close" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </header>
+    <div class="adm-an-log" id="adm-an-log" role="log" aria-live="polite"></div>
+    <form class="adm-an-form" id="adm-an-form">
+      <textarea id="adm-an-input" class="adm-an-input" rows="2" placeholder="Ask about renders, accounts, failures, growth…" aria-label="Your question"></textarea>
+      <button class="adm-an-send" type="submit" aria-label="Send">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+      </button>
+    </form>
+  </aside>
   </main>
 
 <script type="module" src="scripts/admin.js"></script>

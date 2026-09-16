@@ -28,14 +28,20 @@ import assert from 'node:assert/strict';
  * A fake element that records what was asked of it.
  * @param {string} id
  * @param {any} [section] the `.home-section` ancestor `closest()` should report
+ * @param {boolean} [panel] true if this element is a `.shw__panel` (a showcase panel
+ *   reports ITSELF for that selector, the way `closest` does on a real element)
  */
-function el(id, section) {
+function el(id, section, panel) {
   /** @type {any} */
   const node = {
     id,
     scrolls: /** @type {any[]} */ ([]),
     scrollIntoView(opts) { node.scrolls.push(opts); },
-    closest(sel) { return sel === '.home-section' ? (section || null) : null; },
+    closest(sel) {
+      if (sel === '.home-section') return section || null;
+      if (sel === '.shw__panel') return panel ? node : null;
+      return null;
+    },
   };
   return node;
 }
@@ -142,16 +148,39 @@ test('every section is watched, since any of them can be the one that resizes', 
   harness.teardown();
 });
 
-test('#ai-designer-demo still scrolls its section, not the transformed panel', async () => {
-  const section = el('studio-showcase');
-  const panel = el('ai-designer-demo', section);
-  const harness = stage({ hash: '#ai-designer-demo', nodes: { 'ai-designer-demo': panel } });
-  await import(`../../public/scripts/index-inline.js?case=demo`);
+// All five showcase panels are the same absolutely-positioned, 3D-transformed box; the
+// correction used to be written as `el.id === 'ai-designer-demo'`, so the other four got
+// the raw UA scroll. Matched on the class now, which is why this is a loop.
+for (const id of [
+  'staging-studio-demo',
+  'ai-designer-demo',
+  'masking-studio-demo',
+  'exterior-studio-demo',
+  'gallery-showcase',
+]) {
+  test(`#${id} scrolls its section, not the transformed panel`, async () => {
+    const section = el('studio-showcase');
+    const panel = el(id, section, true);
+    const harness = stage({ hash: `#${id}`, nodes: { [id]: panel } });
+    await import(`../../public/scripts/index-inline.js?case=panel-${id}`);
 
-  // The panel is absolutely positioned and 3D-transformed inside the showcase carousel,
-  // so its own box is a poor scroll target.
-  assert.deepEqual(panel.scrolls, []);
-  assert.deepEqual(section.scrolls, [{ block: 'start' }]);
+    assert.deepEqual(panel.scrolls, [], 'the panel box is never the scroll target');
+    assert.deepEqual(section.scrolls, [{ block: 'start' }]);
+
+    harness.teardown();
+  });
+}
+
+// The fallback in the other direction: an ordinary anchor is scrolled exactly where the
+// UA would have scrolled it, so this only ever CORRECTS a landing, never invents one.
+test('an anchor outside the carousel is scrolled as itself', async () => {
+  const section = el('faq-section');
+  const faq = el('faq', section);
+  const harness = stage({ hash: '#faq', nodes: { faq } });
+  await import(`../../public/scripts/index-inline.js?case=plain-anchor`);
+
+  assert.deepEqual(faq.scrolls, [{ block: 'start' }]);
+  assert.deepEqual(section.scrolls, [], 'not promoted to its section');
 
   harness.teardown();
 });

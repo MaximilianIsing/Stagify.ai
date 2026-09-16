@@ -1,6 +1,7 @@
 import { createRenderers } from './admin/renderers.js';
 import { createEmailsPanel } from './admin/emails.js';
 import { createReferralsPanel } from './admin/referrals.js';
+import { createBlogPanel } from './admin/blog.js';
 import { createStatusPanel } from './admin/status-panel.js';
 import { createApiUsagePanel } from './admin/api-usage.js';
 import { qs, qsa, el, parseCSV, copyToClipboard } from './admin/helpers.js';
@@ -49,10 +50,15 @@ import { showErrorToast } from './toast.js';
   };
 
   var renderers = createRenderers({ ctx: ctx, apiSend: apiSend, secureBlobDownload: secureBlobDownload });
+  // The analyst drawer lives outside .adm-content and is reachable from every tab,
+  // so it is wired once here rather than lazily on a tab open.
+  renderers.analyst.init();
   var emailsPanel = createEmailsPanel({ apiSend: apiSend });
   emailsPanel.init();
   var referralsPanel = createReferralsPanel({ apiSend: apiSend });
   referralsPanel.init();
+  var blogPanel = createBlogPanel({ apiSend: apiSend });
+  blogPanel.init();
   var statusPanel = createStatusPanel({ apiSend: apiSend });
   statusPanel.init();
   var apiUsagePanel = createApiUsagePanel({ apiSend: apiSend });
@@ -166,6 +172,9 @@ import { showErrorToast } from './toast.js';
       // One computation of the findings per data load, shared by the rail chip,
       // the Overview teaser and the Signals panel so the three cannot disagree.
       renderers.resetSignals();
+      // A conversation about last hour's numbers must not sit above this hour's,
+      // for the same reason the brief is cleared here.
+      renderers.analyst.reset();
       renderers.updateTabCounts();
       renderers.renderAll();
       qs('#adm-last-refresh').textContent='Updated '+new Date().toLocaleTimeString();
@@ -174,6 +183,9 @@ import { showErrorToast } from './toast.js';
       referralsPanel.reset();
       var refPanel=qs('#panel-referrals');
       if(refPanel&&refPanel.classList.contains('active'))referralsPanel.ensureLoaded();
+      blogPanel.reset();
+      var blogPanelEl=qs('#panel-blog');
+      if(blogPanelEl&&blogPanelEl.classList.contains('active'))blogPanel.ensureLoaded();
       var statusPanelEl=qs('#panel-status');
       if(statusPanelEl&&statusPanelEl.classList.contains('active'))statusPanel.ensureLoaded();
       apiUsagePanel.reset();
@@ -217,6 +229,7 @@ import { showErrorToast } from './toast.js';
     // — lazy-load each the first time its tab opens.
     if(btn.dataset.tab==='emails')emailsPanel.ensureLoaded();
     if(btn.dataset.tab==='referrals')referralsPanel.ensureLoaded();
+    if(btn.dataset.tab==='blog')blogPanel.ensureLoaded();
     // Status is live data, so opening the tab always refetches rather than showing
     // whatever was true when it was last looked at.
     if(btn.dataset.tab==='status')statusPanel.ensureLoaded();
@@ -386,8 +399,12 @@ import { showErrorToast } from './toast.js';
       }catch(e){/* offline: the token still expires on its own */}
     }
     clearStoredSession();
+    // Clears the conversation AND the account-handle map — the one structure
+    // outside ctx.data that holds addresses.
+    renderers.analyst.reset();
     emailsPanel.reset();
     referralsPanel.reset();
+    blogPanel.reset();
     statusPanel.reset();
     apiUsagePanel.reset();
     // The findings are derived from ctx.data, and the brief is a paid-for

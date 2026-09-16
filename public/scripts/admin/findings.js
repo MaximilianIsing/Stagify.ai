@@ -113,7 +113,23 @@ export function fmtBytes(bytes) {
 // ── Construction ────────────────────────────────────────────────────────────
 
 /**
- * Confidence from sample size alone.
+ * Below this many affected events, nothing is actionable — however extreme the ratio.
+ *
+ * This is the floor the tab was missing. The statistical gates answer "is this
+ * difference real?", and they can answer yes on a single event: against a 0.1%
+ * baseline, one failure in fifty renders clears a Wilson test comfortably. But
+ * "real" and "worth your morning" are different questions, and only the second
+ * one belongs in a severity. One failed render is one failed render whatever the
+ * ratio beside it says.
+ */
+export const MIN_AFFECTED = 5;
+
+/** Below this many affected events a rate finding cannot reach `critical`. */
+export const MIN_CRITICAL_AFFECTED = 12;
+
+/**
+ * Confidence from sample size, and — when the rule can say — from how many
+ * events actually carry the effect.
  *
  * Coarse on purpose. A rule that has already cleared its own statistical gate
  * (an interval that excludes the baseline, a robust z past its threshold) has
@@ -121,14 +137,48 @@ export function fmtBytes(bytes) {
  * the NUMBER deserves, which is a different question and is mostly about n.
  * A rule that knows better may override it.
  *
+ * `affected` exists because n alone lied. A segment of 122 renders containing a
+ * single failure was labelled "medium confidence" purely on the 122, when every
+ * digit of the rate it reported rested on the 1. Where a rule knows the numerator
+ * it passes it, and confidence is capped at `low` until that numerator is big
+ * enough to move.
+ *
  * @param {number} sample
+ * @param {number} [affected] Events carrying the effect (failures, drifted renders).
  * @returns {'high'|'medium'|'low'}
  */
-export function confidenceFor(sample) {
+export function confidenceFor(sample, affected) {
   const n = Number(sample) || 0;
+  if (affected !== undefined && (Number(affected) || 0) < MIN_CRITICAL_AFFECTED) return 'low';
   if (n >= 200) return 'high';
   if (n >= 50) return 'medium';
   return 'low';
+}
+
+/**
+ * Grade a proportion against a baseline by IMPACT, not by significance alone.
+ *
+ * Two deliberate choices:
+ *
+ * 1. **It reads the interval's LOWER bound, never the point estimate.** The point
+ *    estimate of a small segment is mostly noise — 1/52 "is" 1.9%, but the honest
+ *    claim is "somewhere between 0.3% and 10.1%". Grading on the lower bound means
+ *    the severity states what the data will support at worst, which is the only
+ *    version an operator can act on. `reliability.architecture-drift` already did
+ *    this; this makes the rest of the tab agree with it.
+ * 2. **`null` is a real answer.** It means "the effect may well be real, and it is
+ *    too small to call". Callers turn that into `suppressed(...)`, never silence —
+ *    the same rule the rest of the tab keeps.
+ *
+ * @param {{lower: number, baseline: number, affected: number}} args
+ * @returns {'critical'|'warning'|null}
+ */
+export function gradeRate({ lower, baseline, affected }) {
+  const n = Number(affected) || 0;
+  if (n < MIN_AFFECTED) return null;
+  if (!Number.isFinite(lower) || !Number.isFinite(baseline) || lower <= baseline) return null;
+  if (n >= MIN_CRITICAL_AFFECTED && lower >= baseline * 3) return 'critical';
+  return 'warning';
 }
 
 /**

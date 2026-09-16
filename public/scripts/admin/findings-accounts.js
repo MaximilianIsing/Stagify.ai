@@ -34,7 +34,7 @@ import {
 } from './analytics-users.js';
 import { trialOutcomes, trialEmailsSent } from './analytics-users.js';
 import { ratio } from './stats.js';
-import { finding, suppressed, fmtCount, fmtPct, fmtBytes } from './findings.js';
+import { finding, suppressed, fmtCount, fmtPct, fmtBytes, MIN_AFFECTED } from './findings.js';
 import { capHitDaysByPerson, capHitCoverage } from './analytics-rejections.js';
 
 const AREA = 'Revenue';
@@ -178,9 +178,15 @@ const trialEndingUnsent = {
     if (ending.value > 0) return null;
 
     const trials = trialOutcomes(users, input.now);
+    // Impact-gated like the rate rules, for the same reason. The misconfiguration
+    // is equally certain at one welcome email and at fifty — but at one, nothing
+    // has actually been lost yet, and a `critical` that fires on the first trial a
+    // brand-new deployment ever starts is the kind of card that teaches an operator
+    // to stop reading the section.
+    const severity = welcome.value >= MIN_AFFECTED ? 'critical' : 'warning';
     return finding({
       id: 'revenue.trial-ending-unsent',
-      severity: 'critical',
+      severity,
       area: AREA,
       title: 'No trial-ending reminder has ever been sent',
       detail: `${fmtCount(welcome.value)} trial welcome email${welcome.value === 1 ? ' has' : 's have'} gone out `

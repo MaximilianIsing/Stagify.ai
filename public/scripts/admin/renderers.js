@@ -11,6 +11,7 @@ import { activityIndexFrom, lastActiveMs, daysSinceActive } from './analytics-us
 import { createOverview } from './overview.js';
 import { createInsights } from './insights.js';
 import { createSignals } from './signals.js';
+import { createAnalyst } from './analyst.js';
 import { showErrorToast } from '../toast.js';
 
 /**
@@ -58,6 +59,18 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
   var overview=createOverview({ctx:ctx,effectivePlan:effectivePlan});
   var insights=createInsights({ctx:ctx,effectivePlan:effectivePlan});
   var signals=createSignals({ctx:ctx,apiSend:apiSend,effectivePlan:effectivePlan});
+  // The analyst is built here rather than in the entry because this is the only
+  // place that holds both halves of what it needs: the rules-engine result and the
+  // effective-plan resolver. Wiring is deliberately two-step — the analyst reads
+  // signals' findings, and signals needs the analyst's opener for its per-card
+  // button, so neither can be constructed with the other already in hand.
+  var analyst=createAnalyst({
+    ctx:ctx,
+    apiSend:apiSend,
+    currentFindings:signals.currentResult,
+    effectivePlan:effectivePlan,
+  });
+  signals.setAskHandler(analyst.askAbout);
 
   // A zero still shows — it means "checked, nothing there", which is not the same
   // as a missing chip — but it is de-emphasised so six zeroes in the rail don't
@@ -566,5 +579,8 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
     // admin.js once per data load and on sign-out, NOT per renderer — the rail
     // chip, the Overview teaser and the Signals panel must share one result.
     resetSignals: signals.reset,
+    // The analyst drawer. `reset` also clears the account-handle map, which is the
+    // only structure outside ctx.data holding addresses — see analyst.js#reset.
+    analyst: analyst,
   };
 }

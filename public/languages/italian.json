@@ -1237,7 +1237,7 @@
       "studios": {
         "label": "Gli Studi",
         "question": "Che altro fa Stagify?",
-        "answer": "Parecchio. L’AI Designer ridisegna un’intera stanza conversando, così puoi chiedere una palette più calda o un divano più grande e continuare a rifinire. Il Masking Studio dà un controllo al pixel su quali aree possono cambiare. L’Exterior Studio lavora sull’aspetto esterno anziché sugli interni. Il Listing Studio processa un intero set di foto in un passaggio e produce un link da mandare al venditore per l’approvazione. Tutto finisce nella tua galleria."
+        "answer": "Parecchio. L’AI Designer ridisegna un’intera stanza conversando, così puoi chiedere una palette più calda o un divano più grande e continuare a rifinire. Il Masking Studio dà un controllo al pixel su quali aree possono cambiare. L’Exterior Studio lavora sull’aspetto esterno anziché sugli interni. Tutto finisce nella tua galleria."
       },
       "control": {
         "label": "Controllo",
@@ -1634,11 +1634,11 @@
       },
       "i2": {
         "q": "Quale piano o strumento dovrei usare?",
-        "a": "La versione gratuita è perfetta per stanze singole occasionali. <a href=\"stagify-plus.html\">Stagify+</a> sblocca generazioni illimitate, modelli di qualità superiore, lo strumento di mascheratura e la barra delle istruzioni. <a href=\"ai-designer.html\">Designer IA</a> riprogetta un’intera stanza da una breve chat: ideale quando vuoi che sia lui a prendere le decisioni per te."
+        "a": "La versione gratuita è perfetta per stanze singole occasionali. <a href=\"stagify-plus.html\">Stagify+</a> sblocca modelli di qualità superiore, lo strumento di mascheratura e la barra delle istruzioni. <a href=\"ai-designer.html\">Designer IA</a> riprogetta un’intera stanza da una breve chat: ideale quando vuoi che sia lui a prendere le decisioni per te."
       },
       "i3": {
         "q": "Posso controllare i mobili e la disposizione?",
-        "a": "Sì. Con <a href=\"stagify-plus.html\">Stagify+</a> la barra delle istruzioni ti permette di descrivere dettagli come «aggiungi un divano ad angolo e un grande tappeto», e lo strumento Mobili inserisce i tuoi pezzi. Se solo un’area non va, mascherala e rigenera solo quel punto invece di rifare tutta l’immagine."
+        "a": "Sì. Nel piano gratuito il campo delle istruzioni aggiuntive accetta qualsiasi richiesta con parole tue. Con <a href=\"stagify-plus.html\">Stagify+</a> la barra delle istruzioni ti permette di descrivere dettagli come «aggiungi un divano ad angolo e un grande tappeto», e lo strumento Mobili inserisce i tuoi pezzi. Se solo un’area non va, mascherala e rigenera solo quel punto invece di rifare tutta l’immagine."
       },
       "masking": {
         "title": "Arreda con precisione esatta",
@@ -1914,7 +1914,7 @@
   },
   "status": {
     "pageTitle": "Stato e disponibilità | Stagify.ai",
-    "pageDescription": "Stato e disponibilità in tempo reale di Stagify.ai — disponibilità nelle ultime 24 ore e 7 giorni con percentuali storiche.",
+    "pageDescription": "Stato e disponibilità in tempo reale di Stagify.ai — disponibilità nelle ultime 24 ore, 7 giorni e 30 giorni con percentuali storiche.",
     "heading": "Stato del server",
     "subheading": "Disponibilità in tempo reale e cronologia di uptime di Stagify.ai.",
     "checking": "Verifica dello stato…",

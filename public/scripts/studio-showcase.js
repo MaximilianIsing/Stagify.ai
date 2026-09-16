@@ -251,6 +251,24 @@ function mountFrontDemo(sc) {
 }
 
 /**
+ * Re-place the mounted players' callout cards.
+ *
+ * The in-scene highlight (.sdp__area) is positioned in percentages and follows its
+ * frame for free, but the callout card is positioned in frame PIXELS, and the player
+ * only recomputes that on window.resize (demo-player.js). Entering fullscreen resizes
+ * the frame without necessarily resizing the window — and does not resize it at all
+ * when the browser is already in F11 fullscreen — so the card has to be told.
+ *
+ * @param {Showcase} sc
+ */
+function reflowDemos(sc) {
+  sc.panels.forEach((panel) => {
+    const host = /** @type {any} */ (panel.querySelector('.designer-demo[data-demo]'));
+    if (host && host.__player) host.__player.reflow();
+  });
+}
+
+/**
  * Position dots for the narrow layout, where the CSS hides every tab but the active one
  * and the strip becomes a `‹ Masking Studio ›` stepper. The label alone says WHICH studio
  * you are on but not that there are five of them, or where in the five you are — the dots
@@ -353,6 +371,9 @@ function wireDrag(sc) {
     // Cycling while a panel is expanded would swap the fullscreen content out from
     // under the viewer, who cannot see the carousel behind it to know what happened.
     if (document.fullscreenElement) return;
+    // Primary button / first finger only: a right-drag or a second finger used to flick
+    // the carousel, and a two-finger gesture would also fight the first pointer's state.
+    if (!e.isPrimary || e.button !== 0) return;
     const target = /** @type {HTMLElement} */ (e.target);
     // .hgal-grid is the gallery mock's scroller: a touch drag inside it must scroll
     // the cards, not flick the carousel to the next studio.
@@ -361,6 +382,14 @@ function wireDrag(sc) {
     startX = e.clientX;
     startY = e.clientY;
     axis = null;
+    // Capture, because every listener here is on the stage and the stage is only ~520px
+    // tall inside a section the side panels bleed out of: release the pointer OUTSIDE it
+    // before crossing the threshold and end() never ran, leaving id and startX stale. A
+    // mouse keeps its pointerId for the whole session, so the next plain mouse move
+    // across the stage matched, measured dx against that stale origin, cleared 60px and
+    // flicked the carousel with no button held. Capture retargets the matching
+    // pointerup/pointercancel here wherever it happens.
+    try { sc.stage.setPointerCapture(e.pointerId); } catch (_e) { /* not capturable */ }
   });
 
   sc.stage.addEventListener('pointermove', (e) => {
@@ -417,9 +446,15 @@ function wireTabs(sc) {
     const target = /** @type {HTMLElement} */ (e.target);
     if (!target.closest('.shw__tabs')) return;
     const n = sc.panels.length;
+    // Step from the tab that HAS focus, not from the active panel. The roving tabindex
+    // normally keeps the two equal, but the wheel, a drag, a side-panel click, the ‹/›
+    // buttons and a hashchange all move sc.active without moving focus — after any of
+    // those, arrowing from sc.active skipped a studio relative to where the user was.
+    const from = sc.tabs.indexOf(/** @type {HTMLElement} */ (target.closest('.shw__tab')));
+    const base = from === -1 ? sc.active : from;
     let next = -1;
-    if (e.key === 'ArrowRight') next = sc.active + 1;
-    else if (e.key === 'ArrowLeft') next = sc.active - 1;
+    if (e.key === 'ArrowRight') next = base + 1;
+    else if (e.key === 'ArrowLeft') next = base - 1;
     else if (e.key === 'Home') next = 0;
     else if (e.key === 'End') next = n - 1;
     if (next === -1) return;
@@ -486,6 +521,9 @@ function wireFullscreen(sc) {
     // The player and the before/after slider both hit-test against their own box,
     // which just changed size — re-measure so the stage still matches on the way out.
     measure(sc);
+    // Deferred a frame: the fullscreen box's used size is not final when the event
+    // fires, and the player's placement bails silently on a zero-size frame.
+    requestAnimationFrame(() => reflowDemos(sc));
   });
 }
 
@@ -529,7 +567,10 @@ function init() {
   // The player mounting, a font swap or an i18n string swap all change the front
   // panel's height after the fact; the stage has to follow.
   if ('ResizeObserver' in window) {
-    const ro = new ResizeObserver(() => measure(sc));
+    const ro = new ResizeObserver(() => {
+      measure(sc);
+      reflowDemos(sc);
+    });
     sc.panels.forEach((p) => ro.observe(p));
   }
   window.addEventListener('resize', () => {

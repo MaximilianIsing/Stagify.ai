@@ -1,6 +1,6 @@
 {
   "key": "platform",
-  "fetchedAt": "2026-08-14T01:09:50.247Z",
+  "fetchedAt": "2026-09-16T17:37:29.149Z",
   "ttlDays": 30,
   "queries": [
     "instagram carousel vs reels reach",
@@ -8,94 +8,102 @@
   ],
   "findings": [
     {
-      "claim": "Adam Mosseri has confirmed the three primary Instagram ranking signals as watch time, likes per reach, and sends per reach (DM shares), for both follower and non-follower distribution.",
-      "sourceUrl": "https://blog.hootsuite.com/instagram-algorithm/",
-      "sourceTitle": "Instagram algorithm tips for 2026: Everything you need to know (Hootsuite)",
-      "retrievedAt": "2026-08-13"
+      "claim": "Metricool's 2026 Instagram Study of 24,364,803 posts across 375,118 accounts, comparing Jan to Feb 2025 with Jan to Feb 2026, found carousels generate nine times more saves than single-image posts and outperform single images on every major metric.",
+      "sourceUrl": "https://metricool.com/press-release-instagram-study-2026/",
+      "sourceTitle": "Metricool's 2026 Instagram Study Reveals Reels and Carousels Are Reshaping Platform Strategy",
+      "confidence": "large-sample study",
+      "retrievedAt": "2026-09-16"
     },
     {
-      "claim": "Sends/DM shares carry roughly three to five times more algorithmic weight than a like when Instagram decides whether to push a post to non-followers.",
-      "sourceUrl": "https://www.dataslayer.ai/blog/instagram-algorithm-2025-complete-guide-for-marketers",
-      "sourceTitle": "Instagram Algorithm 2026: 5 Ranking Signals Mosseri Confirmed (Dataslayer)",
-      "retrievedAt": "2026-08-13"
+      "claim": "In the same Metricool 2026 study, single-image posts fell year over year on every axis: reach down 21.96%, interactions down 25.41%, engagement down 45.98%.",
+      "sourceUrl": "https://metricool.com/press-release-instagram-study-2026/",
+      "sourceTitle": "Metricool 2026 Instagram Study",
+      "confidence": "large-sample study",
+      "retrievedAt": "2026-09-16"
     },
     {
-      "claim": "Socialinsider's 2026 benchmarks put carousels highest on engagement rate at 0.55%, Reels at 0.52%, and single images at 0.37%, with the overall Instagram average at 0.48%, down 24% year over year.",
+      "claim": "Metricool's 2026 study reports Reels drew more than four times the interactions of single-image posts, and average Reels watch time rose to 8.5 seconds, more than double the prior year.",
+      "sourceUrl": "https://metricool.com/press-release-instagram-study-2026/",
+      "sourceTitle": "Metricool 2026 Instagram Study",
+      "confidence": "large-sample study",
+      "retrievedAt": "2026-09-16"
+    },
+    {
+      "claim": "Metricool's 2026 study found posts that used hashtags averaged 31.70% fewer views and 33.89% fewer interactions than the platform average across the Jan 2025 to Feb 2026 window.",
+      "sourceUrl": "https://metricool.com/press-release-instagram-study-2026/",
+      "sourceTitle": "Metricool 2026 Instagram Study",
+      "confidence": "correlational, not causal",
+      "retrievedAt": "2026-09-16"
+    },
+    {
+      "claim": "Metricool's 2026 study found posts containing a question drew 36.70% more comments, and posts with an explicit comment-focused call to action drew 202.78% more comments.",
+      "sourceUrl": "https://metricool.com/press-release-instagram-study-2026/",
+      "sourceTitle": "Metricool 2026 Instagram Study",
+      "confidence": "large-sample study",
+      "retrievedAt": "2026-09-16"
+    },
+    {
+      "claim": "Socialinsider's 2026 Instagram benchmark report, 35 million posts across 447,613 active pages for January to December 2025, puts engagement rate by format at carousels 0.50%, Reels 0.48% and single images 0.33%, against an all-format average of 0.45%. The same figures a year earlier were 0.55%, 0.52% and 0.37%.",
       "sourceUrl": "https://www.socialinsider.io/social-media-benchmarks/instagram",
-      "sourceTitle": "2026 Instagram Organic Engagement Benchmarks (Socialinsider)",
-      "retrievedAt": "2026-08-13"
+      "sourceTitle": "2026 Instagram Organic Engagement Benchmarks",
+      "confidence": "large-sample study",
+      "retrievedAt": "2026-09-16"
     },
     {
-      "claim": "For accounts of 1K-5K followers, Socialinsider measured carousels at 993 average views versus 580 for Reels and 417 for single images, meaning carousels out-view Reels at small account sizes.",
+      "claim": "Socialinsider's 2026 benchmark data shows the median brand posting cadence as roughly 8 Reels, 7 single images and 5 carousels per month, so carousels remain the least-published of the three formats despite leading on engagement rate.",
       "sourceUrl": "https://www.socialinsider.io/social-media-benchmarks/instagram",
-      "sourceTitle": "2026 Instagram Organic Engagement Benchmarks (Socialinsider)",
-      "retrievedAt": "2026-08-13"
+      "sourceTitle": "2026 Instagram Organic Engagement Benchmarks",
+      "confidence": "large-sample study",
+      "retrievedAt": "2026-09-16"
     },
     {
-      "claim": "Metricool's 2026 study of 24.3 million posts across 375,000 accounts found single-image posts declining year over year: reach down 21.96%, interactions down 25.41%, engagement down 45.98%.",
-      "sourceUrl": "https://metricool.com/press-release-instagram-study-2026/",
-      "sourceTitle": "Metricool's 2026 Instagram Study Reveals Reels and Carousels Are Reshaping Platform Strategy",
-      "retrievedAt": "2026-08-13"
+      "claim": "Socialinsider's 2026 saves-per-post data shows carousels and Reels roughly tied and both far ahead of single images at scale: for accounts with 100K to 1M followers, 98 saves per carousel and 96 per Reel versus 43 per image.",
+      "sourceUrl": "https://www.socialinsider.io/social-media-benchmarks/instagram",
+      "sourceTitle": "2026 Instagram Organic Engagement Benchmarks",
+      "confidence": "large-sample study",
+      "retrievedAt": "2026-09-16"
     },
     {
-      "claim": "Metricool's 2026 study found Reels generate roughly 4x more interactions than single-image posts, and average Reel watch time more than doubled year over year to 8.5 seconds.",
-      "sourceUrl": "https://metricool.com/press-release-instagram-study-2026/",
-      "sourceTitle": "Metricool's 2026 Instagram Study Reveals Reels and Carousels Are Reshaping Platform Strategy",
-      "retrievedAt": "2026-08-13"
+      "claim": "Sotrender's August 2026 cross-study review reports Instagram reach is broadly contracting: Metricool measured Reels reach down 35% year over year and overall post reach down 31% across 1,059,949 accounts, while Socialinsider put the average reach rate at 3.50%, down 12% year over year.",
+      "sourceUrl": "https://www.sotrender.com/blog/2026/08/instagram-reach-is-down-what-the-data-actually-says/",
+      "sourceTitle": "Instagram Reach Is Down in 2026: What the Data Actually Says",
+      "confidence": "secondary review of primary studies",
+      "retrievedAt": "2026-09-16"
     },
     {
-      "claim": "Metricool's 2026 study found carousels generate about 9x more saves than single-image posts and outperform single images on essentially every metric.",
-      "sourceUrl": "https://metricool.com/press-release-instagram-study-2026/",
-      "sourceTitle": "Metricool's 2026 Instagram Study Reveals Reels and Carousels Are Reshaping Platform Strategy",
-      "retrievedAt": "2026-08-13"
+      "claim": "Sotrender's August 2026 review cites Buffer's analysis of over 52 million posts showing median Instagram engagement fell from 7.3% in 2024 to 5.4% in 2025, a 26% drop, and notes a growing share of Reels views now comes from non-followers.",
+      "sourceUrl": "https://www.sotrender.com/blog/2026/08/instagram-reach-is-down-what-the-data-actually-says/",
+      "sourceTitle": "Instagram Reach Is Down in 2026",
+      "confidence": "secondary review",
+      "retrievedAt": "2026-09-16"
     },
     {
-      "claim": "Carousels get repeat distribution because unseen slides are re-served as new content, and posts with high swipe-through rates are re-surfaced 24-48 hours after publishing, giving carousels a longer engagement window than other formats.",
-      "sourceUrl": "https://buffer.com/resources/instagram-algorithms/",
-      "sourceTitle": "How the Instagram Algorithm Works: Your 2026 Guide (Buffer)",
-      "retrievedAt": "2026-08-13"
+      "claim": "Later's 2026 algorithm guide states shares and sends are now a top ranking signal, with Adam Mosseri confirming content people send to friends carries significant weight in wider distribution. It also notes carousels now support up to 20 slides and that Reels up to 3 minutes are eligible for Explore distribution.",
+      "sourceUrl": "https://later.com/blog/how-instagram-algorithm-works/",
+      "sourceTitle": "Instagram algorithm in 2026: rank signals for growth",
+      "confidence": "vendor guide quoting platform statements",
+      "retrievedAt": "2026-09-16"
     },
     {
-      "claim": "Instagram extended its 'Your Algorithm' topic controls to the main Feed in 2026, after launching them on Reels in December 2025 and on Explore in April 2026, so explicit user topic preferences now shape feed distribution alongside behavioural signals.",
-      "sourceUrl": "https://creatorflow.so/blog/instagram-algorithm-2026/",
-      "sourceTitle": "Instagram Algorithm 2026: What Changed (+ How to Adapt) (Creatorflow)",
-      "retrievedAt": "2026-08-13"
+      "claim": "In a July 2026 Q&A, Adam Mosseri said hashtags work but have never been a good way to increase reach, helping only slightly on the margins. The recommended practice is a handful of precise tags describing the subject rather than thirty generic ones, with real distribution coming from recommendations in the first day or two after posting.",
+      "sourceUrl": "https://www.kontentino.com/q-and-a/instagram-hashtags-reach/",
+      "sourceTitle": "Do hashtags still work on Instagram in 2026? Mosseri finally settled it",
+      "confidence": "platform statement, secondhand",
+      "retrievedAt": "2026-09-16"
     },
     {
-      "claim": "No confirmed Instagram ranking or distribution change was announced during July or August 2026; the material 2026 shifts all landed earlier in the year.",
-      "sourceUrl": "https://www.socialpilot.co/instagram-marketing/how-instagram-algorithm-works",
-      "sourceTitle": "Instagram Algorithm: How It Works and Boost Reach (August 2026) (SocialPilot)",
-      "retrievedAt": "2026-08-13"
+      "claim": "Dash Social's 2026 Home Goods benchmark of 3,363 Instagram handles for July 1 to December 31, 2025 reports average video views of 104K per post and Instagram views up 45%, concluding Reels remain the strongest format for discovery in the home and interiors category.",
+      "sourceUrl": "https://www.dashsocial.com/social-media-benchmarks/home-industry",
+      "sourceTitle": "2026 Home Goods Industry Benchmarks, Dash Social",
+      "confidence": "category benchmark",
+      "retrievedAt": "2026-09-16"
     },
     {
-      "claim": "Instagram down-ranks content that looks recycled or cross-posted from other platforms, and in recommendations will replace an aggregator account's repost with the original creator's version.",
-      "sourceUrl": "https://blog.hootsuite.com/instagram-algorithm/",
-      "sourceTitle": "Instagram algorithm tips for 2026: Everything you need to know (Hootsuite)",
-      "retrievedAt": "2026-08-13"
-    },
-    {
-      "claim": "Trial Reels, which publish only to non-followers and stay off the profile grid and follower feeds, gained scheduling support in February 2026 and are reported to have driven an 80% increase in Reels reach among non-followers.",
-      "sourceUrl": "https://metricool.com/instagram-trial-reels/",
-      "sourceTitle": "Instagram Trial Reels: Everything You Need to Know (Metricool)",
-      "retrievedAt": "2026-08-13"
-    },
-    {
-      "claim": "Posts and Reels are now effectively limited to five hashtags, and Instagram states a few specific hashtags outperform a long list of generic ones; hashtag following was removed in December 2024, pushing discovery toward caption keywords and search.",
-      "sourceUrl": "https://meetedgar.com/blog/instagram-algorithm-updates",
-      "sourceTitle": "Instagram Algorithm Updates 2026: The Complete Guide to What's Changed (MeetEdgar)",
-      "retrievedAt": "2026-08-13"
-    },
-    {
-      "claim": "In the real estate and interior niche specifically, Reels reach roughly 3x more accounts than feed posts (approx. 6,500 vs 2,150) and about 55% of Reel views come from non-followers, while carousels are about 2x more likely to be saved.",
-      "sourceUrl": "https://socialrealtr.com/blog/instagram-algorithm-real-estate/",
-      "sourceTitle": "Instagram Algorithm for Real Estate (Social Realtr)",
-      "retrievedAt": "2026-08-13"
-    },
-    {
-      "claim": "Instagram's feed has shifted from a social graph to an interest graph, so the main feed is now mostly algorithm-surfaced content from accounts the viewer never followed.",
-      "sourceUrl": "https://buffer.com/resources/instagram-algorithms/",
-      "sourceTitle": "How the Instagram Algorithm Works: Your 2026 Guide (Buffer)",
-      "retrievedAt": "2026-08-13"
+      "claim": "For the adjacent real estate category, Apaya's 2026 benchmark roundup cites Dash Social's 0.3% Instagram engagement rate for July to December 2024 alongside a suggested cadence of 3 Reels plus 4 carousel or image posts per week, while warning the sample size is undisclosed and that Hootsuite's differently calculated figure for the same sector is 3.70%, a twelvefold gap.",
+      "sourceUrl": "https://apaya.com/blog/social-media-benchmarks-real-estate",
+      "sourceTitle": "Real Estate Social Media Benchmarks 2026: Engagement Rates by Platform",
+      "confidence": "roundup, conflicting figures flagged",
+      "retrievedAt": "2026-09-16"
     }
   ]
 }

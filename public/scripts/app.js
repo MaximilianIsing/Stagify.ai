@@ -242,7 +242,7 @@ import { initPlusRail } from './app/plus-rail.js';
     let stageValidationResult = null;
 
     async function handleStageFile(file) {
-      // HEIC conversion, the type allowlist and the 100MB ceiling live in
+      // HEIC conversion, the type allowlist and the 25MB ceiling live in
       // app/image-file.js — the Basic Mask uploader applies the same three.
       const read = await readImageFile(file, { showError: showErrorToast });
       if (!read) return;

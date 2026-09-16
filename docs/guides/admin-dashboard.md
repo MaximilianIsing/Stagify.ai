@@ -71,6 +71,7 @@ owns auth/fetch/wiring, each island owns one cohesive concern.
 | [`scripts/admin/emails.js`](../../public/scripts/admin/emails.js) | The **Emails** tab: the preview gallery + per-template test send. Lazy-loaded on first open. |
 | [`scripts/admin/status-panel.js`](../../public/scripts/admin/status-panel.js) | The **Server status** tab: the live monitor view and the incident composer. Lazy-loaded on first open, then polls while its tab is visible. |
 | [`scripts/admin/referrals.js`](../../public/scripts/admin/referrals.js) | The **Referrals** tab: one card per campaign short-URL. Lazy-loaded on first open; `Refresh` invalidates it. |
+| [`scripts/admin/blog.js`](../../public/scripts/admin/blog.js) | The **Blog** tab: every article ranked by reads, with a per-post chart and its traffic sources. Lazy-loaded on first open and on each window change; `Refresh` invalidates it. |
 | [`scripts/admin/api-usage.js`](../../public/scripts/admin/api-usage.js) | The **API usage** tab: traffic, customers and credit economics for the public render API. Lazy-loaded on first open and on each range change; `Refresh` invalidates it. The only admin panel whose aggregation happens entirely server-side. |
 | [`scripts/admin/helpers.js`](../../public/scripts/admin/helpers.js) | DOM/format helpers + the icon set. `esc` is re-exported from the shared [`scripts/escape-html.js`](../../public/scripts/escape-html.js). |
 | [`styles/admin.css`](../../public/styles/admin.css) | Page styles: the token block, the shell, and everything the SVG charts are painted with. |
@@ -501,6 +502,12 @@ never leave the browser.
 | [`scripts/admin/signals.js`](../../public/scripts/admin/signals.js) | The tab + the Overview teaser. DOM only; decides nothing. |
 | [`lib/analytics/admin-metrics.js`](../../lib/analytics/admin-metrics.js) | Read-only SQL aggregates — the numbers no CSV can give. |
 | [`lib/services/admin-brief.js`](../../lib/services/admin-brief.js) | The brief, with its redaction and its fail-open contract. |
+| [`scripts/admin/analyst.js`](../../public/scripts/admin/analyst.js) | The **Ask** drawer: the conversation, and the tool loop. DOM + orchestration. |
+| [`scripts/admin/analyst-tools.js`](../../public/scripts/admin/analyst-tools.js) | The tool **executors** — pure, over `ctx.data`, via the existing aggregators. |
+| [`scripts/admin/analyst-identity.js`](../../public/scripts/admin/analyst-identity.js) | Opaque `acct_*` handles, and resolving them back to addresses for the DOM. |
+| [`lib/services/admin-analyst-tools.js`](../../lib/services/admin-analyst-tools.js) | The tool **schemas**. Declarations only; no execution. |
+| [`lib/services/admin-analyst.js`](../../lib/services/admin-analyst.js) | One model turn, its system prompt, and the transcript allowlist. |
+| [`routes/admin-analyst.js`](../../routes/admin-analyst.js) | `POST /api/admin/analyst`. A sibling router — `routes/admin.js` is at its cap. |
 
 ### Severities
 
@@ -519,7 +526,7 @@ The rail chip and the Overview teaser count the **actionable** three only. A chi
 that included the healthy cards could never read zero, and zero is the one value
 that has to mean something.
 
-### The two gates every threshold rule passes
+### The three gates every threshold rule passes
 
 1. **A minimum sample**, and it is **not redundant with the interval below.**
    3 failures out of 8 is an observed 37.5% whose Wilson interval still starts at
@@ -528,8 +535,56 @@ that has to mean something.
    deletes the `n` floor as duplicated effort.
 2. **A statistical gate** — an interval that excludes the baseline (proportions),
    or a robust z past its threshold (series).
+3. **A minimum *impact*** — `findings.js#gradeRate`, and `MIN_AFFECTED = 5`.
 
-A rule that clears neither returns `suppressed(...)`, never silence.
+A rule that clears neither of the first two returns `suppressed(...)`, never
+silence. A rule that clears both but fails the third does the same.
+
+### Why significance is not enough, and what the third gate fixes
+
+The tab shipped with only the first two gates, and it cried wolf badly enough that
+the top section stopped being read. The mechanism is worth stating exactly,
+because it is not obvious and it will be reinvented otherwise.
+
+`segmentRule` gated on the Wilson interval's **lower bound** and then graded
+severity on the **point estimate**:
+
+```js
+.filter((g) => g.ci && g.ci.lower > globalRate)          // gate: lower bound
+.sort((a, b) => b.ci.point - a.ci.point)[0];             // pick: point estimate
+severity: ci.point > globalRate * 3 ? 'critical' : 'warning';
+```
+
+Against a product-wide failure rate near 0.1%, **one** failure in fifty renders
+posts a point estimate of 2% — twenty times the baseline — so `critical` was
+arithmetically guaranteed, and the card read *"Dorm fails 13.3× more often than
+average"* over a single failed render. Sorting on the point estimate made it
+worse: the smallest eligible segment always wins that sort, so the genuinely
+broken category lost its card to noise.
+
+Three corrections, all in `gradeRate` or its callers:
+
+- **Grade on the lower bound, never the point estimate.** The lower bound is what
+  the data supports at worst, and it is the only version an operator can act on.
+  `reliability.architecture-drift` always did this; now everything does.
+- **Require absolute impact.** Below `MIN_AFFECTED` (5) affected events nothing is
+  actionable at any ratio; below `MIN_CRITICAL_AFFECTED` (12) nothing reaches
+  `critical`. "Is this difference real" and "is this worth your morning" are
+  different questions and only the second one belongs in a severity.
+- **Compare a segment against the rest of the product, not against a baseline
+  containing itself.** A segment inside its own baseline shrinks exactly the gap
+  that matters most — a room carrying every failure in the product was being
+  measured against a rate it had itself inflated.
+
+The headline multiplier and the card's prose come off the lower bound too, so the
+title says "at least 5.7×" rather than a point estimate that halves on the next
+render. `confidenceFor` takes an optional `affected` for the same reason: a
+122-render segment with one failure was labelled *medium confidence* on the 122,
+when every digit of the rate rested on the 1.
+
+Regression cases live in `test/frontend/admin/admin-findings.test.js` under
+"Impact gating" — the 1-of-52 card must suppress, and a 40-of-120 outage must
+still be `critical`.
 
 ### Silence must be honest
 
@@ -660,6 +715,102 @@ Two smaller rules the aggregators depend on:
   refusal with neither an email nor a userId cannot be attributed to anyone, so
   `capHitCoverage` reports how many those were and the ranking is labelled a
   floor — the same discipline the activation funnel follows.
+
+## The Ask drawer
+
+The Signals tab tells you what it concluded. The drawer is where you argue with
+it — a conversation that answers by **running real queries over your own data**,
+reachable from every tab rather than living inside one.
+
+It is a different instrument from the brief, and deliberately the opposite one:
+
+| | Brief | Analyst |
+|---|---|---|
+| Job | Restate findings already computed | Answer a question nobody pre-aggregated |
+| Rule | *Never* compute a number | *Never* compute a number **without a tool** |
+| Model | `FAST_MODEL`, temperature 0 | `ANALYST_MODEL` (`lib/config/model-config.js`) |
+| Sees | Finished findings | Tool results it asked for |
+
+### Schemas on the server, executors in the browser
+
+The tool **declarations** live in `lib/services/admin-analyst-tools.js`; the tool
+**implementations** live in `public/scripts/admin/analyst-tools.js`. Each half is
+where it is for a specific reason:
+
+- **Executors are in the browser** because `analytics.js`, `analytics-users.js` and
+  `analytics-rejections.js` are already the tested single source of truth for every
+  number on this dashboard. A server-side reimplementation would eventually
+  disagree with the chart directly above the answer — and a chat that contradicts
+  the chart beside it is worse than no chat.
+- **Schemas are on the server** because a tool description is an instruction to the
+  model. If the browser posted the definitions with the messages, anyone who could
+  reach the endpoint could rewrite the prompt by rewriting a description.
+
+Nothing fails at runtime when the two drift — the model is simply offered a tool
+the browser cannot run, answers "no such tool" to itself, and guesses. So the name
+sets are pinned against each other in
+[`test/frontend/admin/admin-analyst-tools.test.js`](../../test/frontend/admin/admin-analyst-tools.test.js),
+the same drift-guard pattern as `locale-data.test.js`.
+
+### The loop is in the browser
+
+`POST /api/admin/analyst` is **one stateless turn**: it takes a transcript and
+returns either a finished `message` or the `toolCalls` to run. `analyst.js` runs
+them locally, appends `role: 'tool'` results, and posts again, up to `MAX_ROUNDS`
+(6). There is no session to store and nothing to expire; a refresh loses a
+conversation rather than orphaning one.
+
+### Account names still never leave the browser
+
+This is the rule the drawer strained hardest and did not break. The most valuable
+questions are about individuals, so the model is given **opaque handles**:
+
+```
+model sees:  acct_7f3a  paying  0 renders  42d quiet
+you see:     jane@acme.com  paying  0 renders  42d quiet
+```
+
+`analyst-identity.js` mints them from a counter and per-page noise — **not a hash**,
+because a hash is a pseudonym with a preimage, and anyone holding a list of
+candidate addresses could confirm membership by hashing them. Two sessions of the
+same dashboard produce different handles for the same account.
+
+Three things hold that line, in order of how much they matter:
+
+1. **No executor ever puts an identifier in a payload.** That is a claim about code
+   that has not been written yet, so it is enforced as a *sweep*: every executor is
+   run over a fixture stuffed with addresses, IPs and customer prompts, and the
+   JSON is asserted clean ([`admin-analyst.test.js`](../../test/frontend/admin/admin-analyst.test.js)).
+   A tool added next year is covered by construction.
+2. **The transcript is rebuilt from an allowlist** in `admin-analyst.js#sanitizeMessages`
+   and scrubbed with `admin-brief.js#scrub`. Defence in depth, not the primary
+   control — but "the client is supposed to" is not a guarantee that survives an
+   edit to a file in `public/`.
+3. **Handles are resolved as text runs, never by a regex into `innerHTML`.** A
+   handle the map never minted stays plain text, so a hallucinated `acct_abcdef`
+   cannot render as a fabricated identity.
+
+### Caveats are part of the payload
+
+Every tool result carries a `caveats` array and the system prompt tells the model
+to repeat any that bear on its answer. This is how the three places
+[absent must not read as zero](#three-places-absent-must-not-read-as-zero) survive
+being handed to a model that has never read this document: the attribution gap, the
+unrecorded outcome, and the cohort month that has not elapsed all travel *with* the
+numbers they qualify. The prompt also carries the same `MIN_AFFECTED` floor the
+rules engine uses — if the two disagreed, the drawer would call something critical
+that the tab suppressed, on the same data, in the same session.
+
+### Adding a tool
+
+1. Declare it in `ANALYST_TOOLS` (`lib/services/admin-analyst-tools.js`), with a
+   description that says what it *cannot* answer as well as what it can.
+2. Implement it in `createAnalystTools` and add the name to `EXECUTORS` **and**
+   `ANALYST_EXECUTOR_NAMES`. The drift test fails until both sides agree.
+3. Return `{rows, unit, caveats}`. Put a `caveat` on anything whose denominator is
+   a floor, and `null` — never 0 — on anything unmeasurable.
+4. Identify accounts with `identity.handleFor(...)`. Never an email, an IP, a
+   prompt or a chat message; the leak sweep covers the new tool automatically.
 
 ### Adding a rule
 
@@ -832,6 +983,47 @@ to type instead.
 **The one hardcoded thing left** is the seed: `/columbia` predates links being data, so it is
 inserted once behind a `meta` guard. The guard matters — without it, deleting that link would
 resurrect it on the next boot.
+
+## Blog tab
+
+How often each article under `/blog/` is opened, and **which ones are working**. A ranked
+list of every article — including the ones nobody has read, which are the actionable rows —
+plus a sitewide reads-per-day chart; selecting a row opens that post's own chart and its
+referring sites. The window (7 / 30 / 90 days) refetches, because the ranking is *by reads
+inside the selected window*: "doing best" is a question about now, and ranking by lifetime
+would pin the oldest article to the top forever. Lifetime reads stay in their own column.
+
+**Where a read comes from.** [`routes/public.js`](../../routes/public.js) serves each article
+through `sendPost`, which calls
+[`lib/data/blog-views.js`](../../lib/data/blog-views.js)`#recordView` and then `sendPage`.
+Counting on the SERVER rather than from a script in the page is the whole point: these are
+static HTML articles that run no analytics of their own, and a beacon would miss exactly the
+readers worth counting (reader modes, content blockers, clients that never run the script).
+Counting is best-effort — the store swallows its own write errors and the route catches the
+rest — because the article is what the reader came for.
+
+**The article list is scanned, not listed.**
+[`lib/content/blog-posts.js`](../../lib/content/blog-posts.js) reads `public/blog/*.html` once
+per process and takes each title from the article's own `<h1>` and its date from the
+`article:published_time` it already carries. So **publishing a post needs no step here**: it
+appears in the tab on the next deploy. Reads for a slug whose file is gone are still reported,
+marked `removed` — a deleted article's readership is still a fact about the site.
+
+**Bots are flagged, not dropped**, exactly as on the Referrals tab: a blog URL is crawled and
+unfurled well before a human opens it. `isBotUserAgent` (reused from
+`lib/data/referral-links.js`) classifies on the user-agent; everything called a "read" is
+`is_bot = 0`, and the excluded count is shown beside it.
+
+**What is not stored:** no IP address, no user-agent string (inspected in memory, then
+dropped), and no referrer query string — only `host/path`. Rows are pruned past 400 days and
+capped per slug, since this is an unauthenticated write path onto the volume the SQLite DB
+lives on.
+
+**Endpoint** (behind `protectLogs`): `GET /api/admin/blog-views?days=` — `days` is clamped to
+7–365, never rejected. It lives in its own router,
+[`routes/admin-blog.js`](../../routes/admin-blog.js), because `routes/admin.js` is at its
+650-line lint cap. Without the store configured it answers the catalog with zeroed counts and
+`configured: false`, so the tab says the counter is off rather than showing an error.
 
 ## API usage tab
 

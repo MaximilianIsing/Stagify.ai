@@ -46,8 +46,13 @@
     host.textContent = '';
     var title = host.getAttribute('data-demo-title');
     var d = title ? Object.assign({}, demo, { title: title }) : demo;
-    // dots:false keeps the homepage showcase chrome-free (nav via card + click)
-    SupademoPlayer.mount(host, d, { dots: false });
+    // dots:false keeps the homepage showcase chrome-free (nav via card + click).
+    // The instance is kept on the host because the player's callout card is placed in
+    // FRAME PIXELS and its only automatic recompute is window.resize — the showcase
+    // has to be able to call reflow() when the box resizes without the window doing
+    // so, which is exactly what entering fullscreen does. guides.js keeps its own the
+    // same way, on .__player.
+    host.__player = SupademoPlayer.mount(host, d, { dots: false });
   }
 
   function init() {

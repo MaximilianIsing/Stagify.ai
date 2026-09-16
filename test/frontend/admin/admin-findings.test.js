@@ -28,6 +28,7 @@ import assert from 'node:assert/strict';
 
 import {
   ALL_RULES, runFindings, sortFindings, finding, confidenceFor, SEVERITY_RANK,
+  gradeRate, MIN_AFFECTED, MIN_CRITICAL_AFFECTED,
 } from '../../../public/scripts/admin/findings.js';
 import { activityIndexFrom } from '../../../public/scripts/admin/analytics-users.js';
 
@@ -262,6 +263,124 @@ test('a segment that genuinely fails more often is reported with its interval', 
   assert.ok(f.sample >= 100, `the sample should be the segment size, got ${f.sample}`);
 });
 
+// ── Impact gating: the reason the tab stopped crying wolf ───────────────────
+//
+// The tab shipped grading segment severity on the Wilson POINT estimate after
+// gating on the LOWER bound. Against a rare global failure rate those two
+// disagree violently: one failure in fifty renders posts a point estimate tens of
+// times the baseline, so `critical` was arithmetically guaranteed and the card
+// read "Dorm fails 13.3x more often than average" over a single failed render.
+// These cases pin the fix from both sides — the small one must go quiet, the real
+// one must stay loud.
+
+test('a single failure never produces an alarm, however extreme the ratio', () => {
+  // The exact shape that was reported: 1 of 52 in one room, against a product-wide
+  // rate near 0.1%. The interval genuinely does exclude the baseline, so the
+  // statistical gate passes and always will — impact is the only thing that can
+  // reject this, which is the whole point of the floor.
+  const promptRows = [
+    ...rows(1000, { room: 'Living room', status: 'ok' }),
+    ...Array.from({ length: 1 }, (_, i) => promptRow({ room: 'Dorm', status: 'failed', at: NOW - i * 3600e3 })),
+    ...Array.from({ length: 51 }, (_, i) => promptRow({ room: 'Dorm', status: 'ok', at: NOW - i * 3600e3 })),
+  ];
+  const input = baseInput({ promptRows, index: activityIndexFrom({ promptRows }) });
+
+  const f = findingById(input, 'reliability.room-failure');
+  assert.equal(f, null, 'one failed render must not become a finding at any ratio');
+
+  // And it must be SUPPRESSED rather than silent — "too few failures to call" is
+  // information, and the roll-up card is where it belongs.
+  const roll = findingById(input, 'quality.suppressed-for-sample');
+  assert.ok(roll, 'the rule must report that it looked and declined');
+  assert.ok(
+    roll.evidence.some((e) => /Dorm/.test(e.value) && /too few/.test(e.value)),
+    `the roll-up should name the segment and say why: ${JSON.stringify(roll.evidence)}`,
+  );
+});
+
+test('a real outage in one segment is still reported, and still loud', () => {
+  // The other side of the same gate. 40 failures in 120 renders against a clean
+  // baseline is exactly what the tab exists to surface; the floor must not touch it.
+  const promptRows = [
+    ...rows(1000, { room: 'Living room', status: 'ok' }),
+    ...Array.from({ length: 40 }, (_, i) => promptRow({ room: 'Dorm', status: 'failed', at: NOW - i * 3600e3 })),
+    ...Array.from({ length: 80 }, (_, i) => promptRow({ room: 'Dorm', status: 'ok', at: NOW - i * 3600e3 })),
+  ];
+  const f = findingById(baseInput({ promptRows, index: activityIndexFrom({ promptRows }) }), 'reliability.room-failure');
+  assert.ok(f, 'a 33%-vs-0% gap on 120 renders must still fire');
+  assert.equal(f.severity, 'critical');
+  assert.ok(
+    f.evidence.some((e) => e.label === 'Failed renders' && e.value === '40'),
+    'the count the severity turns on must be on the card',
+  );
+});
+
+test('the headline multiplier is a floor, not a point estimate', () => {
+  // The title used to quote foldChange(point, baseline), which halves on the next
+  // render. It now quotes the lower bound, so the number is one the data supports
+  // at worst -- and it must therefore be SMALLER than the raw ratio of the rates.
+  //
+  // The rest of the product fails at a low but NON-ZERO rate here on purpose: a
+  // multiplier against a zero baseline is not expressible, and the rule correctly
+  // states the bare rate instead in that case.
+  const promptRows = [
+    ...rows(990, { room: 'Living room', status: 'ok' }),
+    ...Array.from({ length: 10 }, (_, i) => promptRow({ room: 'Living room', status: 'failed', at: NOW - i * 3600e3 })),
+    ...Array.from({ length: 30 }, (_, i) => promptRow({ room: 'Dorm', status: 'failed', at: NOW - i * 3600e3 })),
+    ...Array.from({ length: 70 }, (_, i) => promptRow({ room: 'Dorm', status: 'ok', at: NOW - i * 3600e3 })),
+  ];
+  const f = findingById(baseInput({ promptRows, index: activityIndexFrom({ promptRows }) }), 'reliability.room-failure');
+  assert.ok(f);
+  assert.match(f.title, /at least/, 'the title must state the multiplier as a floor');
+
+  const segment = Number(f.evidence.find((e) => e.label === 'Segment rate').value.replace('%', ''));
+  const lower = Number(f.evidence.find((e) => e.label === '95% interval').value.split('–')[0].replace('%', ''));
+  assert.ok(lower < segment, 'the interval floor must sit below the observed rate');
+});
+
+test('the baseline a segment is compared against excludes that segment', () => {
+  // The segment used to be inside its own baseline, which shrinks the measured gap
+  // exactly when the segment is large -- i.e. when the finding matters most. Here
+  // one room carries every failure in the product: compared against everything
+  // else its rate is 30% vs 0%, but compared against a baseline containing itself
+  // it is 30% vs 2.7%, an order of magnitude weaker.
+  const promptRows = [
+    ...rows(1000, { room: 'Living room', status: 'ok' }),
+    ...Array.from({ length: 30 }, (_, i) => promptRow({ room: 'Dorm', status: 'failed', at: NOW - i * 3600e3 })),
+    ...Array.from({ length: 70 }, (_, i) => promptRow({ room: 'Dorm', status: 'ok', at: NOW - i * 3600e3 })),
+  ];
+  const f = findingById(baseInput({ promptRows, index: activityIndexFrom({ promptRows }) }), 'reliability.room-failure');
+  assert.ok(f);
+  const rest = f.evidence.find((e) => e.label === 'Rest of product');
+  assert.ok(rest, 'the comparison baseline must be shown');
+  assert.equal(rest.value, '0.0%', 'no other room failed, so the rest of the product is at zero');
+});
+
+test('gradeRate refuses to grade below the affected floor, at any ratio', () => {
+  // Directly, because the ladder is now shared and a future rule will reach for it.
+  assert.equal(
+    gradeRate({ lower: 0.9, baseline: 0.0001, affected: MIN_AFFECTED - 1 }),
+    null,
+    'a 9000x gap on too few events is still not actionable',
+  );
+  assert.equal(gradeRate({ lower: 0.5, baseline: 0.01, affected: MIN_CRITICAL_AFFECTED }), 'critical');
+  assert.equal(
+    gradeRate({ lower: 0.5, baseline: 0.01, affected: MIN_CRITICAL_AFFECTED - 1 }),
+    'warning',
+    'past the actionable floor but short of the critical one is a warning',
+  );
+  assert.equal(gradeRate({ lower: 0.011, baseline: 0.01, affected: 50 }), 'warning', 'a small real gap is a warning');
+  assert.equal(gradeRate({ lower: 0.01, baseline: 0.01, affected: 50 }), null, 'no gap is not a finding');
+});
+
+test('confidence is capped by the number of events the rate rests on', () => {
+  // A 122-render segment with one failure was labelled "medium confidence" purely
+  // on the 122, when every digit of the rate rested on the 1.
+  assert.equal(confidenceFor(500), 'high', 'sample-only behaviour is unchanged');
+  assert.equal(confidenceFor(500, 1), 'low', 'one event cannot support a high-confidence rate');
+  assert.equal(confidenceFor(500, MIN_CRITICAL_AFFECTED), 'high');
+});
+
 test('the same gap on a tiny segment is NOT reported', () => {
   // 3 of 8 — the case pinned in admin-stats.test.js as one that clears the Wilson
   // test but must still be suppressed by the minimum sample. This is the
@@ -388,20 +507,38 @@ test('a revoked grant and one on a paying account are both left alone', () => {
   assert.equal(findingById(baseInput({ users }), 'revenue.comp-grants'), null);
 });
 
+/** N pro accounts that each got a welcome email and never an ending reminder. */
+function trialUsers(n) {
+  return Array.from({ length: n }, (_, i) => user({
+    id: `u${i + 1}`,
+    email: `t${i + 1}@example.com`,
+    plan: 'pro',
+    stripeSubscriptionId: `sub_${i + 1}`,
+    lastStagedAt: new Date(NOW - DAY).toISOString(),
+    trialLifecycle: {
+      startAt: new Date(NOW - 20 * DAY).toISOString(),
+      sent: { welcome: new Date(NOW - 20 * DAY).toISOString(), ending: null },
+    },
+  }));
+}
+
 test('welcome emails sent with zero trial-ending reminders is a critical', () => {
   // The only lifecycle email with no sweep behind it; it fires solely from a
   // Stripe webhook that has to be enabled by hand. A zero here means the
   // highest-intent message in the funnel has never once been sent.
-  const users = [user({
-    plan: 'pro',
-    stripeSubscriptionId: 'sub_1',
-    lastStagedAt: new Date(NOW - DAY).toISOString(),
-    trialLifecycle: { startAt: new Date(NOW - 20 * DAY).toISOString(), sent: { welcome: new Date(NOW - 20 * DAY).toISOString(), ending: null } },
-  })];
-  const f = findingById(baseInput({ users }), 'revenue.trial-ending-unsent');
+  const f = findingById(baseInput({ users: trialUsers(MIN_AFFECTED) }), 'revenue.trial-ending-unsent');
   assert.ok(f);
   assert.equal(f.severity, 'critical');
   assert.match(f.action, /trial_will_end/, 'the action must name the exact Stripe setting');
+});
+
+test('the same misconfiguration on a single trial is a warning, not a critical', () => {
+  // The webhook is equally off either way — but nothing has been LOST yet, and a
+  // critical that fires on the first trial a new deployment ever starts is how an
+  // operator learns to stop reading the top section.
+  const f = findingById(baseInput({ users: trialUsers(1) }), 'revenue.trial-ending-unsent');
+  assert.ok(f, 'it must still be reported — only the weight changes');
+  assert.equal(f.severity, 'warning');
 });
 
 test('once an ending reminder has gone out, the rule goes quiet', () => {

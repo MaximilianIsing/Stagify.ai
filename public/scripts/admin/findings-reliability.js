@@ -28,7 +28,7 @@
 
 import { COL, withOutcome, dayKeyLocal, categoryKey } from './analytics.js';
 import { wilsonInterval, robustZ, foldChange, median } from './stats.js';
-import { finding, suppressed, fmtCount, fmtPct, fmtX } from './findings.js';
+import { finding, suppressed, fmtCount, fmtPct, fmtX, gradeRate, confidenceFor, MIN_AFFECTED } from './findings.js';
 
 const AREA = 'Reliability';
 
@@ -103,15 +103,17 @@ const failureSpike = {
     ];
     const series30 = { points: series.map((p) => ({ key: p.key, label: p.key, value: p.value })), unit: 'failures' };
 
-    if (z !== null && z >= Z_ALERT && today.value > 0) {
+    // `today.value >= MIN_AFFECTED` closes the hole this branch's own comment used
+    // to describe: against a baseline of mostly zeros the mean-absolute-deviation
+    // fallback in robustZ gives a tiny scale, so a SINGLE failure clears z >= 3 and
+    // "1 renders failed today" rendered as a critical. A robust z answers "is today
+    // unusual"; it cannot answer "is today worth waking up for", and only the second
+    // question belongs in a severity.
+    if (z !== null && z >= Z_ALERT && today.value >= MIN_AFFECTED) {
       return finding({
         id: 'reliability.failure-spike',
         severity: 'critical',
         area: AREA,
-        // `today.value` really can be 1: against a baseline of mostly zeros the
-        // mean-absolute-deviation fallback in robustZ gives a small scale, so a
-        // single failure clears the threshold. "1 renders failed" is the sentence
-        // that would result.
         title: `${fmtCount(today.value)} render${today.value === 1 ? '' : 's'} failed today `
           + `— well above the usual ${fmtCount(median(baseline) ?? 0)}`,
         detail: 'Today sits far outside the spread of the last 30 days, measured against the median rather '
@@ -165,8 +167,6 @@ function segmentRule(spec) {
       const rows = recorded(input);
       if (rows.length < MIN_GLOBAL) return null; // A1 already reports the thin-data case.
 
-      const globalRate = rows.filter(isFailure).length / rows.length;
-
       // Grouped through categoryKey because these columns are FREE TEXT written by
       // several client versions — grouping on the raw string charts "Living room"
       // and "Living Room" as two different rooms.
@@ -190,36 +190,69 @@ function segmentRule(spec) {
         return suppressed(`No ${spec.noun} has ${MIN_SEGMENT} recorded renders yet, so none can be compared.`);
       }
 
-      // Worst first, and only the worst is reported: three cards saying the same
-      // thing about three rooms is a list, not a finding.
-      const worst = eligible
-        .map((g) => ({ ...g, ci: wilsonInterval(g.failed, g.total) }))
-        .filter((g) => g.ci && g.ci.lower > globalRate)
-        .sort((a, b) => /** @type {any} */ (b.ci).point - /** @type {any} */ (a.ci).point)[0];
+      // The baseline EXCLUDES the segment being tested. `globalRate` contains it,
+      // so a segment carrying most of the product's failures was being compared
+      // against a number it had itself inflated — the comparison shrinks exactly
+      // when the finding matters most. Against everything else is the question
+      // actually being asked: "is this room worse than the other rooms?"
+      const totalFailed = rows.filter(isFailure).length;
+      const scored = eligible
+        .map((g) => {
+          const restTotal = rows.length - g.total;
+          const restRate = restTotal > 0 ? (totalFailed - g.failed) / restTotal : null;
+          return { ...g, ci: wilsonInterval(g.failed, g.total), restRate };
+        })
+        .filter((g) => g.ci && g.restRate !== null && g.ci.lower > g.restRate);
 
-      if (!worst) return null;
+      if (!scored.length) return null;
+
+      // Ranked by the LOWER bound, not the point estimate. Sorting on the point
+      // estimate systematically crowned the smallest eligible segment: a 1-in-30
+      // fluke posts a higher point rate than a 40-in-400 outage, so the genuinely
+      // broken category lost the sort to noise and never got a card.
+      const worst = scored.sort((a, b) => /** @type {any} */ (b.ci).lower - /** @type {any} */ (a.ci).lower)[0];
       const ci = /** @type {any} */ (worst.ci);
-      const times = foldChange(ci.point, globalRate);
+      const restRate = /** @type {number} */ (worst.restRate);
+
+      // Impact, not just significance. A Wilson test against a 0.1% baseline says
+      // yes to ONE failure in fifty renders, and the old ladder then graded that
+      // on the point estimate and called it critical at "13.3× more often".
+      // Suppressed rather than dropped: the effect may well be real, and "too few
+      // failures to call" is a thing the operator should be told, not a silence.
+      const severity = gradeRate({ lower: ci.lower, baseline: restRate, affected: worst.failed });
+      if (!severity) {
+        return suppressed(
+          `${worst.label} has the highest ${spec.noun} failure rate, but only `
+          + `${fmtCount(worst.failed)} of its ${fmtCount(worst.total)} renders failed — too few to call.`,
+        );
+      }
+
+      // The headline multiplier comes off the lower bound too, so the number in
+      // the title is a floor the data supports rather than a point estimate that
+      // halves on the next render.
+      const times = foldChange(ci.lower, restRate);
 
       return finding({
         id: spec.id,
-        severity: ci.point > globalRate * 3 ? 'critical' : 'warning',
+        severity,
         area: AREA,
         title: times
-          ? `${worst.label} fails ${fmtX(times)} more often than average`
+          ? `${worst.label} fails at least ${fmtX(times)} more often than the rest`
           : `${worst.label} fails ${fmtPct(ci.point * 100)} of the time`,
         detail: `${fmtCount(worst.failed)} of ${fmtCount(worst.total)} ${worst.label} renders failed `
-          + `(${fmtPct(ci.point * 100)}) against ${fmtPct(globalRate * 100)} across everything. The 95% `
-          + `interval for this segment is ${fmtPct(ci.lower * 100)}–${fmtPct(ci.upper * 100)}, which excludes `
-          + 'the overall rate — so the gap is real rather than a small-sample artefact.',
+          + `(${fmtPct(ci.point * 100)}) against ${fmtPct(restRate * 100)} across everything else. The 95% `
+          + `interval for this segment is ${fmtPct(ci.lower * 100)}–${fmtPct(ci.upper * 100)}, so the rate `
+          + `is at least ${fmtPct(ci.lower * 100)} — on ${fmtCount(worst.failed)} actual failures.`,
         evidence: [
           { label: 'Segment rate', value: fmtPct(ci.point * 100) },
-          { label: 'Overall rate', value: fmtPct(globalRate * 100) },
+          { label: 'Rest of product', value: fmtPct(restRate * 100) },
+          { label: 'Failed renders', value: fmtCount(worst.failed) },
           { label: 'Sample', value: `${fmtCount(worst.total)} renders` },
           { label: '95% interval', value: `${fmtPct(ci.lower * 100)}–${fmtPct(ci.upper * 100)}` },
         ],
         action: spec.hint,
         sample: worst.total,
+        confidence: confidenceFor(worst.total, worst.failed),
       });
     },
   };
@@ -341,11 +374,16 @@ const architectureDrift = {
       { label: '95% interval', value: `${fmtPct(ci.lower * 100)}–${fmtPct(ci.upper * 100)}` },
     ];
 
-    if (ci.lower > 0.1) {
+    // This rule already graded on the lower bound, which is why it was the one
+    // segment-style check that never cried wolf. The affected-count floor is added
+    // for the same reason it exists everywhere else on the tab — so the threshold
+    // is stated rather than merely implied by the interval arithmetic.
+    if (ci.lower > 0.1 && drifted >= MIN_AFFECTED) {
       return finding({
         id: 'reliability.architecture-drift',
         severity: 'critical',
         area: AREA,
+        confidence: confidenceFor(rows.length, drifted),
         title: `${fmtPct(ci.point * 100)} of renders changed the room's architecture`,
         detail: 'These renders all counted as successes — the model produced an image and the quality gate '
           + 'passed it — but the output no longer matches the room in the photo. For virtual staging that is '

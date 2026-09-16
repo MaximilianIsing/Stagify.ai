@@ -879,6 +879,13 @@ body.page-home main {
   position: relative;
   perspective: 1800px;
   perspective-origin: 50% 42%;
+  /* wireDrag() is pure Pointer Events with no preventDefault, which only works if the
+     browser has been told which axis it may keep. Without this it owns both, and it can
+     fire pointercancel — an abort, as far as the drag is concerned — before the pointer
+     has travelled the 60px threshold, so the swipe fails intermittently on touch. Same
+     declaration and same reason as .ba above (see staging-studio.js for the long form):
+     the browser keeps vertical panning, we get horizontal movement. */
+  touch-action: pan-y;
   /* studio-showcase.js overwrites this inline with the tallest panel's natural
      height. It used to follow whichever panel was in FRONT, which meant the section
      resized every time you changed tab and the four cards were visibly different
@@ -1078,6 +1085,17 @@ body.page-home main {
   outline: 3px solid var(--brand);
   outline-offset: 2px;
 }
+/* [hidden] is a UA rule at (0,0,0), which the author `display: inline-flex` above beats
+   outright — so wireFullscreen()'s `btn.hidden = true` did nothing at all. That branch
+   runs wherever document.fullscreenEnabled is falsy, which is every iPhone (Safari has
+   no unprefixed element fullscreen) and any iframe without allowfullscreen; it also
+   returns BEFORE wiring the click handler, and the `@media (hover: none)` rule above
+   then forces the button visible. The result was a permanent 44x44 tap target on the
+   artwork that did nothing. Restating the rule is the house fix — see
+   demo-player.css's .sdp__btn[hidden] and the eight other copies. */
+.shw__fs[hidden] {
+  display: none;
+}
 
 /* --- The fullscreen presentation ---
    The media element is promoted into the browser's top layer, so every ancestor
@@ -1096,17 +1114,29 @@ body.page-home main {
 }
 /* Height-driven, because width-driven overflows. The exterior pair is 1408/768; at a
    1707px-wide screen a full-width fit is 931px tall, taller than the 898px viewport,
-   so the bottom would be cut off. With a DEFINITE height and width:auto, aspect-ratio
-   derives the width instead and the media letterboxes into the screen.
+   so the bottom would be cut off.
+
+   But it derives the WIDTH from the viewport height and leaves height:auto — it must
+   NOT pin height:100% and let width:auto + max-width:100% cap the result. That pairing
+   looks equivalent and is not: as soon as the ratio-derived width exceeds the available
+   width, max-width wins, the height stays pinned, and the box renders at the VIEWPORT's
+   ratio instead of its own. The walkthrough player then drifts, because .sdp__img is
+   object-fit:cover (it crops) while .sdp__area is positioned in percentages of the
+   frame box (it does not) — so every highlight slides off its target by half the crop.
+   At 1920x1080 the 2.0016 AI Designer demo was losing ~44px per side. With the width
+   derived from the height, aspect-ratio always computes the height back and the media
+   letterboxes; it can never be squashed. guides.css does the same for its own panels.
 
    It has to be applied to whichever box actually carries the ratio, which is not the
    same element in both cases: .ba has it directly, but .designer-shell does NOT — the
    walkthrough's ratio lives on .designer-demo before the player mounts and moves to
    .sdp__frame after (the player sets .designer-demo to aspect-ratio:auto). Targeting
-   only the shell would leave the demo sized by width and spilling off the screen. */
+   only the shell would leave the demo sized by width and spilling off the screen.
+
+   6vmin is the two 3vmin paddings of .shw__media:fullscreen above. */
 .shw__media:fullscreen .ba {
-  height: 100%;
-  width: auto;
+  width: min(100%, calc((100vh - 6vmin) * (1408 / 768)));
+  height: auto;
   max-width: 100%;
   margin: 0 auto;
 }
@@ -1117,15 +1147,19 @@ body.page-home main {
   align-items: center;
   justify-content: center;
 }
+/* .designer-demo and .sdp are the SAME element once the player has mounted; the
+   fallback ratio covers the pre-mount skeleton, since --ar is set inline on the .sdp
+   root by demo-player.js. No dot row to subtract here — the homepage mounts with
+   dots:false, which is why this formula has no counterpart to the guides 34px. */
 .shw__media:fullscreen .designer-demo,
-.shw__media:fullscreen .sdp__frame {
-  height: 100%;
-  width: auto;
+.shw__media:fullscreen .sdp {
+  width: min(100%, calc((100vh - 6vmin) * var(--ar, 1.7778)));
+  height: auto;
   max-width: 100%;
 }
-.shw__media:fullscreen .sdp {
-  height: 100%;
-  width: fit-content;
+.shw__media:fullscreen .sdp__frame {
+  width: 100%;
+  height: auto;
   max-width: 100%;
 }
 .shw__media:fullscreen .shw__fs {
@@ -1174,13 +1208,22 @@ body.page-home main {
   overflow: hidden;
   background: transparent;
 }
-/* The Masking Studio walkthrough is recorded at ~1.62:1 (not 2:1 like the AI
-   Designer demo). Match its frame to that shape so Supademo fills it edge-to-
-   edge instead of letterboxing it — which made the demo look narrower than the
-   AI Designer one even though both frames are the same width. Scoped by id so
-   the AI Designer frame is untouched. */
+/* Per-panel overrides of the 2/1 default above, because each walkthrough is recorded
+   at its own ratio and this box sizes the SKELETON — the shape you look at until the
+   player mounts, at which point .designer-demo.sdp releases the ratio to .sdp__frame's
+   --ar. A disagreement here is therefore a visible jump on mount, not a static crop.
+   Keep these equal to the demo's `aspect` in scripts/demo-data.js; a test derives the
+   expectation from that file, so it cannot drift again.
+
+   Staging is the panel that is in front on load, and it was the one that was wrong:
+   `plus` is 1.7778, so its media box used to grow 12.5% taller the moment the player
+   arrived, re-measuring the stage under everything below it. The AI Designer panel
+   keeps the default — `designer` is 2.0016, i.e. 2/1 to within 0.08%. */
+#staging-studio-demo .designer-demo {
+  aspect-ratio: 1.7778;
+}
 #masking-studio-demo .designer-demo {
-  aspect-ratio: 1.62;
+  aspect-ratio: 1.6243;
 }
 .designer-demo__frame {
   position: absolute;

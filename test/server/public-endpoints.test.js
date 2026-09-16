@@ -78,6 +78,9 @@ test('blog hub and articles are served, and stay in sync with the sitemap', asyn
     '/blog/virtual-staging-disclosure-laws-by-state',
     '/blog/fsbo-listing-photos',
     '/blog/new-construction-listing-photos',
+    '/blog/virtual-staging-api',
+    '/blog/home-staging-cost',
+    '/blog/remove-furniture-from-listing-photos',
   ];
   for (const p of articles) {
     const res = await get(p);

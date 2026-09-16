@@ -1,0 +1,110 @@
+{
+  "before": {
+    "hash": "8b4a068942747d169be1bae167599360ef16553cb84cb7f4f1ed62af37d4243f",
+    "url": "/instagram/assets/sources/8b4a068942747d169be1bae167599360ef16553cb84cb7f4f1ed62af37d4243f.jpg",
+    "path": "C:\\Users\\Maxim\\Downloads\\Stagify\\instagram\\assets\\sources\\8b4a068942747d169be1bae167599360ef16553cb84cb7f4f1ed62af37d4243f.jpg",
+    "width": 3779,
+    "height": 5668,
+    "origin": "pexels",
+    "license": {
+      "type": "pexels",
+      "sourceUrl": "https://www.pexels.com/photo/furniture-covered-with-plastic-7415108/",
+      "photographer": "MART  PRODUCTION",
+      "photographerUrl": "https://www.pexels.com/@mart-production",
+      "licenseName": "Pexels License",
+      "licenseUrl": "https://www.pexels.com/license/",
+      "attributionRequired": false,
+      "attributionText": "Photo by MART  PRODUCTION on Pexels",
+      "retrievedAt": "2026-09-16T17:45:49.782Z"
+    }
+  },
+  "variants": [
+    {
+      "preset": "luxury",
+      "hash": "6e9a72bc2141e9767234906cf682c9e7a5a0e0b886c96bae87322fbafd375ddd",
+      "url": "/instagram/assets/sources/6e9a72bc2141e9767234906cf682c9e7a5a0e0b886c96bae87322fbafd375ddd.webp",
+      "path": "C:\\Users\\Maxim\\Downloads\\Stagify\\instagram\\assets\\sources\\6e9a72bc2141e9767234906cf682c9e7a5a0e0b886c96bae87322fbafd375ddd.webp",
+      "quality": {
+        "perfect": true,
+        "attempts": 2,
+        "bestScore": 100,
+        "defects": [
+          "PERFECT: false\nARCHITECTURE: same\nSCORE: 70\nWHY: The sofa in the staged image has only three legs visible, and one of those legs is not fully visible where it meets the floor."
+        ],
+        "reviewerUnavailable": false,
+        "sourcePhotosTried": 1,
+        "keptAttempt": 1
+      },
+      "params": {
+        "roomType": "Living room",
+        "furnitureStyle": "luxury",
+        "additionalPrompt": "Every piece of furniture must be complete and correctly formed, with the correct number of legs, each leg fully visible where it meets the floor and casting a contact shadow. Keep the existing walls, floor, window and ceiling exactly as photographed.",
+        "removeFurniture": false
+      },
+      "model": "gemini-3.1-flash-image"
+    },
+    {
+      "preset": "farmhouse",
+      "hash": "584b31d867c3bfcb83f7c9ccdff73f7bb699a7e19604d8f59571661ba8662c30",
+      "url": "/instagram/assets/sources/584b31d867c3bfcb83f7c9ccdff73f7bb699a7e19604d8f59571661ba8662c30.webp",
+      "path": "C:\\Users\\Maxim\\Downloads\\Stagify\\instagram\\assets\\sources\\584b31d867c3bfcb83f7c9ccdff73f7bb699a7e19604d8f59571661ba8662c30.webp",
+      "quality": {
+        "perfect": true,
+        "attempts": 1,
+        "bestScore": 100,
+        "defects": [],
+        "reviewerUnavailable": false
+      },
+      "params": {
+        "roomType": "Living room",
+        "furnitureStyle": "farmhouse",
+        "additionalPrompt": "Every piece of furniture must be complete and correctly formed, with the correct number of legs, each leg fully visible where it meets the floor and casting a contact shadow. Keep the existing walls, floor, window and ceiling exactly as photographed.",
+        "removeFurniture": false
+      },
+      "model": "gemini-3.1-flash-image"
+    },
+    {
+      "preset": "midcentury",
+      "hash": "3e5180d1ebeeec40c9b3874ced8ed99cecf678056dd12883e9cd4d1f514a3234",
+      "url": "/instagram/assets/sources/3e5180d1ebeeec40c9b3874ced8ed99cecf678056dd12883e9cd4d1f514a3234.webp",
+      "path": "C:\\Users\\Maxim\\Downloads\\Stagify\\instagram\\assets\\sources\\3e5180d1ebeeec40c9b3874ced8ed99cecf678056dd12883e9cd4d1f514a3234.webp",
+      "quality": {
+        "perfect": true,
+        "attempts": 3,
+        "bestScore": 100,
+        "defects": [
+          "PERFECT: false\nARCHITECTURE: same\nSCORE: 70\nWHY: The chair legs are not fully visible where they meet the floor, and do not cast contact shadows.",
+          "PERFECT: false\nARCHITECTURE: same\nSCORE: 70\nWHY: The chair legs are not fully visible where they meet the floor, and some do not cast a contact shadow."
+        ],
+        "reviewerUnavailable": false
+      },
+      "params": {
+        "roomType": "Living room",
+        "furnitureStyle": "midcentury",
+        "additionalPrompt": "Every piece of furniture must be complete and correctly formed, with the correct number of legs, each leg fully visible where it meets the floor and casting a contact shadow. Keep the existing walls, floor, window and ceiling exactly as photographed.",
+        "removeFurniture": false
+      },
+      "model": "gemini-3.1-flash-image"
+    },
+    {
+      "preset": "coastal",
+      "hash": "2b299b7de311f060fac97e0a44e170fbfa5b07448bad03994b057eb9a0dd56d0",
+      "url": "/instagram/assets/sources/2b299b7de311f060fac97e0a44e170fbfa5b07448bad03994b057eb9a0dd56d0.webp",
+      "path": "C:\\Users\\Maxim\\Downloads\\Stagify\\instagram\\assets\\sources\\2b299b7de311f060fac97e0a44e170fbfa5b07448bad03994b057eb9a0dd56d0.webp",
+      "quality": {
+        "perfect": true,
+        "attempts": 1,
+        "bestScore": 100,
+        "defects": [],
+        "reviewerUnavailable": false
+      },
+      "params": {
+        "roomType": "Living room",
+        "furnitureStyle": "coastal",
+        "additionalPrompt": "Every piece of furniture must be complete and correctly formed, with the correct number of legs, each leg fully visible where it meets the floor and casting a contact shadow. Keep the existing walls, floor, window and ceiling exactly as photographed.",
+        "removeFurniture": false
+      },
+      "model": "gemini-3.1-flash-image"
+    }
+  ]
+}
