@@ -108,7 +108,7 @@ const blogViews = createBlogViews(__dirname);
 // Who has unsubscribed from the trial-lifecycle emails, and the token that let
 // them. Opened unconditionally: the sender needs it to mint a link on every send,
 // erasure needs it to forget one, and the table is a row per mailed address.
-const emailOptOut = createEmailOptOut();
+const emailOptOut = createEmailOptOut(__dirname);
 // Admin-console sessions: the operator trades the master key for a scoped,
 // expiring, revocable token once, instead of retyping the key on every page load.
 // See lib/data/admin-sessions.js for why the key itself is never persisted.

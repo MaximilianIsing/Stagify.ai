@@ -133,8 +133,11 @@ test('a translated h1 uses a key that exists in the English pack', () => {
    */
   const packFor = (rel) => {
     const article = /^blog\/(.+)\.html$/.exec(rel);
-    if (!article || article[1] === 'index') return english;
-    const file = path.join(PUBLIC, 'blog', 'i18n', article[1], 'english.json');
+    if (!article) return english;
+    // The hub has its own pack directory (HUB_PACK_DIR in lib/i18n/blog-packs.js), keyed
+    // `hub.*`, because its strings are the grid chrome rather than any one article's prose.
+    const dir = article[1] === 'index' ? '_hub' : article[1];
+    const file = path.join(PUBLIC, 'blog', 'i18n', dir, 'english.json');
     return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : null;
   };
 

@@ -1,0 +1,125 @@
+{
+  "_meta": {
+    "sourceHash": "sha256:187d5dafab0a91e44c4a414a091e4e320a4fce84a9f6b037903c6f2438dbdb43",
+    "slug": null,
+    "lang": "dutch",
+    "hreflang": "nl",
+    "translatedAt": "2026-09-17",
+    "reviewed": false
+  },
+  "meta": {
+    "title": "Stagify.ai Blog: gidsen over virtuele woningstyling en tips voor vastgoed",
+    "description": "Praktische gidsen over virtuele woningstyling, MLS-vermeldingsregels en woningen sneller vermarkten met AI. Tips voor makelaars, verkopers en fotografen."
+  },
+  "hero": {
+    "title": "De Stagify Blog",
+    "body": "Praktische gidsen over virtuele woningstyling, vermelding op de MLS en het sneller vermarkten van je woningen, voor makelaars, verkopers en fotografen."
+  },
+  "cards": {
+    "remove-furniture-from-listing-photos": {
+      "tag": "Gidsen",
+      "title": "De meeste woningen zijn bewoond. Fotografeer ze toch.",
+      "excerpt": "De verkoper woont er nog en de fotograaf komt één keer. Hoe je hun meubels uit de foto haalt en betere meubels terugzet, wat er nooit weg mag, en de vijf plekken waar het misgaat.",
+      "meta": "16 september 2026 · 9 min leestijd",
+      "alt": "Twee foto's van dezelfde woonkamer naast elkaar op een donkere achtergrond: links ingericht met een grijze bank, een gedessineerd vloerkleed, een boekenkast en familiefoto's aan de muur, met het bijschrift „Zoals gefotografeerd”, en rechts dezelfde kamer zonder enig meubelstuk, met het bijschrift „Leeggehaald, klaar om te stylen”"
+    },
+    "home-staging-cost": {
+      "tag": "Kosten",
+      "title": "De mediane stylingrekening is $1,500. De jouwe niet.",
+      "excerpt": "NAR meldt een mediaan van $1,500. De offerte voor jouw lege driekamerwoning zegt $4,500 plus maandbedrag. Allebei kloppen ze. Wat er op de rekening staat en hoe je bepaalt waarvoor je betaalt.",
+      "meta": "9 september 2026 · 10 min leestijd",
+      "alt": "Een trapgrafiek op een donkere achtergrond: fysieke styling begint bij $4,000 om te plaatsen en loopt met $900 per maand op tot $6,700 na 120 dagen op de markt, terwijl virtuele woningstyling vlak op $0 blijft"
+    },
+    "virtual-staging-api": {
+      "tag": "Product",
+      "title": "De stylingpijplijn heeft nu een API. Eén call, één foto.",
+      "excerpt": "Stuur een kamerfoto en krijg in dezelfde respons een gestylede foto terug. Prepaid credits vanaf $0.15 per afbeelding, geen abonnement, geen jobwachtrij, en de redenering achter alle drie.",
+      "meta": "2 september 2026 · 8 min leestijd",
+      "alt": "Een gestylede thuiswerkplek met een houten bureau en ingebouwde planken, met daarover een witte kaart met de tekst „One HTTP call. One staged photo.”"
+    },
+    "new-construction-listing-photos": {
+      "tag": "Nieuwbouw",
+      "title": "Je kunt geen huis fotograferen dat er nog niet staat",
+      "excerpt": "Meer dan driekwart van de nieuwbouwwoningen op de markt heeft geen afgewerkt interieur. Dit mag je per bouwfase eerlijk publiceren, en hier past een render van de plattegrond.",
+      "meta": "16 augustus 2026 · 9 min leestijd",
+      "alt": "Het interieur van een huis in aanbouw met kale houten stijlen, onder een blauwe balk met de tekst „77% van de nieuwbouwwoningen te koop is onafgewerkt”"
+    },
+    "fsbo-listing-photos": {
+      "tag": "Gidsen",
+      "title": "FSBO staat op een dieptepunt. De courtage is niet de reden.",
+      "excerpt": "Nog maar 5% van de woningen wordt door de eigenaar zelf verkocht, en 40% van die verkopers heeft het huis nooit onder de aandacht gebracht. Verkoop je zonder makelaar, dan zijn de foto's de advertentie.",
+      "meta": "14 augustus 2026 · 8 min leestijd",
+      "alt": "Een geel huis van twee verdiepingen in het gouden uur met een „For Sale By Owner”-bord in de voortuin met de tekst „De foto's doen het verkoopwerk”"
+    },
+    "virtual-staging-disclosure-laws-by-state": {
+      "tag": "Wetgeving",
+      "title": "Moet je virtuele woningstyling vermelden? De regels van 2026, staat voor staat",
+      "excerpt": "Twee staten hebben een wet en maar één is van kracht. Overal elders is het je MLS die je daadwerkelijk beboet. Wat elk daarvan eist, geciteerd uit de bron.",
+      "meta": "11 augustus 2026 · 9 min leestijd",
+      "alt": "Een virtueel gestylede woonkamer met daarover een witte kaart met de kop „Wie het echt verplicht stelt” en een lijst met Californië, Wisconsin en alle andere staten"
+    },
+    "free-virtual-staging": {
+      "tag": "Gidsen",
+      "title": "Gratis virtuele woningstyling: wat „gratis” je echt oplevert",
+      "excerpt": "De meeste gratis tools zijn gratis om te bekijken en betaald om te gebruiken. Dit is de test met vijf vragen of je een gratis render echt mag publiceren. Voer hem ook op ons uit.",
+      "meta": "9 augustus 2026 · 8 min leestijd",
+      "alt": "Een gestylede groene woonkamer met een marmeren schouw en een oranjebruine fluwelen bank, met daarover een prijskaart die $16 tot $75 per gestylede foto doorstreept ten gunste van $0 op het gratis abonnement"
+    },
+    "curb-appeal-real-estate-photos": {
+      "tag": "Vastgoed",
+      "title": "De gevelfoto is de enige foto die elke koper ziet",
+      "excerpt": "92% van de Realtors raadt verkopers aan die eerst aan te pakken, en NAR's eigen cijfers over kostenterugverdiening laten zien dat goedkoop onderhoud elke dure verbouwing verslaat.",
+      "meta": "7 augustus 2026 · 9 min leestijd",
+      "alt": "Een suburbane woning van twee verdiepingen in het gouden uur met een vers gemaaid gestreept gazon en een lege oprit"
+    },
+    "prepare-your-listing-for-the-fall-market": {
+      "tag": "Vastgoed",
+      "title": "De najaarsmarkt is de lastige. Begin in augustus met voorbereiden.",
+      "excerpt": "September en oktober zijn voor verkopers de zwakste maanden van het jaar. Dit is de kalender van achteren naar voren, en de ene stap die je tot één middag kunt indikken.",
+      "meta": "3 augustus 2026 · 8 min leestijd",
+      "alt": "Een warm gestylede woonkamer met een brandende haard, met daarover een tijdlijn voor een najaarsadvertentie"
+    },
+    "dorm-room-design-ai-college-freshmen": {
+      "tag": "Studenten",
+      "title": "Studentenkamer ontwerpen met AI: plan je kamer voordat je verhuist",
+      "excerpt": "Ons nieuwe kamertype Dorm behoudt het meubilair van de universiteit en ontwerpt eromheen, zodat je de kamer al ziet vóór de verhuisdag.",
+      "meta": "27 juli 2026 · 6 min leestijd",
+      "alt": "Een kale studentenkamer naast dezelfde kamer, warm ingericht met vloerkleden en lichtslingers"
+    },
+    "top-10-ai-virtual-staging-sites-2026": {
+      "tag": "Vergelijking",
+      "title": "De top 10 AI-tools voor virtuele woningstyling in 2026, gerangschikt",
+      "excerpt": "Tien tools beoordeeld op prijs, snelheid, controle en beeldkwaliteit, plus waar elk van ze echt het beste in is.",
+      "meta": "22 juli 2026 · 10 min leestijd",
+      "alt": "Een gestylede woonkamer naast een genummerd podium met de rangschikking"
+    },
+    "does-virtual-staging-help-sell-homes": {
+      "tag": "Vastgoed",
+      "title": "Helpt virtuele woningstyling echt bij de verkoop? Wat de data zeggen",
+      "excerpt": "Het bewijs voor styling is sterk. Dit laten de cijfers van NAR en RESA zien, en hier past virtuele woningstyling in.",
+      "meta": "17 juli 2026 · 7 min leestijd",
+      "alt": "Een gestylede woonkamer met een stijgende verkoopgrafiek"
+    },
+    "masking-studio-and-ai-designer": {
+      "tag": "Product",
+      "title": "Masking Studio en AI Designer: de twee functies die Stagify onderscheiden",
+      "excerpt": "Stylen met één klik is nog maar het begin. Zie hoe maskeren tot op de pixel en een AI om mee te praten je volledige controle geven.",
+      "meta": "10 juli 2026 · 6 min leestijd",
+      "alt": "Een gestylede eetkamer waarin een AI-selectiekader het meubilair markeert"
+    },
+    "is-virtual-staging-allowed-on-the-mls": {
+      "tag": "Vastgoed",
+      "title": "Mag virtuele woningstyling op de MLS? De vermeldingsregels uitgelegd",
+      "excerpt": "Ja, virtuele woningstyling wordt breed geaccepteerd, zolang je het vermeldt. Zo werken de regels en zo blijf je in orde.",
+      "meta": "3 juli 2026 · 7 min leestijd",
+      "alt": "Een gestylede woonkamer met een verificatiebadge, als beeld van eerlijke virtuele woningstyling"
+    },
+    "stagify-vs-other-virtual-staging-tools": {
+      "tag": "Vergelijking",
+      "title": "Stagify tegenover andere tools voor virtuele woningstyling: een eerlijke vergelijking voor 2026",
+      "excerpt": "Traditionele styling, diensten met een eigen designer, AI per foto: hoe ze scoren op kosten, snelheid en controle.",
+      "meta": "15 juni 2026 · 8 min leestijd",
+      "alt": "Drie gestylede woonkamers naast elkaar vergeleken, met de beste optie uitgelicht"
+    }
+  }
+}

@@ -13,10 +13,12 @@ import { createPageRenderer } from '../lib/i18n/page-renderer.js';
 import {
   articleLocales,
   articlesForLocale,
+  HUB_PACK_DIR,
   localesForHub,
   packDirFor,
   slugsForLocale,
 } from '../lib/i18n/blog-packs.js';
+import { pruneHubForLocale } from '../lib/i18n/blog-hub.js';
 import { logger } from '../lib/logger.js';
 
 /**
@@ -130,9 +132,15 @@ export default function createI18nRouter({ __dirname, DEBUG_MODE, blogViews = nu
     const hubPage = {
       path: BLOG_HUB.path,
       file: BLOG_HUB.file,
+      packDir: HUB_PACK_DIR,
+      packKey: 'hub',
       localizedPaths,
       crumbKeys: new Map([[BLOG_HUB.path, 'navigation.blog']]),
       locales: localesForHub(),
+      // The grid is one file shared by every locale, so the cards for articles this
+      // language has no pack for have to come out — following one would 404, because the
+      // route behind it is never registered. See lib/i18n/blog-hub.js.
+      postProcess: (html) => pruneHubForLocale(html, available, locale.prefix),
     };
     // Registered without the trailing slash: Express's non-strict routing answers both
     // /es/blog and /es/blog/, and the page's self-referential canonical names the
