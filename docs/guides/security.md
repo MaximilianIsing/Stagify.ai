@@ -283,6 +283,11 @@ on them, as the `scriptSrc` comment in `app-middleware.js` notes), so tightening
 them risks silently losing conversion data — a missed beacon domain produces no error.
 An allowlist is worth doing eventually, but as defence in depth, not as this fix.
 
+Note that those beacons are **conditional in practice**: `gtag.js` returns before the
+loader is appended when the visitor sends Global Privacy Control or has opted out via
+privacy.html §16.3, so on those loads none of the four ad origins is contacted at all.
+The CSP allowance is the ceiling, not a description of every request.
+
 **Why it is not a one-line change.** The real fix is an `httpOnly` cookie, and the
 security benefit arrives only once the browser stops holding a readable token —
 cookie plumbing on its own buys nothing. Scope, measured:

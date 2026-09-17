@@ -137,6 +137,11 @@ export function initTestimonialDeck(opts = {}) {
       // Buried cards have pointer-events:none in CSS, but check anyway: a stale paint
       // or a CSS load failure should not let a drag start on the wrong card.
       if (card.dataset.top === undefined) return;
+      // Never start a drag on the name's LinkedIn link. setPointerCapture retargets the
+      // compatibility mouse events (including `click`) to the capturing card, so without
+      // this the anchor would never see its own click and the profile would not open.
+      const target = /** @type {any} */ (e.target);
+      if (target && typeof target.closest === 'function' && target.closest('a')) return;
       drag = { x: e.clientX, card };
       card.classList.add('is-dragging');
       if (card.setPointerCapture) card.setPointerCapture(e.pointerId);

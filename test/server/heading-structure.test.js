@@ -115,10 +115,34 @@ test('a translated h1 uses a key that exists in the English pack', () => {
   // one. A typo'd key would silently fall back to the English text and never be
   // translated — invisible in every other test.
   const english = JSON.parse(fs.readFileSync(path.join(PUBLIC, 'languages', 'english.json'), 'utf8'));
-  const lookup = (key) => key.split('.').reduce((node, part) => (node == null ? node : node[part]), english);
+
+  /**
+   * The pack a page's keys resolve against.
+   *
+   * A blog article does NOT use the shared site pack: its prose lives in its own
+   * public/blog/i18n/<slug>/<lang>.json (see lib/i18n/blog-packs.js), because an article
+   * can exist in six languages while the marketing pages exist in all eleven. Checking
+   * `post.title` against english.json is looking in the wrong file and would report every
+   * article as broken.
+   * An article with no pack on disk yet is English-only: the text in the markup IS the
+   * source, the data-lang key is a hook for a translation that does not exist, and there
+   * is nothing it could be a typo of. Those return null and are skipped here — whether a
+   * pack exists at all is test/i18n/blog-manifest.test.js's job, not this guard's.
+   * @param {string} rel
+   * @returns {Record<string, unknown> | null}
+   */
+  const packFor = (rel) => {
+    const article = /^blog\/(.+)\.html$/.exec(rel);
+    if (!article || article[1] === 'index') return english;
+    const file = path.join(PUBLIC, 'blog', 'i18n', article[1], 'english.json');
+    return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : null;
+  };
 
   const missing = [];
   for (const page of PAGES) {
+    const pack = packFor(page.rel);
+    if (!pack) continue;
+    const lookup = (key) => key.split('.').reduce((node, part) => (node == null ? node : node[part]), pack);
     for (const match of page.html.matchAll(/<h1\b[^>]*\bdata-lang="([^"]+)"/gi)) {
       if (typeof lookup(match[1]) !== 'string') missing.push(`${page.rel} → ${match[1]}`);
     }

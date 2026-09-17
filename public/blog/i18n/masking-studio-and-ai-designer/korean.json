@@ -1,0 +1,26 @@
+{
+  "_meta": {
+    "sourceHash": "sha256:81f056cdd7ef00aa8e75428c956106619a7738a5fc49f8905665126c9da4e802",
+    "slug": "masking-studio-and-ai-designer",
+    "lang": "korean",
+    "hreflang": "ko",
+    "translatedAt": "2026-09-17",
+    "marketNote": false,
+    "reviewed": false
+  },
+  "meta": {
+    "title": "Masking Studio와 AI Designer: Stagify를 다르게 만드는 기능 | Stagify.ai",
+    "description": "대부분의 AI 홈스테이징 도구는 한 번 클릭하면 나오는 대로 받아들여야 합니다. Stagify의 Masking Studio와 AI Designer는 픽셀 단위 정밀도와 대화형 제어를 제공합니다."
+  },
+  "title": "Masking Studio와 AI Designer: Stagify를 다르게 만드는 두 가지 기능",
+  "eyebrow": "제품",
+  "byline": "작성 <strong>Stagify.ai</strong> · 2026년 7월 10일 · 6분 소요",
+  "crumb": "Masking Studio와 AI Designer",
+  "figureAlt": "AI 선택 상자가 가구 하나를 강조 표시하고 있는, 스테이징된 다이닝룸",
+  "body": "<p class=\"lead\">몇 초 만에 가구가 놓인 사진이 필요할 때 원클릭 AI 스테이징은 훌륭합니다. 하지만 실제 매물은 늘 그렇게 단순하지 않습니다. 사진의 <em>일부</em>만 바꿔야 할 때도 있고, 특정 가구를 놓아야 할 때도 있으며, 딱 원하는 모습이 나올 때까지 공간을 계속 다듬어야 할 때도 있습니다. Stagify의 두 가지 <a href=\"/stagify-plus.html\">Stagify+</a> 고급 기능은 바로 그런 순간을 위해 만들어졌습니다.</p>\n\n        <h2>원클릭 스테이징은 바닥이지 천장이 아닙니다</h2>\n        <p>대부분의 AI 스테이징 도구는 버튼 하나에서 멈춥니다. 업로드하고, 스타일을 고르고, 나온 결과를 그대로 받아들이는 방식이죠. 훌륭한 출발점이고 Stagify의 무료 스테이징도 그렇게 작동합니다. 하지만 통제권이 필요해지는 순간 이 방식은 무너집니다. 구석에만 가구가 필요한 사진, 러그는 마음에 드는데 소파는 아닌 방, 매물로 올리기까지 세 번의 수정이 필요한 공간처럼요. Stagify는 정확히 그런 순간을 위해 두 가지 도구를 더했습니다.</p>\n\n        <h2>Masking Studio: 픽셀 단위의 정밀함</h2>\n        <p>Masking Studio에서는 사진의 어느 부분이 바뀔 수 있는지를 <strong>정확히</strong> 지정하고, 나머지는 손대지 않은 채로 둡니다. 작동 방식은 이렇습니다.</p>\n        <ul>\n          <li>방 사진을 업로드합니다.</li>\n          <li>각 가구가 놓일 자리를 표시합니다. 직접 <strong>칠하거나</strong>, <strong>사각형</strong>을 드래그하거나, <strong>Magic 도구</strong>로 물체나 영역을 한 번의 클릭으로 선택하세요. 영역마다 색을 하나씩 사용합니다.</li>\n          <li>영역마다 <strong>가구 사진</strong>이나 짧은 <strong>프롬프트</strong>를, 또는 둘 다 지정하세요. 어수선한 물건을 치우려면 영역을 <strong>물체 제거</strong>로 전환하면 됩니다.</li>\n          <li><strong>편집 적용</strong>을 클릭하세요. 모든 영역이 동시에 스테이징되고, 표시한 지점만 바뀔 수 있습니다. 사진의 나머지는 픽셀 그대로 유지됩니다.</li>\n          <li>어떤 영역이 마음에 들지 않나요? <strong>다른 버전 시도</strong>로 여러 안을 생성하고 번갈아 비교해 보세요.</li>\n        </ul>\n        <p>이것이 중요한 이유:</p>\n        <ul>\n          <li><strong>외과 수술 같은 제어.</strong> 방 전체를 다시 생성하지 않고도 빈 구석을 채우고, 의자 하나만 바꾸고, 잡동사니를 치울 수 있습니다.</li>\n          <li><strong>마음에 드는 것은 그대로.</strong> 멋진 전망, 실제 가구, 포인트 벽은 촬영한 모습 그대로 남습니다.</li>\n          <li><strong>내 가구를 직접 배치.</strong> 특정 소파나 침대 이미지를 영역에 연결하면, 그려 둔 자리에 정확히 놓입니다.</li>\n          <li><strong>설계부터 정직하게.</strong> 마스킹은 방의 구조(벽, 창문, 바닥)를 절대 건드리지 않으므로 사진은 공간을 그대로 보여 주며, 덕분에 <a href=\"/blog/is-virtual-staging-allowed-on-the-mls\">MLS에 고지하기</a>도 쉬워집니다.</li>\n        </ul>\n\n        <h2>AI Designer: 대화형 에이전트 스테이징</h2>\n        <p>Masking Studio가 정밀함이라면, <strong>AI Designer</strong>는 열린 창의성입니다. 프리셋을 고르고 결과를 기대하는 대신, 대화를 나눕니다.</p>\n        <ul>\n          <li>방을 업로드하고 원하는 바를 그대로 말하세요. 스테이징, 리디자인, 스타일 변경, 가구 하나 교체 등 무엇이든 좋습니다.</li>\n          <li>AI가 답하면 계속 이어 가세요. “더 따뜻하게”, “독서 코너를 추가해”, “미드센추리 느낌으로 해 봐”처럼요. AI는 방이 매물로 올릴 수준이 될 때까지 <strong>함께 반복하며</strong> 다듬고, 처음부터 다시 시작할 필요가 없습니다.</li>\n          <li>이미지든 PDF든 <strong>평면도</strong>를 받아 위에서 내려다본 3D 도면으로 가구를 배치할 수도 있고, 그 안의 특정 방으로 들어가 <strong>포토리얼 렌더</strong>를 만들 수도 있습니다. 도면이 구매자가 그려 볼 수 있는 공간이 되는 것이죠.</li>\n        </ul>\n        <p>이것이 중요한 이유:</p>\n        <ul>\n          <li><strong>다시 시작하지 말고 다듬으세요.</strong> 복잡하고 구체적인 연출은 운 좋은 한 번의 클릭이 아니라 주고받는 과정에서 나옵니다.</li>\n          <li><strong>디자인 지식은 필요 없습니다.</strong> 원하는 바를 일상 언어로 설명하고 판단은 AI에 맡기세요.</li>\n          <li><strong>도면에서 공간으로.</strong> 평면도를 렌더링된 가구 배치 공간으로 바꿔 분양·리모델링 매물에 활용하세요.</li>\n        </ul>\n\n        <h2>정밀함 + 창의성 = 원클릭으로는 닿지 않는 결과</h2>\n        <p>대부분의 도구는 한 가지만 합니다. 사진 한 장을 한 번 스테이징하는 것이죠. Stagify는 그들에게 없는 두 가지를 제공합니다. Masking Studio의 <strong>정확한 제어</strong>와 AI Designer의 <strong>끝없는 반복</strong>입니다. 이 둘이 합쳐지면 “가구가 놓인 사진”과 “당신이 정말 원했던 사진”의 차이가 만들어집니다. 두 기능 모두 무제한 스테이징, 더 높은 품질의 모델과 함께 <a href=\"/stagify-plus.html\">Stagify+</a>에 포함되어 있습니다.</p>",
+  "cta": {
+    "title": "완전한 제어가 어떤 느낌인지 확인해 보세요",
+    "body": "무료로 스테이징을 시작하고, Stagify+로 Masking Studio와 AI Designer를 잠금 해제하세요.",
+    "link": "Stagify 무료로 사용해 보기 →"
+  }
+}

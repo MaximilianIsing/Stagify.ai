@@ -15,16 +15,16 @@
   "palette": "sea salt and driftwood with pale brass",
   "ctaStyle": "see-all-the-styles",
   "topic": "staging a living room for the buyer's taste rather than the seller's",
-  "angle": "The style a seller likes is not the style that sells their house. Four presets run on one photograph put the seller's taste next to three others and let the comparison make the argument.",
-  "visualSummary": "The deep blue field. Letterspaced AI VIRTUAL STAGING eyebrow with the logo lockup at the top, then a two tone headline and a line of setup. Below it the source photograph as a wide landscape card with a light BEFORE pill: a living room being packed up, furniture shrouded in clear plastic sheeting, a tall bare brick chimney breast with a black cast iron stove, a coffered white ceiling and a black framed casement window. Under it three tall portrait cards in one row, each a staged render of that same room from the same camera position, each with a style pill and a one line note naming the buyer it speaks to. Luxury is an emerald velvet chesterfield on gold feet with a navy tub chair, a marble table and a blue and gold rug under brown velvet curtains. Farmhouse is a distressed brown leather sofa and wing chair, a reclaimed timber table, jute and faded kilim rugs and botanical prints on the brick. Coastal is a white slipcovered sofa, a rattan armchair, a whitewashed table, a rope wrapped pedestal table and an ocean photograph over the brick. Disclosure and CTA pill beneath.",
+  "angle": "The style a seller likes is not the style that sells their house. Three presets run on one photograph put the seller's taste next to two others and let the comparison make the argument.",
+  "visualSummary": "The deep blue field. Letterspaced AI VIRTUAL STAGING eyebrow with the logo lockup at the top, then a one line two tone headline and a line of setup. Below it a two by two grid of four identical cards, every one the same crop of the same room from the same camera position: a tall bare brick chimney breast with a black cast iron stove, twin caged wall sconces, a coffered white ceiling, a black framed casement window with a thick white plaster reveal and a dark grey hexagonal tile floor. Top left is the source photograph with a light BEFORE pill and the line 'Makes them imagine it', the room being packed up with furniture shrouded in clear plastic sheeting. The other three are staged renders, each with a style pill and a one line note naming the buyer it speaks to. Luxury is a navy tufted chesterfield with a dark leather tufted chair, a marble and brass table, a crystal lamp and a gold and blue Persian rug. Farmhouse is a distressed leather chesterfield under a quilted throw with a cream wing chair, a reclaimed timber table, a pine dresser and a jute rug. Coastal is a white slipcovered sofa, a rattan armchair, a whitewashed table and an ocean photograph over the brick. Disclosure and CTA pill beneath.",
   "dominantColors": [
     "#e9e3d8",
-    "#2f5d4a",
+    "#2a4a7a",
     "#6b584a"
   ],
   "copy": {
-    "headline": "Stage it for them, not you.",
-    "caption": "You are staging for the person buying the house. That is almost never someone with your taste.\n\nSame living room, photographed once while it was being packed up. Three Stagify presets, three different buyers.\n\nLuxury speaks to the buyer who wants to be impressed. Farmhouse speaks to the one already picturing a family in it. Coastal speaks to the one who wants light and calm.\n\nNothing structural moved in any of the three. Same brick chimney breast, same coffered ceiling, same hexagonal tile floor, same window, same camera position. Only the furniture changed, which is the whole point: a buyer is not judging your sofa, they are working out whether they could put theirs there.\n\nSellers pick the preset they would want to live in. It is the most natural mistake in the process and it is free to correct, because the presets all run on the same photograph and you can look at them side by side before you commit to one.\n\nOn timing. NAR's staging survey found 83% of buyers' agents say staging makes it easier for a buyer to picture themselves in a home, and only 21% of sellers' agents stage every listing. In August 2026 one in five active listings cut its asking price. The photograph is the cheaper lever and most people reach for it second.\n\nUpload one photo. Look at all of them before you choose.\n\nVirtually staged with Stagify.ai",
+    "headline": "Stage for the buyer, not you.",
+    "caption": "You are staging for the person buying the house. That is almost never someone with your taste.\n\nSame room, same camera position, three presets. Only the furniture changed.\n\nLuxury for the buyer who wants to be impressed. Farmhouse for the one picturing a family in it. Coastal for the one who wants light.\n\nSellers pick the preset they would live in themselves. That is the mistake, and it costs nothing to fix.\n\nUpload one photo. Look at all of them before you choose.\n\nVirtually staged with Stagify.ai",
     "altText": "One living room staged three ways: luxury, farmhouse and coastal, from a single photo."
   },
   "hashtagSet": [
@@ -43,20 +43,20 @@
   "data": {
     "eyebrow": "AI VIRTUAL STAGING",
     "headline": {
-      "lead": "Stage it for them,",
+      "lead": "Stage for the buyer,",
       "accent": "not you."
     },
-    "subhead": "One living room. Three presets. Your taste is not the one buying.",
+    "subhead": "Three presets. The buyer's taste is what matters.",
     "sourceImage": "/instagram/assets/sources/8b4a068942747d169be1bae167599360ef16553cb84cb7f4f1ed62af37d4243f.jpg",
     "sourceLabel": "BEFORE",
     "variants": [
       {
-        "image": "/instagram/assets/sources/6e9a72bc2141e9767234906cf682c9e7a5a0e0b886c96bae87322fbafd375ddd.webp",
+        "image": "/instagram/assets/sources/f72a6849c66c800263c2d2733211807c57cef39ca2db27e8e97d836b18292056.webp",
         "pill": "LUXURY",
         "caption": "Wants to be impressed"
       },
       {
-        "image": "/instagram/assets/sources/584b31d867c3bfcb83f7c9ccdff73f7bb699a7e19604d8f59571661ba8662c30.webp",
+        "image": "/instagram/assets/sources/e9c972aadae56a3b12caf0cae5a97a549281bd6ae0f778a2af23125cc3c561c9.webp",
         "pill": "FARMHOUSE",
         "caption": "Wants to feel at home"
       },
@@ -67,7 +67,9 @@
       }
     ],
     "cta": "See all the styles",
-    "disclosure": "Virtually staged with Stagify.ai"
+    "disclosure": "Virtually staged with Stagify.ai",
+    "sourceInline": true,
+    "sourceCaption": "Makes them imagine it"
   },
   "images": [
     {
@@ -83,29 +85,29 @@
         "photographerUrl": "https://www.pexels.com/@mart-production",
         "sourceUrl": "https://www.pexels.com/photo/furniture-covered-with-plastic-7415108/"
       },
-      "note": "Stock resolved on the first search. Not the empty room the brief asked for: it is a room being packed up, with three pieces of furniture under clear plastic sheeting. Kept deliberately and the hero pill was changed from the template default EMPTY ROOM to BEFORE, because the photograph is a better before than an empty shell. It is a room that visibly still belongs to someone, which is the exact situation the post is addressed to, and its architecture is unusually distinctive (bare brick chimney breast, coffered ceiling, hexagonal tile) so a reader can verify at a glance that all four panels really are one room."
+      "note": "Stock resolved on the first search. Not the empty room the brief asked for: it is a room being packed up, with three pieces of furniture under clear plastic sheeting. Kept deliberately and the hero pill was changed from the template default EMPTY ROOM to BEFORE, because the photograph is a better before than an empty shell. It is a room that visibly still belongs to someone, which is the exact situation the post is addressed to, and its architecture is unusually distinctive (bare brick chimney breast, coffered ceiling, hexagonal tile) so a reader can verify at a glance that all three panels really are one room."
     },
     {
       "role": "variant-luxury",
       "source": "stagify",
-      "sha256": "6e9a72bc2141e9767234906cf682c9e7a5a0e0b886c96bae87322fbafd375ddd",
+      "sha256": "f72a6849c66c800263c2d2733211807c57cef39ca2db27e8e97d836b18292056",
       "license": {
         "type": "generated",
         "licenseName": "Stagify render",
         "attributionRequired": false
       },
-      "note": "First attempt, scored 100. Emerald velvet chesterfield, navy tub chair, marble table, blue and gold rug, brown velvet curtains."
+      "note": "Round 2, second of three attempts. Navy tufted chesterfield on bun feet, a brown and blue wing chair, a dark tufted leather chair, a marble and brass table, a gold and blue Persian rug, a crystal lamp. Replaced the round 1 emerald render, which the image reviewer faulted twice: the navy tub chair's gold legs ended in bare points with no contact shadow and one read as a rod passing in front of its own drum body, and the window had been re-rendered as a flush black frame with the plaster reveal and sill gone. Both are fixed here. The cost is colour: emerald separated harder against the deep blue ground than navy does. Taken anyway, because the post's claim is that these are one room, and a window that is only the same window in two panels out of three breaks it."
     },
     {
       "role": "variant-farmhouse",
       "source": "stagify",
-      "sha256": "584b31d867c3bfcb83f7c9ccdff73f7bb699a7e19604d8f59571661ba8662c30",
+      "sha256": "e9c972aadae56a3b12caf0cae5a97a549281bd6ae0f778a2af23125cc3c561c9",
       "license": {
         "type": "generated",
         "licenseName": "Stagify render",
         "attributionRequired": false
       },
-      "note": "First attempt, scored 100. Distressed leather sofa and wing chair, reclaimed timber table, jute and kilim rugs, botanical prints on the brick."
+      "note": "Round 2, second of three attempts. Distressed brown leather chesterfield on bun feet under a quilted throw, a cream wing chair, a spindle leg side table with a mason jar lamp, a reclaimed timber coffee table, a windsor chair, a pine dresser and a jute rug. Replaced the round 1 render, whose sofa arm extended well past the body and floated over the rug with the coffee table's stretcher visible straight through underneath it. The arm is attached along its length here, every seat has a visible contact shadow, and the window's plaster reveal and deep sill are back."
     },
     {
       "role": "variant-coastal",
@@ -140,7 +142,32 @@
           "midcentury attempt 1 and 2, score 70: the chair legs are not fully visible where they meet the floor, and do not cast contact shadows"
         ]
       },
-      "note": "Four renders from ONE source photograph, differing only in furnitureStyle; three shipped. That is the honesty requirement of the post: four panels of one room, not four rooms. The additionalPrompt is byte identical across all four so the comparison is fair, and it deliberately does not name a material or forbid thin legs. The obvious anti-artifact instruction would have been 'no spindly legs', which fights midcentury's tapered silhouette and would have quietly flattened the very difference the post exists to show. Asking instead for complete legs with a visible floor contact left the styles free to diverge and still caught the artifact: the reviewer rejected two midcentury attempts on that exact ground before passing the third. All four kept, all four at 100, all four opened by hand before the record was written."
+      "round": 1,
+      "note": "Four renders from ONE source photograph, differing only in furnitureStyle. Three shipped at first; two were later replaced in round 2. That is the honesty requirement of the post: four panels of one room, not four rooms. The additionalPrompt is byte identical across all four so the comparison is fair, and it deliberately does not name a material or forbid thin legs. The obvious anti-artifact instruction would have been 'no spindly legs', which fights midcentury's tapered silhouette and would have quietly flattened the very difference the post exists to show. Asking instead for complete legs with a visible floor contact left the styles free to diverge and still caught the artifact: the reviewer rejected two midcentury attempts on that exact ground before passing the third. All four kept, all four at 100, all four opened by hand before the record was written."
+    },
+    {
+      "step": "stage",
+      "fn": "processStaging",
+      "model": "gemini-3.1-flash-image",
+      "round": 2,
+      "params": {
+        "roomType": "Living room",
+        "furnitureStyle": "luxury, farmhouse",
+        "removeFurniture": false,
+        "additionalPrompt": "This is a virtual staging edit, not a redecoration. The window is a FIXED SURFACE: reproduce it exactly as photographed, keeping the thick white plaster reveal around the opening and the deep white sill below it. Do not render the opening as a flush frame set straight into the wall. Keep the brick chimney breast, the black firebox, the coffered ceiling and the hexagonal floor tile exactly as photographed. Every piece of furniture must be complete, solid and correctly formed. Each seat rests flat on the floor with every leg fully visible where it meets the floor and casting a contact shadow on the rug or tile beneath it. No leg may float, taper to a bare point, stop in mid air, or pass in front of the body of its own chair. Sofa arms must be attached to the sofa body along their whole length, with nothing visible underneath them."
+      },
+      "quality": {
+        "perfect": false,
+        "bestScore": 70,
+        "attempts": 18,
+        "sourcePhotosTried": 1,
+        "keptAttempt": 2,
+        "defects": [
+          "window frame rendered flush with the wall rather than the thick plaster reveal and deep sill of the original",
+          "chair and sofa legs not fully visible where they meet the floor, some floating or not casting a contact shadow"
+        ]
+      },
+      "note": "Six candidates, three per preset, every one scoring 70 against round 1's 100. The drop is an artifact of the measurement, not of the pictures: the additionalPrompt is fed into the QA rubric, so round 2 told the reviewer to check the window reveal and the floor contacts and it then found them. Round 1 scored 100 while carrying the same two faults, which nobody had asked it to look for. That is the second time in this ledger the automated score has been uninformative, after 09-09, and selection was again done by eye. Kept luxury try 2 and farmhouse try 2, the only two candidates that restored the plaster reveal and the sill. Round 2 is the second and final review round permitted, so it ends here: the remaining nits are all invisible at feed size or need a template change rather than a render."
     }
   ],
   "devilsAdvocate": {
@@ -152,8 +179,51 @@
     "residualRisk": "Convergence rather than artifact. Four renders from one source and the grid is only as good as its worst panel. If the presets came back differing mainly in accessory colour, the frame would show four rooms a scrolling reader cannot tell apart and the headline would be refuted by the image printed beneath it. There is no partial recovery, because a weak panel cannot be cropped out of a grid.",
     "notableKill": "i05 and i12 died on feasibility: cad-to-3d needs a genuine architectural plan as the before half, and fabricating the input half of a before and after is not acceptable. i09 and i10 died because client share links and eleven languages prove themselves with a screenshot of the product interface, which the image pipeline does not produce."
   },
+  "review": {
+    "verdict": "pass",
+    "rounds": 2,
+    "accepted": true,
+    "acceptedBy": "model",
+    "blocking": [],
+    "fixedFromNits": [
+      {
+        "issue": "Window trim drift. The luxury and farmhouse renders had re-rendered the window opening as a flush black frame set straight into the wall, losing the thick white plaster reveal and deep sill that the source photograph and the coastal render both keep. Every other architectural element (chimney breast, corbelled cap, riveted firebox, both cage sconces, coffered ceiling, hex floor) held identical position and scale across all three.",
+        "whyItMattered": "This was the only element that stopped the three panels being the same room, and the caption says 'same window' in a sentence listing what did not change. A picture problem and a copy problem at once.",
+        "resolution": "Fixed in round 2 by naming the window a FIXED SURFACE in the prompt and describing the reveal and sill explicitly. All three panels now carry them."
+      },
+      {
+        "issue": "Luxury: the navy tub chair's gold legs terminated in bare points with no contact shadow and no compression of the rug pile, one leg read as a single rod beginning above the seat and passing in front of the chair's own drum body, and a third was a stub ending in mid air with no foot.",
+        "whyItMattered": "This is the account's documented recurring artifact. Invisible at feed size, where the legs are about 2px of gold, and obvious in the full size render.",
+        "resolution": "Fixed in round 2. Replaced with a render whose seats all rest flat with visible contact shadows."
+      },
+      {
+        "issue": "Farmhouse: the leather sofa's rolled arm extended roughly 400px past the sofa body and hovered over the rug, occluding the front edge of the coffee table while the table's lower stretcher and the jute rug remained visible straight through underneath it. A second brown leather rolled form sat at console height with its base entirely hidden.",
+        "whyItMattered": "Impossible geometry, and the most legible AI artifact in the post at full size.",
+        "resolution": "Fixed in round 2. The arm is attached along its whole length and nothing floats."
+      }
+    ],
+    "acceptedNits": [
+      "The three category badges stair-step: LUXURY and FARMHOUSE sit level because their captions wrap to two lines, COASTAL sits about 60px lower on one line. The caption block is bottom aligned, which is the template's behaviour, not a fault.",
+      "The BEFORE strip is a wide 968x360 letterbox and the three afters are tall crops, so the before shows neither the coffered ceiling nor the hex floor while the afters are dominated by both. The like for like comparison is weaker than it could be. Fixing it would mean a template change rather than a re-render.",
+      "'Wants light and calm' ends 27px from its panel edge, the tightest line on the poster. Any longer preset name or caption would break it."
+    ],
+    "dashAudit": "A fresh reviewer inventoried every text element on the poster: the logo lockup, the eyebrow, the headline, the subhead, all four pills, all three captions, the disclosure and the CTA. No hyphen, en dash, em dash, figure dash or minus sign is rendered anywhere. The closest candidates were measured rather than waved through: the comma after 'them' is a hooked stroke about 0.25x the width of an adjacent 'n' with no horizontal run; the full stops are round and about 0.15x an 'n'; the tracked gaps in the letterspaced eyebrow are empty background about 0.5x an 'n' with no ink. Photographic horizontals that can read as dashes at feed size but are image content, not characters: the chrome firebox handle, roughly 6x an 'n'; the window mullion bars, roughly 4x each. Independently confirmed by running lib/validate/rules.js findDashes over every copy field including the caption.",
+    "samenessNote": "Composition is new. The last five were a full bleed photo with an inset BEFORE card (09-09), two stacked numbered cards (09-02), a pale wash quote card (08-20), one annotated photo with numbered pins (08-19) and a vertical split wipe (08-18). A one up BEFORE letterbox over a three up panel row has not been used in this window, and no recent post is a style comparison. The squint test on the three panels passes clearly: dark saturated navy, mid brown leather, high key white and blond, with a different hero object in each. Two things to carry forward. The deep blue ground is now four of the last six posts, so the next one should use the pale wash or a photo ground. And the eyebrow 'AI VIRTUAL STAGING' is word for word the 09-02 eyebrow in the same position at the same letterspacing.",
+    "userRevision": {
+      "raisedBy": "user, after the post was finalized",
+      "issues": [
+        "All four images were cropped differently and did not share an aspect ratio.",
+        "The headline 'Stage it for them, not you.' was confusing.",
+        "The BEFORE pill had no subtext, while all three preset pills carried a one line note."
+      ],
+      "cropFix": "The image reviewer had already flagged this as a nit and it was accepted too readily. style-grid's default layout gives the source a full width landscape hero band while the variants are narrow and tall, so four portrait photographs were cut to three different shapes and the before showed none of the coffered ceiling or hex floor that dominate the afters. On a post whose entire claim is that these are one room, that made the reader compare across three aspect ratios. Added an optional sourceInline mode to templates/style-grid: the source becomes the first card in the grid, the hero band is dropped, and four cards lay out two by two with equal columns and no stretched last card. Every card is now cut to one shape and the chimney breast, window and fireplace sit in the same place in all four. Off by default, so every earlier post renders byte identically; the 29 test suite passes unchanged.",
+      "headlineFix": "'Stage it for them, not you.' left both pronouns without an antecedent in the frame. Replaced with 'Stage for the buyer, not you.', which names the buyer outright. The first attempt, 'Stage for the buyer, not for you.', was correct but wrapped to three lines at the template's 70px scale and left 'you.' dangling alone on the third, so it was shortened rather than scaled down, per the rule that the fix for a long headline is shorter copy.",
+      "beforeCaptionFix": "Added an optional sourceCaption slot to templates/style-grid and set it to 'Makes them imagine it'. The source card was the only one of the four with a bare pill, which read as a missing caption rather than a deliberate one, and left its badge sitting lower than the other three. The line is deliberately not in the 'Wants X' grammar the presets share: there is no buyer taste to name yet, so it names the work an unstaged room leaves to the buyer instead, which is the thing the three presets go on to do for them. Avoided an outcome claim such as 'Sells to nobody', which is not checkable and would break the voice rule that claims stay honest."
+    }
+  },
   "buildNotes": {
     "fourPanelsBecameThree": "Built and rendered with four presets first, and the frame was wrong. style-grid puts four variants in two rows (three across, then one full width), which halves the row height, and the renders are 1696x2528 portrait. Every card became a thin landscape band cropped through the middle of the room, so the furniture fell out of frame and the full width coastal panel showed almost nothing but wall and chimney. Nothing clipped and nothing errored; it simply argued the opposite of the headline, because four panels that all show the same fireplace prove the presets do NOT differ. Three variants fill one row, so each card is a tall portrait matching the render's own aspect and the furniture is the subject. Midcentury was the one dropped: a black leather sofa with walnut sits closest to farmhouse's warm brown at thumbnail size, while emerald, brown leather and white with rattan separate instantly. The dropped render is kept at instagram/assets/sources/3e5180d1ebeeec40c9b3874ced8ed99cecf678056dd12883e9cd4d1f514a3234.webp. It is also the render that cost three attempts: the quality reviewer rejected the first two at 70 for the account's documented artifact, chair legs not fully visible where they meet the floor and casting no contact shadow.",
     "roomChangedAfterApproval": "The approved candidate specified a Kitchen. It was moved to a Living room before a single render was spent, on evidence from lib/staging/promptMatrix.js. Every Kitchen preset opens by pinning the cabinetry, counters, backsplash, sink and built in appliances 'exactly as photographed' and changes only bar stools and countertop accessories, so four kitchen panels would have differed by stools, towels and a fruit bowl. That is precisely the convergence failure the advocate named as the residual risk, and worse, every kitchen preset adds bar stools, so the documented chair leg artifact would have appeared four times over. Living room presets replace the entire furniture set (sofa, coffee table, accent chairs, rugs, lamps, art), which is the only room where the post's claim that the presets genuinely differ is visibly true. Living room is an open roomType and the revised candidate was re-gated before building: PASS, novelty 90."
-  }
+  },
+  "layoutFamily": "grid"
 }

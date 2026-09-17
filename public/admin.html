@@ -113,6 +113,10 @@
           </button>
 
           <p class="adm-nav-group">System</p>
+          <button class="adm-tab" data-tab="access" data-title="Access" data-sub="Who opened this console, from where, and what was refused." role="tab" aria-selected="false">
+            <svg class="adm-tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 5 3.4 8.3 8 9 4.6-.7 8-4 8-9V6z"/><circle cx="12" cy="11" r="2"/><path d="M12 13v3"/></svg>
+            <span class="adm-tab-lbl">Access</span>
+          </button>
           <button class="adm-tab" data-tab="status" data-title="Server status" data-sub="Uptime, incidents, and what the public status page is saying." role="tab" aria-selected="false">
             <svg class="adm-tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l2.5-6 4 12 2.5-6h5"/></svg>
             <span class="adm-tab-lbl">Server status</span>
@@ -475,6 +479,36 @@
             <button id="adm-reset-status" class="adm-danger-btn" type="button">Reset server status data</button>
             <span id="adm-reset-status-msg" class="adm-inline-msg"></span>
           </div>
+        </div>
+      </div>
+
+      <div class="adm-panel" id="panel-access">
+        <div class="adm-card">
+          <div class="adm-card-head">
+            <h2>Console access</h2>
+          </div>
+          <p class="adm-card-sub">Every time this dashboard is opened, every sign-in, and every refused attempt &mdash; with the address it came from. There are no separate admin accounts (everyone signs in with the same access key), so people are identified by address and device rather than by name. Repeats from the same client within a minute are folded into one row with a &times;count, so one Refresh on a dead session reads as one event. Records are kept indefinitely; this is the only place in the app where an IP address is stored at rest.</p>
+          <div id="adm-access-summary"></div>
+        </div>
+
+        <div class="adm-card">
+          <div class="adm-card-head">
+            <h2>Who has been here</h2>
+            <span class="adm-count-chip" id="adm-access-count">0</span>
+          </div>
+          <p class="adm-card-sub">One row per address. Locations are approximate, looked up once per address and left blank when they cannot be resolved.</p>
+          <div class="adm-table-wrap" id="adm-access-visitors"></div>
+        </div>
+
+        <div class="adm-card">
+          <div class="adm-card-head">
+            <h2>Recent activity</h2>
+          </div>
+          <div class="adm-range" id="adm-access-range">
+            <span class="adm-range-label">Show</span>
+            <span id="adm-access-filter"></span>
+          </div>
+          <div class="adm-table-wrap" id="adm-access-rows"></div>
         </div>
       </div>
 

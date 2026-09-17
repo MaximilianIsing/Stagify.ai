@@ -45,6 +45,13 @@ const CRITICAL_ROUTES = [
   ['GET', '/api/contact-count'],
   ['GET', '/robots.txt'],
   ['GET', '/sitemap.xml'],
+  // The unsubscribe route privacy.html §3.6 promises exists in every trial email
+  // we send, and in the List-Unsubscribe header Gmail renders its own control from.
+  // Losing it silently would leave the policy describing a mechanism that is gone,
+  // and would leave already-delivered mail pointing at a 404.
+  ['GET', '/email/unsubscribe'],
+  ['POST', '/email/unsubscribe'],
+  ['GET', '/email/resubscribe'],
   ['GET', '/getpro'],
   ['GET', '/promptlogs'],
   ['GET', '/authstore'],
@@ -56,6 +63,9 @@ const CRITICAL_ROUTES = [
   ['POST', '/api/admin/revoke-plus'],
   ['POST', '/api/admin/revoke-sessions'],
   ['GET', '/api/admin/renders'],
+  // The Access tab. Losing the log route blinds the only page that shows who has
+  // been in the console; losing the ping would lock every operator out of it.
+  ['GET', '/api/admin/access-log'],
   // Signals tab. Both key-gated, so an unauthenticated probe stops at the guard —
   // no SQL runs and no model call is billed. Listed because losing either one
   // degrades the tab silently rather than visibly: findings-quality.js reports a

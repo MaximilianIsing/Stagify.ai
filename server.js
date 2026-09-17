@@ -46,6 +46,7 @@ import { createAdminRendersRouter } from './routes/admin-renders.js';
 import { createAdminApiUsageRouter } from './routes/admin-api-usage.js';
 import { createAdminAnalystRouter } from './routes/admin-analyst.js';
 import { createAdminBlogRouter } from './routes/admin-blog.js';
+import { createAdminAccessRouter } from './routes/admin-access.js';
 import createAuthRouter from './routes/auth.js';
 import { DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, IS_STAGING, HIDE_STAGING_BANNER, SHOW_STAGING_BANNER, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS } from './lib/config/runtime-flags.js';
 import createNotFoundHandler from './lib/http/not-found.js';
@@ -74,7 +75,9 @@ import { createTrialLifecycle } from './lib/services/trial-lifecycle.js';
 import { createEmailCatalog } from './lib/services/email-catalog.js';
 import { createReferralLinks } from './lib/data/referral-links.js';
 import { createBlogViews } from './lib/data/blog-views.js';
+import { createEmailOptOut } from './lib/data/email-optout.js';
 import { createAdminSessions } from './lib/data/admin-sessions.js';
+import { createAdminAccess } from './lib/data/admin-access.js';
 import { createApiKeys } from './lib/data/api-keys.js';
 import { createApiBilling } from './lib/data/api-billing.js';
 import { createApiKeyAuth } from './lib/http/api-key-auth.js';
@@ -102,10 +105,19 @@ const referralLinks = createReferralLinks(__dirname);
 // Blog readership. Written by the public router as it serves each article, read by
 // the dashboard's Blog tab. See lib/data/blog-views.js for what is (and isn't) kept.
 const blogViews = createBlogViews(__dirname);
+// Who has unsubscribed from the trial-lifecycle emails, and the token that let
+// them. Opened unconditionally: the sender needs it to mint a link on every send,
+// erasure needs it to forget one, and the table is a row per mailed address.
+const emailOptOut = createEmailOptOut();
 // Admin-console sessions: the operator trades the master key for a scoped,
 // expiring, revocable token once, instead of retyping the key on every page load.
 // See lib/data/admin-sessions.js for why the key itself is never persisted.
 const adminSessions = createAdminSessions(__dirname);
+// Who opens the console, from where, and what was refused. Built here rather than
+// in the router because createHttpGuards below needs it: the denied half is
+// recorded in the rejection funnel, not on a route. See lib/data/admin-access.js
+// for why this is the one table in the app that keeps an IP indefinitely.
+const adminAccess = createAdminAccess(__dirname);
 // The public API: per-account keys and the prepaid credit balance they spend.
 // Both are plain stores over the shared connection; nothing here reaches the network,
 // so an unconfigured Stripe only means credits cannot be BOUGHT, not that the API
@@ -186,7 +198,7 @@ const APP_URL = String(process.env.PUBLIC_APP_URL || process.env.APP_URL || 'htt
 // Trial-email lifecycle (welcome / activation / value / ending / win-back). The
 // webhook fires the event-driven ones; trialLifecycle.start() (below, post-listen)
 // runs the behaviour-based sweep.
-const lifecycleEmails = createLifecycleEmails({ resend, RESEND_FROM_EMAIL, EMAIL_DEBUG_MODE, DEBUG_EMAIL, appUrl: APP_URL });
+const lifecycleEmails = createLifecycleEmails({ resend, RESEND_FROM_EMAIL, EMAIL_DEBUG_MODE, DEBUG_EMAIL, appUrl: APP_URL, optOut: emailOptOut });
 const trialLifecycle = createTrialLifecycle({ authStore, emails: lifecycleEmails });
 
 // Email catalog (every user-facing email, built from the same renderers the senders
@@ -339,7 +351,7 @@ const { blueprintTo3D } = createCadHandling({ genAI });
 // Passed to the admin/public routers WHOLE (as `hostedImages`), same rationale as
 // `email` above. Note `getDataLogDir` going IN stays a loose factory input.
 const hostedImages = createHostedImages({ getDataLogDir });
-const { healthHandler, protectLogs, requireEndpointKey, stagingEndpointKeyGuard } = createHttpGuards({ genAI, LOGS_ACCESS_KEY, endpointKeyMatches, adminSessions });
+const { healthHandler, protectLogs, requireEndpointKey, stagingEndpointKeyGuard } = createHttpGuards({ genAI, LOGS_ACCESS_KEY, endpointKeyMatches, adminSessions, adminAccess });
 
 // ---------------------------------------------------------------------------
 // Self-check quality gate
@@ -466,7 +478,10 @@ app.use(createAdminApiUsageRouter({ apiUsageStats, protectLogs, setSensitiveHead
 // than inside the Signals tab's.
 app.use(createAdminAnalystRouter({ adminAnalyst, protectLogs, setSensitiveHeaders }));
 app.use(createAdminBlogRouter({ blogViews, protectLogs, __dirname }));
-app.use(createAdminRouter({ authStore, uptimeMonitor, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, deleteUser, getDataLogDir, hostedImages, protectLogs, requireEndpointKey, adminSessions, __dirname, HOSTED_IMAGE_MIME_EXT, emailCatalog, sendTestEmail, referralLinks, adminMetrics, adminBrief }));
+// MUST stay above createAdminRouter: it records GET /api/admin/ping by matching it
+// first and falling through to the real handler there. See routes/admin-access.js.
+app.use(createAdminAccessRouter({ adminAccess, protectLogs }));
+app.use(createAdminRouter({ authStore, uptimeMonitor, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, deleteUser, getDataLogDir, hostedImages, protectLogs, requireEndpointKey, adminSessions, __dirname, HOSTED_IMAGE_MIME_EXT, emailCatalog, sendTestEmail, referralLinks, adminMetrics, adminBrief, adminAccess }));
 
 // staging routes (routes/staging.js)
 app.use(createStagingRouter({ genAI, genLimiter, stagingProcessUpload, DEBUG_MODE, MAX_MASK_PROMPT_LENGTH, MAX_SEGMENT_QUERY_LENGTH, QUALITY_MAX_ATTEMPTS, setSensitiveHeaders, getAuthUserFromRequest, enterpriseDomainForUser, reportEnterpriseUsage, recordStagingActivity, requireProAccount, logMaskEditToFile, logRejectionToFile, downscaleImage, padBufferToAspectRatio, buildMarkedRoomImage, normalizeMaskOutputToRoom, reviewMaskEdit, compositeForReview, generateWithQualityRetry, maskReferencePromptSuffix, validateStageableImage, handleVirtualStagingMultipart, handleExteriorMultipart, handleMaskingSave, stagingEndpointKeyGuard }));
@@ -508,10 +523,10 @@ app.use(createChatRouter({ openai, genLimiter, chatUpload, DEBUG_MODE, requirePr
 // localized-page routes (routes/i18n.js) — /es, /fr/ai-designer.html, … rendered
 // server-side from the language JSON. Mounted before the public router; its prefixes
 // (/es, /fr, …) are disjoint from every other route and from the static files.
-app.use(createI18nRouter({ __dirname, DEBUG_MODE }));
+app.use(createI18nRouter({ __dirname, DEBUG_MODE, blogViews }));
 
 // public routes (routes/public.js)
-app.use(createPublicRouter({ authStore, uptimeMonitor, resend, LOGS_ACCESS_KEY, endpointKeyMatches, emailLimiter, RESEND_FROM_EMAIL, DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS, hostedImages, email, healthHandler, getPromptCount, getContactCount, incContactCount , blogViews, __dirname }));
+app.use(createPublicRouter({ authStore, uptimeMonitor, resend, LOGS_ACCESS_KEY, endpointKeyMatches, emailLimiter, RESEND_FROM_EMAIL, DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS, hostedImages, email, healthHandler, getPromptCount, getContactCount, incContactCount , blogViews, emailOptOut, __dirname }));
 
 // The owner's gallery (routes/gallery.js) and the public share page
 // (routes/share-public.js). Two routers rather than one because they answer to very

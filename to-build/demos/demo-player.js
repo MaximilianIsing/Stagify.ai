@@ -233,7 +233,26 @@
       Wpx = 0; Hpx = 0;
     }
 
+    // Measure the card as a TOOLTIP, whatever it was last time: the sheet state caps
+    // its own height, so measuring while .is-sheet is still applied would report the
+    // capped value, conclude it fits, and flip straight back — a state that oscillates
+    // from step to step. Reading offsetWidth/Height after the class comes off is what
+    // forces the layout, so the numbers below are the tooltip's real ones.
+    this.tip.classList.remove('is-sheet');
     var tw = this.tip.offsetWidth, th = this.tip.offsetHeight;
+
+    // Too tall (or too wide) to sit inside the frame at all. The clamp at the end would
+    // be handed an inverted range and silently return its low bound, and the frame's
+    // overflow:hidden would then cut the footer — Back, the counter, Next — off the
+    // bottom. Hand it to the CSS as a bottom sheet instead and let it own the geometry.
+    if (th > fh - 2 * G || tw > fw - 2 * G) {
+      this.tip.classList.add('is-sheet');
+      this.tip.removeAttribute('data-place');
+      this.tip.style.left = '';
+      this.tip.style.top = '';
+      return;
+    }
+
     var midX = Lpx + Wpx / 2, midY = Tpx + Hpx / 2;
     var place, left, top, ax, ay;
 

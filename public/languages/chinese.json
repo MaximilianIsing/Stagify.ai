@@ -1,4 +1,41 @@
 {
+  "about": {
+    "title": "关于 Stagify.ai",
+    "lede": "Stagify.ai 是面向房地产专业人士的 AI 虚拟软装工具。上传一张房间照片，几秒钟内即可完成布置、改造或清空。",
+    "who": {
+      "heading": "我们是谁",
+      "body": "Stagify.ai 是一家独立公司。我们只做一款产品，并且只在一个域名上运营：<strong>stagify.ai</strong>。我们不是转售商，不是其他软装工具的贴牌产品，也不是某个大型集团的地区分支。整个团队可通过 <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> 或 <a href=\"tel:+19292514372\">(929) 251-4372</a> 联系。"
+    },
+    "facts": {
+      "foundedLabel": "成立时间",
+      "founded": "2025 年 8 月 22 日",
+      "foundersLabel": "创始人",
+      "founders": "Maximilian Ising（开发与 AI 负责人）、Lucas Shtainer（市场负责人）、Ryan Croman（外联负责人）",
+      "siteLabel": "网站",
+      "contactLabel": "联系方式"
+    },
+    "notAffiliated": {
+      "heading": "与其他名为 “Stagify” 的产品无关",
+      "body": "有若干与我们无关的公司使用相似名称：<strong>stagify.io</strong>、<strong>stagify.app</strong>、<strong>stagify.online</strong> 和 <strong>stagifyai.com</strong>。Stagify.ai 与它们没有任何隶属、合作、股权或背书关系，也不共享任何员工、代码或数据。",
+      "consequence": "这些网站上发布的评价、价格、功能、故障和政策都不代表 Stagify.ai。比较虚拟软装工具时，请查看地址栏中的域名：我们的域名以 .ai 结尾。"
+    },
+    "product": {
+      "heading": "我们做什么",
+      "body": "Stagify.ai 能从单张照片生成室内软装，通过对话式设计师重新粉刷和布置房间，逐像素遮罩并重做指定区域，还能清理外景照片。全部在浏览器中运行，支持十一种语言，提供免费额度、<a href=\"stagify-plus.html\">Stagify+</a> 订阅和<a href=\"developers.html\">公开 API</a>。你生成的每一张图片，版权都归你所有。"
+    },
+    "find": {
+      "heading": "在哪里找到我们",
+      "body": "以下是我们运营的全部账号。未列出的账号都不是我们的。",
+      "blog": "我们的博客"
+    },
+    "faq": {
+      "heading": "常见问题",
+      "q1": "Stagify.ai 与 stagify.io、stagify.app、stagify.online 或 stagifyai.com 是同一家公司吗？",
+      "a1": "不是。Stagify.ai 是一家独立公司，只在 stagify.ai 域名上运营。它与 stagify.io、stagify.app、stagify.online 或 stagifyai.com 没有隶属、背书或其他关系，那些是名称相似但彼此无关的企业。这些网站上发布的评价、价格、功能和政策都不代表 Stagify.ai。",
+      "q2": "谁创立并运营 Stagify.ai？",
+      "a2": "Stagify.ai 由 Maximilian Ising（联合创始人，开发与 AI 负责人）、Lucas Shtainer（联合创始人，市场负责人）和 Ryan Croman（联合创始人，外联负责人）于 2025 年 8 月 22 日创立。公司只运营一款产品，网址为 stagify.ai，可通过 team@stagify.ai 联系。"
+    }
+  },
   "meta": {
     "title": "AI虚拟装修 | Stagify.ai - 免费AI家居装修工具",
     "description": "用AI装修改造空房间。上传照片，几秒钟内获得专业装修效果。为房地产经纪人、卖家和买家提供的免费AI家居装修服务。",
@@ -192,6 +229,8 @@
     },
   "navigation": {
     "home": "首页",
+    "blog": "博客",
+    "tryFree": "免费试用 Stagify",
     "about": "关于",
     "pdfTo3d": "AI设计师",
     "maskingStudio": "遮罩工作室",
@@ -942,7 +981,7 @@
         },
         "travonte": {
           "quote": "Stagify 让整个过程变得毫不费力。上传一张空房间的照片，等上几秒钟，空间一下子就有了个性。简单、干净，而且真的好用。",
-          "author": "Travonte Taylor",
+          "author": "Travonte' Taylor",
           "role": "Compass",
           "location": "纽约布鲁克林"
         },
@@ -1731,6 +1770,10 @@
     "troubleshootingTitle": "故障排查与常见问题"
   },
   "pageMeta": {
+    "about": {
+      "title": "关于 Stagify.ai | 我们是谁",
+      "description": "Stagify.ai 是一家独立的 AI 虚拟软装公司，由 Maximilian Ising、Lucas Shtainer 和 Ryan Croman 于 2025 年创立。与 stagify.io、stagify.app、stagify.online 和 stagifyai.com 无任何关联。"
+    },
     "basicMask": {
       "title": "基础遮罩 | Stagify.ai — 涂出一块，只重做那一块",
       "description": "在房间照片的某一处涂一下，说出那里该怎么变，拿回同一张照片，只有那一块重做。其余部分一动不动。",
@@ -1749,7 +1792,7 @@
       "description": "Stagify+：移除家具、AI 设计师、蒙版工作室、更高质量的模型以及无限次虚拟软装。查看方案与价格。"
     },
     "enterprise": {
-      "title": "Stagify Enterprise | 面向团队的按量计费 AI 布置",
+      "title": "Stagify.ai Enterprise | 面向团队的按量计费 AI 布置",
       "description": "让整个团队享受无限 AI 布置，按使用量计费，每次生成 $0.15。一张发票，无按席位收费。"
     },
     "maskingStudio": {

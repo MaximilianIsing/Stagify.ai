@@ -1,4 +1,41 @@
 {
+  "about": {
+    "title": "Stagify.ai 소개",
+    "lede": "Stagify.ai는 부동산 전문가를 위한 AI 버추얼 스테이징 도구입니다. 방 사진을 올리면 몇 초 만에 가구를 배치하거나, 새로 꾸미거나, 비울 수 있습니다.",
+    "who": {
+      "heading": "우리는 누구인가",
+      "body": "Stagify.ai는 독립 회사입니다. 우리는 단 하나의 제품을 만들고 운영하며, 주소도 하나뿐입니다: <strong>stagify.ai</strong>. 우리는 재판매업체도, 다른 스테이징 도구의 화이트라벨도, 더 큰 그룹의 지역 지사도 아닙니다. 팀 전체에 <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> 또는 <a href=\"tel:+19292514372\">(929) 251-4372</a>로 연락하실 수 있습니다."
+    },
+    "facts": {
+      "foundedLabel": "설립일",
+      "founded": "2025년 8월 22일",
+      "foundersLabel": "창립자",
+      "founders": "Maximilian Ising(개발·AI 총괄), Lucas Shtainer(마케팅 총괄), Ryan Croman(아웃리치 총괄)",
+      "siteLabel": "웹사이트",
+      "contactLabel": "연락처"
+    },
+    "notAffiliated": {
+      "heading": "다른 “Stagify” 제품과 무관합니다",
+      "body": "이름이 비슷한 무관한 회사가 여럿 있습니다: <strong>stagify.io</strong>, <strong>stagify.app</strong>, <strong>stagify.online</strong>, <strong>stagifyai.com</strong>. Stagify.ai는 이들과 제휴·파트너십·소유·보증 관계가 전혀 없으며, 인력이나 코드, 데이터를 공유하지 않습니다.",
+      "consequence": "해당 사이트에 게시된 후기, 가격, 기능, 장애, 정책은 Stagify.ai를 설명하지 않습니다. 버추얼 스테이징 도구를 비교하신다면 주소창의 도메인을 확인하세요. 저희 도메인은 .ai로 끝납니다."
+    },
+    "product": {
+      "heading": "우리가 만드는 것",
+      "body": "Stagify.ai는 사진 한 장으로 실내를 연출하고, 대화형 디자이너로 방을 다시 칠하고 새로 꾸미며, 특정 영역을 픽셀 단위로 마스킹해 다시 스테이징하고, 외관 사진을 정리합니다. 모두 브라우저에서 열한 개 언어로 동작하며, 무료 플랜과 <a href=\"stagify-plus.html\">Stagify+</a> 구독, <a href=\"developers.html\">공개 API</a>를 제공합니다. 생성한 모든 이미지의 권리는 사용자에게 있습니다."
+    },
+    "find": {
+      "heading": "우리를 찾을 수 있는 곳",
+      "body": "다음이 우리가 운영하는 유일한 계정입니다. 여기에 없는 계정은 우리 것이 아닙니다.",
+      "blog": "우리 블로그"
+    },
+    "faq": {
+      "heading": "자주 묻는 질문",
+      "q1": "Stagify.ai는 stagify.io, stagify.app, stagify.online, stagifyai.com과 같은 회사인가요?",
+      "a1": "아닙니다. Stagify.ai는 독립 회사이며 stagify.ai 도메인에서만 운영됩니다. stagify.io, stagify.app, stagify.online, stagifyai.com과는 제휴, 보증, 관계가 전혀 없으며, 이들은 이름만 비슷한 무관한 기업입니다. 해당 사이트의 후기, 가격, 기능, 정책은 Stagify.ai를 설명하지 않습니다.",
+      "q2": "Stagify.ai는 누가 설립하고 운영하나요?",
+      "a2": "Stagify.ai는 2025년 8월 22일 Maximilian Ising(공동창업자, 개발·AI 총괄), Lucas Shtainer(공동창업자, 마케팅 총괄), Ryan Croman(공동창업자, 아웃리치 총괄)이 설립했습니다. 회사는 stagify.ai에서 단일 제품을 운영하며, team@stagify.ai로 연락할 수 있습니다."
+    }
+  },
   "meta": {
     "title": "Stagify.ai - 클릭 한 번으로 무료 가상 스테이징",
     "description": "AI 스테이징으로 빈 방을 바꿔보세요. 사진을 업로드하면 몇 초 만에 전문적으로 스테이징된 결과를 얻을 수 있습니다. 부동산 중개인, 판매자, 구매자를 위한 무료 AI 홈 스테이징.",
@@ -192,6 +229,8 @@
     },
   "navigation": {
     "home": "홈",
+    "blog": "블로그",
+    "tryFree": "Stagify 무료로 사용해 보기",
     "about": "소개",
     "pdfTo3d": "AI 디자이너",
     "maskingStudio": "마스킹 스튜디오",
@@ -942,7 +981,7 @@
         },
         "travonte": {
           "quote": "Stagify를 쓰면 이 과정이 정말 수월하게 느껴집니다. 빈방 사진을 올리고 몇 초만 기다리면 공간에 갑자기 개성이 생깁니다. 단순하고 깔끔하면서 실제로 쓸모가 있습니다.",
-          "author": "Travonte Taylor",
+          "author": "Travonte' Taylor",
           "role": "Compass",
           "location": "뉴욕 브루클린"
         },
@@ -1731,6 +1770,10 @@
     "troubleshootingTitle": "문제 해결 및 일반적인 문제"
   },
   "pageMeta": {
+    "about": {
+      "title": "Stagify.ai 소개 | 우리는 누구인가",
+      "description": "Stagify.ai는 2025년 Maximilian Ising, Lucas Shtainer, Ryan Croman이 설립한 독립 AI 버추얼 스테이징 회사입니다. stagify.io, stagify.app, stagify.online, stagifyai.com과는 무관합니다."
+    },
     "basicMask": {
       "title": "기본 마스크 | Stagify.ai — 칠한 곳만 다시 만듭니다",
       "description": "방 사진의 한 부분을 칠하고 거기서 뭐가 바뀌어야 하는지 말하면, 같은 사진에서 그 영역만 다시 만들어집니다. 밖은 그대로입니다.",
@@ -1749,7 +1792,7 @@
       "description": "Stagify+: 가구 제거, AI 디자이너, 마스킹 스튜디오, 더 높은 품질의 모델, 무제한 스테이징. 요금제와 가격을 확인하세요."
     },
     "enterprise": {
-      "title": "Stagify 엔터프라이즈 | 팀을 위한 사용량 기반 AI 스테이징",
+      "title": "Stagify.ai 엔터프라이즈 | 팀을 위한 사용량 기반 AI 스테이징",
       "description": "생성당 $0.15의 사용량 기반 청구로 팀 전체에 무제한 AI 스테이징을 제공하세요. 하나의 청구서, 좌석당 요금 없음."
     },
     "maskingStudio": {

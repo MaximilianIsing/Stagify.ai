@@ -72,6 +72,7 @@ owns auth/fetch/wiring, each island owns one cohesive concern.
 | [`scripts/admin/status-panel.js`](../../public/scripts/admin/status-panel.js) | The **Server status** tab: the live monitor view and the incident composer. Lazy-loaded on first open, then polls while its tab is visible. |
 | [`scripts/admin/referrals.js`](../../public/scripts/admin/referrals.js) | The **Referrals** tab: one card per campaign short-URL. Lazy-loaded on first open; `Refresh` invalidates it. |
 | [`scripts/admin/blog.js`](../../public/scripts/admin/blog.js) | The **Blog** tab: every article ranked by reads, with a per-post chart and its traffic sources. Lazy-loaded on first open and on each window change; `Refresh` invalidates it. |
+| [`scripts/admin/access.js`](../../public/scripts/admin/access.js) | The **Access** tab: who opened this console, from where, and what was refused. Lazy-loaded on first open; `Refresh` invalidates it, and sign-out blanks it (it is the one panel holding the operators' own addresses). |
 | [`scripts/admin/api-usage.js`](../../public/scripts/admin/api-usage.js) | The **API usage** tab: traffic, customers and credit economics for the public render API. Lazy-loaded on first open and on each range change; `Refresh` invalidates it. The only admin panel whose aggregation happens entirely server-side. |
 | [`scripts/admin/helpers.js`](../../public/scripts/admin/helpers.js) | DOM/format helpers + the icon set. `esc` is re-exported from the shared [`scripts/escape-html.js`](../../public/scripts/escape-html.js). |
 | [`styles/admin.css`](../../public/styles/admin.css) | Page styles: the token block, the shell, and everything the SVG charts are painted with. |
@@ -1109,6 +1110,62 @@ to whatever the formatters happen to do.
 The account table is capped at the top 50 by volume and **says so** when it is hiding
 anyone; the headline totals come from the request table rather than from summing that
 capped list, or they would under-report the moment there are 51 API customers.
+
+## Access tab
+
+Who opened this console, from where, and what was refused. Backed by
+[`lib/data/admin-access.js`](../../lib/data/admin-access.js) and served by
+[`routes/admin-access.js`](../../routes/admin-access.js) — a sibling router, because
+`routes/admin.js` is at its line cap.
+
+**Why it exists.** The console is gated by one shared secret. `admin_sessions` records a
+hashed token, a key fingerprint and two timestamps, so it can say a session exists but
+never who made it, from which machine, or that anyone was turned away; the only trace of
+a sign-in was a `logger.info` line that Render discards on the next deploy. The two
+questions an operator with business partners actually has — *is a stranger trying the
+door?* and *when are my partners working?* — had no answer at all.
+
+**There is no name column, and that is not an omission.** There are no per-person admin
+accounts: everyone signs in with the same `endpoint_key`, so the honest handle on a person
+is their address and their device. A name field would be a claim the data cannot support.
+If per-person attribution is ever wanted, the change is one named key per person, not a
+label on this table.
+
+**Three outcomes, recorded in three places:**
+
+| Outcome | Where | Why there |
+|---|---|---|
+| `signin` | `POST /api/admin/session` in [`routes/admin.js`](../../routes/admin.js) | The one moment the master key is actually typed. |
+| `open` | `GET /api/admin/ping` | The probe the console already fires once per page load before revealing the dashboard. A fresh sign-in deliberately does **not** ping (pinned by `admin-shell.test.js`), so the two partition cleanly and nothing is double counted. It is instrumented by a **pass-through handler in `admin-access.js` that calls `next()`**, mounted ahead of the main admin router — `routes/admin.js` had no room left. If that handler ever stops calling `next()`, the real handler never answers and every operator is locked out at the login screen; `admin-access-route.test.js` pins it. |
+| `denied` | `rejectWith()` in [`lib/http/http-guards.js`](../../lib/http/http-guards.js) | The single funnel every refusal passes through, so one hook covers `protectLogs`, `requireEndpointKey`, `stagingEndpointKeyGuard` **and** the module-level `rejectEndpointKey` that `POST /api/getpro` uses. Instrumenting routes instead would have missed the two endpoints holding the same secret — one of which grants Pro. The store is installed process-wide by `createHttpGuards` because `rejectEndpointKey` has no factory closure. |
+
+Recording happens **before** the rate limiter, not after: over the per-IP ceiling the
+limiter answers 429 itself and never calls back, so recording afterwards would drop
+precisely the brute-force burst worth seeing.
+
+**A `×12` is one event that repeated, not twelve events.** `/admin` is on the public
+internet, so refusals arrive in floods — a scanner walking URLs, or one Refresh click
+firing ten requests on a token that expired while the tab sat open. A repeat from the same
+address, outcome, reason and device within 60 seconds bumps `hits` and moves `last_ts`
+instead of inserting. The collapse deliberately ignores the *path*, because the console's
+own burst hits ten different URLs. The headline totals still count every attempt.
+
+**Retention is forever.** There is no time horizon — an audit trail that expires is no
+audit trail on the day you need it. The only limit is a 250,000-row cap, a safety valve so
+a sustained scan cannot fill the volume `auth-store.db` lives on. This is the opposite of
+[`blog-views.js`](../../lib/data/blog-views.js), which *does* prune by age, for the
+opposite reason: it counts strangers, this counts key-holders.
+
+**Locations are approximate, lazy and optional.** Resolved from `ipwho.is` (keyless,
+HTTPS, no dependency — Node 22 has global `fetch`), cached per address forever, and looked
+up **after** the response is sent, never before it: no operator waits on a third party to
+read their own access log, and a refused request never costs the attacker a round-trip.
+Private and loopback addresses are never sent anywhere. A new address therefore shows an
+em dash until the next refresh, and `—` means "could not be located", not "located
+nowhere". `ADMIN_ACCESS_GEO=off` disables it; `ADMIN_ACCESS_LOG=off` disables recording
+entirely. Both default off under `NODE_ENV=test`, which is what keeps `npm test` from
+writing rows into a developer's real database as it probes admin routes without
+credentials.
 
 ## Conventions when editing
 

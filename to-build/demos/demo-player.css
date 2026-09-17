@@ -202,6 +202,45 @@
 .sdp__tip[data-place="left"]::after { right: -6px; top: var(--beak-y, 50%); margin-top: -7px; }
 .sdp__tip[data-place="center"]::after { display: none; }
 
+/* Bottom-sheet fallback, for when the card cannot fit inside the frame at all.
+   On a phone the frame is ~322px wide and, at these demos' ratios, only 160-200px
+   tall — while the longest step is 228 characters, which at any legible size is a
+   taller card than the box it has to sit in. The old behaviour was silent and bad:
+   _place()'s clamp got an inverted range, returned its low bound, and the frame's
+   `overflow: hidden` cut the card off — taking the Back button and the step counter
+   with it, so the walkthrough became forward-only across 15-17 steps with nothing
+   showing where you were. Shrinking the type (below) is the only other lever on the
+   card's height and it is not enough at that length.
+
+   So past that point the card stops being a tooltip and becomes a sheet across the
+   bottom of the frame: the footer is pinned and always visible, and the text scrolls
+   if it must. _place() decides, because it is the only thing that knows both boxes,
+   and it is a no-op wherever the card already fits — so every wider viewport, and the
+   guides page, are untouched by construction. */
+.sdp__tip.is-sheet {
+  left: 0;
+  right: 0;
+  /* clear of the 4px .sdp__bar, which paints ABOVE the card (z-index 5 vs 4) */
+  bottom: 4px;
+  top: auto;
+  width: auto;
+  max-height: calc(100% - 8px);
+  display: flex;
+  flex-direction: column;
+  border-radius: 14px 14px 0 0;
+  transition: none;
+}
+.sdp__tip.is-sheet .sdp__text {
+  /* min-height:0 is what lets a flex item shrink below its content and scroll */
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.sdp__tip.is-sheet .sdp__foot {
+  flex: none;
+}
+.sdp__tip.is-sheet::after { display: none; }
+
 /* ---- Loading skeleton (self-managed; hidden once first frame paints) ----- */
 .sdp__skeleton {
   position: absolute;

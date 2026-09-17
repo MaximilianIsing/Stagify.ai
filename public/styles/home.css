@@ -896,7 +896,16 @@ body.page-home main {
      Below the flat breakpoint the script switches back to the front panel's own
      height — see naturalHeight(): with the neighbours hidden there is nothing left
      for a shared height to line up with, and it only padded every short panel out to
-     the tallest one's height on the viewport that can least afford it. */
+     the tallest one's height on the viewport that can least afford it.
+
+     This number is NOT a layout-shift risk and does not need retuning to match what
+     the script settles on (measured: 486px at >=1180px, 1026px at 1140px where the
+     split collapses, so no single constant could serve both anyway). It cannot paint:
+     init() adds .shw--ready and runs the first select() -> measure() in the SAME task,
+     so the browser's first paint already has the measured inline height; and before
+     the script runs at all, `.shw:not(.shw--ready) .shw__stage { height: auto }` in
+     the fallback block below overrides this. It is a belt-and-braces value for the
+     one frame that never happens. */
   height: 520px;
   transition: height 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
@@ -4391,6 +4400,44 @@ body.page-home main {
   font-weight: 700;
   font-size: 14.5px;
   color: var(--text-heading);
+}
+/* The NAME is the LinkedIn link, not a bare icon: the anchor's accessible name is
+   then the person's own (translated) name, so the glyph stays aria-hidden and no
+   12th string had to be added to all 11 packs for a label. Proof of a real person
+   is the point of the link, so it sits on the name it verifies.
+   inline-flex + width:fit-content keeps the hit area (and the underline) on the text
+   instead of spanning the whole caption column. */
+a.tw-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: color 0.15s ease;
+}
+a.tw-name:hover,
+a.tw-name:focus-visible {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+a.tw-name:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+  text-decoration: none;
+}
+.tw-li {
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+  fill: #0a66c2;
+  opacity: 0.85;
+  transition: opacity 0.15s ease;
+}
+a.tw-name:hover .tw-li,
+a.tw-name:focus-visible .tw-li {
+  opacity: 1;
 }
 .tw-org {
   font-size: 11px;

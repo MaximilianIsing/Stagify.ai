@@ -19,7 +19,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { startServer } from '../helpers/server.js';
-import { LOCALES, LOCALIZED_PAGES } from '../../lib/i18n/locales.js';
+import { BLOG_HUB, LOCALES, LOCALIZED_ARTICLES, LOCALIZED_PAGES } from '../../lib/i18n/locales.js';
 import { buildSitemap } from '../../lib/i18n/sitemap.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -40,10 +40,17 @@ function everyHtmlFile(dir = PUBLIC, prefix = '') {
   return out;
 }
 
-test('a page outside LOCALIZED_PAGES carries no hreflang alternates', () => {
+test('a page outside the localized set carries no hreflang alternates', () => {
   // Keyed on `file` (what the build script writes to), not `path` — a page can be
   // served at a clean URL that differs from its filename (status.html → /status).
-  const localizedFiles = new Set(LOCALIZED_PAGES.map((p) => p.file.replace(/\\/g, '/')));
+  //
+  // The blog is in this set too, on the same terms: build-i18n-seo.js visits the
+  // articles and the hub as well as LOCALIZED_PAGES, so it can both write and strip
+  // their clusters. What it CANNOT do is fix an article it no longer knows about, which
+  // is the freeze this test exists to catch.
+  const localizedFiles = new Set(
+    [...LOCALIZED_PAGES, ...LOCALIZED_ARTICLES, BLOG_HUB].map((p) => p.file.replace(/\\/g, '/')),
+  );
   const offenders = [];
 
   for (const file of everyHtmlFile()) {
@@ -54,7 +61,7 @@ test('a page outside LOCALIZED_PAGES carries no hreflang alternates', () => {
   }
 
   assert.deepEqual(offenders, [],
-    'these pages are not in LOCALIZED_PAGES but still advertise localized variants. '
+    'these pages are in neither LOCALIZED_PAGES nor LOCALIZED_ARTICLES but still advertise localized variants. '
     + 'scripts/build-i18n-seo.js only visits pages IN that array, so it can neither have '
     + 'written these nor strip them — delete the <link rel="alternate" hreflang=…> lines '
     + 'by hand, keeping the self-referential canonical');

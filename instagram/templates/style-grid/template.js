@@ -24,6 +24,8 @@ export const meta = {
     subhead: 'One sentence. Under 100 characters.',
     sourceImage: 'The empty room every variant was made from.',
     sourceLabel: 'Pill on the source photo. Defaults to EMPTY ROOM.',
+    sourceCaption: 'Optional line under the source pill, matching the one line note each variant carries. Without it the source card is the only one in the grid with a bare pill, which reads as a missing caption rather than a deliberate one.',
+    sourceInline: 'Optional. True folds the source into the grid as the first card so every card is cut to the same shape, instead of giving it a wide hero band. Use it when the point is that the panels are one room; leave it off when the source should dominate.',
     variants: 'Three to five { image, pill, caption }. The pill is the style name, the caption is who it sells to.',
     cta: 'Footer pill text.',
   },
@@ -52,18 +54,46 @@ export function render(data, { format, brandCss, slideIndex = 0, slideCount = 1 
     ? variants.slice(slideIndex * perSlide, slideIndex * perSlide + perSlide)
     : variants;
 
-  const cols = shown.length >= 3 ? 3 : 2;
+  // `sourceInline` folds the source photo into the grid as the first card instead of
+  // giving it a wide hero band of its own.
+  //
+  // The default hero is a full-width landscape strip while the variants are narrow and
+  // tall, so the before and the afters are cropped to different shapes out of the same
+  // portrait photographs. On a post whose whole claim is "this is one room, only the
+  // furniture changed", four different crops make the reader do the comparison across
+  // three aspect ratios, and the before ends up showing none of the ceiling and floor
+  // that the afters are dominated by. Inline, every card is cut to one shape, so the
+  // eye can actually hold them against each other. Off by default: the hero band is
+  // right whenever the source deserves to dominate, which is most style-preset posts.
+  const inline = data.sourceInline === true && !carousel;
+  const sourceCard = {
+    image: data.sourceImage,
+    pill: data.sourceLabel ?? 'EMPTY ROOM',
+    caption: data.sourceCaption,
+    lightPill: true,
+  };
+  const cards = inline ? [sourceCard, ...shown] : shown;
+
+  // Inline aims for a balanced block rather than a wide row: four cards read far better
+  // as two by two than as four slivers, and equal columns are what keeps every card the
+  // same shape. Square-ish counts get their square; five or more fall back to three up.
+  const cols = inline
+    ? (cards.length === 4 ? 2 : (cards.length >= 5 ? 3 : cards.length))
+    : (shown.length >= 3 ? 3 : 2);
 
   // A last row that does not divide evenly leaves a hole, and a hole in a grid of photos
   // reads as a missing image rather than as a design choice. Stretch the final card across
   // whatever is left: 4 items in 3 columns gives 3 then 1 full width, 5 gives 3 then 1 plus
   // a double. Works for any count without special cases.
-  const remainder = shown.length % cols;
-  const lastSpan = remainder === 0 ? 1 : cols - remainder + 1;
+  //
+  // Not applied inline, where a stretched last card would be the one thing breaking the
+  // uniform shape that inline exists to provide.
+  const remainder = cards.length % cols;
+  const lastSpan = (inline || remainder === 0) ? 1 : cols - remainder + 1;
 
-  const grid = shown
+  const grid = cards
     .map((v, i) => {
-      const span = i === shown.length - 1 ? lastSpan : 1;
+      const span = i === cards.length - 1 ? lastSpan : 1;
       return photoCard({
         ...v,
         style: span > 1 ? `grid-column: span ${span};` : '',
@@ -78,13 +108,9 @@ export function render(data, { format, brandCss, slideIndex = 0, slideCount = 1 
       ${headline(data.headline)}
       ${data.subhead ? `<div class="subhead">${escapeHtml(data.subhead)}</div>` : ''}
     </div>
-    <div class="hero">
-      ${photoCard({
-        image: data.sourceImage,
-        pill: data.sourceLabel ?? 'EMPTY ROOM',
-        lightPill: true,
-      })}
-    </div>
+    ${inline ? '' : `<div class="hero">
+      ${photoCard(sourceCard)}
+    </div>`}
     <div class="variants" style="--cols: ${cols};">
       ${grid}
     </div>

@@ -526,6 +526,18 @@ is first in the document and defer preserves order, so `window.gtag` is guarante
 exist before any other deferred or module script runs. That is the contract a future
 conversion snippet will depend on.
 
+That tag is also **gated**. Before it configures anything or fetches
+`googletagmanager.com`, `gtag.js` checks two opt-outs: `navigator.globalPrivacyControl`
+(the signal the CPRA requires businesses to process) and a `stagifyAdOptOut` flag in
+local storage, written by [`scripts/ad-optout.js`](../../public/scripts/ad-optout.js) —
+the control rendered into privacy.html §16.3. An opted-out visitor queues nothing and
+makes no request. The gate is not optional politeness: the privacy policy states that
+the site shares personal information for cross-context behavioral advertising and that
+these are the ways to stop it, so
+[`ad-tag-disclosure.test.js`](../../test/frontend/ad-tag-disclosure.test.js) fails the
+build if the tag and the copy ever contradict each other again — which is exactly what
+happened before the guard existed.
+
 `test/frontend/head-scripts.test.js` walks every page under `public/` and fails the
 deploy on an unexplained blocking tag; adding one means adding it to that file's
 allowlist with its reason.

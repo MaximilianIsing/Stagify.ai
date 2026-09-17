@@ -1,4 +1,41 @@
 {
+  "about": {
+    "title": "Over Stagify.ai",
+    "lede": "Stagify.ai is een AI-tool voor virtuele woningstyling, gemaakt voor vastgoedprofessionals. Upload een foto van een kamer en krijg hem binnen enkele seconden gemeubileerd, opnieuw ingericht of leeggehaald.",
+    "who": {
+      "heading": "Wie we zijn",
+      "body": "Stagify.ai is een onafhankelijk bedrijf. We bouwen en beheren precies één product, en dat woont op één adres: <strong>stagify.ai</strong>. We zijn geen wederverkoper, geen white label van een andere stylingtool en geen regionale tak van een groter concern. Het hele team is bereikbaar op <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> of via <a href=\"tel:+19292514372\">(929) 251-4372</a>."
+    },
+    "facts": {
+      "foundedLabel": "Opgericht",
+      "founded": "22 augustus 2025",
+      "foundersLabel": "Oprichters",
+      "founders": "Maximilian Ising (hoofd Ontwikkeling en AI), Lucas Shtainer (hoofd Marketing), Ryan Croman (hoofd Outreach)",
+      "siteLabel": "Website",
+      "contactLabel": "Contact"
+    },
+    "notAffiliated": {
+      "heading": "Geen band met andere „Stagify”-producten",
+      "body": "Verschillende bedrijven zonder enige band met ons gebruiken een vergelijkbare naam: <strong>stagify.io</strong>, <strong>stagify.app</strong>, <strong>stagify.online</strong> en <strong>stagifyai.com</strong>. Stagify.ai heeft met geen van hen een verband, samenwerking, eigendomsrelatie of goedkeuring, en deelt geen personeel, code of gegevens met ze.",
+      "consequence": "Reviews, prijzen, functies, storingen en voorwaarden op die sites gaan niet over Stagify.ai. Vergelijk je tools voor virtuele styling, kijk dan naar het domein in de adresbalk: dat van ons eindigt op .ai."
+    },
+    "product": {
+      "heading": "Wat we maken",
+      "body": "Stagify.ai stylt interieurs vanaf één foto, schildert en herinricht kamers via een pratende ontwerper, maskeert en herstylt afzonderlijke vlakken tot op de pixel, en ruimt buitenfoto’s op. Alles draait in de browser, in elf talen, met een gratis niveau, het <a href=\"stagify-plus.html\">Stagify+</a>-abonnement en een <a href=\"developers.html\">openbare API</a>. Alle rechten op elke gegenereerde afbeelding blijven van jou."
+    },
+    "find": {
+      "heading": "Waar je ons vindt",
+      "body": "Dit zijn de enige accounts die we beheren. Een account dat hier niet staat, is niet van ons.",
+      "blog": "Ons blog"
+    },
+    "faq": {
+      "heading": "Veelgestelde vragen",
+      "q1": "Is Stagify.ai hetzelfde bedrijf als stagify.io, stagify.app, stagify.online of stagifyai.com?",
+      "a1": "Nee. Stagify.ai is een onafhankelijk bedrijf en werkt uitsluitend op het domein stagify.ai. Het heeft geen band met, goedkeuring van of relatie tot stagify.io, stagify.app, stagify.online of stagifyai.com; dat zijn losstaande bedrijven met vergelijkbare namen. Reviews, prijzen, functies en voorwaarden op die sites gaan niet over Stagify.ai.",
+      "q2": "Wie heeft Stagify.ai opgericht en wie runt het?",
+      "a2": "Stagify.ai is op 22 augustus 2025 opgericht door Maximilian Ising (medeoprichter, hoofd Ontwikkeling en AI), Lucas Shtainer (medeoprichter, hoofd Marketing) en Ryan Croman (medeoprichter, hoofd Outreach). Het bedrijf voert één product, op stagify.ai, en is te bereiken op team@stagify.ai."
+    }
+  },
   "meta": {
     "title": "Stagify.ai – Gratis virtuele styling met één klik",
     "description": "Transformeer lege kamers met AI-styling. Upload foto’s en krijg in seconden professioneel gestylede resultaten. Gratis AI-woningstyling voor makelaars, verkopers en kopers.",
@@ -192,6 +229,8 @@
     },
   "navigation": {
     "home": "Home",
+    "blog": "Blog",
+    "tryFree": "Probeer Stagify gratis",
     "about": "Over ons",
     "pdfTo3d": "AI-Designer",
     "maskingStudio": "Maskeerstudio",
@@ -942,7 +981,7 @@
         },
         "travonte": {
           "quote": "Stagify laat het hele proces moeiteloos aanvoelen. Je uploadt een foto van een lege kamer, wacht een paar seconden en opeens heeft de ruimte karakter. Het is simpel, strak en echt bruikbaar.",
-          "author": "Travonte Taylor",
+          "author": "Travonte' Taylor",
           "role": "Compass",
           "location": "Brooklyn, New York"
         },
@@ -1731,6 +1770,10 @@
     "troubleshootingTitle": "Probleemoplossing & veelvoorkomende problemen"
   },
   "pageMeta": {
+    "about": {
+      "title": "Over Stagify.ai | Wie we zijn",
+      "description": "Stagify.ai is een onafhankelijk bedrijf voor virtuele styling met AI, in 2025 opgericht door Maximilian Ising, Lucas Shtainer en Ryan Croman. Geen band met stagify.io, stagify.app, stagify.online of stagifyai.com."
+    },
     "basicMask": {
       "title": "Basismasker | Stagify.ai – Verf één vlak en style alleen dat",
       "description": "Schilder over één deel van een kamerfoto, zeg wat daar moet veranderen en krijg dezelfde foto terug met alleen dat vlak opnieuw. Alles daarbuiten blijft onaangeroerd.",
@@ -1749,7 +1792,7 @@
       "description": "Stagify+: meubels verwijderen, de AI Designer, de Masking Studio, modellen van hogere kwaliteit en onbeperkt stylen. Bekijk plannen en prijzen."
     },
     "enterprise": {
-      "title": "Stagify Enterprise | Verbruiksgebaseerde AI-styling voor teams",
+      "title": "Stagify.ai Enterprise | Verbruiksgebaseerde AI-styling voor teams",
       "description": "Geef je hele team onbeperkte AI-styling met verbruiksgebaseerde facturering voor $0,15 per generatie. Eén factuur, geen kosten per gebruiker."
     },
     "maskingStudio": {
