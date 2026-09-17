@@ -1,54 +1,89 @@
-/* /about — the entity hub. A reading page, not an app screen: one column, generous
-   measure, no interactive chrome of its own.
-
-   The page exists because four unrelated products share the name (see
-   lib/seo/organization.js), so its job is to be the plainest possible statement of who
-   this company is, in a shape a human skims and a crawler parses. Which is why the
-   disambiguation block is a callout rather than a paragraph in the flow — it is the one
-   part a reader must not scroll past, and the one part an answer engine should lift. */
+/* /about — the entity hub.
+ *
+ * Deliberately built from the same parts as contact.html rather than inventing a look:
+ * the 1100px column with a 48px gutter, the 48px hero h1, and the translucent white
+ * card (12px radius, --border hairline, soft shadow, hover lift) that .contact-card,
+ * .feature-card and .testimonial all share. Every page on this site sits on a playing
+ * background video, so content that is not ON a card is text floating over footage —
+ * which is exactly how the first draft of this page looked.
+ *
+ * The one place it departs is the disambiguation notice, which gets a brand accent rail
+ * and a tinted fill. That is not decoration: the page exists because four unrelated
+ * products share the name (see lib/seo/organization.js), and that block is the sentence
+ * a reader must not scroll past.
+ */
 
 .about {
-  max-width: 760px;
-  margin: 0 auto;
-  padding: 8px 20px 48px;
+  max-width: 1100px;
+  margin: 60px auto;
+  padding: 0 48px;
+}
+
+/* --- hero ------------------------------------------------------------------------ */
+
+.about__hero {
+  margin-bottom: 24px;
 }
 
 .about h1 {
+  font-size: 48px;
+  line-height: 1.05;
+  letter-spacing: -0.3px;
+  margin: 0 0 10px;
   color: var(--brand-deep);
-  font-size: 34px;
-  line-height: 1.15;
-  margin: 0 0 12px;
 }
 
 .about__lede {
-  color: var(--brand);
+  color: var(--muted);
   font-size: 18px;
-  line-height: 1.55;
-  margin: 0 0 32px;
+  line-height: 1.5;
+  margin: 0;
+  max-width: 62ch;
 }
 
-.about section {
-  margin: 0 0 30px;
+/* --- cards ----------------------------------------------------------------------- */
+
+.about__card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.6);
+  padding: 24px 28px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
+  margin-bottom: 18px;
+}
+
+.about__card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
 .about h2 {
+  font-size: 24px;
+  line-height: 1.2;
+  letter-spacing: -0.2px;
+  margin: 0 0 12px;
   color: var(--brand-deep);
-  font-size: 21px;
-  line-height: 1.25;
-  margin: 0 0 10px;
 }
 
 .about h3 {
-  color: var(--brand-deep);
   font-size: 16px;
-  margin: 22px 0 6px;
+  margin: 20px 0 6px;
+  color: var(--brand-deep);
 }
 
 .about p {
   color: var(--fg);
-  font-size: 15.5px;
+  font-size: 16px;
   line-height: 1.65;
   margin: 0 0 12px;
+  /* A 1100px line of 16px text is ~130 characters, which is roughly twice a readable
+     measure. The card is wide; the paragraph inside it is not. */
+  max-width: 68ch;
+}
+
+.about__card p:last-child {
+  margin-bottom: 0;
 }
 
 .about a {
@@ -56,68 +91,109 @@
   text-decoration: underline;
 }
 
-/* The disambiguation callout. Bordered and tinted so it reads as a notice rather than
-   body copy — this is the sentence the page is for. */
+.about a:hover {
+  color: var(--brand);
+}
+
+/* --- the disambiguation notice --------------------------------------------------- */
+
 .about__notice {
   background: var(--brand-wash);
-  border: 1px solid var(--brand-pale);
+  border-color: var(--brand-pale);
   border-left: 4px solid var(--brand);
-  border-radius: 10px;
-  padding: 18px 20px;
 }
 
-.about__notice h2 {
-  margin-top: 0;
-}
+/* --- facts ----------------------------------------------------------------------- */
 
-.about__notice p:last-child {
-  margin-bottom: 0;
-}
-
-/* Founders and profiles: plain definition-ish rows, no cards. The facts are the point. */
 .about__facts {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
+/* Label / value rows, matching .contact-row so the two pages read as one site. */
 .about__facts li {
-  color: var(--fg);
-  font-size: 15.5px;
-  line-height: 1.6;
-  padding: 7px 0;
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  gap: 12px;
+  align-items: baseline;
+  padding: 10px 0;
   border-bottom: 1px solid var(--border);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--fg);
 }
 
 .about__facts li:last-child {
   border-bottom: 0;
+  padding-bottom: 0;
 }
 
-.about__facts strong {
-  color: var(--brand-deep);
+.about__facts dt,
+.about__facts .about__label {
+  color: var(--muted);
+  font-size: 13px;
   font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
+
+/* --- profile links --------------------------------------------------------------- */
 
 .about__profiles {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px 18px;
+  gap: 10px;
   list-style: none;
   margin: 0;
   padding: 0;
-  font-size: 15px;
 }
 
-@media (max-width: 640px) {
+.about__profiles a {
+  display: inline-block;
+  padding: 7px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--brand-deep);
+  font-size: 14px;
+  text-decoration: none;
+  transition: border-color 0.1s ease-out, background 0.1s ease-out;
+}
+
+.about__profiles a:hover {
+  border-color: var(--brand-soft);
+  background: var(--brand-wash);
+  color: var(--brand);
+}
+
+/* --- phones ---------------------------------------------------------------------- */
+
+@media (max-width: 768px) {
   .about {
-    padding: 4px 16px 40px;
+    margin: 28px auto;
+    padding: 0 16px;
   }
 
   .about h1 {
-    font-size: 27px;
+    font-size: 32px;
   }
 
   .about__lede {
     font-size: 16.5px;
+  }
+
+  .about h2 {
+    font-size: 20px;
+  }
+
+  .about__card {
+    padding: 18px 18px;
+  }
+
+  /* Stacked, because a 150px label column leaves ~40% of a phone for the value. */
+  .about__facts li {
+    grid-template-columns: 1fr;
+    gap: 2px;
   }
 }

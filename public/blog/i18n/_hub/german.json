@@ -1,0 +1,125 @@
+{
+  "_meta": {
+    "sourceHash": "sha256:187d5dafab0a91e44c4a414a091e4e320a4fce84a9f6b037903c6f2438dbdb43",
+    "slug": null,
+    "lang": "german",
+    "hreflang": "de",
+    "translatedAt": "2026-09-17",
+    "reviewed": false
+  },
+  "meta": {
+    "title": "Stagify.ai Blog: Ratgeber zu virtuellem Home Staging und Immobilien-Tipps",
+    "description": "Praxisnahe Ratgeber zu virtuellem Home Staging, MLS-Kennzeichnungspflichten und schnellerer Vermarktung mit KI. Für Makler, Verkäufer und Immobilienfotografen."
+  },
+  "hero": {
+    "title": "Der Stagify Blog",
+    "body": "Praxisnahe Ratgeber zu virtuellem Home Staging, zur Kennzeichnung im MLS und zur schnelleren Vermarktung Ihrer Objekte – für Makler, Verkäufer und Fotografen."
+  },
+  "cards": {
+    "remove-furniture-from-listing-photos": {
+      "tag": "Ratgeber",
+      "title": "Die meisten Objekte sind bewohnt. Fotografieren Sie trotzdem.",
+      "excerpt": "Der Verkäufer wohnt noch dort, und der Fotograf kommt nur einmal. Wie Sie seine Möbel aus dem Bild nehmen und bessere hineinsetzen, was niemals verschwinden darf und die fünf Stellen, an denen es schiefgeht.",
+      "meta": "16. September 2026 · 9 Min. Lesezeit",
+      "alt": "Zwei Aufnahmen desselben Wohnzimmers nebeneinander auf dunklem Hintergrund: links eingerichtet mit grauem Sofa, gemustertem Teppich, Bücherregal und Familienfotos an den Wänden, beschriftet „So fotografiert“; rechts derselbe Raum ohne jedes Möbelstück, beschriftet „Leer geräumt, bereit fürs Staging“"
+    },
+    "home-staging-cost": {
+      "tag": "Kosten",
+      "title": "Die mittlere Staging-Rechnung liegt bei $1,500. Ihre nicht.",
+      "excerpt": "NAR meldet einen Median von $1,500. Das Angebot für Ihre leere Dreizimmerwohnung nennt $4,500 plus Monatsmiete. Beides stimmt. Was auf der Rechnung steht und wie Sie entscheiden, wofür Sie zahlen.",
+      "meta": "9. September 2026 · 10 Min. Lesezeit",
+      "alt": "Ein Stufendiagramm auf dunklem Hintergrund: physisches Staging startet bei $4,000 für den Aufbau und steigt um $900 pro Monat auf $6,700 nach 120 Tagen am Markt, während virtuelles Home Staging konstant bei $0 bleibt"
+    },
+    "virtual-staging-api": {
+      "tag": "Produkt",
+      "title": "Die Staging-Pipeline hat jetzt eine API. Ein Call, ein Foto.",
+      "excerpt": "Raumfoto senden, möbliertes Foto in derselben Antwort zurückbekommen. Prepaid-Credits ab $0.15 pro Bild, kein Abo, keine Job-Queue – und die Begründung für alle drei Entscheidungen.",
+      "meta": "2. September 2026 · 8 Min. Lesezeit",
+      "alt": "Ein eingerichtetes Homeoffice mit Holzschreibtisch und Einbauregalen, darüber eine weiße Karte mit der Aufschrift „One HTTP call. One staged photo.“"
+    },
+    "new-construction-listing-photos": {
+      "tag": "Neubau",
+      "title": "Ein Haus, das noch nicht steht, lässt sich nicht fotografieren",
+      "excerpt": "Mehr als drei Viertel der angebotenen Neubauten haben kein fertiges Interieur. Was Sie in jeder Bauphase ehrlich veröffentlichen dürfen und wo ein Grundriss-Rendering hineinpasst.",
+      "meta": "16. August 2026 · 9 Min. Lesezeit",
+      "alt": "Das Innere eines Rohbaus mit nackten Holzständerwänden, darunter ein blaues Band mit der Aufschrift „77 % der angebotenen Neubauten sind unfertig“"
+    },
+    "fsbo-listing-photos": {
+      "tag": "Ratgeber",
+      "title": "Privatverkäufe auf Rekordtief. Die Provision ist nicht der Grund.",
+      "excerpt": "Nur noch 5 % der Häuser werden privat verkauft, und 40 % dieser Verkäufer haben das Haus überhaupt nicht beworben. Wer ohne Makler verkauft, für den sind die Fotos das Inserat.",
+      "meta": "14. August 2026 · 8 Min. Lesezeit",
+      "alt": "Ein gelbes zweistöckiges Haus im goldenen Abendlicht mit einem „For Sale By Owner“-Schild im Vorgarten und der Aufschrift „Die Fotos verkaufen“"
+    },
+    "virtual-staging-disclosure-laws-by-state": {
+      "tag": "Recht",
+      "title": "Muss virtuelles Home Staging gekennzeichnet werden? Die Regeln 2026, Bundesstaat für Bundesstaat",
+      "excerpt": "Zwei Bundesstaaten haben ein Gesetz, nur eines gilt bereits. Überall sonst bestraft Sie in der Praxis Ihr MLS. Was jedes davon verlangt, zitiert aus der Quelle.",
+      "meta": "11. August 2026 · 9 Min. Lesezeit",
+      "alt": "Ein virtuell eingerichtetes Wohnzimmer, überlagert von einer weißen Karte mit der Überschrift „Wer es wirklich verlangt“ und einer Liste mit Kalifornien, Wisconsin und allen übrigen Bundesstaaten"
+    },
+    "free-virtual-staging": {
+      "tag": "Ratgeber",
+      "title": "Kostenloses virtuelles Home Staging: was „gratis“ wirklich bringt",
+      "excerpt": "Die meisten Gratis-Tools sind gratis im Ansehen und kostenpflichtig im Benutzen. Hier ist der Fünf-Fragen-Test, ob Sie ein kostenloses Rendering tatsächlich veröffentlichen dürfen. Wenden Sie ihn auch auf uns an.",
+      "meta": "9. August 2026 · 8 Min. Lesezeit",
+      "alt": "Ein grünes Wohnzimmer mit Marmorkamin und rostorangefarbenem Samtsofa, überlagert von einer Preiskarte, die $16 bis $75 pro möbliertem Foto durchstreicht zugunsten von $0 im Gratistarif"
+    },
+    "curb-appeal-real-estate-photos": {
+      "tag": "Immobilien",
+      "title": "Die Fassade ist das einzige Foto, das jeder Käufer sieht",
+      "excerpt": "92 % der Realtors raten Verkäufern, sie vor dem Inserat herzurichten, und NARs eigene Zahlen zur Kostendeckung zeigen: billige Instandhaltung bringt mehr ein als jeder teure Umbau.",
+      "meta": "7. August 2026 · 9 Min. Lesezeit",
+      "alt": "Ein zweistöckiges Vorstadthaus im goldenen Abendlicht mit frisch gemähtem, gestreiftem Rasen und leerer Einfahrt"
+    },
+    "prepare-your-listing-for-the-fall-market": {
+      "tag": "Immobilien",
+      "title": "Der Herbstmarkt ist der harte. Fangen Sie im August an.",
+      "excerpt": "September und Oktober sind für Verkäufer die schwächsten Monate des Jahres. Hier ist der Zeitplan rückwärts gerechnet – und der eine Schritt, den Sie auf einen Nachmittag zusammenziehen können.",
+      "meta": "3. August 2026 · 8 Min. Lesezeit",
+      "alt": "Ein warm eingerichtetes Wohnzimmer mit brennendem Kamin, überlagert von einem Zeitplan für das Herbstinserat"
+    },
+    "dorm-room-design-ai-college-freshmen": {
+      "tag": "Studenten",
+      "title": "Wohnheimzimmer mit KI planen: Ihr Zimmer steht, bevor Sie einziehen",
+      "excerpt": "Unser neuer Raumtyp Dorm behält die von der Hochschule gestellten Möbel und gestaltet darum herum – so sehen Sie das Zimmer schon vor dem Einzugstag.",
+      "meta": "27. Juli 2026 · 6 Min. Lesezeit",
+      "alt": "Ein leeres Wohnheimzimmer neben demselben Zimmer, warm eingerichtet mit Teppichen und Lichterketten"
+    },
+    "top-10-ai-virtual-staging-sites-2026": {
+      "tag": "Vergleich",
+      "title": "Die 10 besten KI-Anbieter für virtuelles Home Staging 2026 im Ranking",
+      "excerpt": "Zehn Tools bewertet nach Preis, Tempo, Kontrolle und Bildqualität – plus das, worin jedes davon wirklich am besten ist.",
+      "meta": "22. Juli 2026 · 10 Min. Lesezeit",
+      "alt": "Ein eingerichtetes Wohnzimmer neben einem nummerierten Siegertreppchen"
+    },
+    "does-virtual-staging-help-sell-homes": {
+      "tag": "Immobilien",
+      "title": "Hilft virtuelles Home Staging wirklich beim Verkauf? Was die Daten sagen",
+      "excerpt": "Die Belege für Staging sind stark. Das zeigen die Daten von NAR und RESA – und hier ordnet sich virtuelles Home Staging ein.",
+      "meta": "17. Juli 2026 · 7 Min. Lesezeit",
+      "alt": "Ein eingerichtetes Wohnzimmer mit einer nach oben zeigenden Verkaufskurve"
+    },
+    "masking-studio-and-ai-designer": {
+      "tag": "Produkt",
+      "title": "Masking Studio und AI Designer: die zwei Funktionen, die Stagify abheben",
+      "excerpt": "Staging per Klick ist erst der Anfang. So geben Ihnen pixelgenaues Maskieren und dialogfähige KI die volle Kontrolle.",
+      "meta": "10. Juli 2026 · 6 Min. Lesezeit",
+      "alt": "Ein eingerichtetes Esszimmer mit einem KI-Auswahlrahmen, der die Möbel hervorhebt"
+    },
+    "is-virtual-staging-allowed-on-the-mls": {
+      "tag": "Immobilien",
+      "title": "Ist virtuelles Home Staging im MLS erlaubt? Die Kennzeichnungsregeln erklärt",
+      "excerpt": "Ja, virtuelles Home Staging ist weithin akzeptiert – solange Sie es kennzeichnen. So funktionieren die Regeln und so bleiben Sie auf der sicheren Seite.",
+      "meta": "3. Juli 2026 · 7 Min. Lesezeit",
+      "alt": "Ein eingerichtetes Wohnzimmer mit Verifizierungsabzeichen als Sinnbild für ehrliches virtuelles Home Staging"
+    },
+    "stagify-vs-other-virtual-staging-tools": {
+      "tag": "Vergleich",
+      "title": "Stagify gegen andere Tools für virtuelles Home Staging: der ehrliche Vergleich 2026",
+      "excerpt": "Klassisches Staging, Designer-Services, KI pro Foto: wie sie bei Kosten, Tempo und Kontrolle abschneiden.",
+      "meta": "15. Juni 2026 · 8 Min. Lesezeit",
+      "alt": "Drei eingerichtete Wohnzimmer im direkten Vergleich, die beste Option hervorgehoben"
+    }
+  }
+}

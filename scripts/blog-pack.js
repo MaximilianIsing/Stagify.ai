@@ -22,11 +22,18 @@ import { fileURLToPath } from 'node:url';
 import {
   articleSourceHash,
   extractArticleStrings,
+  currencyWarnings,
+  extractHubStrings,
+  hubSourceHash,
+  normalizeCurrency,
+  missingHubSlots,
   missingSlots,
   validateTranslatedBody,
 } from '../lib/content/article-extract.js';
-import { ARTICLES_BY_SLUG, LOCALES, localeByPrefix, localeByLang } from '../lib/i18n/locales.js';
-import { PACK_ROOT } from '../lib/i18n/blog-packs.js';
+import {
+  ARTICLES_BY_SLUG, BLOG_HUB, LOCALES, LOCALIZED_ARTICLES, localeByPrefix, localeByLang,
+} from '../lib/i18n/locales.js';
+import { HUB_PACK_DIR, PACK_ROOT } from '../lib/i18n/blog-packs.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
@@ -72,6 +79,61 @@ function localeOrDie(token) {
 /** @param {string} slug @param {string} lang */
 function packPath(slug, lang) {
   return path.join(PUBLIC, ...PACK_ROOT.split('/'), slug, `${lang}.json`);
+}
+
+/**
+ * UI labels an article quotes verbatim, as English text → the key holding that label in
+ * public/languages/<lang>.json.
+ *
+ * When an article says "tick Label as virtually staged", the translation has to name the
+ * control the app ACTUALLY shows in that language, not a fresh translation of the English
+ * words. Otherwise the Italian article tells the reader to look for "Segnala come home
+ * staging virtuale" and the product says "Contrassegna come arredato virtualmente" — the
+ * reader hunts for a checkbox that does not exist. It is the same failure the glossary's
+ * never-translate list prevents for product names, one level down.
+ * @type {Record<string, string>}
+ */
+const QUOTED_UI_STRINGS = {
+  'Label as virtually staged': 'modal.staging.labelVirtuallyStaged',
+};
+
+/** The value of a dotted key in a language pack, or null. */
+function uiString(lang, dotted) {
+  try {
+    const packs = JSON.parse(fs.readFileSync(path.join(PUBLIC, 'languages', `${lang}.json`), 'utf8'));
+    let cur = packs;
+    for (const part of dotted.split('.')) cur = cur === null || typeof cur !== 'object' ? undefined : cur[part];
+    return typeof cur === 'string' ? cur : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Notes for a pack — reported, never blocking. Money (see currencyWarnings) and quoted UI
+ * labels.
+ * @param {string} slug
+ * @param {string} lang
+ * @param {Record<string, any>} pack
+ * @returns {string[]}
+ */
+export function packWarnings(slug, lang, pack) {
+  const english = extractArticleStrings(englishHtml(slug));
+  if (typeof pack.body !== 'string') return [];
+  const out = currencyWarnings(english.body, pack.body);
+
+  for (const [englishLabel, key] of Object.entries(QUOTED_UI_STRINGS)) {
+    if (!english.body.includes(englishLabel)) continue;
+    const shipped = lang ? uiString(lang, key) : null;
+    if (shipped && !pack.body.includes(shipped)) {
+      out.push(
+        `ui-label: the article quotes the "${englishLabel}" control, but this translation `
+        + `does not contain the label the app actually shows in ${lang} — "${shipped}" (${key}). `
+        + 'A reader following the article would look for a checkbox that is not there.',
+      );
+    }
+  }
+  return out;
 }
 
 /**
@@ -125,6 +187,29 @@ export function addPack(slug, langToken, translated) {
   const pack = { ...translated };
   delete pack._meta; // never trust a supplied fingerprint — see the header
 
+  // Put every US dollar amount back into US form before anything looks at it. Translators
+  // localize `$1,500` to `1.500 $` or `$0,15` by reflex, which is the right instinct for a
+  // local price and the wrong one for a figure describing the US market. Normalizing here
+  // rather than rejecting means ten good translations are not thrown away over a comma —
+  // and validateTranslatedBody still compares the amounts afterwards, so a price that
+  // genuinely CHANGED is still refused.
+  for (const key of ['body', 'disclaimer']) {
+    if (typeof pack[key] === 'string') pack[key] = normalizeCurrency(pack[key]);
+  }
+  if (pack.cta && typeof pack.cta === 'object') {
+    for (const key of ['title', 'body', 'link']) {
+      if (typeof pack.cta[key] === 'string') pack.cta[key] = normalizeCurrency(pack.cta[key]);
+    }
+  }
+  for (const key of ['title', 'eyebrow', 'crumb', 'figureAlt']) {
+    if (typeof pack[key] === 'string') pack[key] = normalizeCurrency(pack[key]);
+  }
+  if (pack.meta && typeof pack.meta === 'object') {
+    for (const key of ['title', 'description']) {
+      if (typeof pack.meta[key] === 'string') pack.meta[key] = normalizeCurrency(pack.meta[key]);
+    }
+  }
+
   const problems = verifyPack(slug, pack);
   if (problems.length) {
     throw new Error(`${slug}/${locale.lang}: refused\n  - ${problems.join('\n  - ')}`);
@@ -155,11 +240,11 @@ export function addPack(slug, langToken, translated) {
 /**
  * Re-verify packs on disk: structure, and whether the English has moved since.
  * @param {string} [onlySlug]
- * @returns {{ ok: string[], stale: string[], broken: string[] }}
+ * @returns {{ ok: string[], stale: string[], broken: string[], warnings: string[] }}
  */
 export function checkPacks(onlySlug) {
-  /** @type {{ ok: string[], stale: string[], broken: string[] }} */
-  const report = { ok: [], stale: [], broken: [] };
+  /** @type {{ ok: string[], stale: string[], broken: string[], warnings: string[] }} */
+  const report = { ok: [], stale: [], broken: [], warnings: [] };
   const slugs = onlySlug ? [onlySlug] : [...ARTICLES_BY_SLUG.keys()];
   for (const slug of slugs) {
     const dir = path.join(PUBLIC, ...PACK_ROOT.split('/'), slug);
@@ -177,10 +262,80 @@ export function checkPacks(onlySlug) {
       const problems = verifyPack(slug, pack);
       if (problems.length) report.broken.push(`${id}: ${problems.join('; ')}`);
       else if (pack._meta?.sourceHash !== hash) report.stale.push(id);
-      else report.ok.push(id);
+      else {
+        report.ok.push(id);
+        const lang = name.slice(0, -'.json'.length);
+        for (const w of packWarnings(slug, lang, pack)) report.warnings.push(`${id}: ${w}`);
+      }
     }
   }
   return report;
+}
+
+// --- the hub -------------------------------------------------------------------------
+
+/** The hub's English HTML. */
+function hubHtml() {
+  return fs.readFileSync(path.join(PUBLIC, ...BLOG_HUB.file.split('/')), 'utf8');
+}
+
+/**
+ * Validate a candidate hub pack.
+ *
+ * A hub pack must carry a card for EVERY article, not just the ones this locale has
+ * translated: which cards survive is decided per request by lib/i18n/blog-hub.js from the
+ * manifest, so a pack missing a card would leave that card in English the day its article
+ * is translated — a gap nobody would think to look for.
+ * @param {Record<string, any>} pack
+ * @returns {string[]}
+ */
+export function verifyHubPack(pack) {
+  const slugs = LOCALIZED_ARTICLES.map((a) => a.slug);
+  const problems = missingHubSlots(pack, slugs).map((p) => `missing or empty: ${p}`);
+  const extra = Object.keys(pack.cards || {}).filter((slug) => !ARTICLES_BY_SLUG.has(slug));
+  if (extra.length) problems.push(`cards for articles that do not exist: ${extra.join(', ')}`);
+  // The hub's strings are plain text. Markup here would land raw in the grid via
+  // data-lang (which escapes) or, worse, be silently visible as tags.
+  for (const [slug, card] of Object.entries(pack.cards || {})) {
+    for (const [field, value] of Object.entries(card)) {
+      if (typeof value === 'string' && /<[a-z/]/i.test(value)) {
+        problems.push(`cards.${slug}.${field} contains markup; hub strings are plain text`);
+      }
+    }
+  }
+  return problems;
+}
+
+/**
+ * Write a verified hub pack.
+ * @param {string} langToken
+ * @param {Record<string, any>} translated
+ * @returns {{ written: string }}
+ */
+export function addHubPack(langToken, translated) {
+  const locale = localeOrDie(langToken);
+  const pack = { ...translated };
+  delete pack._meta;
+
+  const problems = verifyHubPack(pack);
+  if (problems.length) throw new Error(`hub/${locale.lang}: refused\n  - ${problems.join('\n  - ')}`);
+
+  const out = {
+    _meta: {
+      sourceHash: hubSourceHash(hubHtml()),
+      slug: null,
+      lang: locale.lang,
+      hreflang: locale.hreflang,
+      translatedAt: new Date().toISOString().slice(0, 10),
+      reviewed: false,
+    },
+    ...pack,
+  };
+  const file = path.join(PUBLIC, ...HUB_PACK_DIR.split('/'), `${locale.lang}.json`);
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, `${JSON.stringify(out, null, 2)}
+`);
+  return { written: path.relative(ROOT, file) };
 }
 
 // --- CLI -----------------------------------------------------------------------------
@@ -201,6 +356,26 @@ function main(argv) {
     return 0;
   }
 
+  if (cmd === 'extract-hub') {
+    const [out] = rest;
+    if (!out) throw new Error('usage: extract-hub <out.json>');
+    fs.mkdirSync(path.dirname(path.resolve(out)), { recursive: true });
+    fs.writeFileSync(out, `${JSON.stringify({ hub: extractHubStrings(hubHtml()) }, null, 2)}
+`);
+    process.stdout.write(`wrote ${out}
+`);
+    return 0;
+  }
+
+  if (cmd === 'add-hub') {
+    const [lang, file] = rest;
+    if (!lang || !file) throw new Error('usage: add-hub <lang> <translated.json>');
+    const { written } = addHubPack(lang, JSON.parse(fs.readFileSync(file, 'utf8')));
+    process.stdout.write(`wrote ${written}
+`);
+    return 0;
+  }
+
   if (cmd === 'add') {
     const [slug, lang, file] = rest;
     if (!slug || !lang || !file) throw new Error('usage: add <slug> <lang> <translated.json>');
@@ -214,7 +389,13 @@ function main(argv) {
     const report = checkPacks(rest[0]);
     for (const line of report.broken) process.stdout.write(`BROKEN  ${line}\n`);
     for (const line of report.stale) process.stdout.write(`STALE   ${line}\n`);
-    process.stdout.write(`${report.ok.length} ok, ${report.stale.length} stale, ${report.broken.length} broken\n`);
+    // Warnings print but never change the exit code: they are judgement calls for a human,
+    // not build breakers. See currencyWarnings() for why money cannot be a hard rule.
+    for (const line of report.warnings) process.stdout.write(`WARN    ${line}\n`);
+    process.stdout.write(
+      `${report.ok.length} ok, ${report.stale.length} stale, ${report.broken.length} broken, `
+      + `${report.warnings.length} warning(s)\n`,
+    );
     return report.broken.length || report.stale.length ? 1 : 0;
   }
 

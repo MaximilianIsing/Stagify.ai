@@ -33,7 +33,7 @@ beforeEach(() => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'stagify-optout-'));
   dirs.push(dir);
   getDb(dir);
-  store = createEmailOptOut();
+  store = createEmailOptOut(dir);
 });
 
 afterEach(() => {

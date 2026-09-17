@@ -25,20 +25,29 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { articleSourceHash, extractArticleStrings } from '../../lib/content/article-extract.js';
-import { verifyPack, checkPacks, US_SPECIFIC } from '../../scripts/blog-pack.js';
+import { articleSourceHash, extractArticleStrings, hubSourceHash } from '../../lib/content/article-extract.js';
+import { verifyPack, verifyHubPack, checkPacks, US_SPECIFIC } from '../../scripts/blog-pack.js';
 import { ARTICLES_BY_SLUG, LOCALES, localeByLang } from '../../lib/i18n/locales.js';
 import { PACK_ROOT, scanBlogPacks } from '../../lib/i18n/blog-packs.js';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const PUBLIC = path.join(REPO_ROOT, 'public');
 const PACKS = path.join(PUBLIC, ...PACK_ROOT.split('/'));
+const ARTICLE_SLUGS = [...ARTICLES_BY_SLUG.keys()];
 
-/** Every pack on disk as { slug, lang, file, pack }. */
+/**
+ * Every ARTICLE pack on disk as { slug, lang, file, pack }.
+ *
+ * Underscore-prefixed directories are skipped: `_hub` holds the blog index's own pack,
+ * which has a different shape (cards keyed by slug, no body) and its own checks below.
+ * No article slug can collide with it — BLOG_SLUG_PATTERN requires an alphanumeric first
+ * character.
+ */
 function everyPack() {
   const out = [];
   if (!fs.existsSync(PACKS)) return out;
   for (const slug of fs.readdirSync(PACKS)) {
+    if (slug.startsWith('_')) continue;
     const dir = path.join(PACKS, slug);
     if (!fs.statSync(dir).isDirectory()) continue;
     for (const name of fs.readdirSync(dir).filter((f) => f.endsWith('.json'))) {
@@ -152,4 +161,57 @@ test('the manifest and the packs on disk describe the same matrix', () => {
     fromDisk[slug] = LOCALES.filter((l) => fromDisk[slug].includes(l.prefix)).map((l) => l.prefix);
   }
   assert.deepEqual(scanBlogPacks(PUBLIC), fromDisk);
+});
+
+// --- the hub's own pack ---------------------------------------------------------------
+
+/** Every hub pack on disk as { lang, pack }. */
+function everyHubPack() {
+  const dir = path.join(PACKS, '_hub');
+  if (!fs.existsSync(dir)) return [];
+  return fs.readdirSync(dir)
+    .filter((f) => f.endsWith('.json'))
+    .map((f) => ({ lang: f.slice(0, -'.json'.length), pack: JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8')) }));
+}
+
+test('no hub pack is stale', () => {
+  // The hub's cards carry their own copy, so editing one card's excerpt has to invalidate
+  // the hub translations exactly the way editing an article invalidates its own.
+  const hubHtml = fs.readFileSync(path.join(PUBLIC, 'blog', 'index.html'), 'utf8');
+  const want = hubSourceHash(hubHtml);
+  const stale = everyHubPack().filter(({ pack }) => pack?._meta?.sourceHash !== want).map((p) => p.lang);
+  assert.deepEqual(
+    stale,
+    [],
+    'the hub copy moved since these were translated — retranslate with '
+      + '`node scripts/blog-pack.js extract-hub <out.json>` and `add-hub <lang> <file>`',
+  );
+});
+
+test('every hub pack carries a card for every article', () => {
+  // Not just the articles this locale has today: which cards survive is decided per
+  // request from the manifest, so a pack missing a card would leave that card in English
+  // the day its article is translated — a gap nobody would think to look for.
+  for (const { lang, pack } of everyHubPack()) {
+    assert.deepEqual(verifyHubPack(pack), [], `hub/${lang}`);
+    assert.deepEqual(
+      Object.keys(pack.cards).sort(),
+      ARTICLE_SLUGS.slice().sort(),
+      `hub/${lang}: card set differs from the article catalog`,
+    );
+  }
+});
+
+test('hub strings are plain text, and hub metadata is stamped by us', () => {
+  for (const { lang, pack } of everyHubPack()) {
+    assert.equal(pack._meta.lang, lang, `hub/${lang}: _meta.lang disagrees with its filename`);
+    assert.equal(pack._meta.slug, null, 'the hub has no slug');
+    assert.equal(pack._meta.hreflang, localeByLang(lang).hreflang, `hub/${lang}: wrong hreflang`);
+    assert.equal(typeof pack._meta.reviewed, 'boolean', `hub/${lang}: reviewed must be a boolean`);
+    for (const [slug, card] of Object.entries(pack.cards)) {
+      for (const [field, value] of Object.entries(card)) {
+        assert.ok(!/[<>]/.test(value), `hub/${lang}: cards.${slug}.${field} contains markup`);
+      }
+    }
+  }
 });
