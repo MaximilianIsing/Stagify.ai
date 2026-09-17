@@ -65,6 +65,7 @@ const UNTYPED_DEPS = [];
 const ALL_FACTORIES = [
   'admin/analyst-tools.js#createAnalystTools',
   'admin/analyst.js#createAnalyst',
+  'admin/access.js#createAccessPanel',
   'admin/api-usage.js#createApiUsagePanel',
   'admin/blog.js#createBlogPanel',
   'admin/danger.js#createDangerSection',

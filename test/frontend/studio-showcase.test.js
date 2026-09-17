@@ -421,9 +421,44 @@ test('the gallery mock ships seven cards, each with its own image', () => {
 });
 
 test('every gallery image the markup points at exists on disk', () => {
-  for (const [, src] of galleryMarkup().matchAll(/src="(media-webp\/Homepage\/Gallery\/[^"]+)"/g)) {
+  // srcset as well as src: a variant named in the markup but never exported is a 404
+  // the browser picks silently, on whichever device the descriptor selected it for.
+  const gal = galleryMarkup();
+  const refs = new Set();
+  for (const [, src] of gal.matchAll(/src="(media-webp\/Homepage\/Gallery\/[^"]+)"/g)) refs.add(src);
+  for (const [, set] of gal.matchAll(/srcset="([^"]+)"/g)) {
+    for (const part of set.split(',')) refs.add(part.trim().split(/\s+/)[0]);
+  }
+  assert.equal(refs.size, 14, 'seven cards, each offering a 480 and a 1200 wide file');
+  for (const src of refs) {
     const file = path.join(ROOT, 'public', ...src.split('/'));
     assert.ok(fs.existsSync(file), `${src} is missing — the card would render a broken image`);
+  }
+});
+
+/* The cards paint at ~239 CSS px in the panel's two-column grid, and every one of them
+   used to be a 1200 px file: 626 KB decoded at five times the size it is drawn at. They
+   are NOT simply downscaled, because below 768px the grid drops to one column and hides
+   six of the seven, so a phone shows a single card at ~325 CSS px — which at 3x wants
+   ~975 px of source. Both widths are offered and the browser picks; desktop takes ~116 KB
+   for the set, a high-DPR phone keeps what it had. Generate with
+   `node scripts/build-gallery-thumbs.js`. */
+test('the gallery cards offer a desktop-sized variant, not just the full-size file', () => {
+  const gal = galleryMarkup();
+  const imgs = [...gal.matchAll(/<img class="hgal-card__img"[^>]*>/g)].map((m) => m[0]);
+  assert.equal(imgs.length, 7, 'seven card images');
+  for (const img of imgs) {
+    const name = (img.match(/src="media-webp\/Homepage\/Gallery\/(room-[a-z]+)\.webp"/) || [])[1];
+    assert.ok(name, `a card image has an unexpected src: ${img.slice(0, 80)}`);
+    const srcset = (img.match(/srcset="([^"]+)"/) || [])[1];
+    assert.ok(srcset, `${name} needs a srcset — without one every visitor takes the 1200px file`);
+    assert.match(srcset, new RegExp(`${name}-480\\.webp 480w`), `${name} offers its 480w variant`);
+    assert.match(srcset, new RegExp(`${name}\\.webp 1200w`), `${name} still offers the full size`);
+    // Without sizes, the UA assumes 100vw and picks the 1200 anyway on a desktop.
+    assert.match(img, /sizes="\(max-width: 768px\) 92vw, 240px"/, `${name} needs matching sizes`);
+    // The attributes that keep this panel off the critical path must survive the edit.
+    assert.match(img, /loading="lazy"/, `${name} stays lazy`);
+    assert.match(img, /width="1200"/, `${name} keeps its intrinsic width, which sizes the box`);
   }
 });
 
@@ -480,6 +515,129 @@ test('the mock grid scrolls rather than growing the panel', () => {
   ]) {
     assert.ok(rule.includes(decl), `.hgal-grid needs "${decl}"`);
   }
+});
+
+// --------------------------------------------------------------------------
+// The pre-mount skeleton, the touch contract, and the [hidden] restatement
+// --------------------------------------------------------------------------
+
+/**
+ * The `{ … }` body of the rule whose selector list is EXACTLY `selector`, comments
+ * stripped. Exact, because a substring match would also hit
+ * `.shw__media:fullscreen .designer-demo` — a different rule, for a different job,
+ * which happens to sit above the base one.
+ *
+ * @param {string} selector e.g. '.designer-demo'
+ */
+function ruleBody(selector) {
+  const esc = selector.replace(/[.*+?^${}()|[\]\\]/g, (c) => `\\${c}`);
+  const m = homeCss().match(new RegExp(`(?:^|\\})\\s*${esc}\\s*\\{([^}]*)\\}`, 'm'));
+  return m ? m[1] : null;
+}
+
+/** Every demo's declared aspect ratio, read out of the generated data file. */
+function demoAspects() {
+  const src = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'demo-data.js'), 'utf8');
+  /** @type {Record<string, number>} */
+  const out = {};
+  for (const m of src.matchAll(/"key":"([a-z]+)"[\s\S]*?"aspect":([0-9.]+)/g)) out[m[1]] = Number(m[2]);
+  return out;
+}
+
+/* The skeleton box (.designer-demo) and the mounted player's frame (.sdp__frame, via
+   --ar) are two different boxes showing the same thing back to back: the host holds the
+   ratio until the player arrives, then `.designer-demo.sdp { aspect-ratio: auto }` hands
+   it over. Disagree and the media JUMPS on mount and re-measures the stage under
+   everything below the section — 12.5% on the staging panel, which is the one in front
+   on load. The expectation is derived from demo-data.js rather than written down here,
+   so re-recording a walkthrough at a new ratio fails this instead of drifting. */
+test('each demo host is shaped like the demo it mounts', () => {
+  const css = homeCss();
+  const aspects = demoAspects();
+  const base = ruleBody('.designer-demo');
+  assert.ok(base, '.designer-demo has a rule');
+  const baseAr = base.match(/aspect-ratio:\s*([^;]+);/);
+  assert.ok(baseAr, '.designer-demo declares a default aspect-ratio for the skeleton');
+  const evaluate = (/** @type {string} */ v) => {
+    const frac = v.match(/^\s*([\d.]+)\s*\/\s*([\d.]+)\s*$/);
+    return frac ? Number(frac[1]) / Number(frac[2]) : Number(v);
+  };
+
+  const hosts = panelsFromMarkup()
+    .map(({ id }) => ({ panel: id, key: (panelMarkup(id).match(/\bdata-demo="([a-z]+)"/) || [])[1] }))
+    .filter(({ key }) => key);
+  assert.equal(hosts.length, 3, 'three panels mount a walkthrough player');
+
+  for (const { panel, key } of hosts) {
+    const declared = aspects[key];
+    assert.ok(declared, `${key} is a demo in demo-data.js`);
+    // An id-scoped override if there is one, otherwise the shared default.
+    const override = css.match(new RegExp(`#${panel}\\s+\\.designer-demo\\s*\\{([^}]*)\\}`));
+    const value = override ? (override[1].match(/aspect-ratio:\s*([^;]+);/) || [])[1] : baseAr[1];
+    assert.ok(value, `${panel} resolves an aspect-ratio`);
+    const drift = Math.abs(evaluate(value) - declared) / declared;
+    assert.ok(
+      drift < 0.005,
+      `${panel} skeleton is ${evaluate(value).toFixed(4)} but ${key} records at ${declared} `
+        + `(${(drift * 100).toFixed(1)}% jump on mount) — fix the host rule, not this test`
+    );
+  }
+});
+
+/* wireDrag() never calls preventDefault, so the browser has to be told which axis it
+   may keep for itself. Without touch-action it owns both and can fire pointercancel —
+   which end() treats as an abort — before the pointer clears the 60px threshold, so the
+   swipe fails intermittently on exactly the layout where it is the natural gesture.
+   .ba next door has carried this declaration for the same reason all along. */
+test('the carousel stage hands the browser vertical panning and keeps the rest', () => {
+  const body = ruleBody('.shw__stage');
+  assert.ok(body, '.shw__stage has a rule');
+  assert.match(body, /touch-action:\s*pan-y/, '.shw__stage needs touch-action: pan-y');
+});
+
+/* [hidden] is a UA rule at (0,0,0) and `.shw__fs { display: inline-flex }` is an author
+   one, so it wins outright and `btn.hidden = true` in wireFullscreen() did nothing.
+   That branch is live on every iPhone (no unprefixed element fullscreen, so
+   document.fullscreenEnabled is undefined) and it returns BEFORE wiring the click
+   handler, while `@media (hover: none)` forces the button visible — a permanent tap
+   target that does nothing. jsdom applies no stylesheets, so this tier can only read
+   the rule; the computed value is checked in the browser instead. */
+test('hiding the fullscreen button actually hides it', () => {
+  assert.match(
+    homeCss(),
+    /\.shw__fs\[hidden\]\s*\{[^}]*display:\s*none/,
+    'home.css must restate [hidden] for .shw__fs, or the author display: inline-flex beats it'
+  );
+  const js = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'studio-showcase.js'), 'utf8');
+  assert.match(js, /\bhidden\s*=\s*true/, 'and the script still sets it');
+});
+
+/* Every pointer listener lives on the stage, which is ~520px tall inside a section the
+   side panels bleed out of. Release outside it and end() never ran: id and startX stayed
+   stale, and because a mouse keeps its pointerId for the session, the next plain mouse
+   move across the stage measured dx against that dead origin, cleared 60px and flicked
+   the carousel with no button held. Capture is what guarantees the release comes back. */
+test('a drag cannot be left half-finished when the pointer leaves the stage', () => {
+  const js = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'studio-showcase.js'), 'utf8');
+  const code = js.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
+  assert.match(code, /setPointerCapture\(/, 'the stage must capture the pointer it is tracking');
+  assert.match(code, /isPrimary/, 'and ignore a second finger / non-primary button');
+});
+
+/* The roving tabindex normally keeps the focused tab and the active panel equal, but the
+   wheel, a drag, a side-panel click, the arrow buttons and a hashchange all move
+   sc.active without moving focus. Arrowing from sc.active after any of those skipped a
+   studio relative to where the user actually was. */
+test('tablist arrow keys step from the focused tab, not the active panel', () => {
+  const js = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'studio-showcase.js'), 'utf8');
+  const code = js.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
+  const handler = code.match(/ArrowRight[\s\S]{0,400}?ArrowLeft[^\n]*\n/);
+  assert.ok(handler, 'the arrow-key branch exists');
+  assert.ok(
+    !/next\s*=\s*sc\.active/.test(handler[0]),
+    'the step base must come from the focused tab, not sc.active'
+  );
+  assert.match(code, /sc\.tabs\.indexOf\(/, 'resolve the focused tab against sc.tabs');
 });
 
 // --------------------------------------------------------------------------

@@ -4,6 +4,7 @@ import { createReferralsPanel } from './admin/referrals.js';
 import { createBlogPanel } from './admin/blog.js';
 import { createStatusPanel } from './admin/status-panel.js';
 import { createApiUsagePanel } from './admin/api-usage.js';
+import { createAccessPanel } from './admin/access.js';
 import { qs, qsa, el, parseCSV, copyToClipboard } from './admin/helpers.js';
 import { showErrorToast } from './toast.js';
 
@@ -63,6 +64,8 @@ import { showErrorToast } from './toast.js';
   statusPanel.init();
   var apiUsagePanel = createApiUsagePanel({ apiSend: apiSend });
   apiUsagePanel.init();
+  var accessPanel = createAccessPanel({ apiSend: apiSend });
+  accessPanel.init();
 
   // ── Secure fetch: credential sent in a header, never the URL ──
 
@@ -188,6 +191,9 @@ import { showErrorToast } from './toast.js';
       if(blogPanelEl&&blogPanelEl.classList.contains('active'))blogPanel.ensureLoaded();
       var statusPanelEl=qs('#panel-status');
       if(statusPanelEl&&statusPanelEl.classList.contains('active'))statusPanel.ensureLoaded();
+      accessPanel.reset();
+      var accPanelEl=qs('#panel-access');
+      if(accPanelEl&&accPanelEl.classList.contains('active'))accessPanel.ensureLoaded();
       apiUsagePanel.reset();
       var apiPanel=qs('#panel-api-usage');
       if(apiPanel&&apiPanel.classList.contains('active'))apiUsagePanel.ensureLoaded();
@@ -236,6 +242,8 @@ import { showErrorToast } from './toast.js';
     // Lazy like the two above: one aggregate query, fetched on first open and
     // whenever the range changes, rather than riding along in the loadAll() burst.
     if(btn.dataset.tab==='api-usage')apiUsagePanel.ensureLoaded();
+    // Same: the access log is one query, and it is the tab least often opened.
+    if(btn.dataset.tab==='access')accessPanel.ensureLoaded();
     // Panels are display:none while inactive, so a tab that was hidden during the
     // last render starts scrolled wherever the previous one was.
     //
@@ -407,6 +415,7 @@ import { showErrorToast } from './toast.js';
     blogPanel.reset();
     statusPanel.reset();
     apiUsagePanel.reset();
+    accessPanel.reset();
     // The findings are derived from ctx.data, and the brief is a paid-for
     // summary of them — both have to go with it, or the next operator to sign
     // in sees the previous one's account names before the first fetch lands.

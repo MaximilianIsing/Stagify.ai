@@ -1,4 +1,41 @@
 {
+  "about": {
+    "title": "À propos de Stagify.ai",
+    "lede": "Stagify.ai est un outil de home staging virtuel par IA destiné aux professionnels de l’immobilier. Téléversez la photo d’une pièce et obtenez-la meublée, redessinée ou vidée en quelques secondes.",
+    "who": {
+      "heading": "Qui sommes-nous",
+      "body": "Stagify.ai est une société indépendante. Nous concevons et exploitons un seul produit, à une seule adresse : <strong>stagify.ai</strong>. Nous ne sommes ni revendeur, ni marque blanche d’un autre outil de staging, ni filiale régionale d’un groupe plus vaste. Toute l’équipe est joignable à <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> ou au <a href=\"tel:+19292514372\">(929) 251-4372</a>."
+    },
+    "facts": {
+      "foundedLabel": "Création",
+      "founded": "22 août 2025",
+      "foundersLabel": "Fondateurs",
+      "founders": "Maximilian Ising (responsable Développement et IA), Lucas Shtainer (responsable Marketing), Ryan Croman (responsable Relations)",
+      "siteLabel": "Site web",
+      "contactLabel": "Contact"
+    },
+    "notAffiliated": {
+      "heading": "Aucun lien avec les autres produits nommés « Stagify »",
+      "body": "Plusieurs sociétés sans rapport avec nous portent un nom voisin : <strong>stagify.io</strong>, <strong>stagify.app</strong>, <strong>stagify.online</strong> et <strong>stagifyai.com</strong>. Stagify.ai n’entretient avec elles aucun lien d’affiliation, de partenariat, de propriété ni d’approbation, et ne partage avec elles ni personnel, ni code, ni données.",
+      "consequence": "Les avis, tarifs, fonctionnalités, incidents et politiques publiés sur ces sites ne décrivent pas Stagify.ai. Si vous comparez des outils de home staging virtuel, vérifiez le domaine dans la barre d’adresse : le nôtre se termine par .ai."
+    },
+    "product": {
+      "heading": "Ce que nous faisons",
+      "body": "Stagify.ai meuble un intérieur à partir d’une seule photo, repeint et réaménage les pièces via un designer conversationnel, masque et remet en scène des zones précises pixel par pixel, et nettoie les prises de vue extérieures. Tout se passe dans le navigateur, en onze langues, avec une offre gratuite, l’abonnement <a href=\"stagify-plus.html\">Stagify+</a> et une <a href=\"developers.html\">API publique</a>. Vous conservez tous les droits sur chaque image générée."
+    },
+    "find": {
+      "heading": "Où nous trouver",
+      "body": "Ce sont les seuls comptes que nous gérons. Un compte absent de cette liste n’est pas le nôtre.",
+      "blog": "Notre blog"
+    },
+    "faq": {
+      "heading": "Questions fréquentes",
+      "q1": "Stagify.ai est-il la même société que stagify.io, stagify.app, stagify.online ou stagifyai.com ?",
+      "a1": "Non. Stagify.ai est une société indépendante qui opère uniquement sur le domaine stagify.ai. Elle n’est ni affiliée, ni approuvée par, ni liée à stagify.io, stagify.app, stagify.online ou stagifyai.com, des entreprises sans rapport portant un nom voisin. Les avis, tarifs, fonctionnalités et politiques publiés sur ces sites ne décrivent pas Stagify.ai.",
+      "q2": "Qui a fondé et dirige Stagify.ai ?",
+      "a2": "Stagify.ai a été fondée le 22 août 2025 par Maximilian Ising (cofondateur, responsable Développement et IA), Lucas Shtainer (cofondateur, responsable Marketing) et Ryan Croman (cofondateur, responsable Relations). La société exploite un seul produit, à l’adresse stagify.ai, et peut être contactée à team@stagify.ai."
+    }
+  },
   "meta": {
     "title": "Stagify.ai - Home staging virtuel gratuit en un clic",
     "description": "Transformez des pièces vides grâce au home staging par IA. Importez vos photos et obtenez un rendu meublé professionnel en quelques secondes. Home staging par IA gratuit pour les agents immobiliers, vendeurs et acheteurs.",
@@ -192,6 +229,8 @@
     },
   "navigation": {
     "home": "Accueil",
+    "blog": "Blog",
+    "tryFree": "Essayez Stagify gratuitement",
     "about": "À propos",
     "pdfTo3d": "Designer IA",
     "maskingStudio": "Studio de masquage",
@@ -942,7 +981,7 @@
         },
         "travonte": {
           "quote": "Stagify rend le processus vraiment simple. Vous téléversez la photo d’une pièce vide, vous patientez quelques secondes et, soudain, l’espace a du caractère. C’est simple, net et réellement utile.",
-          "author": "Travonte Taylor",
+          "author": "Travonte' Taylor",
           "role": "Compass",
           "location": "Brooklyn, New York"
         },
@@ -1731,6 +1770,10 @@
     "troubleshootingTitle": "Dépannage et problèmes courants"
   },
   "pageMeta": {
+    "about": {
+      "title": "À propos de Stagify.ai | Qui sommes-nous",
+      "description": "Stagify.ai est une société indépendante de home staging virtuel par IA, fondée en 2025 par Maximilian Ising, Lucas Shtainer et Ryan Croman. Sans lien avec stagify.io, stagify.app, stagify.online ou stagifyai.com."
+    },
     "basicMask": {
       "title": "Masque simple | Stagify.ai - Peignez une zone, refaites-la seule",
       "description": "Peignez sur une partie d’une photo de pièce, dites ce qui doit y changer et récupérez la même photo avec cette seule zone refaite. Tout le reste est intact.",
@@ -1749,7 +1792,7 @@
       "description": "Stagify+ : suppression des meubles, le Designer IA, le Studio de Masquage, des modèles de meilleure qualité et un home staging illimité. Voir les offres et les tarifs."
     },
     "enterprise": {
-      "title": "Stagify Enterprise | Staging par IA à l’usage pour les équipes",
+      "title": "Stagify.ai Enterprise | Staging par IA à l’usage pour les équipes",
       "description": "Offrez à toute votre équipe un staging par IA illimité avec une facturation à l’usage de 0,15 $ par génération. Une seule facture, sans frais par utilisateur."
     },
     "maskingStudio": {

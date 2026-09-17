@@ -13,7 +13,25 @@
 export {}; // make this a module so `declare global` augments rather than replaces
 
 declare global {
+  /**
+   * The Global Privacy Control opt-out preference signal. Sent by Brave, DuckDuckGo
+   * and Firefox's "tell websites not to sell or share my data" setting; still a W3C
+   * draft, so it is absent from lib.dom. Read by scripts/gtag.js and
+   * scripts/ad-optout.js, which the CPRA requires us to honor.
+   */
+  interface Navigator {
+    globalPrivacyControl?: boolean;
+  }
+
   interface Window {
+    /** True once scripts/gtag.js has configured and loaded the Google Ads tag. */
+    __gtagConfigured?: boolean;
+    /** True when scripts/gtag.js withheld the tag: GPC, a stored opt-out, or region. */
+    __gtagOptedOut?: boolean;
+    /** True when the tag was withheld specifically because the visitor looks to be
+     *  in the EEA, the UK or Switzerland. Read by ad-optout.js so the control on the
+     *  privacy page can explain the state rather than offer a useless toggle. */
+    __gtagRegionBlocked?: boolean;
     /** Auth helper surface installed by auth.js. */
     StagifyAuth?: any;
     /** HEIC→JPEG conversion helper installed by heic-convert.js. */

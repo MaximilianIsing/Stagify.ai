@@ -1,7 +1,7 @@
 // admin routes, extracted verbatim from server.js.
 import express from 'express';
 import { createAsyncRouter } from '../lib/http/async-router.js';
-import { sendError, resolveAppOrigin } from '../lib/http/http-helpers.js';
+import { sendError, resolveAppOrigin, getStagingClientIp } from '../lib/http/http-helpers.js';
 import { ADMIN_SESSION_HEADER } from '../lib/http/http-guards.js';
 import { reportError } from '../lib/http/error-ref.js';
 import path from 'path';
@@ -35,16 +35,18 @@ import { logger } from '../lib/logger.js';
  *   referralLinks?: ReturnType<typeof import('../lib/data/referral-links.js').createReferralLinks>,
  *   adminMetrics?: ReturnType<typeof import('../lib/analytics/admin-metrics.js').createAdminMetrics>,
  *   adminBrief?: ReturnType<typeof import('../lib/services/admin-brief.js').createAdminBrief>,
+ *   adminAccess?: ReturnType<typeof import('../lib/data/admin-access.js').createAdminAccess> | null,
  * }} deps - Stores, the hosted-image upload middleware + log-access guard, data-dir
  *   and manifest helpers, memory/uptime admin actions, the mime→ext map, the
  *   user-facing email catalog + test-send helper for the Emails tab, the
  *   campaign-link hit store behind the Referrals tab, and the two Signals-tab
  *   readers (SQL aggregates + the written brief). Both of the last two are
  *   OPTIONAL: absent, their routes answer with a null payload rather than 503, so
- *   the tab degrades to its deterministic half instead of erroring.
+ *   the tab degrades to its deterministic half instead of erroring. `adminAccess`
+ *   is optional for the same reason: without it, a sign-in simply is not recorded.
  */
 export default function createAdminRouter(deps) {
-  const { authStore, uptimeMonitor, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, deleteUser, getDataLogDir, hostedImages, protectLogs, requireEndpointKey, adminSessions, __dirname, HOSTED_IMAGE_MIME_EXT, emailCatalog, sendTestEmail, referralLinks, adminMetrics, adminBrief } = deps;
+  const { authStore, uptimeMonitor, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, deleteUser, getDataLogDir, hostedImages, protectLogs, requireEndpointKey, adminSessions, __dirname, HOSTED_IMAGE_MIME_EXT, emailCatalog, sendTestEmail, referralLinks, adminMetrics, adminBrief, adminAccess } = deps;
   const router = createAsyncRouter();
 
 router.get('/admin', (req, res) => {
@@ -141,6 +143,9 @@ router.get('/api/admin/ping', protectLogs, (req, res) => {
 router.post('/api/admin/session', requireEndpointKey, (req, res) => {
   if (!adminSessions) return sendError(res, 503, 'Sessions unavailable');
   const { token, expiresAt } = adminSessions.create(req.get('X-Stagify-Endpoint-Key') || '');
+  // The one moment the master key is actually typed. Page opens are recorded
+  // separately, off /api/admin/ping (routes/admin-access.js).
+  if (adminAccess) adminAccess.record({ ip: getStagingClientIp(req), outcome: 'signin', path: '/admin', userAgent: req.get('user-agent') });
   logger.info('[admin] session issued, expires ' + new Date(expiresAt).toISOString());
   return res.json({ token, expiresAt });
 });

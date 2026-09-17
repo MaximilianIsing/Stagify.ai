@@ -16,8 +16,10 @@ Disallow: /getpro
 Disallow: /getpro.html
 Disallow: /plus-welcome.html
 
-# Internal legal (noindex on page; keep out of crawl budget)
-Disallow: /legal/
+# Internal legal (noindex on page; keep out of crawl budget). Scoped to the MSA
+# rather than all of /legal/, because /legal/subprocessors.html is deliberately
+# public and indexable — it is the page an enterprise buyer is sent to.
+Disallow: /legal/enterprise-msa.html
 
 # NOTE: pro.html and faq.html are legacy redirect stubs (meta-refresh +
 # rel=canonical to their real page). Leave them crawlable — blocking them here
@@ -31,5 +33,41 @@ Disallow: /legal/
 # no content. Letting it be crawled is what lets the noindex actually take effect.
 # The page also carries <meta name="robots" content="noindex, nofollow"> and
 # Referrer-Policy: no-referrer. Do NOT "fix" this by adding Disallow: /s/.
+
+# AI crawlers and answer engines.
+#
+# These agents are already allowed by the `User-agent: *` block at the top, so this
+# grants nothing new. It is a deliberate, auditable statement that the content may be
+# read and cited, in the file a reviewer checks first. The reason it is worth saying out
+# loud: four unrelated products share this name (stagify.io, stagify.app, stagify.online,
+# stagifyai.com), so an assistant that cannot read us answers about one of THEM instead.
+# Being readable is the disambiguation.
+#
+# A robots.txt group is matched by the most specific User-agent and does NOT inherit the
+# wildcard group, so this one has to repeat the Disallow list. Keep it in sync with the
+# block at the top of this file when you add a path there.
+#
+# /llms.txt is the short machine-readable summary of who this company is; /about.html is
+# the human one.
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: ClaudeBot
+User-agent: Claude-User
+User-agent: Claude-SearchBot
+User-agent: PerplexityBot
+User-agent: Perplexity-User
+User-agent: Google-Extended
+User-agent: Applebot-Extended
+User-agent: CCBot
+Allow: /
+Disallow: /admin
+Disallow: /admin.html
+Disallow: /reset-password.html
+Disallow: /gallery.html
+Disallow: /getpro
+Disallow: /getpro.html
+Disallow: /plus-welcome.html
+Disallow: /legal/enterprise-msa.html
 
 Sitemap: https://stagify.ai/sitemap.xml

@@ -1,0 +1,123 @@
+/* /about — the entity hub. A reading page, not an app screen: one column, generous
+   measure, no interactive chrome of its own.
+
+   The page exists because four unrelated products share the name (see
+   lib/seo/organization.js), so its job is to be the plainest possible statement of who
+   this company is, in a shape a human skims and a crawler parses. Which is why the
+   disambiguation block is a callout rather than a paragraph in the flow — it is the one
+   part a reader must not scroll past, and the one part an answer engine should lift. */
+
+.about {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 8px 20px 48px;
+}
+
+.about h1 {
+  color: var(--brand-deep);
+  font-size: 34px;
+  line-height: 1.15;
+  margin: 0 0 12px;
+}
+
+.about__lede {
+  color: var(--brand);
+  font-size: 18px;
+  line-height: 1.55;
+  margin: 0 0 32px;
+}
+
+.about section {
+  margin: 0 0 30px;
+}
+
+.about h2 {
+  color: var(--brand-deep);
+  font-size: 21px;
+  line-height: 1.25;
+  margin: 0 0 10px;
+}
+
+.about h3 {
+  color: var(--brand-deep);
+  font-size: 16px;
+  margin: 22px 0 6px;
+}
+
+.about p {
+  color: var(--fg);
+  font-size: 15.5px;
+  line-height: 1.65;
+  margin: 0 0 12px;
+}
+
+.about a {
+  color: var(--brand-deep);
+  text-decoration: underline;
+}
+
+/* The disambiguation callout. Bordered and tinted so it reads as a notice rather than
+   body copy — this is the sentence the page is for. */
+.about__notice {
+  background: var(--brand-wash);
+  border: 1px solid var(--brand-pale);
+  border-left: 4px solid var(--brand);
+  border-radius: 10px;
+  padding: 18px 20px;
+}
+
+.about__notice h2 {
+  margin-top: 0;
+}
+
+.about__notice p:last-child {
+  margin-bottom: 0;
+}
+
+/* Founders and profiles: plain definition-ish rows, no cards. The facts are the point. */
+.about__facts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.about__facts li {
+  color: var(--fg);
+  font-size: 15.5px;
+  line-height: 1.6;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.about__facts li:last-child {
+  border-bottom: 0;
+}
+
+.about__facts strong {
+  color: var(--brand-deep);
+  font-weight: 700;
+}
+
+.about__profiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 15px;
+}
+
+@media (max-width: 640px) {
+  .about {
+    padding: 4px 16px 40px;
+  }
+
+  .about h1 {
+    font-size: 27px;
+  }
+
+  .about__lede {
+    font-size: 16.5px;
+  }
+}

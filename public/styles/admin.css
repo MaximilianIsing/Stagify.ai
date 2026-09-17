@@ -1264,3 +1264,23 @@ body.page-admin main { flex: 0 0 auto; overflow: visible; width: 100% }
   .adm-panel.active { animation: none }
   .adm-stat, .adm-dl-btn, .adm-host-item, .adm-ranked-fill, .adm-funnel-fill { transition: none }
 }
+
+/* ── Access tab ────────────────────────────────────────────────────────────
+   Three rules only: everything else on the panel is a stock card, table, pill
+   and badge. The outcome colours reuse the badge set (.adm-badge-active /
+   -pro / -cancelled) rather than inventing a palette for one tab. */
+
+/* Addresses are compared character by character — "is that the same machine?" —
+   which proportional digits make needlessly hard. */
+.adm-acc-ip { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .8125rem }
+
+/* Secondary lines: a location, a refusal reason, a request path. */
+.adm-acc-loc { color: var(--adm-muted); font-size: .75rem }
+
+/* The ×N on a collapsed burst. Same shape as .adm-count-chip, tinted as a
+   warning: a repeat count is only ever interesting when it is large. */
+.adm-acc-hits {
+  display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 999px;
+  font-size: .6875rem; font-weight: 620; font-variant-numeric: tabular-nums;
+  color: var(--adm-warn); background: var(--adm-warn-wash); border: 1px solid var(--adm-warn-line);
+}

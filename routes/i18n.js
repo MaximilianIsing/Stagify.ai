@@ -8,8 +8,16 @@
 
 import path from 'path';
 import { createAsyncRouter } from '../lib/http/async-router.js';
-import { LOCALES, LOCALIZED_PAGES } from '../lib/i18n/locales.js';
+import { BLOG_HUB, LOCALES, LOCALIZED_PAGES, LOCALIZED_PATHS } from '../lib/i18n/locales.js';
 import { createPageRenderer } from '../lib/i18n/page-renderer.js';
+import {
+  articleLocales,
+  articlesForLocale,
+  localesForHub,
+  packDirFor,
+  slugsForLocale,
+} from '../lib/i18n/blog-packs.js';
+import { logger } from '../lib/logger.js';
 
 /**
  * English paths that were once in LOCALIZED_PAGES and have since been de-localized.
@@ -21,21 +29,49 @@ import { createPageRenderer } from '../lib/i18n/page-renderer.js';
 const RETIRED_LOCALIZED_PATHS = ['/terms.html', '/privacy.html'];
 
 /**
- * @param {{ __dirname: string, DEBUG_MODE: boolean }} deps
+ * @param {{ __dirname: string, DEBUG_MODE: boolean, blogViews?: any }} deps
+ *   `blogViews` is optional and may throw: it is a counter, and a reader must never lose
+ *   their article to it. Same contract routes/public.js keeps for the English copies.
  * @returns {import('express').Router}
  */
-export default function createI18nRouter({ __dirname, DEBUG_MODE }) {
+export default function createI18nRouter({ __dirname, DEBUG_MODE, blogViews = null }) {
   const router = createAsyncRouter();
   const renderer = createPageRenderer({ publicDir: path.join(__dirname, 'public'), DEBUG_MODE });
 
   /**
    * @param {import('express').Response} res
    * @param {import('../lib/i18n/locales.js').Locale} locale
-   * @param {import('../lib/i18n/locales.js').LocalizedPage} page
+   * @param {import('../lib/i18n/locales.js').LocalizedPage | Parameters<
+   *   ReturnType<typeof createPageRenderer>['render']>[1]} page
    */
   function serve(res, locale, page) {
     res.set('Cache-Control', 'no-cache');
     res.type('html').send(renderer.render(locale, page));
+  }
+
+  /**
+   * Count one localized article open, under the SAME slug as its English original.
+   *
+   * Never throws, and never costs the reader their article — routes/public.js keeps the
+   * same contract for the English copies, and test/routes/public-pages-route.test.js
+   * documents it.
+   *
+   * @param {import('express').Request} req
+   * @param {string} slug
+   * @param {import('../lib/i18n/locales.js').Locale} locale
+   */
+  function countRead(req, slug, locale) {
+    if (!blogViews || typeof blogViews.recordView !== 'function') return;
+    try {
+      blogViews.recordView({
+        slug,
+        locale: locale.lang,
+        referer: req.get('referer'),
+        userAgent: req.get('user-agent'),
+      });
+    } catch (err) {
+      logger.error('[i18n] could not count a view of', `${locale.prefix}/${slug}`, '-', err && err.message ? err.message : err);
+    }
   }
 
   for (const locale of LOCALES) {
@@ -56,6 +92,54 @@ export default function createI18nRouter({ __dirname, DEBUG_MODE }) {
     for (const retired of RETIRED_LOCALIZED_PATHS) {
       router.get(`/${locale.prefix}${retired}`, (req, res) => res.redirect(301, retired));
     }
+
+    // The blog. Unlike the pages above, an article is localized per LANGUAGE rather than
+    // all-or-nothing, so this registers exactly the (locale, article) pairs that have a
+    // translation pack on disk — see lib/i18n/blog-packs.js. Everything else falls through
+    // to the 404 handler, which renders in the right locale by itself, so a URL exists if
+    // and only if the translation behind it does. A /:prefix/blog/:slug param route would
+    // instead answer for every slug and need its own 404 branch.
+    const available = slugsForLocale(locale.prefix);
+    if (available.size === 0) continue;
+
+    // Which paths this locale can link to: the marketing set, its hub, and only the
+    // articles it actually has. An article this language lacks stays an English link.
+    const localizedPaths = new Set([
+      ...LOCALIZED_PATHS,
+      BLOG_HUB.path,
+      ...articlesForLocale(locale.prefix).map((a) => a.path),
+    ]);
+
+    for (const article of articlesForLocale(locale.prefix)) {
+      const page = {
+        path: article.path,
+        file: article.file,
+        packDir: packDirFor(article.slug),
+        localizedPaths,
+        // The article's own crumb is its title, which lives in its pack — it has no key
+        // in the eleven shared packs the way every LOCALIZED_PAGES crumb must.
+        crumbKeys: new Map([[BLOG_HUB.path, 'navigation.blog'], [article.path, 'post.crumb']]),
+        locales: articleLocales(article.slug),
+      };
+      router.get(`/${locale.prefix}${article.path}`, (req, res) => {
+        countRead(req, article.slug, locale);
+        serve(res, locale, page);
+      });
+    }
+
+    const hubPage = {
+      path: BLOG_HUB.path,
+      file: BLOG_HUB.file,
+      localizedPaths,
+      crumbKeys: new Map([[BLOG_HUB.path, 'navigation.blog']]),
+      locales: localesForHub(),
+    };
+    // Registered without the trailing slash: Express's non-strict routing answers both
+    // /es/blog and /es/blog/, and the page's self-referential canonical names the
+    // trailing-slash form, which is what the sitemap lists.
+    router.get(`/${locale.prefix}/blog`, (req, res) => serve(res, locale, hubPage));
+    router.get(`/${locale.prefix}/blog/index.html`, (req, res) =>
+      res.redirect(301, `/${locale.prefix}/blog/`));
   }
 
   return router;

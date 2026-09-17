@@ -51,6 +51,7 @@ const NO_PAGE_ENTITY = new Map([
   ['guides.html', 'a BreadcrumbList plus six HowTo blocks, one per guide; none of them is the page'],
   ['privacy.html', 'carries only a BreadcrumbList — a trail is navigation, not a subject'],
   ['terms.html', 'carries only a BreadcrumbList — a trail is navigation, not a subject'],
+  ['status.html', 'its only JSON-LD is the generated Organization identity block (lib/seo/organization.js), which describes the COMPANY, not the page, and is deliberately English in every locale'],
 ]);
 
 /** Every ld+json block on the page, as { open tag, parsed data }. */

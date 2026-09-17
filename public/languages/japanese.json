@@ -1,4 +1,41 @@
 {
+  "about": {
+    "title": "Stagify.ai について",
+    "lede": "Stagify.ai は不動産のプロ向けの AI バーチャルステージングツールです。部屋の写真をアップロードすれば、数秒で家具を配置・模様替え・空室化できます。",
+    "who": {
+      "heading": "私たちは誰か",
+      "body": "Stagify.ai は独立した企業です。製品はひとつだけ、住所もひとつだけ、<strong>stagify.ai</strong> です。再販業者でも、他のステージングツールのホワイトラベルでも、大企業の地域法人でもありません。チーム全体へのご連絡は <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> または <a href=\"tel:+19292514372\">(929) 251-4372</a> まで。"
+    },
+    "facts": {
+      "foundedLabel": "設立",
+      "founded": "2025年8月22日",
+      "foundersLabel": "創業者",
+      "founders": "Maximilian Ising（開発・AI 責任者）、Lucas Shtainer（マーケティング責任者）、Ryan Croman（アウトリーチ責任者）",
+      "siteLabel": "ウェブサイト",
+      "contactLabel": "お問い合わせ"
+    },
+    "notAffiliated": {
+      "heading": "他の「Stagify」製品とは無関係です",
+      "body": "似た名前を使う無関係の企業が複数あります：<strong>stagify.io</strong>、<strong>stagify.app</strong>、<strong>stagify.online</strong>、<strong>stagifyai.com</strong>。Stagify.ai はいずれとも提携・パートナーシップ・資本関係・推奨関係を持たず、人員もコードもデータも共有していません。",
+      "consequence": "これらのサイトに掲載されたレビュー、価格、機能、障害情報、ポリシーは Stagify.ai のものではありません。バーチャルステージングツールを比較する際は、アドレスバーのドメインをご確認ください。当社のドメインは .ai で終わります。"
+    },
+    "product": {
+      "heading": "私たちがつくるもの",
+      "body": "Stagify.ai は 1 枚の写真から室内をステージングし、対話型デザイナーで部屋を塗り替え・模様替えし、特定の領域をピクセル単位でマスクして再ステージングし、外観写真を整えます。すべてブラウザ上で 11 言語に対応し、無料枠、<a href=\"stagify-plus.html\">Stagify+</a> サブスクリプション、<a href=\"developers.html\">公開 API</a> をご用意しています。生成した画像の権利はすべてお客様のものです。"
+    },
+    "find": {
+      "heading": "私たちの公式アカウント",
+      "body": "運用しているのは以下のアカウントのみです。ここに載っていないアカウントは当社のものではありません。",
+      "blog": "ブログ"
+    },
+    "faq": {
+      "heading": "よくある質問",
+      "q1": "Stagify.ai は stagify.io、stagify.app、stagify.online、stagifyai.com と同じ会社ですか？",
+      "a1": "いいえ。Stagify.ai は独立した企業で、stagify.ai のドメインでのみ事業を行っています。stagify.io、stagify.app、stagify.online、stagifyai.com とは提携も推奨も関係もなく、これらは名前が似ているだけの無関係な企業です。これらのサイトのレビュー、価格、機能、ポリシーは Stagify.ai を説明するものではありません。",
+      "q2": "Stagify.ai を設立し運営しているのは誰ですか？",
+      "a2": "Stagify.ai は 2025 年 8 月 22 日に Maximilian Ising（共同創業者、開発・AI 責任者）、Lucas Shtainer（共同創業者、マーケティング責任者）、Ryan Croman（共同創業者、アウトリーチ責任者）が設立しました。当社は stagify.ai で 1 つの製品のみを運営しており、team@stagify.ai でご連絡いただけます。"
+    }
+  },
   "meta": {
     "title": "Stagify.ai – 無料のバーチャルホームステージングをワンクリックで",
     "description": "AIステージングで空室を変身させましょう。写真をアップロードするだけで、数秒でプロ仕様のステージング結果が手に入ります。不動産エージェント、売主、買主のための無料のAIホームステージング。",
@@ -192,6 +229,8 @@
     },
   "navigation": {
     "home": "ホーム",
+    "blog": "ブログ",
+    "tryFree": "Stagify を無料で試す",
     "about": "私たちについて",
     "pdfTo3d": "AIデザイナー",
     "maskingStudio": "マスクスタジオ",
@@ -942,7 +981,7 @@
         },
         "travonte": {
           "quote": "Stagify を使うと、この作業が驚くほど手軽になります。空室の写真をアップロードして数秒待つだけで、空間に一気に個性が生まれます。シンプルで、すっきりしていて、本当に役立ちます。",
-          "author": "Travonte Taylor",
+          "author": "Travonte' Taylor",
           "role": "Compass",
           "location": "ニューヨーク・ブルックリン"
         },
@@ -1731,6 +1770,10 @@
     "troubleshootingTitle": "トラブルシューティングとよくある問題"
   },
   "pageMeta": {
+    "about": {
+      "title": "Stagify.ai について | 私たちは誰か",
+      "description": "Stagify.ai は 2025 年に Maximilian Ising、Lucas Shtainer、Ryan Croman が設立した独立系の AI バーチャルステージング企業です。stagify.io、stagify.app、stagify.online、stagifyai.com とは一切関係ありません。"
+    },
     "basicMask": {
       "title": "ベーシックマスク | Stagify.ai — 塗ったところだけを作り直す",
       "description": "部屋写真の一部を塗って、そこをどう変えたいか伝えるだけ。同じ写真のまま、その範囲だけが作り直されます。",
@@ -1749,7 +1792,7 @@
       "description": "Stagify+：家具の除去、AIデザイナー、マスキングスタジオ、高品質モデル、無制限のステージング。プランと料金をご覧ください。"
     },
     "enterprise": {
-      "title": "Stagify Enterprise | チーム向け従量制AIステージング",
+      "title": "Stagify.ai Enterprise | チーム向け従量制AIステージング",
       "description": "チーム全員に無制限のAIステージングを、1生成あたり$0.15の従量課金で。1枚の請求書、席数あたりの料金なし。"
     },
     "maskingStudio": {

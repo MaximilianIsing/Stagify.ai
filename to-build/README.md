@@ -22,7 +22,7 @@ detail to come back.
 | Set | Where the pixels actually came from |
 |---|---|
 | `media-png/Homepage/Restage/r01–r100.png` | the pool generators → `webp({quality:74})`. (`empty.png` is a *real* master — see that folder's README.) |
-| `media-png/Homepage/Gallery/room-*.png` | Fal.ai `flux/dev`, WebP-first |
+| `media-png/Homepage/Gallery/room-*.png` | Fal.ai `flux/dev`, WebP-first. The `-480.webp` variants beside them ARE exported from these PNGs — `node scripts/build-gallery-thumbs.js` — because a downscale to 40% resamples the generation loss away rather than compounding it. The 1200 px encodes stay as shipped for the same reason in reverse. |
 | `media-png/blog/exterior-{before,after}.png` | same |
 | `media-png/background-poster.png` | a frame of `public/background.mp4` — if it ever changes, re-extract from the video rather than editing this PNG |
 | `media-png/instagram/*.png` | Instagram's CDN, via the legacy `/p/<shortcode>/media/?size=l` redirect. The posts were published before any master was kept; see that folder's README for the refetch command |

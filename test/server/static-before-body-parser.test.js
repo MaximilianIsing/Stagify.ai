@@ -76,11 +76,12 @@ test('every HTML/document route in routes/public.js goes through sendPage', () =
     'sendPage must set no-cache before sending',
   );
 
-  // /, /privacy, /status, robots.txt and sitemap.xml call sendPage directly. The
-  // fifteen blog articles go through sendPost, which counts the read and then
-  // delegates to sendPage — so it is the sixth call site, and covers all of them.
+  // /, /about, /privacy, /status, robots.txt, sitemap.xml, llms.txt and
+  // /.well-known/security.txt call sendPage directly. The fifteen blog articles go
+  // through sendPost, which counts the read and then delegates to sendPage — so it is
+  // the ninth call site, and covers all of them.
   const sendPageCalls = (publicRoutes.match(/sendPage\(res,/g) || []).length;
-  assert.equal(sendPageCalls, 6, `expected 6 sendPage() call sites, found ${sendPageCalls}`);
+  assert.equal(sendPageCalls, 9, `expected 9 sendPage() call sites, found ${sendPageCalls}`);
   assert.match(
     publicRoutes,
     /const sendPost = \(req, res, slug\) => \{[\s\S]*?sendPage\(res, path\.join\(__dirname, 'public', 'blog'/,

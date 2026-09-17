@@ -3,7 +3,7 @@
 // Each article writes its dates down three times, and no runtime code reconciles them:
 //   1. the visible `.article-meta` line ("By Stagify.ai · August 9, 2026 · 8 min read");
 //   2. `datePublished` / `dateModified` in the BlogPosting JSON-LD;
-//   3. `lastmod` in ENGLISH_ONLY_ENTRIES in lib/i18n/sitemap.js, which becomes
+//   3. `lastmod` in LOCALIZED_ARTICLES in lib/i18n/locales.js, which becomes
 //      public/sitemap.xml.
 //
 // WHY THIS EXISTS. Two real failures, both invisible without comparing the copies:
@@ -37,14 +37,16 @@ function stripComments(html) {
 }
 
 /**
- * `lastmod` per blog slug, read out of the sitemap config rather than the generated XML —
- * the config is what a human edits, so that is where a mistake gets made.
+ * `lastmod` per blog slug, read out of LOCALIZED_ARTICLES rather than the generated XML —
+ * the config is what a human edits, so that is where a mistake gets made. Parsed as source
+ * text, not imported, so a typo that breaks the module still fails HERE with a readable
+ * message about dates rather than an import error three tests away.
  * @returns {Map<string, string>}
  */
 function sitemapLastmods() {
-  const src = fs.readFileSync(path.join(ROOT, 'lib', 'i18n', 'sitemap.js'), 'utf8');
+  const src = fs.readFileSync(path.join(ROOT, 'lib', 'i18n', 'locales.js'), 'utf8');
   const out = new Map();
-  const re = /\/blog\/([a-z0-9-]+)`,\s*lastmod:\s*'(\d{4}-\d{2}-\d{2})'/g;
+  const re = /path: '\/blog\/([a-z0-9-]+)',\s*file: '[^']*',\s*lastmod: '(\d{4}-\d{2}-\d{2})'/g;
   for (const m of src.matchAll(re)) out.set(m[1], m[2]);
   return out;
 }
@@ -68,7 +70,10 @@ function blogPosting(html) {
 
 /** The visible `.article-meta` date, as an ISO string, or null. */
 function visibleDateIso(html) {
-  const meta = stripComments(html).match(/<p class="article-meta">([\s\S]*?)<\/p>/i);
+  // Attribute-tolerant: the line also carries data-lang-html="post.byline" so the locale
+  // renders read the date from their own pack. Matching the bare tag would silently stop
+  // finding the date and report "no parseable date" on every article at once.
+  const meta = stripComments(html).match(/<p class="article-meta"[^>]*>([\s\S]*?)<\/p>/i);
   if (!meta) return null;
   const text = meta[1].replace(/<[^>]*>/g, '');
   const m = text.match(/([A-Z][a-z]+)\s+(\d{1,2}),\s*(\d{4})/);
@@ -117,7 +122,7 @@ test('datePublished matches the visible date', () => {
 
 test('dateModified equals the sitemap lastmod for every article', () => {
   const lastmods = sitemapLastmods();
-  assert.ok(lastmods.size >= 10, `expected 10+ blog lastmods in sitemap.js, parsed ${lastmods.size}`);
+  assert.ok(lastmods.size >= 10, `expected 10+ blog lastmods in LOCALIZED_ARTICLES (lib/i18n/locales.js), parsed ${lastmods.size}`);
 
   for (const file of ARTICLES) {
     const slug = file.replace(/\.html$/, '');

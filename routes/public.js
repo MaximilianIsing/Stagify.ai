@@ -38,16 +38,19 @@ import { logger } from '../lib/logger.js';
  *   getContactCount: typeof import('../lib/data/counters.js').getContactCount,
  *   incContactCount: typeof import('../lib/data/counters.js').incContactCount,
  *   blogViews?: ReturnType<typeof import('../lib/data/blog-views.js').createBlogViews>,
+ *   emailOptOut?: ReturnType<typeof import('../lib/data/email-optout.js').createEmailOptOut>,
  *   __dirname: string,
  * }} deps - Stores, injected email client, the email rate-limit + health-check
  *   middleware, debug/stat flags, and hosted-image / logging / counter helpers.
  *   `emailPixelLimiter` is a test seam only: omitted (or null) it falls back to the
  *   shared `emailPixelLimiter`, so the open-tracking pixel is never mounted unlimited.
  *   `blogViews` is OPTIONAL: absent, the articles are served exactly as before and
- *   simply go uncounted, so the router still mounts without the store.
+ *   simply go uncounted, so the router still mounts without the store. `emailOptOut`
+ *   is optional on the same terms: without it the unsubscribe route still answers,
+ *   and answers honestly, by telling the reader to email us instead.
  */
 export default function createPublicRouter(deps) {
-  const { authStore, uptimeMonitor, resend, LOGS_ACCESS_KEY, endpointKeyMatches, emailLimiter, emailPixelLimiter, RESEND_FROM_EMAIL, DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS, hostedImages, email: emailService, healthHandler, getPromptCount, getContactCount, incContactCount , blogViews, __dirname } = deps;
+  const { authStore, uptimeMonitor, resend, LOGS_ACCESS_KEY, endpointKeyMatches, emailLimiter, emailPixelLimiter, RESEND_FROM_EMAIL, DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS, hostedImages, email: emailService, healthHandler, getPromptCount, getContactCount, incContactCount , blogViews, emailOptOut, __dirname } = deps;
   const router = createAsyncRouter();
   const pixelLimiter = emailPixelLimiter ?? defaultEmailPixelLimiter;
 
@@ -107,6 +110,15 @@ router.get('/robots.txt', (req, res) => {
   sendPage(res, path.join(__dirname, 'public', 'robots.txt'));
 });
 
+// RFC 9116. Served from public/well-known/ rather than public/.well-known/ because
+// express.static ignores dot-directories, so a file under the real name would 404 —
+// the route is what puts it at the standard path. Reachable without credentials on
+// purpose: a stranger who found a bug should not have to find a person first.
+router.get('/.well-known/security.txt', (req, res) => {
+  res.type('text/plain');
+  sendPage(res, path.join(__dirname, 'public', 'well-known', 'security.txt'));
+});
+
 router.get('/sitemap.xml', (req, res) => {
   res.type('application/xml');
   sendPage(res, path.join(__dirname, 'public', 'sitemap.xml'));
@@ -114,6 +126,22 @@ router.get('/sitemap.xml', (req, res) => {
 
 router.get('/', (req, res) => {
   sendPage(res, path.join(__dirname, 'public', 'index.html'));
+});
+
+// The entity hub. It gets the extensionless alias the other reference pages have because
+// it is the URL that ends up cited — in a "not affiliated with" line, in a profile bio,
+// in an answer engine's source list — and /about reads as a company, /about.html as a
+// file. The .html URL stays canonical; this is an alias, not a second page.
+router.get('/about', (req, res) => {
+  sendPage(res, path.join(__dirname, 'public', 'about.html'));
+});
+
+// The AI-crawler summary (llms.txt convention). Routed rather than left to
+// express.static only to get the documented no-cache policy and an explicit charset —
+// .txt matches none of the setHeaders branches in lib/http/app-middleware.js.
+router.get('/llms.txt', (req, res) => {
+  res.type('text/plain; charset=utf-8');
+  sendPage(res, path.join(__dirname, 'public', 'llms.txt'));
 });
 
 router.get('/privacy', (req, res) => {
@@ -220,6 +248,51 @@ router.get('/i/:id', (req, res) => {
   return res.sendFile(path.resolve(filePath));
 });
 
+/**
+ * Escape text for interpolation into the unsubscribe page below.
+ *
+ * The page echoes the address the token resolved to, which is the only way a reader
+ * can tell WHICH of their addresses they just unsubscribed. That address came out of
+ * our own database rather than the request, but it was attacker-chosen at signup, so
+ * it is escaped like any other untrusted string. The site's CSP carries no
+ * 'unsafe-inline', so an injected <script> would not execute either — this is the
+ * belt to that brace.
+ *
+ * @param {string} value
+ * @returns {string}
+ */
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/**
+ * The unsubscribe confirmation page. Deliberately a self-contained document with no
+ * stylesheet and no script: it is opened from a mail client, often in an in-app
+ * browser with its own rules, and it has exactly one job.
+ *
+ * @param {{ title: string, body: string }} a
+ * @returns {string}
+ */
+function unsubscribePage({ title, body }) {
+  return '<!doctype html><html lang="en"><head><meta charset="utf-8">'
+    + '<meta name="viewport" content="width=device-width, initial-scale=1">'
+    + '<meta name="robots" content="noindex, nofollow">'
+    + `<title>${escapeHtml(title)} - Stagify.ai</title></head>`
+    + '<body style="margin:0;padding:48px 20px;background:#f4f6fb;'
+    + 'font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1f2733">'
+    + '<div style="max-width:520px;margin:0 auto;background:#fff;border:1px solid #e6e9f0;'
+    + 'border-radius:14px;padding:28px">'
+    + `<h1 style="font-size:20px;margin:0 0 12px">${escapeHtml(title)}</h1>`
+    + body
+    + '<p style="margin:20px 0 0;font-size:13px;color:#8a93a6">'
+    + '<a href="/" style="color:#2563eb;text-decoration:none">stagify.ai</a></p>'
+    + '</div></body></html>';
+}
+
 // Email open-tracking pixel. Unauthenticated by construction — the caller is a mail
 // client's image proxy, not a browser — and `?email=` is attacker-controlled, so a
 // first-ever open APPENDS a row to email_open_logs.csv and rewrites email_opened.json,
@@ -247,6 +320,83 @@ router.get('/email/logo.png', pixelLimiter, (req, res) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
   res.sendFile(path.join(__dirname, 'public', 'logo-full.png'));
 });
+
+// Unsubscribe from the trial-lifecycle emails.
+//
+// UNAUTHENTICATED BY CONSTRUCTION, for the same reason the pixel above is: the
+// person clicking has a mail client and a token, not a session. Making someone sign
+// in to stop receiving email is the dark pattern the rules on this exist to prevent,
+// and privacy.html §3.6 promises a link in the email, not a login.
+//
+// THE TOKEN IS THE WHOLE CREDENTIAL, and it is worth being plain about what it can
+// do: stop mail to one address, and be undone from the same page. It opens no
+// account and reveals nothing beyond the address it already belongs to.
+//
+// AN UNKNOWN OR MISSING TOKEN IS NOT AN ERROR PAGE. Mail clients rewrite and
+// truncate links, and erasure deletes the row outright, so a dead token is an
+// ordinary outcome. The reader's actual problem — "stop emailing me" — is
+// answerable either way, so they get the address to write to instead of a 404.
+//
+// Rate-limited with the shared email limiter, because it is an unauthenticated
+// write path onto the same volume as everything else.
+const UNSUB_HELP = '<p style="margin:0;font-size:15px;line-height:1.6">Email '
+  + '<a href="mailto:team@stagify.ai" style="color:#2563eb;text-decoration:none">team@stagify.ai</a> '
+  + 'and we will remove you by hand. Account emails such as password resets are not '
+  + 'affected either way.</p>';
+
+/**
+ * Apply an unsubscribe (or a resubscribe) and render the outcome.
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ * @param {'out' | 'in'} direction
+ */
+function handleUnsubscribe(req, res, direction) {
+  res.setHeader('Cache-Control', 'no-store');
+  const token = typeof req.query.t === 'string' ? req.query.t : '';
+  const apply = direction === 'out' ? emailOptOut?.optOutByToken : emailOptOut?.optInByToken;
+  const result = token && apply ? apply(token) : { ok: false };
+
+  if (!result.ok) {
+    res.status(200).type('html').send(unsubscribePage({
+      title: 'We could not read that link',
+      body: '<p style="margin:0 0 12px;font-size:15px;line-height:1.6">That unsubscribe link '
+        + 'was missing or is no longer valid — some mail clients shorten links, and we '
+        + 'remove the record entirely when an account is deleted.</p>' + UNSUB_HELP,
+    }));
+    return;
+  }
+
+  const addr = escapeHtml(result.email ?? '');
+  if (direction === 'out') {
+    res.status(200).type('html').send(unsubscribePage({
+      title: 'You are unsubscribed',
+      body: '<p style="margin:0 0 12px;font-size:15px;line-height:1.6">We will not send any '
+        + `more trial or onboarding emails to <strong>${addr}</strong>.</p>`
+        + '<p style="margin:0 0 12px;font-size:15px;line-height:1.6">This does not cancel a '
+        + 'subscription, and it does not stop account emails such as password resets and '
+        + 'billing notices — those are not marketing and cannot be switched off.</p>'
+        + '<p style="margin:0;font-size:15px;line-height:1.6">Clicked this by mistake? '
+        + `<a href="/email/resubscribe?t=${encodeURIComponent(token)}" `
+        + 'style="color:#2563eb;text-decoration:none">Turn these emails back on</a>.</p>',
+    }));
+    return;
+  }
+
+  res.status(200).type('html').send(unsubscribePage({
+    title: 'You are subscribed again',
+    body: '<p style="margin:0;font-size:15px;line-height:1.6">Trial and onboarding emails to '
+      + `<strong>${addr}</strong> are switched back on. You can unsubscribe again from the `
+      + 'footer of any of them.</p>',
+  }));
+}
+
+router.get('/email/unsubscribe', emailLimiter, (req, res) => handleUnsubscribe(req, res, 'out'));
+router.get('/email/resubscribe', emailLimiter, (req, res) => handleUnsubscribe(req, res, 'in'));
+
+// RFC 8058 one-click. Gmail and Yahoo POST here from their own native "Unsubscribe"
+// control without ever loading the page, and expect a 2xx. The handler is shared, so
+// the POST and the click cannot drift apart.
+router.post('/email/unsubscribe', emailLimiter, (req, res) => handleUnsubscribe(req, res, 'out'));
 
 // Unauthenticated, and it writes to the same volume auth-store.db lives on — the
 // same threat model /api/bug-report documents in lib/http/bug-report-row.js, which
