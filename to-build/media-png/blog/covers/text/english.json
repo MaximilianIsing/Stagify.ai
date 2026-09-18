@@ -1,0 +1,84 @@
+{
+  "cover-7": {
+    "eyebrow": "Fall listing timeline",
+    "months": [
+      "AUG",
+      "SEP",
+      "OCT"
+    ]
+  },
+  "cover-9": {
+    "eyebrow": "Per staged photo",
+    "was": "$16 to $75",
+    "now": "$0",
+    "nowCaption": "on the free plan",
+    "footnote": "No watermark · Full resolution · Yours to publish"
+  },
+  "cover-10": {
+    "eyebrow": "Disclosure",
+    "headline": "Who actually requires it",
+    "rows": [
+      {
+        "label": "California",
+        "value": "In force now"
+      },
+      {
+        "label": "Wisconsin",
+        "value": "January 2027"
+      },
+      {
+        "label": "Everywhere else",
+        "value": "Your MLS"
+      }
+    ]
+  },
+  "cover-11": {
+    "forSale": "For sale",
+    "byOwner": "By owner",
+    "strapline": "The photos do the selling"
+  },
+  "cover-12": {
+    "eyebrow": "Pre-construction",
+    "figure": "77%",
+    "rest": "of new homes for sale are unfinished"
+  },
+  "cover-13": {
+    "eyebrow": "Developer API",
+    "headline": "One HTTP call. One staged photo.",
+    "rows": [
+      {
+        "label": "Per image",
+        "value": "$0.15"
+      },
+      {
+        "label": "Subscription",
+        "value": "None"
+      },
+      {
+        "label": "Queue to poll",
+        "value": "None"
+      }
+    ]
+  },
+  "cover-14": {
+    "eyebrow": "Staging one vacant house",
+    "headline": "Physical staging bills every month. Virtual staging bills nothing.",
+    "install": "$4,000 to install",
+    "monthly": "then +$900 every month it sits",
+    "physical": {
+      "value": "$6,700",
+      "label": "Physical staging"
+    },
+    "virtual": {
+      "value": "$0",
+      "label": "Virtual staging"
+    },
+    "axis": "Days on market"
+  },
+  "cover-15": {
+    "eyebrow": "Furniture removal",
+    "headline": "Their furniture comes out first.",
+    "captionLeft": "As photographed",
+    "captionRight": "Emptied, ready to stage"
+  }
+}

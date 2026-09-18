@@ -1,0 +1,84 @@
+{
+  "cover-7": {
+    "eyebrow": "Calendrier d'automne",
+    "months": [
+      "AOÛ",
+      "SEP",
+      "OCT"
+    ]
+  },
+  "cover-9": {
+    "eyebrow": "Par photo meublée",
+    "was": "$16 à $75",
+    "now": "$0",
+    "nowCaption": "avec le plan gratuit",
+    "footnote": "Sans filigrane · Pleine résolution · À vous de publier"
+  },
+  "cover-10": {
+    "eyebrow": "Divulgation",
+    "headline": "Qui l'exige vraiment",
+    "rows": [
+      {
+        "label": "California",
+        "value": "En vigueur"
+      },
+      {
+        "label": "Wisconsin",
+        "value": "Janvier 2027"
+      },
+      {
+        "label": "Partout ailleurs",
+        "value": "Votre MLS"
+      }
+    ]
+  },
+  "cover-11": {
+    "forSale": "À vendre",
+    "byOwner": "Par le propriétaire",
+    "strapline": "Ce sont les photos qui vendent"
+  },
+  "cover-12": {
+    "eyebrow": "Vente sur plan",
+    "figure": "77%",
+    "rest": "des logements neufs à vendre sont inachevés"
+  },
+  "cover-13": {
+    "eyebrow": "API développeur",
+    "headline": "Un appel HTTP. Une photo meublée.",
+    "rows": [
+      {
+        "label": "Par image",
+        "value": "$0.15"
+      },
+      {
+        "label": "Abonnement",
+        "value": "Aucun"
+      },
+      {
+        "label": "File d'attente",
+        "value": "Aucun"
+      }
+    ]
+  },
+  "cover-14": {
+    "eyebrow": "Mettre en scène une maison vide",
+    "headline": "Le staging physique facture chaque mois. Le virtuel ne facture rien.",
+    "install": "$4,000 d’installation",
+    "monthly": "puis +$900 par mois d’invendu",
+    "physical": {
+      "value": "$6,700",
+      "label": "Staging physique"
+    },
+    "virtual": {
+      "value": "$0",
+      "label": "Staging virtuel"
+    },
+    "axis": "Jours sur le marché"
+  },
+  "cover-15": {
+    "eyebrow": "Retrait des meubles",
+    "headline": "Leurs meubles sortent d'abord.",
+    "captionLeft": "Photo d'origine",
+    "captionRight": "Vidée, prête à meubler"
+  }
+}

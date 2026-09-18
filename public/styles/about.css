@@ -1,44 +1,51 @@
 /* /about — the entity hub.
  *
- * Deliberately built from the same parts as contact.html rather than inventing a look:
- * the 1100px column with a 48px gutter, the 48px hero h1, and the translucent white
- * card (12px radius, --border hairline, soft shadow, hover lift) that .contact-card,
- * .feature-card and .testimonial all share. Every page on this site sits on a playing
- * background video, so content that is not ON a card is text floating over footage —
- * which is exactly how the first draft of this page looked.
+ * Built from the same parts as contact.html rather than inventing a look: every page on
+ * this site sits on a playing background video, so content that is not ON a card is text
+ * floating over footage. The hero deliberately mirrors `.contact-hero h1` / `.contact-hero p`
+ * value for value (48px, -.3px tracking, --brand-deep; 18px --brand lede) so "About
+ * Stagify.ai" and "Get in touch" are the same heading in two places.
  *
- * The one place it departs is the disambiguation notice, which gets a brand accent rail
- * and a tinted fill. That is not decoration: the page exists because four unrelated
- * products share the name (see lib/seo/organization.js), and that block is the sentence
- * a reader must not scroll past.
+ * The column is 860px, not contact's 1100px, and that is the fix for a specific defect:
+ * the first draft capped paragraphs at 68ch inside a 1100px card, so text stopped dead
+ * two-thirds of the way across for no reason a reader could see. Sizing the COLUMN to a
+ * readable measure instead lets every paragraph run card-edge to card-edge.
+ *
+ * The one block that breaks the rhythm is the disambiguation notice, which gets a brand
+ * rail and a tinted fill. Not decoration: the page exists because four unrelated products
+ * share the name (see lib/seo/organization.js), and that is the part a reader must not
+ * scroll past.
  */
 
 .about {
-  max-width: 1100px;
-  margin: 60px auto;
+  max-width: 860px;
+  margin: 56px auto;
   padding: 0 48px;
 }
 
-/* --- hero ------------------------------------------------------------------------ */
+/* --- hero: mirrors .contact-hero ------------------------------------------------- */
 
 .about__hero {
-  margin-bottom: 24px;
+  margin-bottom: 22px;
 }
 
 .about h1 {
   font-size: 48px;
-  line-height: 1.05;
+  margin: 0 0 8px;
   letter-spacing: -0.3px;
-  margin: 0 0 10px;
   color: var(--brand-deep);
 }
 
+/* Typographically the same subtitle as guides.html's `.home-section__sub` — same clamp,
+   same leading, same slate. That sheet is not on this page, so the values are repeated
+   here rather than reused; #414f75 has no token in styles.css, so it stays a literal,
+   exactly as home.css spells it. */
 .about__lede {
-  color: var(--muted);
-  font-size: 18px;
-  line-height: 1.5;
+  color: #414f75;
+  font-size: clamp(14.5px, 1.4vw, 16.5px);
+  line-height: 1.55;
   margin: 0;
-  max-width: 62ch;
+  max-width: 600px;
 }
 
 /* --- cards ----------------------------------------------------------------------- */
@@ -47,39 +54,24 @@
   border: 1px solid var(--border);
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.6);
-  padding: 24px 28px;
+  padding: 20px 24px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
-  margin-bottom: 18px;
-}
-
-.about__card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  margin-bottom: 14px;
 }
 
 .about h2 {
-  font-size: 24px;
-  line-height: 1.2;
-  letter-spacing: -0.2px;
-  margin: 0 0 12px;
-  color: var(--brand-deep);
-}
-
-.about h3 {
-  font-size: 16px;
-  margin: 20px 0 6px;
+  font-size: 19px;
+  line-height: 1.25;
+  letter-spacing: -0.1px;
+  margin: 0 0 8px;
   color: var(--brand-deep);
 }
 
 .about p {
   color: var(--fg);
-  font-size: 16px;
-  line-height: 1.65;
-  margin: 0 0 12px;
-  /* A 1100px line of 16px text is ~130 characters, which is roughly twice a readable
-     measure. The card is wide; the paragraph inside it is not. */
-  max-width: 68ch;
+  font-size: 15.5px;
+  line-height: 1.6;
+  margin: 0 0 10px;
 }
 
 .about__card p:last-child {
@@ -89,111 +81,287 @@
 .about a {
   color: var(--brand-deep);
   text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .about a:hover {
   color: var(--brand);
 }
 
-/* --- the disambiguation notice --------------------------------------------------- */
+/* --- the disambiguation footnote --------------------------------------------------
+ *
+ * This used to be a card of its own: heading, tinted fill, accent rail, three paragraphs.
+ * Three paragraphs to make a point that takes one sentence, and the loudest thing on a
+ * page whose subject is the company rather than the companies it is not.
+ *
+ * Demoting it costs nothing where it counts. The full statement still ships in the FAQ
+ * answer below and in `disambiguatingDescription` on the Organization node — the copy an
+ * answer engine actually lifts. Only the volume changed.
+ */
 
-.about__notice {
-  background: var(--brand-wash);
-  border-color: var(--brand-pale);
-  border-left: 4px solid var(--brand);
+.about__note {
+  margin: 14px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 13.5px;
+  font-style: italic;
+  line-height: 1.5;
 }
 
 /* --- facts ----------------------------------------------------------------------- */
 
 .about__facts {
   list-style: none;
-  margin: 0;
+  margin: 12px 0 0;
   padding: 0;
 }
 
-/* Label / value rows, matching .contact-row so the two pages read as one site. */
 .about__facts li {
   display: grid;
-  grid-template-columns: 150px 1fr;
-  gap: 12px;
+  grid-template-columns: 116px 1fr;
+  gap: 14px;
   align-items: baseline;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--border);
-  font-size: 16px;
+  padding: 7px 0;
+  border-top: 1px solid var(--border);
+  font-size: 15px;
   line-height: 1.5;
   color: var(--fg);
 }
 
-.about__facts li:last-child {
-  border-bottom: 0;
-  padding-bottom: 0;
-}
-
-.about__facts dt,
-.about__facts .about__label {
+.about__label {
   color: var(--muted);
-  font-size: 13px;
+  font-size: 11.5px;
   font-weight: 700;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
-/* --- profile links --------------------------------------------------------------- */
+/* --- FAQ disclosures --------------------------------------------------------------
+ *
+ * Native <details>/<summary>: no script, keyboard and screen-reader behaviour for free,
+ * and the same disclosure pattern the footer's Legal menu uses. Collapsing FAQ answers is
+ * fine for the rich result — an expandable answer is expected; what is not allowed is
+ * content the reader can never reveal, which is why these open on click rather than on a
+ * hover or a media query.
+ */
 
-.about__profiles {
+.about__qa {
+  border-top: 1px solid var(--border);
+}
+
+.about__qa:first-of-type {
+  border-top: 0;
+}
+
+.about__qa summary {
   display: flex;
-  flex-wrap: wrap;
+  align-items: baseline;
   gap: 10px;
+  padding: 11px 0;
+  color: var(--brand-deep);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+  cursor: pointer;
+  list-style: none;
+}
+
+/* Safari draws its own triangle through ::-webkit-details-marker, which list-style
+   alone does not suppress. */
+.about__qa summary::-webkit-details-marker {
+  display: none;
+}
+
+.about__qa summary:hover {
+  color: var(--brand);
+}
+
+.about__qa summary::after {
+  content: '';
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  margin-left: auto;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg) translate(-2px, -2px);
+  transition: transform 0.15s ease-out;
+  opacity: 0.55;
+}
+
+.about__qa[open] summary::after {
+  transform: rotate(225deg) translate(-2px, -2px);
+}
+
+.about__qa summary:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.about__qa p {
+  margin: 0 0 12px;
+  padding-right: 17px;
+}
+
+/* --- founders --------------------------------------------------------------------
+ *
+ * Three people on one line, separated by commas, with their roles in brackets, was a
+ * 130-character run that nobody reads to the end of. One row each: name, then role
+ * underneath in the muted caption size. The role strings are contact.html's own
+ * (contact.team.*.title) rather than new keys — same words, same eleven packs, and the
+ * two pages cannot drift apart on who does what.
+ */
+
+.about__founders {
   list-style: none;
   margin: 0;
   padding: 0;
+  display: grid;
+  gap: 2px;
 }
 
-.about__profiles a {
-  display: inline-block;
-  padding: 7px 14px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.6);
-  color: var(--brand-deep);
-  font-size: 14px;
+/* Name and role on ONE line. Stacked, the pair cost two lines each and a baseline gap
+   that read as a paragraph break, so three people filled more height than every other
+   fact combined. Wrapping is still allowed, for the narrow screens where the pair does
+   not fit. */
+.about__founders li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 6px;
+  line-height: 1.45;
+}
+
+.about__founders b {
+  font-weight: 600;
+  color: var(--fg);
+}
+
+.about__founders span {
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+/* LinkedIn, in the brand blue, sized to the name it follows. `.about a` underlines every
+   link on this page, so the icon has to opt out at matching specificity. */
+.about .about__li {
+  display: inline-flex;
+  align-items: center;
+  color: #0a66c2;
   text-decoration: none;
-  transition: border-color 0.1s ease-out, background 0.1s ease-out;
+  opacity: 0.75;
+  transition: opacity 0.1s ease-out;
 }
 
-.about__profiles a:hover {
+.about .about__li:hover {
+  opacity: 1;
+}
+
+/* Separator as a pseudo-element, so it disappears with the span on a wrap. */
+.about__founders span::before {
+  content: '· ';
+}
+
+/* --- profile pills, each with its brand mark ------------------------------------- */
+
+/* A grid, not a wrapping flex row. Nine pills of nine different widths wrapped into a
+   ragged block with a different break on every screen size; equal cells give aligned
+   columns and a left edge that reads as a list. auto-fit + minmax means the column count
+   falls from four to two to one on its own, with no extra breakpoints. */
+.about__profiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+  gap: 8px;
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+}
+
+.about__profile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--fg);
+  font-size: 14px;
+  transition: border-color 0.1s ease-out, background 0.1s ease-out, transform 0.1s ease-out;
+}
+
+/* `.about a` sets an underline and outranks a lone class selector, so the pills were
+   underlined however many times `text-decoration: none` was declared on them. Matching
+   its specificity is the fix. */
+.about .about__profile {
+  text-decoration: none;
+}
+
+.about__profile:hover {
   border-color: var(--brand-soft);
   background: var(--brand-wash);
-  color: var(--brand);
+  color: var(--brand-deep);
+  transform: translateY(-1px);
+}
+
+/* Each mark carries its own brand colour as an inline `color:`, which this inherits
+   through fill="currentColor" — so the row reads as logos rather than as eight
+   identical grey glyphs. */
+.about__profile-icon {
+  flex: 0 0 auto;
+  opacity: 0.9;
+}
+
+.about__profile:hover .about__profile-icon {
+  opacity: 1;
 }
 
 /* --- phones ---------------------------------------------------------------------- */
 
 @media (max-width: 768px) {
   .about {
-    margin: 28px auto;
+    /* More headroom than the desktop rhythm would suggest, and deliberately so: on a
+       phone the language picker sits directly above the heading with nothing either side
+       of it, so 24px read as the h1 crowding the control rather than as a section start. */
+    margin: 44px auto 24px;
     padding: 0 16px;
   }
 
+  /* Centred, at contact.html's exact mobile size. `.contact-hero h1` centres itself at
+     this breakpoint and leaves its lede ranged left; the two pages share a heading, so
+     they share how it collapses. */
   .about h1 {
+    text-align: center;
     font-size: 32px;
   }
 
-  .about__lede {
-    font-size: 16.5px;
-  }
-
   .about h2 {
-    font-size: 20px;
+    font-size: 18px;
   }
 
   .about__card {
-    padding: 18px 18px;
+    padding: 16px 18px;
   }
 
-  /* Stacked, because a 150px label column leaves ~40% of a phone for the value. */
+  /* Stacked: a 116px label column leaves under half a phone for the value. */
   .about__facts li {
     grid-template-columns: 1fr;
-    gap: 2px;
+    gap: 1px;
   }
+}
+
+/* Phones proper. contact.html steps its hero down a second time here, so this does too —
+   48 → 32 → 24px, rather than stopping at the tablet size and looking oversized on a
+   375px screen. */
+@media (max-width: 480px) {
+  .about__hero {
+    margin-bottom: 16px;
+  }
+
+  .about h1 {
+    font-size: 24px;
+  }
+
 }

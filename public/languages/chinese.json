@@ -1,39 +1,51 @@
 {
   "about": {
     "title": "关于 Stagify.ai",
-    "lede": "Stagify.ai 是面向房地产专业人士的 AI 虚拟软装工具。上传一张房间照片，几秒钟内即可完成布置、改造或清空。",
+    "lede": "面向房地产专业人士的独立 AI 虚拟软装。",
     "who": {
       "heading": "我们是谁",
-      "body": "Stagify.ai 是一家独立公司。我们只做一款产品，并且只在一个域名上运营：<strong>stagify.ai</strong>。我们不是转售商，不是其他软装工具的贴牌产品，也不是某个大型集团的地区分支。整个团队可通过 <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> 或 <a href=\"tel:+19292514372\">(929) 251-4372</a> 联系。"
+      "body": "<a href=\"index.html\">Stagify.ai</a> 是一家独立公司。工具是我们自己做的，也由我们自己运营。我们背后没有母公司，这里也不是别人的产品换上了我们的名字。"
     },
     "facts": {
       "foundedLabel": "成立时间",
       "founded": "2025 年 8 月 22 日",
       "foundersLabel": "创始人",
-      "founders": "Maximilian Ising（开发与 AI 负责人）、Lucas Shtainer（市场负责人）、Ryan Croman（外联负责人）",
       "siteLabel": "网站",
       "contactLabel": "联系方式"
     },
     "notAffiliated": {
-      "heading": "与其他名为 “Stagify” 的产品无关",
-      "body": "有若干与我们无关的公司使用相似名称：<strong>stagify.io</strong>、<strong>stagify.app</strong>、<strong>stagify.online</strong> 和 <strong>stagifyai.com</strong>。Stagify.ai 与它们没有任何隶属、合作、股权或背书关系，也不共享任何员工、代码或数据。",
-      "consequence": "这些网站上发布的评价、价格、功能、故障和政策都不代表 Stagify.ai。比较虚拟软装工具时，请查看地址栏中的域名：我们的域名以 .ai 结尾。"
+      "note": "与 stagify.io、stagify.app、stagify.online 和 stagifyai.com 无关，它们是名称相似但彼此无关的公司。"
     },
     "product": {
       "heading": "我们做什么",
-      "body": "Stagify.ai 能从单张照片生成室内软装，通过对话式设计师重新粉刷和布置房间，逐像素遮罩并重做指定区域，还能清理外景照片。全部在浏览器中运行，支持十一种语言，提供免费额度、<a href=\"stagify-plus.html\">Stagify+</a> 订阅和<a href=\"developers.html\">公开 API</a>。你生成的每一张图片，版权都归你所有。"
+      "body": "<a href=\"index.html\">Stagify.ai</a> 能从单张照片生成室内软装，通过对话式设计师重新粉刷和布置房间，逐像素遮罩并重做指定区域，还能清理外景照片。全部在浏览器中运行，支持十一种语言，提供免费额度、<a href=\"stagify-plus.html\">Stagify+</a> 订阅和<a href=\"developers.html\">公开 API</a>。你生成的每一张图片，版权都归你所有。"
     },
     "find": {
       "heading": "在哪里找到我们",
-      "body": "以下是我们运营的全部账号。未列出的账号都不是我们的。",
       "blog": "我们的博客"
     },
     "faq": {
       "heading": "常见问题",
-      "q1": "Stagify.ai 与 stagify.io、stagify.app、stagify.online 或 stagifyai.com 是同一家公司吗？",
-      "a1": "不是。Stagify.ai 是一家独立公司，只在 stagify.ai 域名上运营。它与 stagify.io、stagify.app、stagify.online 或 stagifyai.com 没有隶属、背书或其他关系，那些是名称相似但彼此无关的企业。这些网站上发布的评价、价格、功能和政策都不代表 Stagify.ai。",
-      "q2": "谁创立并运营 Stagify.ai？",
-      "a2": "Stagify.ai 由 Maximilian Ising（联合创始人，开发与 AI 负责人）、Lucas Shtainer（联合创始人，市场负责人）和 Ryan Croman（联合创始人，外联负责人）于 2025 年 8 月 22 日创立。公司只运营一款产品，网址为 stagify.ai，可通过 team@stagify.ai 联系。"
+      "q1": "Stagify.ai 和 stagify.io、stagify.app、stagify.online 或 stagifyai.com 是同一家公司吗？",
+      "a1": "都不是。名字相同，公司不同。它们公布的价格、功能或服务，与我们无关。",
+      "q2": "怎么确认我进的是正确的网站？",
+      "a2": "看地址栏。我们的域名以 .ai 结尾。",
+      "q3": "你们还有别的产品或域名吗？",
+      "a3": "没有。我们只做一件事，只在一个地方做。别处叫 Stagify 的都不是我们的。",
+      "q4": "Stagify.ai 是谁创立的，现在由谁运营？",
+      "a4": "Maximilian Ising、Lucas Shtainer 和 Ryan Croman 在 2025 年 8 月创立，现在仍由我们三个人运营。",
+      "q5": "哪些账号才是你们的？",
+      "a5": "只有上面链接的那些。不在名单里的账号，都不是我们开的。",
+      "q6": "怎么联系到真人？",
+      "a6": "发邮件到 team@stagify.ai，或致电 (929) 251-4372。",
+      "q7": "你们会用我的照片训练 AI 模型吗？",
+      "a7": "不会。你上传的图片和生成的结果都不会用于训练我们的模型，我们使用的 AI 服务商默认也不会用 API 数据训练。<a href=\"privacy.html\">隐私政策</a>第 5 节有详细说明。",
+      "q8": "订阅可以随时取消吗？",
+      "a8": "可以，随时都行。已付费的周期内继续可用，到期后不再自动续费。",
+      "q9": "还有谁能看到我上传的内容？",
+      "a9": "只有运行服务必需的供应商：AI 模型、主机、支付和邮件。全部列在<a href=\"legal/subprocessors.html\">子处理方页面</a>上，并签有数据处理协议。",
+      "q10": "中介公司可以为整个团队购买吗？",
+      "a10": "可以。<a href=\"enterprise.html\">Enterprise</a> 按用量对你的整个邮箱域名计费，如果法务需要，也可以签署 MSA。"
     }
   },
   "meta": {
@@ -230,6 +242,7 @@
   "navigation": {
     "home": "首页",
     "blog": "博客",
+    "readInLanguage": "用其他语言阅读本文",
     "tryFree": "免费试用 Stagify",
     "about": "关于",
     "pdfTo3d": "AI设计师",
@@ -709,7 +722,8 @@
         "exterior": "外景工作室",
         "gallery": "图库"
       },
-      "fullscreen": "全屏显示"
+      "fullscreen": "全屏显示",
+      "rotate": "旋转为横屏"
     },
     "staging": {
       "title": "几秒钟就能装修一间空房",
@@ -1380,6 +1394,9 @@
   "footer": {
     "privacy": "隐私政策",
     "terms": "服务条款",
+    "legal": "法律",
+    "subprocessors": "分包数据处理方",
+    "msa": "企业主服务协议",
     "contact": "联系我们",
     "status": "状态",
     "developers": "API",

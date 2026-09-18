@@ -63,8 +63,17 @@
         flex-direction: column;
         align-items: stretch;
       }
-      /* Same color as “and counting”; slightly lighter weight for the hero line */
+      /* Same color as “and counting”; slightly lighter weight for the hero line.
+
+         HIDDEN BY DEFAULT AND REVEALED BY A ROOT CLASS, not by .hidden on the element. The
+         nudge is only for signed-in free accounts, and both facts it needs used to arrive
+         late — /api/auth/me is a round trip away and app.js loads after `load` — so the line
+         appeared once the page had settled and shoved the hero up as it did. session-class.js
+         sets html.has-free-plan from the cached plan BEFORE first paint, so it is simply
+         there; hero-stats.js owns the class afterwards. display:none is the right default: it
+         is what a crawler, a no-JS visitor and anyone signed out or on Stagify+ should get. */
       .hero-free-gens-today {
+        display: none;
         width: 100%;
         box-sizing: border-box;
         margin: 0.75rem 0 0;
@@ -73,6 +82,9 @@
         color: var(--brand-deep);
         font-size: 12px;
         font-weight: 300;
+      }
+      html.has-free-plan .hero-free-gens-today {
+        display: block;
       }
       .hero-free-gens-today .hero-free-gens-upgrade {
         color: var(--brand-deep);

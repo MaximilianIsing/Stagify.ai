@@ -1,0 +1,84 @@
+{
+  "cover-7": {
+    "eyebrow": "秋の売出しスケジュール",
+    "months": [
+      "8月",
+      "9月",
+      "10月"
+    ]
+  },
+  "cover-9": {
+    "eyebrow": "家具付き写真1枚あたり",
+    "was": "$16〜$75",
+    "now": "$0",
+    "nowCaption": "無料プランなら",
+    "footnote": "透かしなし · フル解像度 · 自由に公開可"
+  },
+  "cover-10": {
+    "eyebrow": "開示義務",
+    "headline": "本当に義務づけているのは",
+    "rows": [
+      {
+        "label": "カリフォルニア州",
+        "value": "施行済み"
+      },
+      {
+        "label": "ウィスコンシン州",
+        "value": "2027年1月"
+      },
+      {
+        "label": "その他すべて",
+        "value": "お使いの MLS"
+      }
+    ]
+  },
+  "cover-11": {
+    "forSale": "売出中",
+    "byOwner": "売主直売",
+    "strapline": "売るのは写真"
+  },
+  "cover-12": {
+    "eyebrow": "未完成物件",
+    "figure": "77%",
+    "rest": "の売出し新築住宅が未完成"
+  },
+  "cover-13": {
+    "eyebrow": "開発者向け API",
+    "headline": "HTTP 呼び出し1回。家具付き写真1枚。",
+    "rows": [
+      {
+        "label": "画像1枚",
+        "value": "$0.15"
+      },
+      {
+        "label": "サブスク",
+        "value": "なし"
+      },
+      {
+        "label": "待ちキュー",
+        "value": "なし"
+      }
+    ]
+  },
+  "cover-14": {
+    "eyebrow": "空き家1軒のステージング",
+    "headline": "実物のステージングは毎月請求。バーチャルは請求ゼロ。",
+    "install": "設置に $4,000",
+    "monthly": "以降、売れ残るごとに月 +$900",
+    "physical": {
+      "value": "$6,700",
+      "label": "実物ステージング"
+    },
+    "virtual": {
+      "value": "$0",
+      "label": "バーチャルステージング"
+    },
+    "axis": "売出日数"
+  },
+  "cover-15": {
+    "eyebrow": "家具の除去",
+    "headline": "まず既存の家具を撤去。",
+    "captionLeft": "撮影したまま",
+    "captionRight": "空室化、ステージング可"
+  }
+}

@@ -9,6 +9,12 @@
 //     paying Stagify+ subscriber sells them what they already bought; showing it to a
 //     signed-out visitor is noise on a page that is already selling. The predicate has
 //     three clauses and every one of them is load-bearing.
+//     What it WRITES is `html.has-free-plan`. The copy is markup now (index.html carries it
+//     with data-lang-html) and styles/index.css hides the line until that class appears, so
+//     session-class.js can put it up before the first paint from the cached plan. Both
+//     directions are asserted: this function is also what has to take the class away when
+//     that pre-paint guess came off a stale cache, or when somebody signs out without a
+//     reload.
 //   - THE COUNTS HAVE A LEGACY SHAPE. /api/contact-count answers `usersServed` now and
 //     answered `contactCount` + `userCount` before. The fallback is what stops the
 //     pills reading zero against an older deploy, and nothing else exercises it.
@@ -51,7 +57,6 @@ function mount({
   session = 'out',
   hasLine = true,
   hasPills = true,
-  langText = null,
   heroStats = null,
   promptBody = { promptCount: 1234 },
   contactBody = { usersServed: 56 },
@@ -91,7 +96,6 @@ function mount({
 
   globalThis.window = /** @type {any} */ ({
     StagifyAuth: auth,
-    LanguageSystem: langText ? { getText: () => langText } : null,
     StagifyHeroStats: heroStats,
   });
 
@@ -109,7 +113,7 @@ function mount({
     }
   );
 
-  return { line, wrap, roomsEl, usersEl, errors };
+  return { line, wrap, roomsEl, usersEl, errors, root: dom.documentElement };
 }
 
 // ---- the upgrade nudge -----------------------------------------------------
@@ -119,8 +123,7 @@ test('a signed-in free account is offered the upgrade', () => {
 
   updateHeroFreeGensLine();
 
-  assert.equal(h.line.classList.contains('hidden'), false);
-  assert.match(h.line.innerHTML, /Stagify\+/);
+  assert.equal(h.root.classList.contains('has-free-plan'), true);
 });
 
 test('a paying subscriber is not sold what they already have', () => {
@@ -128,7 +131,7 @@ test('a paying subscriber is not sold what they already have', () => {
 
   updateHeroFreeGensLine();
 
-  assert.equal(h.line.classList.contains('hidden'), true);
+  assert.equal(h.root.classList.contains('has-free-plan'), false);
 });
 
 test('a signed-out visitor is not shown an account-specific nudge', () => {
@@ -136,30 +139,28 @@ test('a signed-out visitor is not shown an account-specific nudge', () => {
 
   updateHeroFreeGensLine();
 
-  assert.equal(h.line.classList.contains('hidden'), true);
+  assert.equal(h.root.classList.contains('has-free-plan'), false);
 });
 
-test('the nudge is localized when the language pack has it', () => {
-  const h = mount({ session: 'free', langText: 'Probieren Sie Stagify+ heute' });
+test('a wrong pre-paint guess is taken back, not left on the page', () => {
+  // session-class.js sets the class from the cached plan before /api/auth/me has answered.
+  // When that cache was stale — a subscriber whose plan string had not caught up — this is
+  // the only thing that removes it again, so it may never be a one-way write.
+  const h = mount({ session: 'pro' });
+  h.root.classList.add('has-free-plan');
 
   updateHeroFreeGensLine();
 
-  assert.equal(h.line.innerHTML, 'Probieren Sie Stagify+ heute');
-});
-
-test('the nudge falls back to English rather than going blank', () => {
-  const h = mount({ session: 'free', langText: '' });
-
-  updateHeroFreeGensLine();
-
-  assert.match(h.line.innerHTML, /Try Stagify\+ today/);
-  assert.match(h.line.innerHTML, /stagify-plus\.html/, 'and it still links somewhere');
+  assert.equal(h.root.classList.contains('has-free-plan'), false);
 });
 
 test('a page without the nudge element is a no-op', () => {
-  mount({ session: 'free', hasLine: false });
+  const h = mount({ session: 'free', hasLine: false });
 
   assert.doesNotThrow(() => updateHeroFreeGensLine());
+  // Every page loads auth.js and most of them have no hero. Claiming a free plan on <html>
+  // there would arm anything else that ever keys off the class.
+  assert.equal(h.root.classList.contains('has-free-plan'), false);
 });
 
 // ---- the counts ---------------------------------------------------------------

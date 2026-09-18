@@ -597,19 +597,35 @@ test('the carousel stage hands the browser vertical panning and keeps the rest',
 
 /* [hidden] is a UA rule at (0,0,0) and `.shw__fs { display: inline-flex }` is an author
    one, so it wins outright and `btn.hidden = true` in wireFullscreen() did nothing.
-   That branch is live on every iPhone (no unprefixed element fullscreen, so
-   document.fullscreenEnabled is undefined) and it returns BEFORE wiring the click
-   handler, while `@media (hover: none)` forces the button visible — a permanent tap
-   target that does nothing. jsdom applies no stylesheets, so this tier can only read
-   the rule; the computed value is checked in the browser instead. */
+   That branch returns BEFORE wiring the click handler, while `@media (hover: none)`
+   forces the button visible — a permanent tap target that does nothing. jsdom applies
+   no stylesheets, so this tier can only read the rule; the computed value is checked
+   in the browser instead.
+
+   guides.css carries the identical pair and was MISSING the restatement entirely, so
+   both are asserted here rather than leaving the twin unguarded. */
 test('hiding the fullscreen button actually hides it', () => {
   assert.match(
     homeCss(),
     /\.shw__fs\[hidden\]\s*\{[^}]*display:\s*none/,
     'home.css must restate [hidden] for .shw__fs, or the author display: inline-flex beats it'
   );
-  const js = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'studio-showcase.js'), 'utf8');
+  const guides = fs.readFileSync(path.join(ROOT, 'public', 'styles', 'guides.css'), 'utf8');
+  assert.match(
+    guides,
+    /\.guide-demo-fs\[hidden\]\s*\{[^}]*display:\s*none/,
+    'guides.css must restate [hidden] for its twin control too'
+  );
+  const js = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'showcase', 'fullscreen.js'), 'utf8');
   assert.match(js, /\bhidden\s*=\s*true/, 'and the script still sets it');
+  /* But CONDITIONALLY. The hide branch used to be unconditional on
+     !document.fullscreenEnabled, which is falsy on every iPhone — and a phone is now
+     exactly where the button has a job to do, because the rotate-to-landscape path
+     needs no fullscreen support at all. Hiding it there would re-break the control on
+     the one platform it was broken on to begin with. */
+  const guard = js.match(/if \(!document\.fullscreenEnabled[^)]*\)/);
+  assert.ok(guard, 'the hide is still guarded on fullscreenEnabled');
+  assert.match(guard[0], /isPhone\(\)/, 'and must NOT fire on a phone, which uses the rotate path');
 });
 
 /* Every pointer listener lives on the stage, which is ~520px tall inside a section the
@@ -674,13 +690,37 @@ test('the fullscreen button is a labelled toggle', () => {
 });
 
 test('fullscreen degrades and does not fight the carousel', () => {
-  const js = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'studio-showcase.js'), 'utf8');
-  const code = js.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
-  assert.match(code, /document\.fullscreenEnabled/, 'hides the control where fullscreen is unavailable');
-  // Cycling while expanded would swap the fullscreen content out from under the
-  // viewer, who cannot see the carousel behind it to know what happened.
-  const bails = [...code.matchAll(/if \(document\.fullscreenElement\) return;/g)].length;
-  assert.ok(bails >= 2, `drag and wheel must both bail while fullscreen (found ${bails})`);
+  const strip = (src) => src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
+  const island = strip(fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'showcase', 'fullscreen.js'), 'utf8'));
+  const code = strip(fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'studio-showcase.js'), 'utf8'));
+  assert.match(island, /document\.fullscreenEnabled/, 'hides the control where fullscreen is unavailable');
+
+  /* Cycling while the front media is expanded would swap the content out from under a
+     viewer who cannot see the carousel behind it. There are now TWO ways to be
+     expanded — natively, and portaled into the rotate-to-landscape overlay — so the
+     predicate has to name both, or a phone swipe cycles the carousel behind an open
+     overlay and orphans the DOM move that overlay is holding. */
+  const pred = island.match(/function expanded\(\)\s*\{[^}]*\}/);
+  assert.ok(pred, 'expanded() is the single predicate');
+  assert.match(pred[0], /document\.fullscreenElement/, 'it covers native fullscreen');
+  assert.match(pred[0], /anyImmersiveOpen\(\)/, 'and the immersive overlay');
+
+  const bails = [...code.matchAll(/if \(expanded\(\)\) return;/g)].length;
+  // drag, wheel AND select() — the last is what covers the arrows, the tabs, the dots
+  // and a deep link in one place rather than four more copies.
+  assert.ok(bails >= 3, `drag, wheel and select must all bail while expanded (found ${bails})`);
+  assert.match(
+    code,
+    /function select\(sc, next, opts\) \{\s*if \(expanded\(\)\) return;/,
+    'select() bails first, before it relayouts around a portaled-out panel'
+  );
+  // measure() is the other half: the panel is genuinely short while its media is away,
+  // so a measurement taken then would park the wrong height on the stage for good.
+  assert.match(
+    code,
+    /function measure\(sc\) \{\s*if \(anyImmersiveOpen\(\)\) return;/,
+    'measure() skips the portaled state'
+  );
 });
 
 /* The regression this guards: .shw__media:fullscreen used to pin height:100% on the
@@ -727,9 +767,19 @@ test('the showcase keeps its players and reflows them on fullscreen change', () 
   );
   const js = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'studio-showcase.js'), 'utf8');
   assert.match(js, /__player\.reflow\(\)/, 'the showcase reflows the mounted player');
-  const handler = js.match(/'fullscreenchange',[\s\S]*?\n {2}\}\);/);
+  // One named hook rather than a body repeated per path, because there are now two
+  // routes into a size change: the native fullscreenchange, and the immersive
+  // controller's onChange.
+  assert.match(
+    js,
+    /function afterViewChange\(sc\) \{[\s\S]*?reflowDemos\(sc\)/,
+    'afterViewChange re-measures and reflows'
+  );
+  const island = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'showcase', 'fullscreen.js'), 'utf8');
+  const handler = island.match(/'fullscreenchange',[\s\S]*?\n {2}\}\);/);
   assert.ok(handler, 'the fullscreenchange handler exists');
-  assert.match(handler[0], /reflow/, 'and it reflows the demos');
+  assert.match(handler[0], /onViewChange\(\)/, 'and it reflows the demos');
+  assert.match(island, /onChange: \(\) => onViewChange\(\)/, 'the immersive path lands on the same hook');
 });
 
 test('fullscreen sizes the element that actually carries the aspect ratio', () => {
@@ -751,9 +801,110 @@ test('fullscreen sizes the element that actually carries the aspect ratio', () =
 test('the fullscreen label is in all eleven packs', () => {
   const dir = path.join(ROOT, 'public', 'languages');
   for (const file of fs.readdirSync(dir).filter((f) => f.endsWith('.json'))) {
-    const value = JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8')).home?.showcase?.fullscreen;
-    assert.equal(typeof value, 'string', `${file}: home.showcase.fullscreen is missing`);
-    assert.ok(value.trim().length > 0, `${file}: home.showcase.fullscreen is blank`);
+    const showcase = JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8')).home?.showcase;
+    // Two keys, because the control has two jobs: `fullscreen` under a desktop pointer,
+    // `rotate` on a phone, where it opens the landscape view instead. The English
+    // fallback in immersive-view.js would otherwise hide a missing translation.
+    for (const key of ['fullscreen', 'rotate']) {
+      const value = showcase?.[key];
+      assert.equal(typeof value, 'string', `${file}: home.showcase.${key} is missing`);
+      assert.ok(value.trim().length > 0, `${file}: home.showcase.${key} is blank`);
+    }
+  }
+});
+
+/* --- The class-path twin -------------------------------------------------
+   Phones never enter native fullscreen (iPhone Safari has no element fullscreen at
+   all), so the rotate-to-landscape view portals .shw__media into an overlay and
+   presents it with `.is-immersive` instead. That block is a deliberate DUPLICATE of
+   the `:fullscreen` one — a CSS selector list is invalidated whole if one component
+   fails to parse, and the browsers that need the fallback are exactly the ones that
+   might not parse `:fullscreen`.
+
+   Duplication nothing checks is duplication that rots, so: the same sizing assertions
+   run against the twin, and the property SETS must match. Only values may differ, and
+   only in the one documented way — `100vh` becomes `var(--imv-box)`, because under
+   rotation the box the media must fit is the viewport's WIDTH. */
+test('the immersive block sizes the demo exactly like the fullscreen one', () => {
+  const css = fs.readFileSync(path.join(ROOT, 'public', 'styles', 'home.css'), 'utf8');
+  const code = css.replace(/\/\*[\s\S]*?\*\//g, '');
+  const rules = [...code.matchAll(/\.shw__media\.is-immersive\s+[^{}]*\{([^}]*)\}/g)]
+    .map((m) => ({ sel: m[0].slice(0, m[0].indexOf('{')), body: m[1] }))
+    .filter((r) => /\.ba\b|\.designer-demo\b|\.sdp\b/.test(r.sel));
+  assert.ok(rules.length >= 2, 'the ratio carriers are sized under .is-immersive too');
+  for (const r of rules) {
+    assert.ok(!/height:\s*100%/.test(r.body), `a definite height distorts the box: ${r.sel.trim()}`);
+  }
+  const demo = rules.find((r) => /\.designer-demo\b/.test(r.sel));
+  assert.ok(demo, '.designer-demo is sized under .is-immersive');
+  assert.match(demo.body, /var\(--ar/, 'the width comes from the demo aspect ratio');
+  assert.match(demo.body, /var\(--imv-box/, 'and from the overlay stage height, not a literal vh');
+  assert.match(demo.body, /height:\s*auto/, 'so aspect-ratio computes the height back');
+});
+
+test('the fullscreen and immersive blocks cannot drift apart', () => {
+  /** selector (minus its state hook) -> the sorted property names it declares */
+  const shape = (css, hook) => {
+    const code = css.replace(/\/\*[\s\S]*?\*\//g, '');
+    const out = new Map();
+    for (const m of code.matchAll(new RegExp(hook + '([^{}]*)\\{([^}]*)\\}', 'g'))) {
+      // A multi-selector rule repeats the hook after the comma, so strip every copy —
+      // otherwise `.designer-demo, <hook> .sdp` keys differently under the two hooks
+      // and the comparison fails on the prefix rather than on any real drift.
+      const key = m[1].replace(new RegExp(hook, 'g'), '').replace(/\s+/g, ' ').trim();
+      out.set(key, [...m[2].matchAll(/([a-z-]+)\s*:/g)].map((d) => d[1]).sort().join(','));
+    }
+    return out;
+  };
+  for (const [file, fsHook, imHook] of [
+    ['home.css', '\\.shw__media:fullscreen', '\\.shw__media\\.is-immersive'],
+    ['guides.css', '\\.guide-demo-panel:fullscreen', '\\.guide-demo-panel\\.is-immersive'],
+  ]) {
+    const css = fs.readFileSync(path.join(ROOT, 'public', 'styles', file), 'utf8');
+    const native = shape(css, fsHook);
+    const immersive = shape(css, imHook);
+    assert.ok(native.size > 0, `${file}: the :fullscreen block exists`);
+    assert.deepEqual(
+      [...immersive.keys()].sort(),
+      [...native.keys()].sort(),
+      `${file}: the two blocks must cover the same selectors`
+    );
+    for (const [sel, props] of native) {
+      assert.equal(
+        immersive.get(sel),
+        props,
+        `${file}: "${sel || '(root)'}" declares different properties in the two blocks`
+      );
+    }
+  }
+});
+
+/* The glyph swap. On a phone the control is not a fullscreen toggle, so showing the
+   expand arrows would promise something the platform cannot do — it shows a rotating
+   phone instead. Once the view is OPEN it is a close affordance again, which is why
+   `.is-fs` has to beat `.is-mobile-rotate`. Both pages carry the identical trio. */
+test('the rotate glyph replaces the expand arrows on phones, on both pages', () => {
+  for (const [page, css, btn, glyph] of [
+    ['index.html', 'home.css', 'shw__fs', 'shw__fs-rotate'],
+    ['guides.html', 'guides.css', 'guide-demo-fs', 'guide-demo-fs__rotate'],
+  ]) {
+    const html = fs.readFileSync(path.join(ROOT, 'public', page), 'utf8');
+    const buttons = [...html.matchAll(new RegExp('<button[^>]*class="' + btn + '"[\\s\\S]*?</button>', 'g'))];
+    assert.ok(buttons.length >= 4, `${page}: found ${buttons.length} controls`);
+    for (const b of buttons) {
+      assert.ok(b[0].includes('class="' + glyph + '"'), `${page}: every control carries the rotate glyph`);
+    }
+    const sheet = fs.readFileSync(path.join(ROOT, 'public', 'styles', css), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+    assert.match(
+      sheet,
+      new RegExp('\\.' + btn + '\\.is-mobile-rotate \\.' + glyph + '\\s*\\{[^}]*display:\\s*block'),
+      `${css}: the rotate glyph shows on a phone`
+    );
+    assert.match(
+      sheet,
+      new RegExp('\\.' + btn + '\\.is-mobile-rotate\\.is-fs \\.' + glyph + '\\s*\\{[^}]*display:\\s*none'),
+      `${css}: and gives way to the close glyph once open`
+    );
   }
 });
 

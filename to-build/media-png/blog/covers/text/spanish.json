@@ -1,0 +1,84 @@
+{
+  "cover-7": {
+    "eyebrow": "Calendario del mercado de otoño",
+    "months": [
+      "AGO",
+      "SEP",
+      "OCT"
+    ]
+  },
+  "cover-9": {
+    "eyebrow": "Por foto amueblada",
+    "was": "$16 a $75",
+    "now": "$0",
+    "nowCaption": "en el plan gratuito",
+    "footnote": "Sin marca de agua · Resolución completa · Tuya para publicar"
+  },
+  "cover-10": {
+    "eyebrow": "Divulgación",
+    "headline": "Quién lo exige realmente",
+    "rows": [
+      {
+        "label": "California",
+        "value": "Ya en vigor"
+      },
+      {
+        "label": "Wisconsin",
+        "value": "Enero de 2027"
+      },
+      {
+        "label": "En todos los demás casos",
+        "value": "Tu MLS"
+      }
+    ]
+  },
+  "cover-11": {
+    "forSale": "Se vende",
+    "byOwner": "Por su dueño",
+    "strapline": "Las fotos son las que venden"
+  },
+  "cover-12": {
+    "eyebrow": "Preventa sobre plano",
+    "figure": "77%",
+    "rest": "de las viviendas nuevas en venta están sin terminar"
+  },
+  "cover-13": {
+    "eyebrow": "API para desarrolladores",
+    "headline": "Una llamada HTTP. Una foto amueblada.",
+    "rows": [
+      {
+        "label": "Por imagen",
+        "value": "$0.15"
+      },
+      {
+        "label": "Suscripción",
+        "value": "Ninguna"
+      },
+      {
+        "label": "Cola de espera",
+        "value": "Ninguna"
+      }
+    ]
+  },
+  "cover-14": {
+    "eyebrow": "Preparar una casa vacía",
+    "headline": "El staging físico factura cada mes. El virtual no factura nada.",
+    "install": "$4,000 de instalación",
+    "monthly": "y +$900 cada mes que siga sin venderse",
+    "physical": {
+      "value": "$6,700",
+      "label": "Staging físico"
+    },
+    "virtual": {
+      "value": "$0",
+      "label": "Staging virtual"
+    },
+    "axis": "Días en el mercado"
+  },
+  "cover-15": {
+    "eyebrow": "Eliminación de muebles",
+    "headline": "Sus muebles salen primero.",
+    "captionLeft": "Tal como se fotografió",
+    "captionRight": "Vaciada, lista para amueblar"
+  }
+}

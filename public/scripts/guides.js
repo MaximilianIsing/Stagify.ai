@@ -7,6 +7,8 @@
 // spec can drive it against a stand-in. The auto-start at the bottom is what the page
 // itself uses.
 
+import { anyImmersiveOpen, createImmersive, isPhone, markRotateButton } from './immersive-view.js';
+
 /** The demo keys, in the order the tablist presents them. */
 const PANEL_ID = (key) => `guide-demo-${key}`;
 
@@ -23,35 +25,66 @@ export function demoFromHash(win) {
  */
 export function initGuides({ doc = document, win = window } = {}) {
   initDemoPicker(doc, win);
-  initDemoFullscreen(doc);
+  initDemoFullscreen(doc, win);
   initTopicRail(doc, win);
 }
 
 /**
- * The fullscreen control on each walkthrough panel — the same affordance the home
- * page's showcase carries, on the six full-chrome walkthroughs.
+ * The expand control on each walkthrough panel — the same affordance the home page's
+ * showcase carries, on the six full-chrome walkthroughs.
  *
- * The panel itself is what goes fullscreen: it is the player's root, so the frame,
- * the callout card and the step dots travel together. The button toggles rather than
- * only entering, so the same control gets you back out — `aria-pressed` carries the
- * state, which means the label never changes and the i18n pack needs one key.
+ * TWO PATHS, chosen at click time.
+ *
+ * DESKTOP: native fullscreen, as before. The panel itself is what goes fullscreen —
+ * it is the player's root, so the frame, the callout card and the step dots travel
+ * together.
+ *
+ * PHONE: `Element.requestFullscreen` does not exist on iPhone Safari at all, and even
+ * where it does a 16:9 walkthrough inside a portrait viewport is a useless letterbox.
+ * So the button becomes a rotate-to-landscape control instead — see
+ * scripts/immersive-view.js, which portals the panel into a full-viewport overlay and
+ * turns it 90deg while the phone is held upright.
+ *
+ * Either way the button TOGGLES rather than only entering, so the same control gets
+ * you back out, and `aria-pressed` carries the state.
  *
  * @param {any} doc
+ * @param {any} win
  */
-function initDemoFullscreen(doc) {
+function initDemoFullscreen(doc, win) {
   const buttons = Array.prototype.slice.call(doc.querySelectorAll('[data-guide-fullscreen]'));
   if (!buttons.length) return;
+  const phone = () => isPhone(win);
   // Some embedding contexts disallow fullscreen outright. Hide the control instead of
-  // shipping a button whose only behaviour is a rejected promise.
-  if (!doc.fullscreenEnabled) {
+  // shipping a button whose only behaviour is a rejected promise — but NOT on a phone,
+  // where the rotate path needs no fullscreen support and is the whole point.
+  if (!doc.fullscreenEnabled && !phone()) {
     buttons.forEach((btn) => { btn.hidden = true; });
     return;
   }
   const panelOf = (btn) => btn.closest('.guide-demo-panel');
   buttons.forEach((btn) => {
+    markRotateButton(btn, win);
+    const panel = panelOf(btn);
+    // The panel is the tabpanel, so while it is portaled the tab's aria-controls points
+    // at a node outside the tablist. That is transient and the overlay is aria-modal
+    // (everything else is inert), so nothing can walk into the orphaned pairing.
+    const immersive = panel
+      ? createImmersive({
+        target: panel,
+        button: btn,
+        doc,
+        win,
+        // The callout card is placed in frame pixels and the frame just changed size.
+        onChange: () => { if (panel.__player) panel.__player.reflow(); },
+      })
+      : null;
     btn.addEventListener('click', () => {
-      const panel = panelOf(btn);
       if (!panel) return;
+      if (phone()) {
+        if (immersive) immersive.toggle();
+        return;
+      }
       if (doc.fullscreenElement === panel) doc.exitFullscreen();
       // A rejection here is normal — a user gesture can be refused — and there is
       // nothing to recover, so swallow it rather than surfacing an unhandled rejection.
@@ -86,6 +119,10 @@ function mountPlayer(win, panel) {
   const demo = demoByKey(win, panel.getAttribute('data-demo'));
   if (!demo) return;
   /** @type {any} */ (panel).__player = player.mount(panel, demo);
+  // Drops the loading skeleton in guides.css. Only once the player is actually in:
+  // the deferred scripts can still be in flight, and the two bails above leave the
+  // skeleton shimmering rather than collapsing the panel to nothing.
+  panel.classList.add('is-mounted');
 }
 
 function initDemoPicker(doc, win) {
@@ -118,6 +155,11 @@ function initDemoPicker(doc, win) {
    */
   function setDemo(key, opts = {}) {
     if (!panels[key]) return;
+    // A hashchange must not swap tabs while a panel is portaled into the immersive
+    // overlay: the old panel would be left floating in an overlay that no longer
+    // belongs to the active tab, and restoring it on close would put it back beside
+    // a panel that has since taken over. The view closes first, then the tab moves.
+    if (anyImmersiveOpen()) return;
     buttons.forEach((btn) => {
       const active = btn.getAttribute('data-demo') === key;
       btn.classList.toggle('guide-demo-picker__btn--active', active);

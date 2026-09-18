@@ -1,0 +1,84 @@
+{
+  "cover-7": {
+    "eyebrow": "Herbst-Zeitplan",
+    "months": [
+      "AUG",
+      "SEP",
+      "OKT"
+    ]
+  },
+  "cover-9": {
+    "eyebrow": "Pro möbliertem Foto",
+    "was": "$16 bis $75",
+    "now": "$0",
+    "nowCaption": "im Gratis-Tarif",
+    "footnote": "Kein Wasserzeichen · Volle Auflösung · Frei nutzbar"
+  },
+  "cover-10": {
+    "eyebrow": "Offenlegung",
+    "headline": "Wer es wirklich verlangt",
+    "rows": [
+      {
+        "label": "California",
+        "value": "Gilt bereits"
+      },
+      {
+        "label": "Wisconsin",
+        "value": "Januar 2027"
+      },
+      {
+        "label": "Überall sonst",
+        "value": "Ihr MLS"
+      }
+    ]
+  },
+  "cover-11": {
+    "forSale": "Zu verkaufen",
+    "byOwner": "Von privat",
+    "strapline": "Die Fotos verkaufen"
+  },
+  "cover-12": {
+    "eyebrow": "Vor Fertigstellung",
+    "figure": "77%",
+    "rest": "der neuen Häuser zum Verkauf sind unfertig"
+  },
+  "cover-13": {
+    "eyebrow": "Entwickler-API",
+    "headline": "Ein HTTP-Aufruf. Ein möbliertes Foto.",
+    "rows": [
+      {
+        "label": "Pro Bild",
+        "value": "$0.15"
+      },
+      {
+        "label": "Abonnement",
+        "value": "Keine"
+      },
+      {
+        "label": "Warteschlange",
+        "value": "Keine"
+      }
+    ]
+  },
+  "cover-14": {
+    "eyebrow": "Ein leeres Haus herrichten",
+    "headline": "Klassisches Home Staging kostet jeden Monat. Virtuelles kostet nichts.",
+    "install": "$4,000 für den Aufbau",
+    "monthly": "dann +$900 für jeden Monat Leerstand",
+    "physical": {
+      "value": "$6,700",
+      "label": "Klassisches Staging"
+    },
+    "virtual": {
+      "value": "$0",
+      "label": "Virtuelles Staging"
+    },
+    "axis": "Tage am Markt"
+  },
+  "cover-15": {
+    "eyebrow": "Möbel entfernen",
+    "headline": "Erst raus mit ihren Möbeln.",
+    "captionLeft": "Wie fotografiert",
+    "captionRight": "Leer, bereit zum Staging"
+  }
+}

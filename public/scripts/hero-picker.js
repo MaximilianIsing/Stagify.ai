@@ -270,7 +270,13 @@ function initHeroPicker() {
   const roomLabel = document.getElementById('hero-room-label');
   const styleLabel = document.getElementById('hero-style-label');
   const originalBtn = document.getElementById('hero-original-btn');
-  const originalLabel = originalBtn && originalBtn.querySelector('.hp-original__label');
+  /* Both labels are in the markup; only their visibility changes. See paintOriginalLabel(). */
+  const originalWords = originalBtn
+    ? {
+      toOriginal: originalBtn.querySelector('[data-lang="hero.seeOriginal"]'),
+      toStaged: originalBtn.querySelector('[data-lang="hero.seeStaged"]'),
+    }
+    : null;
   if (!roomMenu || !styleMenu || !roomList || !styleList || !roomLabel || !styleLabel) return;
 
   let room = byKey(ROOMS, DEFAULT_ROOM);
@@ -787,16 +793,22 @@ function initHeroPicker() {
    * state lives in the class (see `.hp-original.is-showing-original` in hero-picker.css) and
    * nothing claims to be pressed.
    *
-   * `data-lang` is swapped alongside the text rather than dropped, so a later language change
-   * repaints the key that matches what is on screen instead of resetting to "See original".
+   * NOTHING IS REWRITTEN HERE. Both strings ship in the markup, stacked in one grid cell, and
+   * this only moves `is-on` between them — which is what keeps the pill one width across the
+   * toggle rather than letting it snap narrower on the shorter label. Sizing it in CSS also
+   * has to be done from the strings themselves: the staged label is the LONGER of the pair in
+   * Chinese, French, Japanese and Korean, so there is no number that works for every locale.
+   * See `.hp-original__label` in hero-picker.css.
+   *
+   * The pay-off for i18n is that each span keeps a PERMANENT `data-lang`: applyTranslations()
+   * repainting either one is always correct, with no attribute to keep in step with the text.
    */
   function paintOriginalLabel() {
     if (!originalBtn) return;
-    const key = showingOriginal ? 'hero.seeStaged' : 'hero.seeOriginal';
     originalBtn.classList.toggle('is-showing-original', showingOriginal);
-    if (!originalLabel) return;
-    originalLabel.setAttribute('data-lang', key);
-    originalLabel.textContent = t(key);
+    if (!originalWords || !originalWords.toOriginal || !originalWords.toStaged) return;
+    originalWords.toOriginal.classList.toggle('is-on', !showingOriginal);
+    originalWords.toStaged.classList.toggle('is-on', showingOriginal);
   }
 
   /**
@@ -876,11 +888,11 @@ function initHeroPicker() {
    * toggle to "See original" while the photo stays where the visitor put it. Dropping the
    * attributes makes the languagechange handler above the only writer. */
   [roomLabel, styleLabel].forEach((el) => el && el.removeAttribute('data-lang'));
-  /* The toggle is NOT on that list, and that is the whole difference between a label that
-     is rewritten and one that is swapped: paintOriginalLabel() keeps `data-lang` pointing
-     at whichever of the two keys is on screen, so applyTranslations() writing textContent
-     from it lands exactly the string this file would have written. Strip the attribute and
-     a server-rendered locale page ships a button with no key on it at all. */
+  /* The toggle is NOT on that list, and both of its spans keep their key forever. Nothing
+     here ever writes that button's text: paintOriginalLabel() only moves `is-on` between two
+     labels the markup already carries, so applyTranslations() is the sole writer and cannot
+     disagree with anyone. This is the case the removeAttribute() above exists to prevent,
+     solved by having one writer rather than by disarming the second. */
   /* baseImg belongs on that list too, and its absence was a real conflict rather than an
      oversight of style: the markup carries data-lang-attr="hero.defaultAlt|alt", so
      applyLanguageToElements() wrote "A bedroom virtually staged in a modern style" while the

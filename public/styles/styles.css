@@ -635,8 +635,12 @@ body {
      background at all — above 769px the fixed #background-video sits in the paint stack
      and the check comes back "incomplete" rather than failing.
      Do NOT "fix" this by adding class="site-footer" to the markup — the rule further up
-     this file display:none's that class and the footer would vanish. */
-  footer:not([class]) a {
+     this file display:none's that class and the footer would vanish.
+     The Legal menu's rows are excluded: they sit on the panel's near-white background,
+     not on the body, so the ratio this fixes does not apply to them — and being caught
+     by an !important rule is why they rendered a different colour on a phone than on a
+     desktop, which is the one thing the panel's own styling is trying not to do. */
+  footer:not([class]) a:not(.legal-menu__item) {
     color:var(--brand-deep)!important
   }
   .role-popup-content {
@@ -3047,6 +3051,19 @@ body:has(.stage-mask-modal.active) .language-picker-container {
   box-shadow:0 4px 12px rgba(0,0,0,.08);
   transition:transform .1s ease-out,box-shadow .1s ease-out
 }
+.contact-li {
+  display:inline-flex;
+  align-items:center;
+  vertical-align:middle;
+  margin-left:8px;
+  color:#0a66c2;
+  text-decoration:none;
+  opacity:.75;
+  transition:opacity .1s ease-out
+}
+.contact-li:hover {
+  opacity:1
+}
 .contact-row {
   display:grid;
   gap:4px
@@ -4667,6 +4684,240 @@ html.has-session .site-header .nav-link.hidden[data-nav-gallery] {
   clip:rect(0,0,0,0);
   white-space:nowrap;
   border:0
+}
+/* ── The footer's "Legal" menu ──────────────────────────────────────────────
+   Privacy Policy and Terms of Service used to sit in the footer as two of its
+   five slots, while legal/subprocessors.html and legal/enterprise-msa.html —
+   the two documents an enterprise review actually asks for — were linked from
+   nowhere but the legal pages themselves. One disclosure holds all four.
+
+   Built on <details>/<summary> rather than the button+panel of .lang-switch
+   above: the footer is hand-copied into eleven files with no partial, so the
+   less the markup depends on JS the better. scripts/legal-menu.js only adds
+   Escape / outside-click / arrow keys on top of a control that already opens,
+   closes and takes keyboard focus with scripting off.
+
+   The panel opens UPWARD (bottom, not top) — this one lives at the bottom of
+   the page, so a downward panel would open into the viewport edge. */
+.legal-menu {
+  position:relative;
+  display:inline-block;
+  text-align:left
+}
+.legal-menu__trigger {
+  display:inline;
+  color:var(--brand);
+  font:inherit;
+  cursor:pointer;
+  list-style:none;
+  border-radius:4px
+}
+/* Both halves of killing the native disclosure triangle: Safari/old Chrome use
+   the pseudo-element, everyone else honours list-style on the summary. */
+.legal-menu__trigger::-webkit-details-marker {
+  display:none
+}
+.legal-menu__trigger::after {
+  content:"";
+  display:inline-block;
+  width:.42em;
+  height:.42em;
+  margin-left:.4em;
+  vertical-align:.08em;
+  border-right:1.5px solid currentColor;
+  border-bottom:1.5px solid currentColor;
+  transform:rotate(45deg);
+  /* Spun about the INK, not the box. The caret is two borders, so it fills the far
+     corner of its box: the ink's centre sits about 65% of the way across and down,
+     not at 50%. Flipping about the box centre therefore throws the caret upwards by
+     twice that offset, which is the lopsided pivot you see on the way up. The hero
+     picker's caret (.hp-slot__chev in hero-picker.css) corrects the same thing with a
+     translateY on the open state; moving the origin onto the ink is the same result
+     with nothing to keep in sync, and it leaves both ends of the transition a single
+     rotate() — which is what keeps the browser interpolating the angle rather than
+     decomposed matrices, the bug that spun that caret backwards through closed.
+     Its easing and duration are copied deliberately: the caret carries slightly past
+     the flip and settles, and is still turning as the panel lands, so the two read as
+     one gesture. */
+  transform-origin:65% 65%;
+  transition:transform .2s cubic-bezier(.32,1.35,.56,1)
+}
+.legal-menu[open] .legal-menu__trigger::after {
+  transform:rotate(225deg)
+}
+/* Back down the moment the close starts, not 220ms later when `open` finally goes.
+   legal-menu.js holds that attribute on for the length of the exit (see the panel
+   rules below), and the caret riding it made the menu look like it was still open
+   while it faded out. */
+.legal-menu[open][data-legal-menu-closing] .legal-menu__trigger::after {
+  transform:rotate(45deg)
+}
+/* A real outline, for the same reason .lang-switch__trigger:focus-visible has
+   one: a soft shadow over a light background composites to a contrast ratio
+   you cannot actually see (WCAG 1.4.11 wants 3:1). */
+.legal-menu__trigger:focus-visible {
+  outline:2px solid var(--primary);
+  outline-offset:2px
+}
+/* The same contrast fix the footer's other links get at this breakpoint (see the
+   `footer:not([class]) a` rule further up): #2563eb is 2.99:1 on the #b2c4f6 body
+   and fails the colour-contrast audit, --brand-deep is 5.98:1. The trigger is a
+   <summary>, not an <a>, so that rule never reached it — and it needs no !important
+   because, like the enterprise footer's links, it is not inline-styled. One rule here
+   covers the inline-styled pages and enterprise.html alike. */
+@media (max-width:768px) {
+  .legal-menu__trigger {
+    color:var(--brand-deep)
+  }
+}
+/* The panel is CENTRED on the trigger and animates in.
+   Two things make that harder than the .lang-switch menu below:
+
+   1. A closed <details> hides its content, which is a discrete change — there is
+      nothing for a transition to interpolate, so the rows popped in. The panel is
+      therefore kept rendered at all times and hidden by opacity/visibility instead,
+      exactly as .lang-switch__menu is. `visibility` is what keeps a closed panel out
+      of the tab order and the accessibility tree; it flips instantly on the way in
+      and is delayed to the end of the transition on the way out, so the fade is not
+      cut short. content-visibility is pinned in case an engine reaches for it.
+   2. Centring on the trigger overflows on a phone: the trigger is the FIRST item in
+      a centre-aligned footer line, so it sits well left of centre and half the panel
+      lands off-screen. --legal-menu-shift is the nudge scripts/legal-menu.js measures
+      and sets to pull it back inside; it is 0 the rest of the time, and 0 is also
+      what you get with the script blocked, which is the pre-existing behaviour rather
+      than a new failure. */
+.legal-menu__list {
+  position:absolute;
+  bottom:calc(100% + 8px);
+  left:50%;
+  /* Only as wide as the longest label. An absolutely positioned box already shrinks to
+     fit, so the 200px floor this used to carry was the only thing padding it out — and
+     the labels are eleven different lengths across the locales, which is exactly the
+     kind of thing a fixed width gets wrong in ten of them. */
+  width:max-content;
+  max-width:calc(100vw - 32px);
+  list-style:none;
+  margin:0;
+  padding:6px;
+  background:rgba(255,255,255,.92);
+  border:1px solid rgba(226,232,240,.9);
+  border-radius:12px;
+  box-shadow:0 10px 30px rgba(15,23,42,.14),0 2px 8px rgba(15,23,42,.08);
+  -webkit-backdrop-filter:blur(16px);
+  backdrop-filter:blur(16px);
+  z-index:1100;
+  content-visibility:visible;
+  opacity:0;
+  visibility:hidden;
+  transform:translateX(calc(-50% + var(--legal-menu-shift, 0px))) translateY(6px) scale(.96);
+  transform-origin:bottom center;
+  transition:opacity .16s ease,transform .22s cubic-bezier(.16,1,.3,1),visibility 0s linear .22s
+}
+.legal-menu[open] .legal-menu__list {
+  opacity:1;
+  visibility:visible;
+  transform:translateX(calc(-50% + var(--legal-menu-shift, 0px))) translateY(0) scale(1);
+  /* No delay on the way in: the panel has to be visible for the whole fade, where on
+     the way out it must stay visible until the fade has finished. */
+  transition:opacity .16s ease,transform .22s cubic-bezier(.16,1,.3,1),visibility 0s
+}
+/* The entry needs a declared starting point. A closed <details> does not render its
+   content at all, so on opening the panel goes straight from not-rendered to its
+   [open] style — there is no previous computed style to interpolate from, and the
+   transition above simply does not run. @starting-style supplies that first frame.
+   Engines without it fall back to what this looked like before: an instant open and
+   an animated close, which is the half that scripts/legal-menu.js drives. */
+@starting-style {
+  .legal-menu[open] .legal-menu__list {
+    opacity:0;
+    transform:translateX(calc(-50% + var(--legal-menu-shift, 0px))) translateY(6px) scale(.96)
+  }
+  .legal-menu[open] .legal-menu__list > li {
+    opacity:0;
+    transform:translateY(4px)
+  }
+}
+/* The exit. legal-menu.js holds `open` on for the length of this transition and adds
+   this attribute, because a <details> that loses `open` drops its content outright —
+   a discrete change with nothing to interpolate, which is why the panel used to
+   vanish rather than fade. Same values as the closed state above, so the entry
+   simply runs backwards. */
+.legal-menu[open][data-legal-menu-closing] .legal-menu__list {
+  opacity:0;
+  transform:translateX(calc(-50% + var(--legal-menu-shift, 0px))) translateY(6px) scale(.96)
+}
+.legal-menu[open][data-legal-menu-closing] .legal-menu__list > li {
+  opacity:0;
+  transform:translateY(4px);
+  /* The stagger is an entrance flourish; on the way out the rows leave together. */
+  transition-delay:0s
+}
+/* Without the script there is no measurement, so a centred panel would be clipped on
+   a phone. Left-aligned to the trigger is the one placement that is safe at every
+   width, and it is what the menu showed before this animation existed. legal-menu.js
+   sets data-legal-menu="ready" as it wires up — before any click can reach it — so in
+   practice this is the blocked-script path, not a flash on the way to the real one. */
+.legal-menu:not([data-legal-menu="ready"]) .legal-menu__list {
+  left:0;
+  transform:translateY(6px) scale(.96)
+}
+.legal-menu:not([data-legal-menu="ready"])[open] .legal-menu__list {
+  transform:none
+}
+/* The rows arrive a beat after the panel, top to bottom. Four steps of 22ms is short
+   enough to read as one movement rather than a queue. */
+.legal-menu__list > li {
+  opacity:0;
+  transform:translateY(4px);
+  transition:opacity .16s ease,transform .18s cubic-bezier(.16,1,.3,1)
+}
+.legal-menu[open] .legal-menu__list > li {
+  opacity:1;
+  transform:none
+}
+.legal-menu[open] .legal-menu__list > li:nth-child(1) { transition-delay:.04s }
+.legal-menu[open] .legal-menu__list > li:nth-child(2) { transition-delay:.062s }
+.legal-menu[open] .legal-menu__list > li:nth-child(3) { transition-delay:.084s }
+.legal-menu[open] .legal-menu__list > li:nth-child(4) { transition-delay:.106s }
+@media (prefers-reduced-motion:reduce) {
+  /* Keep the fade, drop the movement — and drop the stagger, which is motion spread
+     over time whether or not anything slides. */
+  .legal-menu__list,.legal-menu[open] .legal-menu__list,
+  .legal-menu[open][data-legal-menu-closing] .legal-menu__list,
+  .legal-menu__list > li,.legal-menu[open] .legal-menu__list > li,
+  .legal-menu[open][data-legal-menu-closing] .legal-menu__list > li {
+    transform:translateX(calc(-50% + var(--legal-menu-shift, 0px)));
+    transition-duration:.01s;
+    transition-delay:0s
+  }
+  .legal-menu__list > li,.legal-menu[open] .legal-menu__list > li,
+  .legal-menu[open][data-legal-menu-closing] .legal-menu__list > li {
+    transform:none
+  }
+  .legal-menu__list {
+    transition:opacity .01s linear,visibility 0s linear .01s
+  }
+  .legal-menu[open] .legal-menu__list {
+    transition:opacity .01s linear,visibility 0s
+  }
+}
+/* Two class selectors on purpose: .ent-site-footer a (enterprise.css) and its
+   mobile contrast override both target the footer's anchors, and this panel is
+   not part of that line of links. One class would lose to them. */
+.legal-menu .legal-menu__item {
+  display:block;
+  padding:9px 10px;
+  border-radius:8px;
+  font-size:13px;
+  font-weight:500;
+  color:#334155;
+  text-decoration:none;
+  white-space:nowrap;
+  transition:background .14s ease,color .14s ease
+}
+.legal-menu .legal-menu__item:hover,.legal-menu .legal-menu__item:focus-visible {
+  background:rgba(59,130,246,.1);
+  color:var(--brand-deep)
 }
 .lang-switch {
   position:relative;

@@ -116,6 +116,7 @@ const ALL_FACTORIES = [
   'gallery/delete-confirm.js#createDeleteConfirm',
   'gallery/rename.js#createRenameRow',
   'gallery/share-panel.js#createSharePanel',
+  'immersive-view.js#createImmersive',
   'api-keys/create-key-dialog.js#createKeyDialog',
   'profile-menu/api-keys-row.js#createApiSummary',
   'profile-menu/auth-modal.js#createAuthModal',

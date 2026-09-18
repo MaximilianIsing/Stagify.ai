@@ -1,5 +1,13 @@
-// Tier: markup drift guard — the shared site footer (Privacy · Terms · Status · ©),
+// Tier: markup drift guard — the shared site footer (Legal · About · Status · API · ©),
 // across every page that carries it.
+//
+// "Legal" is a <details> disclosure holding the four legal documents — Privacy Policy,
+// Terms of Service, Subprocessors, Enterprise MSA. It replaced the bare Privacy/Terms
+// pair, which spent two of the footer's five slots on the least-clicked links while the
+// two documents an enterprise review actually asks for were linked from nowhere but the
+// legal pages themselves. The anchors stay LITERAL inside the panel — helpers/nav-pages.js
+// identifies this footer by `href="privacy.html"`, and a JS-built menu would ship
+// untranslated (see the pure-string-transform note below).
 //
 // WHY THIS EXISTS
 // This is site-header-parity.test.js's argument, one block further down the page. The
@@ -110,12 +118,20 @@ test('enterprise.html is the only page with its own footer shape', () => {
   );
 });
 
-test('every site footer localizes all four strings and uses the shared year span', () => {
+test('every site footer localizes every string and uses the shared year span', () => {
   // Belt-and-braces over the parity check above: parity alone is satisfied by all six
   // pages being identically WRONG, which is exactly the state this change fixed.
   const required = [
+    // The four documents behind the "Legal" disclosure. Privacy and Terms moved INTO
+    // it; Subprocessors and the Enterprise MSA were previously linked from nowhere but
+    // the legal pages themselves.
+    'data-lang="footer.legal"',
     'data-lang="footer.privacy"',
     'data-lang="footer.terms"',
+    'data-lang="footer.subprocessors"',
+    'data-lang="footer.msa"',
+    'href="legal/subprocessors.html"',
+    'href="legal/enterprise-msa.html"',
     'data-lang="footer.status"',
     'data-lang="footer.copyright"',
     'class="footer-year"',
@@ -144,6 +160,16 @@ test('every page carrying the shared footer also loads footer-year.js', () => {
     .filter((p) => !p.html.includes('scripts/footer-year.js'))
     .map((p) => p.name);
   assert.deepEqual(missing, [], `pages with .footer-year but no footer-year.js: ${missing.join(', ')}`);
+});
+
+test('every page carrying the shared footer also loads legal-menu.js', () => {
+  // The Legal menu is a native <details>, so it opens and closes without this script —
+  // but Escape, the outside click and the arrow keys are all it, and a page that shipped
+  // the markup without the module would lose them silently.
+  const missing = footerPages()
+    .filter((p) => !p.html.includes('scripts/legal-menu.js'))
+    .map((p) => p.name);
+  assert.deepEqual(missing, [], `pages with the Legal menu but no legal-menu.js: ${missing.join(', ')}`);
 });
 
 test('every .footer-year span ships a literal year, not an empty placeholder', () => {

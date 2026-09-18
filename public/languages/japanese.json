@@ -1,39 +1,51 @@
 {
   "about": {
     "title": "Stagify.ai について",
-    "lede": "Stagify.ai は不動産のプロ向けの AI バーチャルステージングツールです。部屋の写真をアップロードすれば、数秒で家具を配置・模様替え・空室化できます。",
+    "lede": "不動産プロ向けの独立系 AI バーチャルステージング。",
     "who": {
       "heading": "私たちは誰か",
-      "body": "Stagify.ai は独立した企業です。製品はひとつだけ、住所もひとつだけ、<strong>stagify.ai</strong> です。再販業者でも、他のステージングツールのホワイトラベルでも、大企業の地域法人でもありません。チーム全体へのご連絡は <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> または <a href=\"tel:+19292514372\">(929) 251-4372</a> まで。"
+      "body": "<a href=\"index.html\">Stagify.ai</a> は独立した企業です。このツールは自分たちで作り、自分たちで運営しています。親会社はありませんし、他社の製品に名前だけ付け替えたものでもありません。"
     },
     "facts": {
       "foundedLabel": "設立",
       "founded": "2025年8月22日",
       "foundersLabel": "創業者",
-      "founders": "Maximilian Ising（開発・AI 責任者）、Lucas Shtainer（マーケティング責任者）、Ryan Croman（アウトリーチ責任者）",
       "siteLabel": "ウェブサイト",
       "contactLabel": "お問い合わせ"
     },
     "notAffiliated": {
-      "heading": "他の「Stagify」製品とは無関係です",
-      "body": "似た名前を使う無関係の企業が複数あります：<strong>stagify.io</strong>、<strong>stagify.app</strong>、<strong>stagify.online</strong>、<strong>stagifyai.com</strong>。Stagify.ai はいずれとも提携・パートナーシップ・資本関係・推奨関係を持たず、人員もコードもデータも共有していません。",
-      "consequence": "これらのサイトに掲載されたレビュー、価格、機能、障害情報、ポリシーは Stagify.ai のものではありません。バーチャルステージングツールを比較する際は、アドレスバーのドメインをご確認ください。当社のドメインは .ai で終わります。"
+      "note": "stagify.io、stagify.app、stagify.online、stagifyai.com とは無関係です（名前が似ているだけの別会社です）。"
     },
     "product": {
       "heading": "私たちがつくるもの",
-      "body": "Stagify.ai は 1 枚の写真から室内をステージングし、対話型デザイナーで部屋を塗り替え・模様替えし、特定の領域をピクセル単位でマスクして再ステージングし、外観写真を整えます。すべてブラウザ上で 11 言語に対応し、無料枠、<a href=\"stagify-plus.html\">Stagify+</a> サブスクリプション、<a href=\"developers.html\">公開 API</a> をご用意しています。生成した画像の権利はすべてお客様のものです。"
+      "body": "<a href=\"index.html\">Stagify.ai</a> は 1 枚の写真から室内をステージングし、対話型デザイナーで部屋を塗り替え・模様替えし、特定の領域をピクセル単位でマスクして再ステージングし、外観写真を整えます。すべてブラウザ上で 11 言語に対応し、無料枠、<a href=\"stagify-plus.html\">Stagify+</a> サブスクリプション、<a href=\"developers.html\">公開 API</a> をご用意しています。生成した画像の権利はすべてお客様のものです。"
     },
     "find": {
       "heading": "私たちの公式アカウント",
-      "body": "運用しているのは以下のアカウントのみです。ここに載っていないアカウントは当社のものではありません。",
       "blog": "ブログ"
     },
     "faq": {
       "heading": "よくある質問",
       "q1": "Stagify.ai は stagify.io、stagify.app、stagify.online、stagifyai.com と同じ会社ですか？",
-      "a1": "いいえ。Stagify.ai は独立した企業で、stagify.ai のドメインでのみ事業を行っています。stagify.io、stagify.app、stagify.online、stagifyai.com とは提携も推奨も関係もなく、これらは名前が似ているだけの無関係な企業です。これらのサイトのレビュー、価格、機能、ポリシーは Stagify.ai を説明するものではありません。",
-      "q2": "Stagify.ai を設立し運営しているのは誰ですか？",
-      "a2": "Stagify.ai は 2025 年 8 月 22 日に Maximilian Ising（共同創業者、開発・AI 責任者）、Lucas Shtainer（共同創業者、マーケティング責任者）、Ryan Croman（共同創業者、アウトリーチ責任者）が設立しました。当社は stagify.ai で 1 つの製品のみを運営しており、team@stagify.ai でご連絡いただけます。"
+      "a1": "どれも違います。名前が同じだけで、別の会社です。あちらの価格や機能、サポートの話は当社には当てはまりません。",
+      "q2": "正しいサイトかどうか、どう確かめますか？",
+      "a2": "アドレスバーを見てください。当社のドメインは .ai で終わります。",
+      "q3": "ほかに製品やドメインはありますか？",
+      "a3": "ありません。作っているのはひとつだけ、置いてある場所もひとつだけです。よそで Stagify という名前を見かけても当社のものではありません。",
+      "q4": "Stagify.ai を作ったのは誰で、今は誰が運営していますか？",
+      "a4": "Maximilian Ising、Lucas Shtainer、Ryan Croman の3人が2025年8月に始め、今も3人で運営しています。",
+      "q5": "本当に公式のアカウントはどれですか？",
+      "a5": "上にリンクしたものだけです。その一覧にないアカウントは当社が作ったものではありません。",
+      "q6": "人と直接やり取りするには？",
+      "a6": "team@stagify.ai までメールするか、(929) 251-4372 にお電話ください。",
+      "q7": "私の写真で AI モデルを学習させていますか？",
+      "a7": "いいえ。アップロードした画像も生成した画像も、当社モデルの学習には一切使いません。利用している AI 提供元も、既定では API のデータを学習に使いません。<a href=\"privacy.html\">プライバシーポリシー</a>の第5項に記載しています。",
+      "q8": "サブスクリプションはいつでも解約できますか？",
+      "a8": "はい、いつでも。支払い済みの期間の終わりまでは使え、その後は更新されません。",
+      "q9": "アップロードしたものを他に誰が見られますか？",
+      "a9": "サービス運営に必要な事業者だけです。AI モデル、ホスティング、決済、メールで、いずれも<a href=\"legal/subprocessors.html\">再委託先ページ</a>に名前を掲載し、データ処理契約を結んでいます。",
+      "q10": "不動産会社がチーム全体で導入できますか？",
+      "a10": "はい。<a href=\"enterprise.html\">Enterprise</a> は会社のメールドメイン全体を従量制で請求します。法務が必要とする場合は MSA も締結できます。"
     }
   },
   "meta": {
@@ -230,6 +242,7 @@
   "navigation": {
     "home": "ホーム",
     "blog": "ブログ",
+    "readInLanguage": "この記事を他の言語で読む",
     "tryFree": "Stagify を無料で試す",
     "about": "私たちについて",
     "pdfTo3d": "AIデザイナー",
@@ -709,7 +722,8 @@
         "exterior": "エクステリアスタジオ",
         "gallery": "ギャラリー"
       },
-      "fullscreen": "全画面表示"
+      "fullscreen": "全画面表示",
+      "rotate": "横向きにする"
     },
     "staging": {
       "title": "空室を数秒でステージング",
@@ -1380,6 +1394,9 @@
   "footer": {
     "privacy": "プライバシーポリシー",
     "terms": "利用規約",
+    "legal": "法的情報",
+    "subprocessors": "再委託先",
+    "msa": "エンタープライズ基本契約",
     "contact": "お問い合わせ",
     "status": "ステータス",
     "developers": "API",

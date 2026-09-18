@@ -1,4 +1,4 @@
-// Stagify.ai — `html.has-session`, set before the first paint.
+// Stagify.ai — `html.has-session` and `html.has-free-plan`, set before the first paint.
 //
 // The top nav's Gallery tab ships HIDDEN, because the gallery is one person's own staged
 // history and to a signed-out visitor it is not a locked feature to advertise — it is a
@@ -10,12 +10,23 @@
 // trip after DOMContentLoaded — so a signed-in visitor watched the tab pop into the nav a
 // moment after the page settled, shoving the links beside it along as it went.
 //
-// Whether somebody is signed in is knowable synchronously, unlike their PLAN: the bearer
-// token is in localStorage and the nav only asks "is there a session", so one class set
-// here closes the gap entirely. It is a presence check on the token, NOT a verification of
-// it — an expired or revoked token still arms this, and the tab is then taken away when
-// /api/auth/me refuses it. Showing a nav link is not access; gallery-gate.js and the
-// server own that.
+// Whether somebody is signed in is knowable synchronously: the bearer token is in
+// localStorage and the nav only asks "is there a session", so one class set here closes the
+// gap entirely. It is a presence check on the token, NOT a verification of it — an expired
+// or revoked token still arms this, and the tab is then taken away when /api/auth/me
+// refuses it. Showing a nav link is not access; gallery-gate.js and the server own that.
+//
+// `html.has-free-plan` is the same trick one step further, for the home page's "Try Stagify+
+// today. Upgrade" line under the hero CTA (index.html + styles/index.css). That line waited on
+// BOTH /api/auth/me and app.js — which loads after `load` — so it arrived a beat after the
+// page had settled and grew the hero out from under whatever the visitor was reading. The plan
+// is not knowable from the token, but auth.js mirrors the last known one into `stagifyPlan`
+// (its PLAN_KEY) for exactly this reason, so the pre-paint guess is free.
+//
+// The plan must be PRESENT and not 'pro' — a missing cache means "unknown", not "free", and
+// flashing an upgrade pitch at a paying subscriber is worse than the shift this removes. As
+// with the token above, this authorizes nothing: the line is a link to a public marketing
+// page, and hero-stats.js takes the class away again when /api/auth/me disagrees.
 //
 // Loaded as a render-blocking <script src> (no defer/module) because a deferred script
 // runs after the paint this exists to beat, and as a file rather than inline because the
@@ -25,10 +36,15 @@
 // delay discovery of the very stylesheets first paint is waiting on.
 (function () {
   var signedIn = false;
+  var plan = null;
   try {
     signedIn = !!localStorage.getItem('stagifyAuthToken');
+    plan = localStorage.getItem('stagifyPlan');
   } catch (e) {
-    /* storage unavailable — fall through to the shipped markup, which hides the tab */
+    /* storage unavailable — fall through to the shipped markup, which hides both */
   }
-  if (signedIn) document.documentElement.className += ' has-session';
+  var cls = '';
+  if (signedIn) cls += ' has-session';
+  if (signedIn && plan && plan !== 'pro') cls += ' has-free-plan';
+  if (cls) document.documentElement.className += cls;
 })();

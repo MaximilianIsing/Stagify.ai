@@ -113,9 +113,16 @@
   box-shadow: 0 16px 44px rgba(30, 58, 138, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
+/* One row, always: the six tabs split the bar evenly (flex: 1 1 0 below) so it
+   spans the panel with no dead space on the right, and never wraps to a second
+   row no matter how long a locale's labels are. The <=560px block overrides this
+   back to a 2x3 grid for phones. */
 .guide-demo-picker {
-  display: inline-flex;
-  flex-wrap: wrap;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  width: 100%;
+  box-sizing: border-box;
   gap: 6px;
   padding: 6px;
   margin-bottom: 16px;
@@ -126,9 +133,16 @@
 }
 .guide-demo-picker__btn {
   display: inline-flex;
+  flex: 1 1 0;
+  min-width: 0;
   align-items: center;
+  justify-content: center;
+  text-align: center;
+  /* Last resort for a long single word in a locale like Italian or Russian
+     ("mascheratura") in a narrow window: break it rather than spill out of the pill. */
+  overflow-wrap: anywhere;
   gap: 8px;
-  padding: 11px 16px;
+  padding: 11px 10px;
   border: 1px solid transparent;
   border-radius: 10px;
   font-family: inherit;
@@ -141,6 +155,7 @@
     border-color 0.18s ease, transform 0.18s ease;
 }
 .guide-demo-picker__btn img {
+  flex: none;
   border-radius: 4px;
   transition: transform 0.18s ease;
 }
@@ -190,6 +205,87 @@
 .guide-demo-panel.is-entering {
   animation: guideDemoIn 0.36s cubic-bezier(0.16, 0.84, 0.44, 1);
 }
+
+/* --- Loading skeleton -----------------------------------------------------
+   demo-data.js and demo-player.js are injected after `load` (guides-deferred.js),
+   so between first paint and the mount this panel holds nothing but the hidden
+   fullscreen button — zero height. The frame then appeared all at once and shoved
+   the rest of the page down. This reserves the frame's exact box up front: same
+   radius, border and shadow as .sdp__frame, at the walkthrough's own aspect ratio
+   (--demo-ar, set per panel in guides.html and checked against demo-data.js by
+   test/frontend/guides/guides-skeleton.test.js).
+
+   It is light, not the frame's near-black --frame-bg: every walkthrough opens on a
+   screenshot of the app, which is white on pale blue, so a dark plate would be a
+   bigger flash than the pop-in it replaces. A shimmer sweeps it and a spinner sits
+   in the middle, so the wait reads as loading rather than as a dead rectangle.
+
+   The 21px of padding below is the step-dots row (9px + its 12px margin): part of
+   the player's height, so it has to be part of the reservation or the mount still
+   jumps. It sits on the panel rather than as a margin under the pseudo-element,
+   whose bottom margin would collapse straight out of the panel and reserve nothing.
+
+   guides.js adds .is-mounted once the player is in, which drops both pseudo-elements
+   — the frame is then the thing holding the height, at the same size. */
+.guide-demo-panel::before {
+  content: '';
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  aspect-ratio: var(--demo-ar, 1.7778);
+  border-radius: 16px;
+  border: 1px solid rgba(30, 58, 138, 0.08);
+  box-shadow: 0 18px 48px rgba(30, 58, 138, 0.18);
+  /* A band narrower than the box, swept across it. The band has to be SMALLER than
+     the box for percentage background-position to read as "left edge → right edge";
+     at 220% wide the bright part spent the whole cycle off-screen. */
+  background:
+    linear-gradient(
+        /* 90deg, not a tilt: an angled gradient inside a no-repeat tile leaves the
+           tile's own left and right edges visible as two hard seams. */
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.85) 50%,
+        rgba(255, 255, 255, 0) 100%
+      )
+      no-repeat -25% 0 / 45% 100%,
+    linear-gradient(160deg, #eef3ff 0%, #dde6fa 55%, #e7edfd 100%);
+  animation: guideDemoSkeleton 1.6s linear infinite;
+}
+.guide-demo-panel:not(.is-mounted) {
+  padding-bottom: 21px;
+}
+/* The spinner, centred on the FRAME — the panel is 21px taller than it (the dots
+   row reserved above), so splitting the panel would sit it low by half of that. */
+.guide-demo-panel::after {
+  content: '';
+  position: absolute;
+  top: calc(50% - 10.5px);
+  left: 50%;
+  width: 38px;
+  height: 38px;
+  margin: -19px 0 0 -19px;
+  border-radius: 50%;
+  border: 3px solid rgba(30, 58, 138, 0.16);
+  border-top-color: var(--brand, #2563eb);
+  animation: guideDemoSpin 0.8s linear infinite;
+}
+.guide-demo-panel.is-mounted::before,
+.guide-demo-panel.is-mounted::after {
+  content: none;
+}
+/* The fullscreen control would otherwise float over the skeleton, where it does
+   nothing: there is no player to make fullscreen yet. */
+.guide-demo-panel:not(.is-mounted) .guide-demo-fs {
+  display: none;
+}
+@keyframes guideDemoSkeleton {
+  from { background-position: -25% 0; }
+  to { background-position: 125% 0; }
+}
+@keyframes guideDemoSpin {
+  to { transform: rotate(360deg); }
+}
 @keyframes guideDemoIn {
   from { opacity: 0; transform: translateY(10px) scale(0.99); }
   to { opacity: 1; transform: none; }
@@ -234,7 +330,8 @@
   position: absolute;
   inset: -5px;
 }
-.guide-demo-fs__close {
+.guide-demo-fs__close,
+.guide-demo-fs__rotate {
   display: none;
 }
 .guide-demo-fs.is-fs .guide-demo-fs__open {
@@ -242,6 +339,20 @@
 }
 .guide-demo-fs.is-fs .guide-demo-fs__close {
   display: block;
+}
+/* On a phone this is not a fullscreen toggle at all — it opens the rotate-to-landscape
+   view (scripts/immersive-view.js), so it shows a phone-rotating glyph instead of the
+   expand arrows. `.is-mobile-rotate` is added by that module from PHONE_QUERY and
+   re-evaluated when the query flips. Once the view is open `.is-fs` takes the glyph
+   back, because the button is then a close affordance. Mirrors home.css. */
+.guide-demo-fs.is-mobile-rotate .guide-demo-fs__open {
+  display: none;
+}
+.guide-demo-fs.is-mobile-rotate .guide-demo-fs__rotate {
+  display: block;
+}
+.guide-demo-fs.is-mobile-rotate.is-fs .guide-demo-fs__rotate {
+  display: none;
 }
 /* Revealed on hover, and always for keyboard users, so it does not sit on the
    capture while you are reading the step it points at. */
@@ -263,6 +374,15 @@
 .guide-demo-fs:focus-visible {
   outline: 3px solid var(--brand);
   outline-offset: 2px;
+}
+/* [hidden] is a UA rule at (0,0,0), which the author `display: inline-flex` above beats
+   outright — so guides.js's `btn.hidden = true` did nothing at all, and the `@media
+   (hover: none)` rule above then forced the dead button visible. home.css has carried
+   this restatement for its twin since the same bug was found there; this copy was
+   missing, which is why the guides control was a permanent 44x44 no-op on every
+   iPhone. See demo-player.css's .sdp__btn[hidden] and the other copies. */
+.guide-demo-fs[hidden] {
+  display: none;
 }
 
 /* --- The fullscreen presentation ---
@@ -320,6 +440,71 @@
   right: 24px;
   opacity: 1;
 }
+
+/* --- The immersive presentation ---
+   The class-path twin of the `:fullscreen` block above, for the rotate-to-landscape
+   view phones get instead: scripts/immersive-view.js portals this panel into an
+   overlay on <body> rather than into the browser's top layer.
+
+   DELIBERATELY DUPLICATED rather than folded into the selector list above — a CSS
+   selector list is invalidated WHOLE if one component fails to parse, and the
+   browsers needing this path are exactly the ones that may not parse unprefixed
+   `:fullscreen`. A drift test asserts the two blocks declare the same properties.
+
+   `100vh` becomes `var(--imv-box)` — the stage's own height in px, which under
+   rotation is the viewport's WIDTH. Ordered after `.is-active` for the same reason
+   the block above is: equal specificity, so source order is what makes `display`
+   land. It also has to beat the `display: none` on an inactive panel, since a tab
+   can change underneath an open overlay. */
+.guide-demo-panel.is-immersive {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 3vmin;
+  /* --frame-bg is the player's own frame colour, set on this element by .sdp. */
+  background: var(--frame-bg, #0b1020);
+  box-sizing: border-box;
+  opacity: 1;
+  transform: none;
+  animation: none;
+}
+/* Derive the frame's width from the available HEIGHT and let aspect-ratio compute
+   the height back. Width-driven (`width:100%`) overflows — a 16:9 frame across a
+   16:10 screen is taller than the screen and the bottom is cut off — while a fixed
+   `height:100%` with `max-width:100%` keeps the height and CROPS instead, since the
+   step images are object-fit:cover. This letterboxes either way. `--ar` is the
+   ratio the player writes onto this same element; 34px covers the dot row. */
+.guide-demo-panel.is-immersive .sdp__frame {
+  width: min(100%, calc((var(--imv-box, 100vh) - 6vmin - 34px) * var(--ar, 1.7778)));
+  height: auto;
+  max-width: 100%;
+  /* No shrinking. The width above already guarantees the frame fits, and a flex
+     item that carries an aspect-ratio does not letterbox when it shrinks — it
+     keeps the width and squashes the height, and the step images (object-fit:
+     cover) are then cropped. Overflow would at least be visible; silent
+     distortion would not. */
+  flex: 0 0 auto;
+}
+/* The dots are brand blue for the page's light background and all but vanish on
+   the fullscreen backdrop. */
+.guide-demo-panel.is-immersive .sdp__dot {
+  background: rgba(255, 255, 255, 0.32);
+}
+.guide-demo-panel.is-immersive .sdp__dot:hover {
+  background: rgba(255, 255, 255, 0.6);
+}
+.guide-demo-panel.is-immersive .sdp__dot.is-active {
+  background: var(--bg-elevated);
+}
+.guide-demo-panel.is-immersive .guide-demo-fs {
+  top: 24px;
+  right: 24px;
+  opacity: 1;
+}
+
 
 /* --- Troubleshooting: sticky topic rail + one column of cards ------------- */
 
@@ -524,6 +709,14 @@
     margin-top: 48px;
   }
 }
+/* Below ~700px six equal columns get too narrow for a word like "Masking" to sit
+   beside its icon, so fall back to the phone grid early instead of overflowing. */
+@media (max-width: 700px) {
+  .guide-demo-picker {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
 @media (max-width: 560px) {
   /* Force a fixed 2-wide × 3-tall grid so every tab is equal width instead of
      wrapping based on its label length. */
@@ -548,6 +741,10 @@
   .guide-demo-panel.is-entering {
     animation: none;
   }
+  /* A perpetual shimmer and a spinning ring are exactly the kind of motion this
+     asks us to drop; the reserved box stays, which is the part that matters. */
+  .guide-demo-panel::before,
+  .guide-demo-panel::after { animation: none; }
   .guide-demo-picker__btn,
   .guide-demo-picker__btn img,
   .guides-rail__link,

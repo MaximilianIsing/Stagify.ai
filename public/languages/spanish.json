@@ -1,39 +1,51 @@
 {
   "about": {
     "title": "Sobre Stagify.ai",
-    "lede": "Stagify.ai es una herramienta de home staging virtual con IA para profesionales inmobiliarios. Sube la foto de una habitación y obtenla amueblada, rediseñada o vaciada en segundos.",
+    "lede": "Home staging virtual con IA, independiente, para profesionales inmobiliarios.",
     "who": {
       "heading": "Quiénes somos",
-      "body": "Stagify.ai es una empresa independiente. Desarrollamos y operamos un único producto, y vive en una sola dirección: <strong>stagify.ai</strong>. No somos revendedores, ni una marca blanca de otra herramienta de staging, ni la filial regional de un grupo mayor. Puedes escribir a todo el equipo en <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> o llamar al <a href=\"tel:+19292514372\">(929) 251-4372</a>."
+      "body": "<a href=\"index.html\">Stagify.ai</a> es una empresa independiente. Creamos la herramienta nosotros mismos y la gestionamos nosotros mismos. No hay ninguna empresa matriz detrás, y esto no es el producto de otro con nuestro nombre encima."
     },
     "facts": {
       "foundedLabel": "Fundación",
       "founded": "22 de agosto de 2025",
       "foundersLabel": "Fundadores",
-      "founders": "Maximilian Ising (director de Desarrollo e IA), Lucas Shtainer (director de Marketing), Ryan Croman (director de Difusión)",
       "siteLabel": "Sitio web",
       "contactLabel": "Contacto"
     },
     "notAffiliated": {
-      "heading": "Sin relación con otros productos llamados “Stagify”",
-      "body": "Varias empresas sin relación con nosotros usan un nombre parecido: <strong>stagify.io</strong>, <strong>stagify.app</strong>, <strong>stagify.online</strong> y <strong>stagifyai.com</strong>. Stagify.ai no tiene con ninguna de ellas vínculo, sociedad, propiedad ni respaldo alguno, y no comparte personal, código ni datos con ellas.",
-      "consequence": "Las reseñas, precios, funciones, caídas y políticas publicadas en esos sitios no describen a Stagify.ai. Si estás comparando herramientas de staging virtual, mira el dominio en la barra de direcciones: el nuestro termina en .ai."
+      "note": "Sin relación con stagify.io, stagify.app, stagify.online ni stagifyai.com: empresas ajenas con nombres parecidos."
     },
     "product": {
       "heading": "Qué hacemos",
-      "body": "Stagify.ai amuebla interiores a partir de una sola foto, repinta y redecora habitaciones mediante un diseñador conversacional, enmascara y recrea zonas concretas píxel a píxel y limpia las tomas de exteriores. Funciona en el navegador en once idiomas, con un plan gratuito, la suscripción <a href=\"stagify-plus.html\">Stagify+</a> y una <a href=\"developers.html\">API pública</a>. Conservas todos los derechos sobre cada imagen que generes."
+      "body": "<a href=\"index.html\">Stagify.ai</a> amuebla interiores a partir de una sola foto, repinta y redecora habitaciones mediante un diseñador conversacional, enmascara y recrea zonas concretas píxel a píxel y limpia las tomas de exteriores. Funciona en el navegador en once idiomas, con un plan gratuito, la suscripción <a href=\"stagify-plus.html\">Stagify+</a> y una <a href=\"developers.html\">API pública</a>. Conservas todos los derechos sobre cada imagen que generes."
     },
     "find": {
       "heading": "Dónde encontrarnos",
-      "body": "Estas son las únicas cuentas que gestionamos. Una cuenta que no aparezca aquí no es nuestra.",
-      "blog": "Nuestro blog"
+      "blog": "Nuestro Blog"
     },
     "faq": {
       "heading": "Preguntas frecuentes",
       "q1": "¿Stagify.ai es la misma empresa que stagify.io, stagify.app, stagify.online o stagifyai.com?",
-      "a1": "No. Stagify.ai es una empresa independiente y opera únicamente en el dominio stagify.ai. No está afiliada, respaldada ni relacionada con stagify.io, stagify.app, stagify.online o stagifyai.com, que son negocios sin relación con nombres parecidos. Las reseñas, precios, funciones y políticas publicadas en esos sitios no describen a Stagify.ai.",
-      "q2": "¿Quién fundó y dirige Stagify.ai?",
-      "a2": "Stagify.ai se fundó el 22 de agosto de 2025 por Maximilian Ising (cofundador, director de Desarrollo e IA), Lucas Shtainer (cofundador, director de Marketing) y Ryan Croman (cofundador, director de Difusión). La empresa opera un único producto, en stagify.ai, y se la puede contactar en team@stagify.ai."
+      "a1": "No, ninguna de ellas. Misma palabra, empresas distintas. Lo que publiquen sobre precios, funciones o servicio no dice nada de nosotros.",
+      "q2": "¿Cómo sé que estoy en el sitio correcto?",
+      "a2": "Mira la barra de direcciones. La nuestra termina en .ai.",
+      "q3": "¿Tenéis otros productos o dominios?",
+      "a3": "No. Hacemos una sola cosa y la tenemos en un solo sitio. Cualquier cosa llamada Stagify en otra parte no es nuestra.",
+      "q4": "¿Quién fundó Stagify.ai y quién la dirige ahora?",
+      "a4": "Maximilian Ising, Lucas Shtainer y Ryan Croman la empezaron en agosto de 2025, y los tres seguimos al frente.",
+      "q5": "¿Qué cuentas son realmente vuestras?",
+      "a5": "Las enlazadas arriba y ninguna más. Si una cuenta no está en esa lista, no la hemos creado nosotros.",
+      "q6": "¿Cómo hablo con una persona?",
+      "a6": "Escribe a team@stagify.ai o llama al (929) 251-4372.",
+      "q7": "¿Entrenáis modelos de IA con mis fotos?",
+      "a7": "No. Tus imágenes subidas y las que generas nunca se usan para entrenar nuestros modelos, y los proveedores de IA que utilizamos no entrenan con datos de su API por defecto. La sección 5 de la <a href=\"privacy.html\">Política de Privacidad</a> lo detalla.",
+      "q8": "¿Puedo cancelar la suscripción cuando quiera?",
+      "a8": "Sí, cuando quieras. Sigue funcionando hasta el final del periodo que ya has pagado y deja de renovarse.",
+      "q9": "¿Quién más puede ver lo que subo?",
+      "a9": "Solo los proveedores necesarios para que el servicio funcione: los modelos de IA, el alojamiento, los pagos y el correo. Todos están nombrados en la <a href=\"legal/subprocessors.html\">página de subencargados</a>, con acuerdos de tratamiento de datos.",
+      "q10": "¿Puede una agencia comprarlo para todo un equipo?",
+      "a10": "Sí. <a href=\"enterprise.html\">Enterprise</a> factura por uso en todo tu dominio de correo, con un MSA firmable si tu equipo legal lo necesita."
     }
   },
   "meta": {
@@ -230,6 +242,7 @@
   "navigation": {
     "home": "Inicio",
     "blog": "Blog",
+    "readInLanguage": "Lee esto en otro idioma",
     "tryFree": "Prueba Stagify gratis",
     "about": "Acerca de",
     "pdfTo3d": "Diseñador IA",
@@ -709,7 +722,8 @@
         "exterior": "Estudio de exteriores",
         "gallery": "Galería"
       },
-      "fullscreen": "Pantalla completa"
+      "fullscreen": "Pantalla completa",
+      "rotate": "Girar a horizontal"
     },
     "staging": {
       "title": "Amuebla una habitación vacía en segundos",
@@ -1380,6 +1394,9 @@
   "footer": {
     "privacy": "Política de privacidad",
     "terms": "Términos de servicio",
+    "legal": "Legal",
+    "subprocessors": "Subencargados",
+    "msa": "MSA Enterprise",
     "contact": "Contacto",
     "status": "Estado",
     "developers": "API",

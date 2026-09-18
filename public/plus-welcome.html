@@ -100,9 +100,15 @@
     <canvas id="pw-confetti" aria-hidden="true"></canvas>
 
     <footer style="text-align:center;padding:20px 16px 28px;font-size:13px;color:#374151;">
-      <a href="privacy.html" style="color:#2563eb;text-decoration:none;" data-lang="footer.privacy">Privacy Policy</a>
-      &nbsp;·&nbsp;
-      <a href="terms.html" style="color:#2563eb;text-decoration:none;" data-lang="footer.terms">Terms of Service</a>
+      <details class="legal-menu" data-legal-menu>
+        <summary class="legal-menu__trigger" data-lang="footer.legal">Legal</summary>
+        <ul class="legal-menu__list">
+          <li><a class="legal-menu__item" href="privacy.html" data-lang="footer.privacy">Privacy Policy</a></li>
+          <li><a class="legal-menu__item" href="terms.html" data-lang="footer.terms">Terms of Service</a></li>
+          <li><a class="legal-menu__item" href="legal/subprocessors.html" data-lang="footer.subprocessors">Subprocessors</a></li>
+          <li><a class="legal-menu__item" href="legal/enterprise-msa.html" rel="nofollow" data-lang="footer.msa">Enterprise MSA</a></li>
+        </ul>
+      </details>
       &nbsp;·&nbsp;
       <a href="about.html" style="color:#2563eb;text-decoration:none;" data-lang="navigation.about">About</a>
       &nbsp;·&nbsp;
@@ -119,6 +125,7 @@
     <script type="module" src="scripts/aurora-scrollbar.js"></script>
     <script type="module" src="scripts/card-spotlight.js"></script>
     <script type="module" src="scripts/footer-year.js"></script>
+    <script type="module" src="scripts/legal-menu.js"></script>
     <script type="module" src="scripts/plus-welcome-confetti.js"></script>
   </body>
 </html>

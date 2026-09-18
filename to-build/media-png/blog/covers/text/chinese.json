@@ -1,0 +1,84 @@
+{
+  "cover-7": {
+    "eyebrow": "秋季挂牌时间线",
+    "months": [
+      "8月",
+      "9月",
+      "10月"
+    ]
+  },
+  "cover-9": {
+    "eyebrow": "每张软装图",
+    "was": "$16 至 $75",
+    "now": "$0",
+    "nowCaption": "免费方案",
+    "footnote": "无水印 · 全分辨率 · 可自由发布"
+  },
+  "cover-10": {
+    "eyebrow": "信息披露",
+    "headline": "谁真的强制要求",
+    "rows": [
+      {
+        "label": "加利福尼亚",
+        "value": "已生效"
+      },
+      {
+        "label": "威斯康星",
+        "value": "2027年1月"
+      },
+      {
+        "label": "其他所有地区",
+        "value": "你的 MLS"
+      }
+    ]
+  },
+  "cover-11": {
+    "forSale": "出售",
+    "byOwner": "业主自售",
+    "strapline": "成交靠照片"
+  },
+  "cover-12": {
+    "eyebrow": "期房",
+    "figure": "77%",
+    "rest": "在售新房尚未完工"
+  },
+  "cover-13": {
+    "eyebrow": "开发者 API",
+    "headline": "一次 HTTP 调用，一张软装成图。",
+    "rows": [
+      {
+        "label": "每张图片",
+        "value": "$0.15"
+      },
+      {
+        "label": "订阅",
+        "value": "无"
+      },
+      {
+        "label": "轮询队列",
+        "value": "无"
+      }
+    ]
+  },
+  "cover-14": {
+    "eyebrow": "布置一套空房",
+    "headline": "实体布置每月都要收费。虚拟布置分文不收。",
+    "install": "布置费 $4,000",
+    "monthly": "此后每滞销一个月 +$900",
+    "physical": {
+      "value": "$6,700",
+      "label": "实体布置"
+    },
+    "virtual": {
+      "value": "$0",
+      "label": "虚拟布置"
+    },
+    "axis": "挂牌天数"
+  },
+  "cover-15": {
+    "eyebrow": "家具移除",
+    "headline": "先把原来的家具清空。",
+    "captionLeft": "拍摄原图",
+    "captionRight": "已清空，可直接软装"
+  }
+}

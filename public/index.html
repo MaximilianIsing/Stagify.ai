@@ -118,6 +118,10 @@
     <link rel="stylesheet" href="styles/auth.css" media="print" data-lazy-css>
     <link rel="stylesheet" href="styles/home-text-animate.css" media="print" data-lazy-css>
     <link rel="stylesheet" href="styles/demo-player.css" media="print" data-lazy-css>
+    <!-- immersive.css styles the rotate-to-landscape overlay, which does not exist in
+         the DOM until someone taps the control on a phone. Nothing on first paint
+         depends on it. -->
+    <link rel="stylesheet" href="styles/immersive.css" media="print" data-lazy-css>
     <!-- faq-plan.css is index-only ON PURPOSE: guides.html reuses .faq-accordion /
          .faq-q for its 17 troubleshooting items and must not download a floor plan it
          never draws. Loading it late is safe — #faq is far below the fold AND inside a
@@ -128,6 +132,7 @@
       <link rel="stylesheet" href="styles/auth.css">
       <link rel="stylesheet" href="styles/home-text-animate.css">
       <link rel="stylesheet" href="styles/demo-player.css">
+      <link rel="stylesheet" href="styles/immersive.css">
       <link rel="stylesheet" href="styles/faq-plan.css">
       <!-- home.css hides every .reveal block until home-reveal.js un-hides it, so
            without this the whole page below the hero is invisible with JS off.
@@ -423,8 +428,15 @@
           <!-- Positioned against the canvas rather than laid out in a rail. It briefly shared
                a flex row with the stat pills, and a pill plus a button is wider than a 326px
                phone canvas once the label is "Показать оригинал" — the button ran off the
-               right edge. On its own, absolutely placed, it cannot. -->
-          <button type="button" class="hp-original" id="hero-original-btn"><span class="hp-original__icon" aria-hidden="true"></span><span class="hp-original__label" data-lang="hero.seeOriginal">See original</span></button>
+               right edge. On its own, absolutely placed, it cannot.
+
+               BOTH labels ship, stacked in one grid cell by .hp-original__label, and only the
+               one for the photo on screen is visible. That is what holds the pill at a single
+               width across the toggle instead of letting it snap narrower on "See staged" —
+               it is sized by the WIDER of the pair, which is the staged one in Chinese,
+               French, Japanese and Korean. Keep it on one line: whitespace between these
+               inline spans would show up inside the pill. -->
+          <button type="button" class="hp-original" id="hero-original-btn"><span class="hp-original__icon" aria-hidden="true"></span><span class="hp-original__label"><span class="hp-original__word is-on" data-lang="hero.seeOriginal">See original</span><span class="hp-original__word" data-lang="hero.seeStaged">See staged</span></span></button>
 
           <!-- The picker’s only announcement. Everything this hero does on a pick is visual:
                the photo cross-fades and the list beside it rewrites, and a screen-reader user
@@ -486,7 +498,14 @@
               <div class="hero-ctas">
                 <div class="hero-cta-button-wrap">
                   <button id="hero-upload" class="btn btn-primary"><strong data-lang="hero.cta">Upload image for free</strong></button>
-                  <p id="hero-free-gens-today" class="hero-free-gens-today hidden" aria-live="polite"></p>
+                  <!-- The upgrade nudge for signed-in FREE accounts. Its copy ships here rather than
+                       being written in by JS, and it is shown/hidden by `html.has-free-plan` (set
+                       pre-paint in scripts/session-class.js, corrected by app/hero-stats.js once
+                       /api/auth/me answers) rather than by .hidden on the element itself — so the
+                       line is in the first paint for the people who get it instead of growing the
+                       hero a round trip late. data-lang-html because the sentence contains a link;
+                       that also gets it localized server-side for /es, /fr, … with no JS at all. -->
+                  <p id="hero-free-gens-today" class="hero-free-gens-today" aria-live="polite" data-lang-html="hero.freeGensUpgrade">Try Stagify+ today. <a class="hero-free-gens-upgrade" href="stagify-plus.html">Upgrade</a></p>
                 </div>
               </div>
             </div>
@@ -1057,6 +1076,10 @@
                         <button type="button" class="shw__fs" data-shw-fullscreen aria-pressed="false" data-lang-attr="home.showcase.fullscreen|aria-label" aria-label="Toggle fullscreen">
                           <svg class="shw__fs-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
                           <svg class="shw__fs-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h3V5M19 8h-3V5M5 16h3v3M19 16h-3v3"/></svg>
+                          <!-- The phone-rotate glyph: shown instead of the expand arrows on phones,
+                               where the control opens the landscape view rather than fullscreen. The
+                               tilt is counter-clockwise to match the rotate(90deg) in immersive.css. -->
+                          <svg class="shw__fs-rotate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8.5" y="2.5" width="7" height="13.5" rx="1.6" transform="rotate(-30 12 12)"/><path d="M4.6 15.8a8 8 0 0 0 13.3 4"/><path d="M18.6 15.9 18.1 20.1 14 19.4"/></svg>
                         </button>
                       </div>
                       <aside class="shw__aside">
@@ -1094,6 +1117,10 @@
                         <button type="button" class="shw__fs" data-shw-fullscreen aria-pressed="false" data-lang-attr="home.showcase.fullscreen|aria-label" aria-label="Toggle fullscreen">
                           <svg class="shw__fs-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
                           <svg class="shw__fs-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h3V5M19 8h-3V5M5 16h3v3M19 16h-3v3"/></svg>
+                          <!-- The phone-rotate glyph: shown instead of the expand arrows on phones,
+                               where the control opens the landscape view rather than fullscreen. The
+                               tilt is counter-clockwise to match the rotate(90deg) in immersive.css. -->
+                          <svg class="shw__fs-rotate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8.5" y="2.5" width="7" height="13.5" rx="1.6" transform="rotate(-30 12 12)"/><path d="M4.6 15.8a8 8 0 0 0 13.3 4"/><path d="M18.6 15.9 18.1 20.1 14 19.4"/></svg>
                         </button>
                       </div>
                       <aside class="shw__aside">
@@ -1130,6 +1157,10 @@
                         <button type="button" class="shw__fs" data-shw-fullscreen aria-pressed="false" data-lang-attr="home.showcase.fullscreen|aria-label" aria-label="Toggle fullscreen">
                           <svg class="shw__fs-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
                           <svg class="shw__fs-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h3V5M19 8h-3V5M5 16h3v3M19 16h-3v3"/></svg>
+                          <!-- The phone-rotate glyph: shown instead of the expand arrows on phones,
+                               where the control opens the landscape view rather than fullscreen. The
+                               tilt is counter-clockwise to match the rotate(90deg) in immersive.css. -->
+                          <svg class="shw__fs-rotate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8.5" y="2.5" width="7" height="13.5" rx="1.6" transform="rotate(-30 12 12)"/><path d="M4.6 15.8a8 8 0 0 0 13.3 4"/><path d="M18.6 15.9 18.1 20.1 14 19.4"/></svg>
                         </button>
                       </div>
                       <aside class="shw__aside">
@@ -1208,6 +1239,10 @@
             <button type="button" class="shw__fs" data-shw-fullscreen aria-pressed="false" data-lang-attr="home.showcase.fullscreen|aria-label" aria-label="Toggle fullscreen">
               <svg class="shw__fs-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
               <svg class="shw__fs-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h3V5M19 8h-3V5M5 16h3v3M19 16h-3v3"/></svg>
+              <!-- The phone-rotate glyph: shown instead of the expand arrows on phones,
+                   where the control opens the landscape view rather than fullscreen. The
+                   tilt is counter-clockwise to match the rotate(90deg) in immersive.css. -->
+              <svg class="shw__fs-rotate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8.5" y="2.5" width="7" height="13.5" rx="1.6" transform="rotate(-30 12 12)"/><path d="M4.6 15.8a8 8 0 0 0 13.3 4"/><path d="M18.6 15.9 18.1 20.1 14 19.4"/></svg>
             </button>
           </div>
 
@@ -2797,9 +2832,15 @@
     </div>
 
     <footer style="text-align:center;padding:20px 16px 28px;font-size:13px;color:#374151;">
-      <a href="privacy.html" style="color:#2563eb;text-decoration:none;" data-lang="footer.privacy">Privacy Policy</a>
-      &nbsp;·&nbsp;
-      <a href="terms.html" style="color:#2563eb;text-decoration:none;" data-lang="footer.terms">Terms of Service</a>
+      <details class="legal-menu" data-legal-menu>
+        <summary class="legal-menu__trigger" data-lang="footer.legal">Legal</summary>
+        <ul class="legal-menu__list">
+          <li><a class="legal-menu__item" href="privacy.html" data-lang="footer.privacy">Privacy Policy</a></li>
+          <li><a class="legal-menu__item" href="terms.html" data-lang="footer.terms">Terms of Service</a></li>
+          <li><a class="legal-menu__item" href="legal/subprocessors.html" data-lang="footer.subprocessors">Subprocessors</a></li>
+          <li><a class="legal-menu__item" href="legal/enterprise-msa.html" rel="nofollow" data-lang="footer.msa">Enterprise MSA</a></li>
+        </ul>
+      </details>
       &nbsp;·&nbsp;
       <a href="about.html" style="color:#2563eb;text-decoration:none;" data-lang="navigation.about">About</a>
       &nbsp;·&nbsp;
@@ -2810,6 +2851,7 @@
       © <span class="footer-year">2026</span> <span data-lang="footer.copyright">Stagify.ai</span>
     </footer>
     <script type="module" src="scripts/footer-year.js"></script>
+    <script type="module" src="scripts/legal-menu.js"></script>
 
     <!-- aurora-scrollbar.js and card-spotlight.js used to sit here; both are
          pointer:fine-only decoration and now load from scripts/index-deferred.js. -->
@@ -2849,6 +2891,17 @@
             "@type": "Organization",
             "name": "Armox Labs",
             "url": "https://armox.ai"
+          }
+        },
+        {
+          "@type": "Article",
+          "headline": "10 Best Free AI Interior Design Tools for 2026",
+          "url": "https://www.flaex.ai/blog/free-ai-interior-design#7-stagifyai",
+          "datePublished": "2026-06-19",
+          "author": {
+            "@type": "Organization",
+            "name": "Flaex AI",
+            "url": "https://www.flaex.ai"
           }
         },
         {
@@ -2948,6 +3001,34 @@
         {
           "@type": "ListItem",
           "position": 6,
+          "name": "Stagify.ai",
+          "item": {
+            "@type": "WebApplication",
+            "@id": "https://stagify.ai/#webapp",
+            "name": "Stagify.ai",
+            "url": "https://stagify.ai/"
+          }
+        }
+      ]
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "name": "10 Best Free AI Interior Design Tools for 2026",
+      "description": "Flaex AI editorial roundup of free AI interior design tools for 2026.",
+      "url": "https://www.flaex.ai/blog/free-ai-interior-design#7-stagifyai",
+      "numberOfItems": 10,
+      "author": {
+        "@type": "Organization",
+        "name": "Flaex AI",
+        "url": "https://www.flaex.ai"
+      },
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 7,
           "name": "Stagify.ai",
           "item": {
             "@type": "WebApplication",
@@ -3074,17 +3155,26 @@
         {
           "@type": "Person",
           "name": "Maximilian Ising",
-          "jobTitle": "Co-Founder, Head of Development and AI"
+          "jobTitle": "Co-Founder, Head of Development and AI",
+          "sameAs": [
+            "https://www.linkedin.com/in/maximilian-ising-2751423a4/"
+          ]
         },
         {
           "@type": "Person",
           "name": "Lucas Shtainer",
-          "jobTitle": "Co-Founder, Head of Marketing"
+          "jobTitle": "Co-Founder, Head of Marketing",
+          "sameAs": [
+            "https://www.linkedin.com/in/lucas-shtainer-8113a6384/"
+          ]
         },
         {
           "@type": "Person",
           "name": "Ryan Croman",
-          "jobTitle": "Co-Founder, Head of Outreach"
+          "jobTitle": "Co-Founder, Head of Outreach",
+          "sameAs": [
+            "https://www.linkedin.com/in/ryan-croman-03363213b/"
+          ]
         }
       ],
       "contactPoint": [
@@ -3114,6 +3204,9 @@
         "https://www.tiktok.com/@stagify.ai",
         "https://www.linkedin.com/company/stagify-ai/",
         "https://www.crunchbase.com/organization/stagify-ai",
+        "https://app.dealroom.co/companies/stagify_ai",
+        "https://tracxn.com/d/companies/stagify/__C__95DTV_j_Kf97U5Vte9CuKVtZLNVjliYAfAYa9r_U",
+        "https://search.agent.spot/product/52b95797-675c-4030-a8ae-17b7bcba3404",
         "https://www.indiehackers.com/Stagify",
         "https://stagify.substack.com",
         "https://stagifyai.blogspot.com",
@@ -3129,6 +3222,20 @@
             "@type": "Organization",
             "name": "Armox Labs",
             "url": "https://armox.ai"
+          }
+        },
+        {
+          "@type": "Article",
+          "headline": "10 Best Free AI Interior Design Tools for 2026",
+          "url": "https://www.flaex.ai/blog/free-ai-interior-design#7-stagifyai",
+          "datePublished": "2026-06-19",
+          "author": {
+            "@type": "Organization",
+            "name": "Flaex AI",
+            "url": "https://www.flaex.ai"
+          },
+          "about": {
+            "@id": "https://stagify.ai/#organization"
           }
         },
         {
