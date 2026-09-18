@@ -881,12 +881,16 @@ test('the fullscreen and immersive blocks cannot drift apart', () => {
 
 /* The glyph swap. On a phone the control is not a fullscreen toggle, so showing the
    expand arrows would promise something the platform cannot do — it shows a rotating
-   phone instead. Once the view is OPEN it is a close affordance again, which is why
-   `.is-fs` has to beat `.is-mobile-rotate`. Both pages carry the identical trio. */
-test('the rotate glyph replaces the expand arrows on phones, on both pages', () => {
-  for (const [page, css, btn, glyph] of [
-    ['index.html', 'home.css', 'shw__fs', 'shw__fs-rotate'],
-    ['guides.html', 'guides.css', 'guide-demo-fs', 'guide-demo-fs__rotate'],
+   device instead. And once the view is OPEN the button turns it BACK, which is not what
+   "leave fullscreen" arrows say either: the same glyph stays and is MIRRORED. Deriving
+   the second direction from the first rather than drawing it means the pair cannot
+   drift, and the close arrows never appear on a phone at all.
+
+   Both pages carry the identical set. */
+test('the rotate glyph replaces the expand arrows on phones, and flips when open', () => {
+  for (const [page, css, btn, glyph, close] of [
+    ['index.html', 'home.css', 'shw__fs', 'shw__fs-rotate', 'shw__fs-close'],
+    ['guides.html', 'guides.css', 'guide-demo-fs', 'guide-demo-fs__rotate', 'guide-demo-fs__close'],
   ]) {
     const html = fs.readFileSync(path.join(ROOT, 'public', page), 'utf8');
     const buttons = [...html.matchAll(new RegExp('<button[^>]*class="' + btn + '"[\\s\\S]*?</button>', 'g'))];
@@ -900,10 +904,14 @@ test('the rotate glyph replaces the expand arrows on phones, on both pages', () 
       new RegExp('\\.' + btn + '\\.is-mobile-rotate \\.' + glyph + '\\s*\\{[^}]*display:\\s*block'),
       `${css}: the rotate glyph shows on a phone`
     );
+    const open = sheet.match(new RegExp('\\.' + btn + '\\.is-mobile-rotate\\.is-fs \\.' + glyph + '\\s*\\{([^}]*)\\}'));
+    assert.ok(open, `${css}: the open state still draws the rotation glyph`);
+    assert.match(open[1], /display:\s*block/, `${css}: it stays visible while open`);
+    assert.match(open[1], /transform:\s*scaleX\(-1\)/, `${css}: mirrored, so it reads as the other direction`);
     assert.match(
       sheet,
-      new RegExp('\\.' + btn + '\\.is-mobile-rotate\\.is-fs \\.' + glyph + '\\s*\\{[^}]*display:\\s*none'),
-      `${css}: and gives way to the close glyph once open`
+      new RegExp('\\.' + btn + '\\.is-mobile-rotate\\.is-fs \\.' + close + '\\s*\\{[^}]*display:\\s*none'),
+      `${css}: and the collapse arrows stay out of the phone path`
     );
   }
 });

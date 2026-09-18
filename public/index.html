@@ -1076,10 +1076,11 @@
                         <button type="button" class="shw__fs" data-shw-fullscreen aria-pressed="false" data-lang-attr="home.showcase.fullscreen|aria-label" aria-label="Toggle fullscreen">
                           <svg class="shw__fs-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
                           <svg class="shw__fs-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h3V5M19 8h-3V5M5 16h3v3M19 16h-3v3"/></svg>
-                          <!-- The phone-rotate glyph: shown instead of the expand arrows on phones,
-                               where the control opens the landscape view rather than fullscreen. The
-                               tilt is counter-clockwise to match the rotate(90deg) in immersive.css. -->
-                          <svg class="shw__fs-rotate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8.5" y="2.5" width="7" height="13.5" rx="1.6" transform="rotate(-30 12 12)"/><path d="M4.6 15.8a8 8 0 0 0 13.3 4"/><path d="M18.6 15.9 18.1 20.1 14 19.4"/></svg>
+                          <!-- The device-rotation glyph: shown instead of the expand arrows on phones,
+                               where the control opens the landscape view rather than fullscreen. Solid
+                               rather than stroked like its two siblings: at the 17px these render, a 2px
+                               stroke on a 14px phone body closes into an unreadable blob. -->
+                          <svg class="shw__fs-rotate" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.48 2.52c3.27 1.55 5.61 4.72 5.97 8.48h1.5C23.44 4.84 18.29 0 12 0l-.66.03 3.81 3.81 1.33-1.32zM10.23 1.75c-.59-.59-1.54-.59-2.12 0L1.75 8.11c-.59.59-.59 1.54 0 2.12l12.02 12.02c.59.59 1.54.59 2.12 0l6.36-6.36c.59-.59.59-1.54 0-2.12L10.23 1.75zm4.6 19.44L2.81 9.17l6.36-6.36 12.02 12.02-6.36 6.36zM7.52 21.48C4.25 19.94 1.91 16.76 1.55 13H.05C.56 19.16 5.71 24 12 24l.66-.03-3.81-3.81-1.33 1.32z"/></svg>
                         </button>
                       </div>
                       <aside class="shw__aside">
@@ -1117,10 +1118,11 @@
                         <button type="button" class="shw__fs" data-shw-fullscreen aria-pressed="false" data-lang-attr="home.showcase.fullscreen|aria-label" aria-label="Toggle fullscreen">
                           <svg class="shw__fs-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
                           <svg class="shw__fs-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h3V5M19 8h-3V5M5 16h3v3M19 16h-3v3"/></svg>
-                          <!-- The phone-rotate glyph: shown instead of the expand arrows on phones,
-                               where the control opens the landscape view rather than fullscreen. The
-                               tilt is counter-clockwise to match the rotate(90deg) in immersive.css. -->
-                          <svg class="shw__fs-rotate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8.5" y="2.5" width="7" height="13.5" rx="1.6" transform="rotate(-30 12 12)"/><path d="M4.6 15.8a8 8 0 0 0 13.3 4"/><path d="M18.6 15.9 18.1 20.1 14 19.4"/></svg>
+                          <!-- The device-rotation glyph: shown instead of the expand arrows on phones,
+                               where the control opens the landscape view rather than fullscreen. Solid
+                               rather than stroked like its two siblings: at the 17px these render, a 2px
+                               stroke on a 14px phone body closes into an unreadable blob. -->
+                          <svg class="shw__fs-rotate" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.48 2.52c3.27 1.55 5.61 4.72 5.97 8.48h1.5C23.44 4.84 18.29 0 12 0l-.66.03 3.81 3.81 1.33-1.32zM10.23 1.75c-.59-.59-1.54-.59-2.12 0L1.75 8.11c-.59.59-.59 1.54 0 2.12l12.02 12.02c.59.59 1.54.59 2.12 0l6.36-6.36c.59-.59.59-1.54 0-2.12L10.23 1.75zm4.6 19.44L2.81 9.17l6.36-6.36 12.02 12.02-6.36 6.36zM7.52 21.48C4.25 19.94 1.91 16.76 1.55 13H.05C.56 19.16 5.71 24 12 24l.66-.03-3.81-3.81-1.33 1.32z"/></svg>
                         </button>
                       </div>
                       <aside class="shw__aside">
@@ -1157,10 +1159,11 @@
                         <button type="button" class="shw__fs" data-shw-fullscreen aria-pressed="false" data-lang-attr="home.showcase.fullscreen|aria-label" aria-label="Toggle fullscreen">
                           <svg class="shw__fs-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
                           <svg class="shw__fs-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h3V5M19 8h-3V5M5 16h3v3M19 16h-3v3"/></svg>
-                          <!-- The phone-rotate glyph: shown instead of the expand arrows on phones,
-                               where the control opens the landscape view rather than fullscreen. The
-                               tilt is counter-clockwise to match the rotate(90deg) in immersive.css. -->
-                          <svg class="shw__fs-rotate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8.5" y="2.5" width="7" height="13.5" rx="1.6" transform="rotate(-30 12 12)"/><path d="M4.6 15.8a8 8 0 0 0 13.3 4"/><path d="M18.6 15.9 18.1 20.1 14 19.4"/></svg>
+                          <!-- The device-rotation glyph: shown instead of the expand arrows on phones,
+                               where the control opens the landscape view rather than fullscreen. Solid
+                               rather than stroked like its two siblings: at the 17px these render, a 2px
+                               stroke on a 14px phone body closes into an unreadable blob. -->
+                          <svg class="shw__fs-rotate" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.48 2.52c3.27 1.55 5.61 4.72 5.97 8.48h1.5C23.44 4.84 18.29 0 12 0l-.66.03 3.81 3.81 1.33-1.32zM10.23 1.75c-.59-.59-1.54-.59-2.12 0L1.75 8.11c-.59.59-.59 1.54 0 2.12l12.02 12.02c.59.59 1.54.59 2.12 0l6.36-6.36c.59-.59.59-1.54 0-2.12L10.23 1.75zm4.6 19.44L2.81 9.17l6.36-6.36 12.02 12.02-6.36 6.36zM7.52 21.48C4.25 19.94 1.91 16.76 1.55 13H.05C.56 19.16 5.71 24 12 24l.66-.03-3.81-3.81-1.33 1.32z"/></svg>
                         </button>
                       </div>
                       <aside class="shw__aside">
@@ -1239,10 +1242,11 @@
             <button type="button" class="shw__fs" data-shw-fullscreen aria-pressed="false" data-lang-attr="home.showcase.fullscreen|aria-label" aria-label="Toggle fullscreen">
               <svg class="shw__fs-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
               <svg class="shw__fs-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h3V5M19 8h-3V5M5 16h3v3M19 16h-3v3"/></svg>
-              <!-- The phone-rotate glyph: shown instead of the expand arrows on phones,
-                   where the control opens the landscape view rather than fullscreen. The
-                   tilt is counter-clockwise to match the rotate(90deg) in immersive.css. -->
-              <svg class="shw__fs-rotate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8.5" y="2.5" width="7" height="13.5" rx="1.6" transform="rotate(-30 12 12)"/><path d="M4.6 15.8a8 8 0 0 0 13.3 4"/><path d="M18.6 15.9 18.1 20.1 14 19.4"/></svg>
+              <!-- The device-rotation glyph: shown instead of the expand arrows on phones,
+                   where the control opens the landscape view rather than fullscreen. Solid
+                   rather than stroked like its two siblings: at the 17px these render, a 2px
+                   stroke on a 14px phone body closes into an unreadable blob. -->
+              <svg class="shw__fs-rotate" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.48 2.52c3.27 1.55 5.61 4.72 5.97 8.48h1.5C23.44 4.84 18.29 0 12 0l-.66.03 3.81 3.81 1.33-1.32zM10.23 1.75c-.59-.59-1.54-.59-2.12 0L1.75 8.11c-.59.59-.59 1.54 0 2.12l12.02 12.02c.59.59 1.54.59 2.12 0l6.36-6.36c.59-.59.59-1.54 0-2.12L10.23 1.75zm4.6 19.44L2.81 9.17l6.36-6.36 12.02 12.02-6.36 6.36zM7.52 21.48C4.25 19.94 1.91 16.76 1.55 13H.05C.56 19.16 5.71 24 12 24l.66-.03-3.81-3.81-1.33 1.32z"/></svg>
             </button>
           </div>
 
@@ -2147,51 +2151,51 @@
         </div>
         <div class="home-blog__grid reveal">
           <a class="home-blog__card" href="/blog/remove-furniture-from-listing-photos">
-            <img class="home-blog__thumb" src="media-webp/blog/cover-15-thumb.webp" alt="Two photographs of the same living room side by side on a dark background: on the left it is furnished with a grey sofa, a patterned rug, a bookcase and family photographs on the walls, labelled “As photographed”, and on the right the same room with every piece of furniture removed, labelled “Emptied, ready to stage”" width="400" height="225" loading="lazy">
+            <img class="home-blog__thumb" src="media-webp/blog/cover-15-thumb.webp" alt="Two photographs of the same living room side by side on a dark background: on the left it is furnished with a grey sofa, a patterned rug, a bookcase and family photographs on the walls, labelled “As photographed”, and on the right the same room with every piece of furniture removed, labelled “Emptied, ready to stage”" width="400" height="225" data-lang-attr="hub.cards.remove-furniture-from-listing-photos.alt|alt" loading="lazy">
             <div class="home-blog__body">
-              <span class="home-blog__tag">Guides</span>
-              <h3 class="home-blog__title">Most Listings Are Occupied. Photograph Them Anyway.</h3>
-              <span class="home-blog__meta">9 min read</span>
+              <span class="home-blog__tag" data-lang="hub.cards.remove-furniture-from-listing-photos.tag">Guides</span>
+              <h3 class="home-blog__title" data-lang="hub.cards.remove-furniture-from-listing-photos.title">Most Listings Are Occupied. Photograph Them Anyway.</h3>
+              <span class="home-blog__meta" data-lang="hub.cards.remove-furniture-from-listing-photos.readTime">9 min read</span>
             </div>
           </a>
           <a class="home-blog__card" href="/blog/home-staging-cost">
-            <img class="home-blog__thumb" src="media-webp/blog/cover-14-thumb.webp" alt="A step chart on a dark background: physical staging starts at $4,000 to install and climbs by $900 a month to $6,700 after 120 days on market, while virtual staging stays flat at $0" width="400" height="225" loading="lazy">
+            <img class="home-blog__thumb" src="media-webp/blog/cover-14-thumb.webp" alt="A step chart on a dark background: physical staging starts at $4,000 to install and climbs by $900 a month to $6,700 after 120 days on market, while virtual staging stays flat at $0" width="400" height="225" data-lang-attr="hub.cards.home-staging-cost.alt|alt" loading="lazy">
             <div class="home-blog__body">
-              <span class="home-blog__tag">Costs</span>
-              <h3 class="home-blog__title">The Median Staging Bill Is $1,500. Your Quote Won’t Be.</h3>
-              <span class="home-blog__meta">10 min read</span>
+              <span class="home-blog__tag" data-lang="hub.cards.home-staging-cost.tag">Costs</span>
+              <h3 class="home-blog__title" data-lang="hub.cards.home-staging-cost.title">The Median Staging Bill Is $1,500. Your Quote Won’t Be.</h3>
+              <span class="home-blog__meta" data-lang="hub.cards.home-staging-cost.readTime">10 min read</span>
             </div>
           </a>
           <a class="home-blog__card" href="/blog/virtual-staging-api">
-            <img class="home-blog__thumb" src="media-webp/blog/cover-13-thumb.webp" alt="A staged home office with a wooden desk and built-in shelves, overlaid with a white card reading “One HTTP call. One staged photo.”" width="400" height="225" loading="lazy">
+            <img class="home-blog__thumb" src="media-webp/blog/cover-13-thumb.webp" alt="A staged home office with a wooden desk and built-in shelves, overlaid with a white card reading “One HTTP call. One staged photo.”" width="400" height="225" data-lang-attr="hub.cards.virtual-staging-api.alt|alt" loading="lazy">
             <div class="home-blog__body">
-              <span class="home-blog__tag">Product</span>
-              <h3 class="home-blog__title">The Staging Pipeline Now Has an API. One Call, One Photo.</h3>
-              <span class="home-blog__meta">8 min read</span>
+              <span class="home-blog__tag" data-lang="hub.cards.virtual-staging-api.tag">Product</span>
+              <h3 class="home-blog__title" data-lang="hub.cards.virtual-staging-api.title">The Staging Pipeline Now Has an API. One Call, One Photo.</h3>
+              <span class="home-blog__meta" data-lang="hub.cards.virtual-staging-api.readTime">8 min read</span>
             </div>
           </a>
           <a class="home-blog__card" href="/blog/new-construction-listing-photos">
-            <img class="home-blog__thumb" src="media-webp/blog/cover-12-thumb.webp" alt="The inside of a house under construction, with bare timber wall studs, below a blue band reading “77% of new homes for sale are unfinished”" width="400" height="225" loading="lazy">
+            <img class="home-blog__thumb" src="media-webp/blog/cover-12-thumb.webp" alt="The inside of a house under construction, with bare timber wall studs, below a blue band reading “77% of new homes for sale are unfinished”" width="400" height="225" data-lang-attr="hub.cards.new-construction-listing-photos.alt|alt" loading="lazy">
             <div class="home-blog__body">
-              <span class="home-blog__tag">New Construction</span>
-              <h3 class="home-blog__title">You Can’t Photograph a House That Isn’t Built Yet</h3>
-              <span class="home-blog__meta">9 min read</span>
+              <span class="home-blog__tag" data-lang="hub.cards.new-construction-listing-photos.tag">New Construction</span>
+              <h3 class="home-blog__title" data-lang="hub.cards.new-construction-listing-photos.title">You Can’t Photograph a House That Isn’t Built Yet</h3>
+              <span class="home-blog__meta" data-lang="hub.cards.new-construction-listing-photos.readTime">9 min read</span>
             </div>
           </a>
           <a class="home-blog__card" href="/blog/fsbo-listing-photos">
-            <img class="home-blog__thumb" src="media-webp/blog/cover-11-thumb.webp" alt="A yellow two-storey house at golden hour with a “For Sale By Owner” sign in the front lawn" width="400" height="225" loading="lazy">
+            <img class="home-blog__thumb" src="media-webp/blog/cover-11-thumb.webp" alt="A yellow two-storey house at golden hour with a “For Sale By Owner” sign in the front lawn" width="400" height="225" data-lang-attr="hub.cards.fsbo-listing-photos.alt|alt" loading="lazy">
             <div class="home-blog__body">
-              <span class="home-blog__tag">Guides</span>
-              <h3 class="home-blog__title">FSBO Is at an All-Time Low. Commission Isn’t the Reason.</h3>
-              <span class="home-blog__meta">8 min read</span>
+              <span class="home-blog__tag" data-lang="hub.cards.fsbo-listing-photos.tag">Guides</span>
+              <h3 class="home-blog__title" data-lang="hub.cards.fsbo-listing-photos.title">FSBO Is at an All-Time Low. Commission Isn’t the Reason.</h3>
+              <span class="home-blog__meta" data-lang="hub.cards.fsbo-listing-photos.readTime">8 min read</span>
             </div>
           </a>
           <a class="home-blog__card" href="/blog/virtual-staging-disclosure-laws-by-state">
-            <img class="home-blog__thumb" src="media-webp/blog/cover-10-thumb.webp" alt="A virtually staged living room overlaid with a white card headed “Who actually requires it”, listing California, Wisconsin and every other state" width="400" height="225" loading="lazy">
+            <img class="home-blog__thumb" src="media-webp/blog/cover-10-thumb.webp" alt="A virtually staged living room overlaid with a white card headed “Who actually requires it”, listing California, Wisconsin and every other state" width="400" height="225" data-lang-attr="hub.cards.virtual-staging-disclosure-laws-by-state.alt|alt" loading="lazy">
             <div class="home-blog__body">
-              <span class="home-blog__tag">Compliance</span>
-              <h3 class="home-blog__title">Do You Have to Disclose Virtual Staging? The 2026 Rules, State by State</h3>
-              <span class="home-blog__meta">9 min read</span>
+              <span class="home-blog__tag" data-lang="hub.cards.virtual-staging-disclosure-laws-by-state.tag">Compliance</span>
+              <h3 class="home-blog__title" data-lang="hub.cards.virtual-staging-disclosure-laws-by-state.title">Do You Have to Disclose Virtual Staging? The 2026 Rules, State by State</h3>
+              <span class="home-blog__meta" data-lang="hub.cards.virtual-staging-disclosure-laws-by-state.readTime">9 min read</span>
             </div>
           </a>
         </div>

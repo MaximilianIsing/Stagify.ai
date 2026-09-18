@@ -135,9 +135,15 @@ test('a localized page points at its localized cover, in all three URL forms', (
 test('a cover with no variant for this language is left alone', () => {
   // The fallback that makes a partial render safe: an unrendered variant means the English
   // image is served, never a URL pointing at a file that does not exist.
-  const html = '<img src="/media-webp/blog/cover-11.webp">';
+  //
+  // The un-localized cover is found rather than named: this test used to hard-code cover-11
+  // as the example, and silently became a test of nothing the day cover-11 was localized.
+  const plain = Array.from({ length: 15 }, (_, i) => `cover-${i + 1}`)
+    .find((id) => !BLOG_COVER_LOCALES[id]);
+  assert.ok(plain, 'every cover is localized — this test needs a text-free cover to point at');
+  const html = `<img src="/media-webp/blog/${plain}.webp">`;
   assert.equal(localizeCoverUrls(html, 'spanish'), html);
-  assert.deepEqual(coverLanguages('cover-11'), []);
+  assert.deepEqual(coverLanguages(plain), []);
 });
 
 test('English renders are never rewritten', () => {
