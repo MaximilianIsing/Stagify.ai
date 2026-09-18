@@ -1,0 +1,753 @@
+{
+  "cover-10": {
+    "base": "cover-10.webp",
+    "slug": "virtual-staging-disclosure-laws-by-state",
+    "note": "White rounded card over a photo. Eyebrow, two-line headline, hairline rule, three label/value rows.",
+    "plates": [
+      {
+        "x": 66,
+        "y": 63,
+        "w": 772,
+        "h": 444,
+        "rx": 26,
+        "fill": "#ffffff"
+      }
+    ],
+    "rules": [
+      {
+        "x": 110,
+        "y": 293,
+        "w": 684,
+        "h": 1,
+        "fill": "#e5e7eb"
+      }
+    ],
+    "items": [
+      {
+        "key": "eyebrow",
+        "x": 110,
+        "y": 129,
+        "maxW": 684,
+        "size": 26,
+        "weight": 700,
+        "tracking": 2.2,
+        "fill": "#2563eb",
+        "upper": true
+      },
+      {
+        "key": "headline",
+        "x": 110,
+        "y": 254,
+        "maxW": 684,
+        "maxH": 120,
+        "size": 55,
+        "minSize": 34,
+        "weight": 700,
+        "lineHeight": 1.06,
+        "fill": "#0f1729",
+        "anchor": "bottom"
+      },
+      {
+        "key": "rows.0.label",
+        "x": 110,
+        "y": 349,
+        "maxW": 380,
+        "size": 36,
+        "weight": 400,
+        "fill": "#374151",
+        "noWrap": true
+      },
+      {
+        "key": "rows.0.value",
+        "x": 793,
+        "y": 349,
+        "maxW": 300,
+        "size": 36,
+        "weight": 700,
+        "fill": "#2563eb",
+        "align": "right",
+        "noWrap": true
+      },
+      {
+        "key": "rows.1.label",
+        "x": 110,
+        "y": 409,
+        "maxW": 380,
+        "size": 36,
+        "weight": 400,
+        "fill": "#374151",
+        "noWrap": true
+      },
+      {
+        "key": "rows.1.value",
+        "x": 793,
+        "y": 409,
+        "maxW": 300,
+        "size": 36,
+        "weight": 700,
+        "fill": "#2563eb",
+        "align": "right",
+        "noWrap": true
+      },
+      {
+        "key": "rows.2.label",
+        "x": 110,
+        "y": 469,
+        "maxW": 380,
+        "size": 36,
+        "weight": 400,
+        "fill": "#374151",
+        "noWrap": true
+      },
+      {
+        "key": "rows.2.value",
+        "x": 793,
+        "y": 469,
+        "maxW": 300,
+        "size": 36,
+        "weight": 700,
+        "fill": "#2563eb",
+        "align": "right",
+        "noWrap": true
+      }
+    ]
+  },
+  "cover-13": {
+    "base": "cover-13.webp",
+    "slug": "virtual-staging-api",
+    "note": "Same card design as cover-10: eyebrow, two-line headline, rule, three label/value rows.",
+    "plates": [
+      {
+        "x": 72,
+        "y": 57,
+        "w": 768,
+        "h": 486,
+        "rx": 26,
+        "fill": "#ffffff"
+      }
+    ],
+    "rules": [
+      {
+        "x": 118,
+        "y": 320,
+        "w": 676,
+        "h": 1,
+        "fill": "#e5e7eb"
+      }
+    ],
+    "items": [
+      {
+        "key": "eyebrow",
+        "x": 118,
+        "y": 133,
+        "maxW": 676,
+        "size": 25,
+        "weight": 700,
+        "tracking": 2,
+        "fill": "#2563eb",
+        "upper": true
+      },
+      {
+        "key": "headline",
+        "x": 118,
+        "y": 283,
+        "maxW": 676,
+        "maxH": 150,
+        "size": 64,
+        "minSize": 38,
+        "weight": 700,
+        "lineHeight": 1.08,
+        "fill": "#0f1729",
+        "anchor": "bottom"
+      },
+      {
+        "key": "rows.0.label",
+        "x": 118,
+        "y": 372,
+        "maxW": 420,
+        "size": 40,
+        "weight": 400,
+        "fill": "#374151",
+        "noWrap": true
+      },
+      {
+        "key": "rows.0.value",
+        "x": 794,
+        "y": 372,
+        "maxW": 240,
+        "size": 40,
+        "weight": 700,
+        "fill": "#2563eb",
+        "align": "right",
+        "noWrap": true
+      },
+      {
+        "key": "rows.1.label",
+        "x": 118,
+        "y": 430,
+        "maxW": 420,
+        "size": 40,
+        "weight": 400,
+        "fill": "#374151",
+        "noWrap": true
+      },
+      {
+        "key": "rows.1.value",
+        "x": 794,
+        "y": 430,
+        "maxW": 240,
+        "size": 40,
+        "weight": 700,
+        "fill": "#2563eb",
+        "align": "right",
+        "noWrap": true
+      },
+      {
+        "key": "rows.2.label",
+        "x": 118,
+        "y": 488,
+        "maxW": 420,
+        "size": 40,
+        "weight": 400,
+        "fill": "#374151",
+        "noWrap": true
+      },
+      {
+        "key": "rows.2.value",
+        "x": 794,
+        "y": 488,
+        "maxW": 240,
+        "size": 40,
+        "weight": 700,
+        "fill": "#2563eb",
+        "align": "right",
+        "noWrap": true
+      }
+    ]
+  },
+  "cover-12": {
+    "base": "cover-12.webp",
+    "slug": "new-construction-listing-photos",
+    "note": "Full-width gradient band across the bottom. The plate copies one clean row of the band and stretches it, because no flat fill can match a gradient.",
+    "plates": [
+      {
+        "x": 0,
+        "y": 649,
+        "w": 1600,
+        "h": 251,
+        "rowFrom": 656
+      }
+    ],
+    "items": [
+      {
+        "key": "eyebrow",
+        "x": 95,
+        "y": 723,
+        "maxW": 1200,
+        "size": 31,
+        "weight": 700,
+        "tracking": 3,
+        "fill": "#a8c5f7",
+        "upper": true
+      },
+      {
+        "x": 96,
+        "y": 826,
+        "maxW": 1420,
+        "runs": [
+          {
+            "key": "figure",
+            "size": 86,
+            "weight": 800,
+            "fill": "#ffffff"
+          },
+          {
+            "key": "rest",
+            "size": 50,
+            "weight": 500,
+            "fill": "#e3ecfd",
+            "gapBefore": 22
+          }
+        ]
+      }
+    ]
+  },
+  "cover-15": {
+    "base": "cover-15.webp",
+    "slug": "remove-furniture-from-listing-photos",
+    "note": "Flat dark canvas with two photos between the headline and the captions. The two plates sit ABOVE and BELOW the photos so the photos are never repainted.",
+    "plates": [
+      {
+        "x": 0,
+        "y": 75,
+        "w": 1600,
+        "h": 190,
+        "fill": "#0b1220"
+      },
+      {
+        "x": 0,
+        "y": 722,
+        "w": 1600,
+        "h": 70,
+        "fill": "#0b1220"
+      }
+    ],
+    "items": [
+      {
+        "key": "eyebrow",
+        "x": 81,
+        "y": 134,
+        "maxW": 1000,
+        "size": 39,
+        "weight": 700,
+        "tracking": 4,
+        "fill": "#91a1f2",
+        "upper": true,
+        "noWrap": true
+      },
+      {
+        "key": "headline",
+        "x": 82,
+        "y": 235,
+        "maxW": 1440,
+        "maxH": 110,
+        "size": 76,
+        "minSize": 44,
+        "weight": 800,
+        "lineHeight": 1.05,
+        "fill": "#ffffff",
+        "anchor": "bottom"
+      },
+      {
+        "key": "captionLeft",
+        "x": 108,
+        "y": 763,
+        "maxW": 640,
+        "size": 29,
+        "weight": 700,
+        "tracking": 2.4,
+        "fill": "#99a0ae",
+        "upper": true,
+        "noWrap": true
+      },
+      {
+        "key": "captionRight",
+        "x": 847,
+        "y": 763,
+        "maxW": 640,
+        "size": 29,
+        "weight": 700,
+        "tracking": 2.4,
+        "fill": "#6299fb",
+        "upper": true,
+        "noWrap": true
+      }
+    ],
+    "circles": [
+      {
+        "cx": 86,
+        "cy": 754,
+        "r": 6,
+        "fill": "#99a0ae"
+      },
+      {
+        "cx": 825,
+        "cy": 754,
+        "r": 6,
+        "fill": "#6299fb"
+      }
+    ]
+  },
+  "cover-7": {
+    "base": "cover-7.webp",
+    "slug": "prepare-your-listing-for-the-fall-market",
+    "note": "Small white card holding an eyebrow, a progress slider and three month markers. The plates deliberately straddle the slider rather than covering it — the slider is artwork, not type, and repainting it would mean redrawing it.",
+    "plates": [
+      {
+        "x": 70,
+        "y": 84,
+        "w": 459,
+        "h": 38,
+        "fill": "#ffffff"
+      },
+      {
+        "x": 70,
+        "y": 200,
+        "w": 459,
+        "h": 44,
+        "fill": "#ffffff"
+      }
+    ],
+    "items": [
+      {
+        "key": "eyebrow",
+        "x": 101,
+        "y": 111,
+        "maxW": 410,
+        "size": 21,
+        "weight": 700,
+        "tracking": 2,
+        "fill": "#64748b",
+        "upper": true,
+        "noWrap": true
+      },
+      {
+        "key": "months.0",
+        "x": 100,
+        "y": 228,
+        "maxW": 150,
+        "size": 28,
+        "weight": 700,
+        "fill": "#2563eb",
+        "upper": true,
+        "noWrap": true
+      },
+      {
+        "key": "months.1",
+        "x": 277,
+        "y": 228,
+        "maxW": 150,
+        "size": 28,
+        "weight": 700,
+        "fill": "#94a3b8",
+        "upper": true,
+        "noWrap": true
+      },
+      {
+        "key": "months.2",
+        "x": 446,
+        "y": 228,
+        "maxW": 150,
+        "size": 28,
+        "weight": 700,
+        "fill": "#94a3b8",
+        "upper": true,
+        "noWrap": true
+      }
+    ]
+  },
+  "cover-9": {
+    "base": "cover-9.webp",
+    "slug": "free-virtual-staging",
+    "note": "White card: eyebrow, a struck-through price, the replacement price set large beside its caption, a rule, then a footnote.",
+    "plates": [
+      {
+        "x": 72,
+        "y": 96,
+        "w": 662,
+        "h": 300,
+        "fill": "#ffffff"
+      }
+    ],
+    "rules": [
+      {
+        "x": 110,
+        "y": 323,
+        "w": 585,
+        "h": 1,
+        "fill": "#e5e7eb"
+      }
+    ],
+    "items": [
+      {
+        "key": "eyebrow",
+        "x": 110,
+        "y": 125,
+        "maxW": 600,
+        "size": 22,
+        "weight": 700,
+        "tracking": 2.2,
+        "fill": "#64748b",
+        "upper": true,
+        "noWrap": true
+      },
+      {
+        "x": 105,
+        "y": 186,
+        "maxW": 600,
+        "runs": [
+          {
+            "key": "was",
+            "size": 46,
+            "weight": 600,
+            "fill": "#94a3b8",
+            "strike": true
+          }
+        ]
+      },
+      {
+        "x": 115,
+        "y": 285,
+        "maxW": 600,
+        "runs": [
+          {
+            "key": "now",
+            "size": 100,
+            "weight": 800,
+            "fill": "#2563eb"
+          },
+          {
+            "key": "nowCaption",
+            "size": 34,
+            "weight": 500,
+            "fill": "#0f1729",
+            "gapBefore": 18
+          }
+        ]
+      },
+      {
+        "key": "footnote",
+        "x": 110,
+        "y": 364,
+        "maxW": 600,
+        "size": 28,
+        "weight": 400,
+        "fill": "#334155",
+        "noWrap": true
+      }
+    ]
+  },
+  "cover-11": {
+    "base": "cover-11.webp",
+    "slug": "fsbo-listing-photos",
+    "note": "A flat vector yard sign composited onto the photo — navy header band, white body, hairline rule, blue strapline. The plates sit INSIDE the board rather than over it, so its rounded corners and drop shadow survive untouched. Sign: x 92..591, navy y 452..517, white y 518..719.",
+    "plates": [
+      {
+        "x": 96,
+        "y": 466,
+        "w": 492,
+        "h": 46,
+        "fill": "#0d162a"
+      },
+      {
+        "x": 96,
+        "y": 532,
+        "w": 492,
+        "h": 160,
+        "fill": "#ffffff"
+      }
+    ],
+    "rules": [
+      {
+        "x": 234,
+        "y": 614,
+        "w": 216,
+        "h": 2,
+        "fill": "#cbd5e1"
+      }
+    ],
+    "items": [
+      {
+        "key": "forSale",
+        "x": 342,
+        "y": 497,
+        "maxW": 450,
+        "size": 29,
+        "minSize": 20,
+        "weight": 700,
+        "tracking": 3,
+        "fill": "#ffffff",
+        "align": "center",
+        "upper": true,
+        "noWrap": true
+      },
+      {
+        "key": "byOwner",
+        "x": 342,
+        "y": 589,
+        "maxW": 460,
+        "size": 57,
+        "minSize": 30,
+        "weight": 700,
+        "fill": "#0f172a",
+        "align": "center",
+        "upper": true,
+        "noWrap": true
+      },
+      {
+        "key": "strapline",
+        "x": 342,
+        "y": 665,
+        "maxW": 452,
+        "size": 34,
+        "minSize": 20,
+        "weight": 500,
+        "fill": "#2563eb",
+        "align": "center",
+        "noWrap": true
+      }
+    ]
+  },
+  "cover-14": {
+    "base": "cover-14.webp",
+    "slug": "home-staging-cost",
+    "note": "A step chart on a flat canvas. Every label sits on one of exactly two flat fields — the canvas #111827 or the chart fill #1d293c — so each is an ordinary plate and none of the plotted geometry is repainted: the in-chart plates stop below the gridline at y 475 and above the step line at y 547 / y 503. The axis numbers (30/60/90/120) are figures, not words, so they are left alone.",
+    "plates": [
+      {
+        "x": 125,
+        "y": 125,
+        "w": 700,
+        "h": 40,
+        "fill": "#111827"
+      },
+      {
+        "x": 125,
+        "y": 172,
+        "w": 1150,
+        "h": 168,
+        "fill": "#111827"
+      },
+      {
+        "x": 145,
+        "y": 484,
+        "w": 305,
+        "h": 62,
+        "fill": "#111827"
+      },
+      {
+        "x": 462,
+        "y": 510,
+        "w": 770,
+        "h": 36,
+        "fill": "#1d293c"
+      },
+      {
+        "x": 1265,
+        "y": 380,
+        "w": 335,
+        "h": 85,
+        "fill": "#111827"
+      },
+      {
+        "x": 1265,
+        "y": 700,
+        "w": 335,
+        "h": 90,
+        "fill": "#111827"
+      },
+      {
+        "x": 125,
+        "y": 815,
+        "w": 400,
+        "h": 32,
+        "fill": "#111827"
+      }
+    ],
+    "rules": [
+      {
+        "x": 470,
+        "y": 525,
+        "w": 45,
+        "h": 3,
+        "fill": "#6b7280"
+      }
+    ],
+    "items": [
+      {
+        "key": "eyebrow",
+        "x": 131,
+        "y": 156,
+        "maxW": 685,
+        "size": 27,
+        "minSize": 18,
+        "weight": 700,
+        "tracking": 3,
+        "fill": "#9ca3af",
+        "upper": true,
+        "noWrap": true
+      },
+      {
+        "key": "headline",
+        "x": 130,
+        "y": 315,
+        "maxW": 1140,
+        "maxH": 155,
+        "size": 63,
+        "minSize": 38,
+        "weight": 700,
+        "lineHeight": 1.16,
+        "fill": "#f9fafb",
+        "anchor": "bottom"
+      },
+      {
+        "key": "install",
+        "x": 153,
+        "y": 522,
+        "maxW": 292,
+        "size": 31,
+        "minSize": 19,
+        "weight": 700,
+        "fill": "#f9fafb",
+        "noWrap": true
+      },
+      {
+        "key": "monthly",
+        "x": 530,
+        "y": 536,
+        "maxW": 690,
+        "size": 28,
+        "minSize": 18,
+        "weight": 400,
+        "fill": "#f9fafb",
+        "noWrap": true
+      },
+      {
+        "key": "physical.value",
+        "x": 1273,
+        "y": 417,
+        "maxW": 320,
+        "size": 39,
+        "minSize": 24,
+        "weight": 700,
+        "fill": "#f9fafb",
+        "noWrap": true
+      },
+      {
+        "key": "physical.label",
+        "x": 1273,
+        "y": 455,
+        "maxW": 320,
+        "size": 34,
+        "minSize": 20,
+        "weight": 400,
+        "fill": "#9ca3af",
+        "noWrap": true
+      },
+      {
+        "key": "virtual.value",
+        "x": 1273,
+        "y": 740,
+        "maxW": 320,
+        "size": 38,
+        "minSize": 24,
+        "weight": 700,
+        "fill": "#f9fafb",
+        "noWrap": true
+      },
+      {
+        "key": "virtual.label",
+        "x": 1273,
+        "y": 779,
+        "maxW": 320,
+        "size": 34,
+        "minSize": 20,
+        "weight": 400,
+        "fill": "#9ca3af",
+        "noWrap": true
+      },
+      {
+        "key": "axis",
+        "x": 132,
+        "y": 837,
+        "maxW": 388,
+        "size": 21,
+        "minSize": 14,
+        "weight": 700,
+        "tracking": 3,
+        "fill": "#6b7280",
+        "upper": true,
+        "noWrap": true
+      }
+    ]
+  }
+}

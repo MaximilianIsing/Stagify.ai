@@ -77,6 +77,12 @@ const UNTESTED = [
   'language-detect.js',
   'language-switcher.js',
   'lazy-css.js',
+  // The footer's Legal disclosure. Same standing as language-switcher.js above, which
+  // it copies: a DOM-wiring IIFE with no exported surface. Its markup is pinned by
+  // site-footer-parity.test.js and its behaviour by e2e/legal-menu.spec.js; what is
+  // missing is a node-level suite, which would mean hand-rolling a <details> fake the
+  // way staging-menu.test.js hand-rolls its nav.
+  'legal-menu.js',
   'nav-pill.js',
   'plus-cta-auth.js',
   'plus-welcome-confetti.js',

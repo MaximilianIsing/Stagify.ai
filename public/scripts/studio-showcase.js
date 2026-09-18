@@ -20,6 +20,9 @@
 // script has to bring the matching panel to the front on load and on hashchange —
 // otherwise the redirect lands on a section showing the wrong studio.
 
+import { anyImmersiveOpen } from './immersive-view.js';
+import { expanded, wireFullscreen } from './showcase/fullscreen.js';
+
 /**
  * Below this width the arc has no room either side, so the carousel goes flat and
  * shows one panel at a time. Mirrors `.shw__stage { perspective: none }` in
@@ -204,6 +207,10 @@ function naturalHeight(sc) {
  * @param {Showcase} sc
  */
 function measure(sc) {
+  // The media is portaled into the overlay, so every panel currently measures short.
+  // .imv-slot holds the hole open, but a measurement taken now would still adopt a
+  // height derived from a panel that is missing its largest child.
+  if (anyImmersiveOpen()) return;
   const h = naturalHeight(sc);
   if (h <= 0) return;
   // Set `height` outright rather than feeding a custom property that the stylesheet
@@ -329,6 +336,9 @@ function updateChrome(sc) {
  * @param {{ focusTab?: boolean }} [opts]
  */
 function select(sc, next, opts) {
+  // The one guard that covers drag, wheel, arrows, tabs, dots AND a deep link, rather
+  // than five copies at five call sites.
+  if (expanded()) return;
   const n = sc.panels.length;
   const i = ((next % n) + n) % n;
   sc.active = i;
@@ -368,9 +378,7 @@ function wireDrag(sc) {
   let axis = /** @type {'x'|'y'|null} */ (null);
 
   sc.stage.addEventListener('pointerdown', (e) => {
-    // Cycling while a panel is expanded would swap the fullscreen content out from
-    // under the viewer, who cannot see the carousel behind it to know what happened.
-    if (document.fullscreenElement) return;
+    if (expanded()) return; // see the note on expanded()
     // Primary button / first finger only: a right-drag or a second finger used to flick
     // the carousel, and a two-finger gesture would also fight the first pointer's state.
     if (!e.isPrimary || e.button !== 0) return;
@@ -423,7 +431,7 @@ function wireWheel(sc) {
   sc.stage.addEventListener(
     'wheel',
     (e) => {
-      if (document.fullscreenElement) return; // see the note in wireDrag
+      if (expanded()) return; // see the note on expanded()
       if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
       const now = e.timeStamp;
       if (now - last < WHEEL_COOLDOWN) return;
@@ -487,44 +495,18 @@ function wireArrows(sc) {
 }
 
 /**
- * The fullscreen control on each media panel. The button toggles rather than only
- * entering, so the same control gets you back out — `aria-pressed` carries the state,
- * which means the label never has to change and the i18n pack needs one key, not two.
+ * Re-measure and re-place after the front media was expanded or restored — natively
+ * or into the immersive overlay. The player and the before/after slider both hit-test
+ * against their own box, and that box just changed size.
+ *
+ * Deferred a frame for the reflow: the expanded box's used size is not final when the
+ * event fires, and the player's placement bails silently on a zero-size frame.
  *
  * @param {Showcase} sc
  */
-function wireFullscreen(sc) {
-  const buttons = /** @type {HTMLElement[]} */ ([].slice.call(sc.root.querySelectorAll('[data-shw-fullscreen]')));
-  if (!buttons.length) return;
-  // Some embedding contexts disallow fullscreen outright. Hide the control instead of
-  // shipping a button whose only behaviour is a rejected promise.
-  if (!document.fullscreenEnabled) {
-    buttons.forEach((btn) => { btn.hidden = true; });
-    return;
-  }
-  buttons.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const media = btn.closest('.shw__media');
-      if (!media) return;
-      if (document.fullscreenElement === media) document.exitFullscreen();
-      // A rejection here is normal — a user gesture can be refused — and there is
-      // nothing to recover, so swallow it rather than surfacing an unhandled rejection.
-      else media.requestFullscreen().catch(() => {});
-    });
-  });
-  document.addEventListener('fullscreenchange', () => {
-    buttons.forEach((btn) => {
-      const on = document.fullscreenElement === btn.closest('.shw__media');
-      btn.classList.toggle('is-fs', on);
-      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
-    });
-    // The player and the before/after slider both hit-test against their own box,
-    // which just changed size — re-measure so the stage still matches on the way out.
-    measure(sc);
-    // Deferred a frame: the fullscreen box's used size is not final when the event
-    // fires, and the player's placement bails silently on a zero-size frame.
-    requestAnimationFrame(() => reflowDemos(sc));
-  });
+function afterViewChange(sc) {
+  measure(sc);
+  requestAnimationFrame(() => reflowDemos(sc));
 }
 
 /**
@@ -551,7 +533,7 @@ function init() {
   wireArrows(sc);
   wireDrag(sc);
   wireWheel(sc);
-  wireFullscreen(sc);
+  wireFullscreen(sc, () => afterViewChange(sc));
 
   // Clicking a panel that is not in front brings it forward.
   sc.panels.forEach((panel, i) => {

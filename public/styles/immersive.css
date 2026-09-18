@@ -1,0 +1,90 @@
+/* The immersive ("rotate to landscape") overlay — scripts/immersive-view.js.
+   Shared by the homepage showcase and the guides walkthroughs, which is why it is
+   its own file rather than a block in home.css and a second copy in guides.css.
+
+   The overlay is a direct child of <body> (the module portals the media into it),
+   so its z-index is genuinely comparable to everything else on the page rather than
+   trapped inside a panel's stacking context. The page-specific SIZING of what lands
+   inside lives next to each page's `:fullscreen` block, keyed on `.is-immersive`. */
+
+.imv {
+  position: fixed;
+  inset: 0;
+  /* z-index is also set inline by the module, so the overlay is correct even if this
+     stylesheet has not arrived yet. Restated here so the value is greppable. */
+  z-index: 2147483000;
+  background: #0b1020;
+  display: grid;
+  place-items: center;
+  /* A swipe that runs out of content must not scroll-chain to the page behind, and
+     the page behind is scroll-locked anyway — this stops the rubber-band flash. */
+  overscroll-behavior: contain;
+  touch-action: none;
+}
+
+/* The px custom properties (--imv-vw / --imv-vh / --imv-box) are written by the
+   module from visualViewport. The viewport-unit values here are the fallback for the
+   frame before the first sync, and for anything that never gets one. */
+.imv__stage {
+  width: var(--imv-vw, 100vw);
+  width: var(--imv-vw, 100dvw);
+  height: var(--imv-vh, 100vh);
+  height: var(--imv-vh, 100dvh);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  /* No padding here ON PURPOSE. The portaled element brings its own 3vmin, exactly
+     as it does in the browser's top layer, and the `calc(... - 6vmin)` sizing rules
+     on both pages subtract that one padding. A second one here would make every
+     demo 6vmin narrower than its own arithmetic thinks it is. */
+}
+
+/* Portrait device, landscape content.
+
+   The rotation lives on .imv__stage and NOT on .imv. A transform on the fixed
+   ancestor would make IT the containing block for every fixed descendant — which is
+   the exact class of bug this overlay exists to dodge (see the portal note in
+   scripts/immersive-view.js).
+
+   The box is authored at the SWAPPED dimensions and then turned, so after the 90deg
+   it lands back at exactly the viewport's size. rotate(90deg) means the user tilts
+   the phone counter-clockwise (top edge to the left) — the video-player convention,
+   and the direction the button's glyph shows. */
+.imv--rotated .imv__stage {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--imv-vh, 100dvh);
+  height: var(--imv-vw, 100dvw);
+  transform: translate(-50%, -50%) rotate(90deg);
+  transform-origin: 50% 50%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .imv__stage {
+    transition: transform 0.28s cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+}
+
+/* `overflow: hidden` on <html> alone does not hold on iOS Safari, so the module also
+   pins <body> with position:fixed and a negative top. This is the desktop/Android
+   half of that pair, and what stops the scrollbar flashing. */
+.imv-lock {
+  overflow: hidden;
+}
+
+/* The hole the media left behind, frozen at its measured size so the page underneath
+   does not reflow while the view is open — and so the showcase's ResizeObserver does
+   not shrink the stage around an empty panel. */
+.imv-slot {
+  flex: 0 0 auto;
+}
+
+/* Under rotation a horizontal finger travel is vertical in the element's own frame.
+   Handing the browser the wrong pan axis makes it fire pointercancel mid-drag and the
+   before/after gesture dies intermittently — see the touch-action note in home.css. */
+.imv--rotated .ba,
+.imv--rotated .shw__stage {
+  touch-action: pan-x;
+}

@@ -32,6 +32,7 @@ import { BLOG_HUB, ENGLISH, LOCALIZED_ARTICLES, LOCALIZED_PAGES, buildHreflangCl
 import { buildSitemap } from '../lib/i18n/sitemap.js';
 import { buildLocaleDataModule } from '../lib/i18n/locale-data.js';
 import { articleLocales, buildBlogManifestModule } from '../lib/i18n/blog-packs.js';
+import { injectLangNav } from '../lib/i18n/blog-langs.js';
 import { ORGANIZATION_ID, renderOrganizationBlock } from '../lib/seo/organization.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -254,7 +255,10 @@ function run() {
     if (!/<link\s+rel="canonical"/i.test(before)) {
       throw new Error(`${article.file}: no <link rel="canonical"> to anchor hreflang to`);
     }
-    const after = injectArticleHreflang(before, article.path, articleLocales(article.slug));
+    const locales = articleLocales(article.slug);
+    // The nav goes in as part of the ENGLISH file so the static English page carries it
+    // too, and so its label translates through the ordinary data-lang path.
+    const after = injectLangNav(injectArticleHreflang(before, article.path, locales), article.path, locales);
     if (after !== before) {
       fs.writeFileSync(file, after);
       blogChanged += 1;

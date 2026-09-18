@@ -2,24 +2,30 @@
 //
 // loadHeroStats pulls the two public count endpoints and reveals/animates the
 // stat pills (via window.StagifyHeroStats from count-up.js when present).
-// updateHeroFreeGensLine is exposed by the entry as
-// window.__stagifyUpdateHeroFreeGensLine so auth.js (a classic script) can call
-// it on sign-in/out. Both no-op on pages without the hero elements.
+// updateHeroFreeGensLine is called straight from auth.js's applyUserToUI (this
+// module has no imports, so it costs that eager graph nothing) and is also
+// exposed by the entry as window.__stagifyUpdateHeroFreeGensLine, which
+// e2e/fixtures.js uses as its "app.js is live" readiness signal. Both no-op on
+// pages without the hero elements.
 
-/** Show upgrade nudge only for users signed into a free account. */
+// Show the upgrade nudge only to visitors signed into a free account.
+//
+// THIS WRITES A CLASS ON <html> AND NOTHING ELSE — no copy, no .hidden. The sentence lives in
+// index.html (data-lang-html="hero.freeGensUpgrade") so it is painted with the page and
+// localized by the same machinery as every other string, and styles/index.css keeps it hidden
+// until html.has-free-plan says otherwise. session-class.js sets that class pre-paint from the
+// cached plan; this is the correction once /api/auth/me has actually answered, which is why it
+// must also REMOVE it — a stale cache, an expired token or a sign-out all land here.
+//
+// The element lookup stays as the guard: app.js is loaded by other pages too, and this is the
+// one page with the nudge.
 export function updateHeroFreeGensLine() {
-    var el = document.getElementById('hero-free-gens-today');
-    if (!el) return;
+    if (!document.getElementById('hero-free-gens-today')) return;
     var auth = window.StagifyAuth;
-    var isSignedInFree =
-      auth && auth.getToken && auth.getToken() && auth.user && !(auth.isProUser && auth.isProUser());
-    if (!isSignedInFree) {
-      el.classList.add('hidden');
-      return;
-    }
-    el.innerHTML = window.LanguageSystem?.getText('hero.freeGensUpgrade') ||
-      'Try Stagify+ today. <a class="hero-free-gens-upgrade" href="stagify-plus.html">Upgrade</a>';
-    el.classList.remove('hidden');
+    var isSignedInFree = !!(
+      auth && auth.getToken && auth.getToken() && auth.user && !(auth.isProUser && auth.isProUser())
+    );
+    document.documentElement.classList.toggle('has-free-plan', isSignedInFree);
 }
 
 // Load the hero stat figures from the server, then reveal and animate to live counts.

@@ -1,0 +1,84 @@
+{
+  "cover-7": {
+    "eyebrow": "가을 매물 일정",
+    "months": [
+      "8월",
+      "9월",
+      "10월"
+    ]
+  },
+  "cover-9": {
+    "eyebrow": "스테이징 사진 1장당",
+    "was": "$16~$75",
+    "now": "$0",
+    "nowCaption": "무료 요금제에서",
+    "footnote": "워터마크 없음 · 전체 해상도 · 자유롭게 게시"
+  },
+  "cover-10": {
+    "eyebrow": "고지 의무",
+    "headline": "실제로 요구하는 곳",
+    "rows": [
+      {
+        "label": "캘리포니아",
+        "value": "시행 중"
+      },
+      {
+        "label": "위스콘신",
+        "value": "2027년 1월"
+      },
+      {
+        "label": "그 외 모든 곳",
+        "value": "소속 MLS"
+      }
+    ]
+  },
+  "cover-11": {
+    "forSale": "매물",
+    "byOwner": "집주인 직거래",
+    "strapline": "사진이 팔아준다"
+  },
+  "cover-12": {
+    "eyebrow": "선분양",
+    "figure": "77%",
+    "rest": "의 신축 매물이 미완공 상태"
+  },
+  "cover-13": {
+    "eyebrow": "개발자 API",
+    "headline": "HTTP 호출 한 번. 가구 배치 사진 한 장.",
+    "rows": [
+      {
+        "label": "이미지당",
+        "value": "$0.15"
+      },
+      {
+        "label": "구독",
+        "value": "없음"
+      },
+      {
+        "label": "대기열",
+        "value": "없음"
+      }
+    ]
+  },
+  "cover-14": {
+    "eyebrow": "빈 집 한 채 스테이징",
+    "headline": "실물 스테이징은 매달 청구됩니다. 가상 스테이징은 청구가 없습니다.",
+    "install": "설치에 $4,000",
+    "monthly": "이후 안 팔린 달마다 +$900",
+    "physical": {
+      "value": "$6,700",
+      "label": "실물 스테이징"
+    },
+    "virtual": {
+      "value": "$0",
+      "label": "가상 스테이징"
+    },
+    "axis": "매물 등록 일수"
+  },
+  "cover-15": {
+    "eyebrow": "가구 제거",
+    "headline": "기존 가구부터 비웁니다.",
+    "captionLeft": "촬영 원본",
+    "captionRight": "비움, 스테이징 준비 완료"
+  }
+}

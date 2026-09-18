@@ -1061,7 +1061,8 @@ body.page-home main {
   position: absolute;
   inset: -5px;
 }
-.shw__fs-close {
+.shw__fs-close,
+.shw__fs-rotate {
   display: none;
 }
 .shw__fs.is-fs .shw__fs-open {
@@ -1069,6 +1070,23 @@ body.page-home main {
 }
 .shw__fs.is-fs .shw__fs-close {
   display: block;
+}
+/* On a phone this control is not a fullscreen toggle at all — it opens the
+   rotate-to-landscape view (scripts/immersive-view.js), so it shows a phone-rotating
+   glyph instead of the expand arrows. `.is-mobile-rotate` is added by that module
+   from PHONE_QUERY and re-evaluated when the query flips, so a tablet that gets
+   rotated or a laptop that gains a trackpad lands on the right glyph.
+
+   Once the view is OPEN the button is a close affordance again, so `.is-fs` takes
+   the glyph back — the same close arrows the native path uses. */
+.shw__fs.is-mobile-rotate .shw__fs-open {
+  display: none;
+}
+.shw__fs.is-mobile-rotate .shw__fs-rotate {
+  display: block;
+}
+.shw__fs.is-mobile-rotate.is-fs .shw__fs-rotate {
+  display: none;
 }
 /* Revealed on hover of the front panel, and always for keyboard users. Hidden by
    default so it does not sit on top of the artwork in a screenshot-still page. */
@@ -1176,6 +1194,90 @@ body.page-home main {
   right: 24px;
   opacity: 1;
 }
+
+/* --- The immersive presentation ---
+   The class-path twin of the `:fullscreen` block above, for the rotate-to-landscape
+   view that phones get instead (scripts/immersive-view.js portals .shw__media into
+   an overlay on <body> rather than into the browser's top layer).
+
+   DELIBERATELY DUPLICATED rather than folded into the selector list above. A CSS
+   selector list is invalidated WHOLE if any one component fails to parse, and the
+   browsers that need this class path are exactly the ones old enough not to parse
+   unprefixed `:fullscreen` (iOS Safari shipped it in 16.4) — coupling the fallback
+   to the thing it is a fallback for is the one trade this must not make. A drift
+   test in test/frontend/studio-showcase.test.js asserts the two blocks declare the
+   same property set, so the duplication cannot rot.
+
+   The one substitution: `100vh` becomes `var(--imv-box)`, the stage's own height in
+   px, written by the module from visualViewport. Under rotation the box the media
+   must fit inside is as tall as the viewport is WIDE, so a literal vh would size
+   every demo against the wrong axis. */
+.shw__media.is-immersive {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 3vmin;
+  background: #0b1020;
+  box-sizing: border-box;
+}
+/* Height-driven, because width-driven overflows. The exterior pair is 1408/768; at a
+   1707px-wide screen a full-width fit is 931px tall, taller than the 898px viewport,
+   so the bottom would be cut off.
+
+   But it derives the WIDTH from the viewport height and leaves height:auto — it must
+   NOT pin height:100% and let width:auto + max-width:100% cap the result. That pairing
+   looks equivalent and is not: as soon as the ratio-derived width exceeds the available
+   width, max-width wins, the height stays pinned, and the box renders at the VIEWPORT's
+   ratio instead of its own. The walkthrough player then drifts, because .sdp__img is
+   object-fit:cover (it crops) while .sdp__area is positioned in percentages of the
+   frame box (it does not) — so every highlight slides off its target by half the crop.
+   At 1920x1080 the 2.0016 AI Designer demo was losing ~44px per side. With the width
+   derived from the height, aspect-ratio always computes the height back and the media
+   letterboxes; it can never be squashed. guides.css does the same for its own panels.
+
+   It has to be applied to whichever box actually carries the ratio, which is not the
+   same element in both cases: .ba has it directly, but .designer-shell does NOT — the
+   walkthrough's ratio lives on .designer-demo before the player mounts and moves to
+   .sdp__frame after (the player sets .designer-demo to aspect-ratio:auto). Targeting
+   only the shell would leave the demo sized by width and spilling off the screen.
+
+   6vmin is the two 3vmin paddings of .shw__media.is-immersive above. */
+.shw__media.is-immersive .ba {
+  width: min(100%, calc((var(--imv-box, 100vh) - 6vmin) * (1408 / 768)));
+  height: auto;
+  max-width: 100%;
+  margin: 0 auto;
+}
+.shw__media.is-immersive .designer-shell {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* .designer-demo and .sdp are the SAME element once the player has mounted; the
+   fallback ratio covers the pre-mount skeleton, since --ar is set inline on the .sdp
+   root by demo-player.js. No dot row to subtract here — the homepage mounts with
+   dots:false, which is why this formula has no counterpart to the guides 34px. */
+.shw__media.is-immersive .designer-demo,
+.shw__media.is-immersive .sdp {
+  width: min(100%, calc((var(--imv-box, 100vh) - 6vmin) * var(--ar, 1.7778)));
+  height: auto;
+  max-width: 100%;
+}
+.shw__media.is-immersive .sdp__frame {
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+}
+.shw__media.is-immersive .shw__fs {
+  bottom: 24px;
+  right: 24px;
+  opacity: 1;
+}
+
 
 /* --- No-JS / pre-upgrade fallback ---
    studio-showcase.js adds .shw--ready. Until then (and forever, if the script

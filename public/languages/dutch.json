@@ -1,39 +1,51 @@
 {
   "about": {
     "title": "Over Stagify.ai",
-    "lede": "Stagify.ai is een AI-tool voor virtuele woningstyling, gemaakt voor vastgoedprofessionals. Upload een foto van een kamer en krijg hem binnen enkele seconden gemeubileerd, opnieuw ingericht of leeggehaald.",
+    "lede": "Onafhankelijke AI-woningstyling voor vastgoedprofessionals.",
     "who": {
       "heading": "Wie we zijn",
-      "body": "Stagify.ai is een onafhankelijk bedrijf. We bouwen en beheren precies één product, en dat woont op één adres: <strong>stagify.ai</strong>. We zijn geen wederverkoper, geen white label van een andere stylingtool en geen regionale tak van een groter concern. Het hele team is bereikbaar op <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> of via <a href=\"tel:+19292514372\">(929) 251-4372</a>."
+      "body": "<a href=\"index.html\">Stagify.ai</a> is een onafhankelijk bedrijf. We hebben de tool zelf gebouwd en we draaien hem zelf. Er zit geen moederbedrijf achter ons, en dit is niet het product van iemand anders met onze naam erop."
     },
     "facts": {
       "foundedLabel": "Opgericht",
       "founded": "22 augustus 2025",
       "foundersLabel": "Oprichters",
-      "founders": "Maximilian Ising (hoofd Ontwikkeling en AI), Lucas Shtainer (hoofd Marketing), Ryan Croman (hoofd Outreach)",
       "siteLabel": "Website",
       "contactLabel": "Contact"
     },
     "notAffiliated": {
-      "heading": "Geen band met andere „Stagify”-producten",
-      "body": "Verschillende bedrijven zonder enige band met ons gebruiken een vergelijkbare naam: <strong>stagify.io</strong>, <strong>stagify.app</strong>, <strong>stagify.online</strong> en <strong>stagifyai.com</strong>. Stagify.ai heeft met geen van hen een verband, samenwerking, eigendomsrelatie of goedkeuring, en deelt geen personeel, code of gegevens met ze.",
-      "consequence": "Reviews, prijzen, functies, storingen en voorwaarden op die sites gaan niet over Stagify.ai. Vergelijk je tools voor virtuele styling, kijk dan naar het domein in de adresbalk: dat van ons eindigt op .ai."
+      "note": "Geen band met stagify.io, stagify.app, stagify.online of stagifyai.com, losstaande bedrijven met vergelijkbare namen."
     },
     "product": {
       "heading": "Wat we maken",
-      "body": "Stagify.ai stylt interieurs vanaf één foto, schildert en herinricht kamers via een pratende ontwerper, maskeert en herstylt afzonderlijke vlakken tot op de pixel, en ruimt buitenfoto’s op. Alles draait in de browser, in elf talen, met een gratis niveau, het <a href=\"stagify-plus.html\">Stagify+</a>-abonnement en een <a href=\"developers.html\">openbare API</a>. Alle rechten op elke gegenereerde afbeelding blijven van jou."
+      "body": "<a href=\"index.html\">Stagify.ai</a> stylt interieurs vanaf één foto, schildert en herinricht kamers via een pratende ontwerper, maskeert en herstylt afzonderlijke vlakken tot op de pixel, en ruimt buitenfoto’s op. Alles draait in de browser, in elf talen, met een gratis niveau, het <a href=\"stagify-plus.html\">Stagify+</a>-abonnement en een <a href=\"developers.html\">openbare API</a>. Alle rechten op elke gegenereerde afbeelding blijven van jou."
     },
     "find": {
       "heading": "Waar je ons vindt",
-      "body": "Dit zijn de enige accounts die we beheren. Een account dat hier niet staat, is niet van ons.",
-      "blog": "Ons blog"
+      "blog": "Ons Blog"
     },
     "faq": {
       "heading": "Veelgestelde vragen",
       "q1": "Is Stagify.ai hetzelfde bedrijf als stagify.io, stagify.app, stagify.online of stagifyai.com?",
-      "a1": "Nee. Stagify.ai is een onafhankelijk bedrijf en werkt uitsluitend op het domein stagify.ai. Het heeft geen band met, goedkeuring van of relatie tot stagify.io, stagify.app, stagify.online of stagifyai.com; dat zijn losstaande bedrijven met vergelijkbare namen. Reviews, prijzen, functies en voorwaarden op die sites gaan niet over Stagify.ai.",
-      "q2": "Wie heeft Stagify.ai opgericht en wie runt het?",
-      "a2": "Stagify.ai is op 22 augustus 2025 opgericht door Maximilian Ising (medeoprichter, hoofd Ontwikkeling en AI), Lucas Shtainer (medeoprichter, hoofd Marketing) en Ryan Croman (medeoprichter, hoofd Outreach). Het bedrijf voert één product, op stagify.ai, en is te bereiken op team@stagify.ai."
+      "a1": "Nee, geen van alle. Zelfde woord, andere bedrijven. Wat zij publiceren over prijzen, functies of service zegt niets over ons.",
+      "q2": "Hoe weet ik dat ik op de juiste site zit?",
+      "a2": "Kijk in de adresbalk. De onze eindigt op .ai.",
+      "q3": "Hebben jullie nog andere producten of domeinen?",
+      "a3": "Nee. We maken één ding en we doen dat op één plek. Wat elders Stagify heet, is niet van ons.",
+      "q4": "Wie heeft Stagify.ai opgericht en wie runt het nu?",
+      "a4": "Maximilian Ising, Lucas Shtainer en Ryan Croman begonnen in augustus 2025, en wij drieën runnen het nog steeds.",
+      "q5": "Welke accounts zijn echt van jullie?",
+      "a5": "Alleen de accounts die hierboven staan. Staat een account niet in die lijst, dan hebben wij het niet gemaakt.",
+      "q6": "Hoe bereik ik een mens?",
+      "a6": "Mail team@stagify.ai of bel (929) 251-4372.",
+      "q7": "Trainen jullie AI-modellen op mijn foto’s?",
+      "a7": "Nee. Je uploads en de beelden die je genereert worden nooit gebruikt om onze modellen te trainen, en de AI-leveranciers die wij gebruiken trainen standaard niet op API-data. Sectie 5 van het <a href=\"privacy.html\">privacybeleid</a> legt het uit.",
+      "q8": "Kan ik mijn abonnement opzeggen wanneer ik wil?",
+      "a8": "Ja, wanneer je wilt. Het blijft werken tot het eind van de periode die je al betaald hebt en verlengt daarna niet meer.",
+      "q9": "Wie kan er nog meer zien wat ik upload?",
+      "a9": "Alleen de leveranciers die we nodig hebben om de dienst te draaien: de AI-modellen, hosting, betalingen en e-mail. Ze staan allemaal met naam op de <a href=\"legal/subprocessors.html\">subverwerkerspagina</a>, met verwerkersovereenkomsten.",
+      "q10": "Kan een makelaarskantoor dit voor een heel team afnemen?",
+      "a10": "Ja. <a href=\"enterprise.html\">Enterprise</a> rekent af op gebruik over je hele e-maildomein, met een ondertekenbare MSA als je juristen die nodig hebben."
     }
   },
   "meta": {
@@ -230,6 +242,7 @@
   "navigation": {
     "home": "Home",
     "blog": "Blog",
+    "readInLanguage": "Lees dit in een andere taal",
     "tryFree": "Probeer Stagify gratis",
     "about": "Over ons",
     "pdfTo3d": "AI-Designer",
@@ -709,7 +722,8 @@
         "exterior": "Buitenstudio",
         "gallery": "Galerij"
       },
-      "fullscreen": "Volledig scherm"
+      "fullscreen": "Volledig scherm",
+      "rotate": "Draai naar liggend"
     },
     "staging": {
       "title": "Style een lege kamer in seconden",
@@ -1380,6 +1394,9 @@
   "footer": {
     "privacy": "Privacybeleid",
     "terms": "Servicevoorwaarden",
+    "legal": "Juridisch",
+    "subprocessors": "Subverwerkers",
+    "msa": "Enterprise-MSA",
     "contact": "Contact",
     "status": "Status",
     "developers": "API",

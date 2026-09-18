@@ -1,0 +1,84 @@
+{
+  "cover-7": {
+    "eyebrow": "Najaarsplanning",
+    "months": [
+      "AUG",
+      "SEP",
+      "OKT"
+    ]
+  },
+  "cover-9": {
+    "eyebrow": "Per gestylede foto",
+    "was": "$16 tot $75",
+    "now": "$0",
+    "nowCaption": "op het gratis plan",
+    "footnote": "Geen watermerk · Volle resolutie · Vrij te publiceren"
+  },
+  "cover-10": {
+    "eyebrow": "Meldplicht",
+    "headline": "Wie het echt verplicht stelt",
+    "rows": [
+      {
+        "label": "California",
+        "value": "Nu al verplicht"
+      },
+      {
+        "label": "Wisconsin",
+        "value": "Januari 2027"
+      },
+      {
+        "label": "Overal anders",
+        "value": "Jouw MLS"
+      }
+    ]
+  },
+  "cover-11": {
+    "forSale": "Te koop",
+    "byOwner": "Van de eigenaar",
+    "strapline": "De foto’s doen het verkoopwerk"
+  },
+  "cover-12": {
+    "eyebrow": "Nieuwbouw",
+    "figure": "77%",
+    "rest": "van de nieuwbouwwoningen te koop is onaf"
+  },
+  "cover-13": {
+    "eyebrow": "Developer-API",
+    "headline": "Één HTTP-call. Één gestylede foto.",
+    "rows": [
+      {
+        "label": "Per foto",
+        "value": "$0.15"
+      },
+      {
+        "label": "Abonnement",
+        "value": "Geen"
+      },
+      {
+        "label": "Wachtrij",
+        "value": "Geen"
+      }
+    ]
+  },
+  "cover-14": {
+    "eyebrow": "Eén leeg huis stylen",
+    "headline": "Fysieke styling factureert elke maand. Virtuele styling niets.",
+    "install": "$4,000 om in te richten",
+    "monthly": "daarna +$900 voor elke maand leegstand",
+    "physical": {
+      "value": "$6,700",
+      "label": "Fysieke styling"
+    },
+    "virtual": {
+      "value": "$0",
+      "label": "Virtuele styling"
+    },
+    "axis": "Dagen te koop"
+  },
+  "cover-15": {
+    "eyebrow": "Meubels verwijderen",
+    "headline": "Hun meubels gaan er eerst uit.",
+    "captionLeft": "Originele foto",
+    "captionRight": "Leeg, klaar om te stylen"
+  }
+}

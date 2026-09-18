@@ -611,8 +611,10 @@ import { initPlusRail } from './app/plus-rail.js';
       modal.classList.add('hidden');
     }
   
-  // auth.js (loaded before this module) calls this via window
-  // after sign-in/out; keep the exposure at top-level module eval.
+  // auth.js imports this function directly now (it lives in app/hero-stats.js, which has no
+  // imports of its own, so it does not drag this module into the eager graph). The window
+  // exposure stays because e2e/fixtures.js waits on it as the signal that this 38-module
+  // body has finished evaluating — keep the assignment at top-level module eval.
   window.__stagifyUpdateHeroFreeGensLine = updateHeroFreeGensLine;
   
   
@@ -626,15 +628,9 @@ import { initPlusRail } from './app/plus-rail.js';
     // Initialize 3D tilt effect for the contact cards
     init3DTiltEffect();
 
-    if (window.LanguageSystem && typeof window.LanguageSystem.applyLanguageToElements === 'function') {
-      var _origStagifyApplyLang = window.LanguageSystem.applyLanguageToElements;
-      window.LanguageSystem.applyLanguageToElements = function () {
-        _origStagifyApplyLang.call(window.LanguageSystem);
-        if (typeof window.__stagifyUpdateHeroFreeGensLine === 'function') {
-          window.__stagifyUpdateHeroFreeGensLine();
-        }
-      };
-    }
+    // No applyLanguageToElements wrapper any more: the nudge's copy is markup carrying
+    // data-lang-html, so the language loader re-applies it like every other string. This call
+    // only settles the class, for a load where auth.js answered before this module arrived.
     if (typeof window.__stagifyUpdateHeroFreeGensLine === 'function') {
       window.__stagifyUpdateHeroFreeGensLine();
     }

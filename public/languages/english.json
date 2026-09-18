@@ -1,39 +1,51 @@
 {
   "about": {
     "title": "About Stagify.ai",
-    "lede": "Stagify.ai is an AI virtual staging tool for real estate professionals. Upload a photo of a room, and get it furnished, redesigned or cleared in seconds.",
+    "lede": "Independent AI virtual staging for real estate professionals.",
     "who": {
       "heading": "Who we are",
-      "body": "Stagify.ai is an independent company. We build and operate exactly one product, and it lives at one address: <strong>stagify.ai</strong>. We are not a reseller, a white-label of another staging tool, or a regional branch of a larger group. You can reach the whole team at <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> or on <a href=\"tel:+19292514372\">(929) 251-4372</a>."
+      "body": "<a href=\"index.html\">Stagify.ai</a> is an independent company. We built the tool ourselves and we run it ourselves. There is no parent company behind us, and nothing here is someone else’s staging product with our name on it."
     },
     "facts": {
       "foundedLabel": "Founded",
       "founded": "22 August 2025",
       "foundersLabel": "Founders",
-      "founders": "Maximilian Ising (Head of Development and AI), Lucas Shtainer (Head of Marketing), Ryan Croman (Head of Outreach)",
       "siteLabel": "Website",
       "contactLabel": "Contact"
     },
     "notAffiliated": {
-      "heading": "Not affiliated with other “Stagify” products",
-      "body": "Several unrelated companies use a similar name: <strong>stagify.io</strong>, <strong>stagify.app</strong>, <strong>stagify.online</strong> and <strong>stagifyai.com</strong>. Stagify.ai has no affiliation, partnership, ownership or endorsement relationship with any of them, and shares no staff, code or data with them.",
-      "consequence": "Reviews, prices, features, outages and policies published on those sites do not describe Stagify.ai. If you are comparing virtual staging tools, check the domain in the address bar: ours ends in .ai."
+      "note": "Not affiliated with stagify.io, stagify.app, stagify.online or stagifyai.com, which are unrelated companies with similar names."
     },
     "product": {
       "heading": "What we make",
-      "body": "Stagify.ai stages interiors from a single photo, repaints and refurnishes rooms through a conversational designer, masks and restages individual areas pixel by pixel, and cleans up exterior shots. It runs in the browser in eleven languages, with a free tier, a <a href=\"stagify-plus.html\">Stagify+</a> subscription and a <a href=\"developers.html\">public API</a>. You keep full rights to every image you generate."
+      "body": "<a href=\"index.html\">Stagify.ai</a> stages interiors from a single photo, repaints and refurnishes rooms through a conversational designer, masks and restages individual areas pixel by pixel, and cleans up exterior shots. It runs in the browser in eleven languages, with a free tier, a <a href=\"stagify-plus.html\">Stagify+</a> subscription and a <a href=\"developers.html\">public API</a>. You keep full rights to every image you generate."
     },
     "find": {
       "heading": "Where to find us",
-      "body": "These are the only accounts we run. An account not listed here is not ours.",
-      "blog": "Our blog"
+      "blog": "Our Blog"
     },
     "faq": {
       "heading": "Common questions",
       "q1": "Is Stagify.ai the same company as stagify.io, stagify.app, stagify.online or stagifyai.com?",
-      "a1": "No. Stagify.ai is an independent company and operates only at the domain stagify.ai. It is not affiliated with, endorsed by, or related to stagify.io, stagify.app, stagify.online or stagifyai.com, which are unrelated businesses with similar names. Reviews, pricing, features and policies published on those sites do not describe Stagify.ai.",
-      "q2": "Who founded and operates Stagify.ai?",
-      "a2": "Stagify.ai was founded on 22 August 2025 by Maximilian Ising (Co-Founder, Head of Development and AI), Lucas Shtainer (Co-Founder, Head of Marketing) and Ryan Croman (Co-Founder, Head of Outreach). The company operates one product, at stagify.ai, and can be reached at team@stagify.ai."
+      "a1": "No, none of them. Same word, different companies. What they publish about prices, features or service says nothing about us.",
+      "q2": "How do I know I am on the right site?",
+      "a2": "Look at the address bar. Ours ends in .ai.",
+      "q3": "Do you run any other products or domains?",
+      "a3": "No. We make one thing and we run it in one place. Anything called Stagify anywhere else is not ours.",
+      "q4": "Who founded Stagify.ai, and who runs it now?",
+      "a4": "Maximilian Ising, Lucas Shtainer and Ryan Croman started it in August 2025, and the three of us still run it.",
+      "q5": "Which accounts are actually yours?",
+      "a5": "The ones linked above, and nothing else. If an account is not on that list, we did not make it.",
+      "q6": "How do I reach a person?",
+      "a6": "Email team@stagify.ai or call (929) 251-4372.",
+      "q7": "Do you train AI models on my photos?",
+      "a7": "No. Your uploads and the images you generate are never used to train our models, and the AI providers we use do not train on API data by default. Section 5 of the <a href=\"privacy.html\">Privacy Policy</a> spells it out.",
+      "q8": "Can I cancel a subscription whenever I want?",
+      "a8": "Yes, any time. It keeps working until the end of the period you already paid for, then stops renewing.",
+      "q9": "Who else can see what I upload?",
+      "a9": "Only the providers we need to run the service: the AI models, hosting, payments and email. All of them are named on the <a href=\"legal/subprocessors.html\">subprocessors page</a>, under data processing agreements.",
+      "q10": "Can a brokerage or agency buy this for a whole team?",
+      "a10": "Yes. <a href=\"enterprise.html\">Enterprise</a> bills by usage across your whole email domain, with a signable MSA if your legal team needs one."
     }
   },
   "meta": {
@@ -230,6 +242,7 @@
   "navigation": {
     "home": "Home",
     "blog": "Blog",
+    "readInLanguage": "Read this in another language",
     "tryFree": "Try Stagify Free",
     "about": "About",
     "pdfTo3d": "AI Designer",
@@ -709,7 +722,8 @@
         "exterior": "Exterior Studio",
         "gallery": "Gallery"
       },
-      "fullscreen": "Toggle fullscreen"
+      "fullscreen": "Toggle fullscreen",
+      "rotate": "Rotate to landscape"
     },
     "staging": {
       "title": "Stage an empty room in seconds",
@@ -1380,6 +1394,9 @@
   "footer": {
     "privacy": "Privacy Policy",
     "terms": "Terms of Service",
+    "legal": "Legal",
+    "subprocessors": "Subprocessors",
+    "msa": "Enterprise MSA",
     "contact": "Contact",
     "status": "Status",
     "developers": "API",

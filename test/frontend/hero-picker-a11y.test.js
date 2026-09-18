@@ -147,21 +147,60 @@ test('the See-original toggle does not announce the opposite of its state', () =
       + 'names the action and there is no pressed state, or the label is constant and '
       + 'aria-pressed carries it. Both together announce the inverse of the truth.',
   );
-  assert.match(
-    JS_CODE,
-    /showingOriginal \? 'hero\.seeStaged' : 'hero\.seeOriginal'/,
-    'the toggle must swap between both label keys',
-  );
+  /* BOTH labels live in the markup, each keeping its own key for good. That is what lets the
+     button carry the action without a second writer: applyTranslations() repaints from
+     data-lang and nothing in hero-picker.js ever writes this button's text, so the two can
+     never disagree. Rewrite one span from JS instead and a language change repaints the
+     stale key over it. */
+  const btnHtml = INDEX.slice(INDEX.indexOf(btn), INDEX.indexOf('</button>', INDEX.indexOf(btn)));
+  assert.match(btnHtml, /data-lang="hero\.seeOriginal"/, 'the toggle lost its "See original" key');
+  assert.match(btnHtml, /data-lang="hero\.seeStaged"/, 'the toggle lost its "See staged" key');
   // The state still has to be exposed somewhere the stylesheet can see it.
   assert.match(
     JS_CODE,
     /classList\.toggle\('is-showing-original', showingOriginal\)/,
     'the showing-original state must still land on the button as a class',
   );
-  /* The swapped key has to travel with the text. applyTranslations() writes textContent
-     straight from data-lang, so a stale attribute repaints "See original" over the button on
-     the next language change while the original is still what is showing. */
-  assert.match(JS_CODE, /setAttribute\('data-lang', key\)/, 'data-lang must be swapped with the label');
+});
+
+/* THE PILL MUST NOT RESIZE WHEN IT IS PRESSED. It sits on a photograph, so a control that
+   snaps narrower the moment its label goes from "See original" to the shorter "See staged"
+   reads as a glitch. Both strings ship stacked in one grid cell and the cell takes the width
+   of the WIDER one, so the width is fixed per language without measuring anything.
+
+   A min-width cannot stand in for this and the test says so loudly, because it is the obvious
+   "simplification" someone reaches for: the staged label is the LONGER of the pair in Chinese,
+   French, Japanese and Korean, so a number calibrated against English jumps in four locales
+   and clips in others. */
+test('the See-original pill holds one width across the toggle', () => {
+  const rule = (sel) => {
+    const at = CSS_CODE.indexOf(sel + ' {');
+    assert.ok(at !== -1, `hero-picker.css lost the ${sel} rule`);
+    return CSS_CODE.slice(at, CSS_CODE.indexOf('}', at));
+  };
+  assert.match(
+    rule('.hp-original__label'), /display:\s*grid/,
+    '.hp-original__label must stack both labels in one grid cell — that is what makes the pill '
+      + 'as wide as the wider of the two and stops it resizing when pressed.',
+  );
+  assert.match(
+    rule('.hp-original .hp-original__label .hp-original__word'), /visibility:\s*hidden/,
+    'the label not on screen must be visibility:hidden, not display:none or removed. It has to '
+      + 'keep its box (that is what reserves the width) while staying out of the accessibility '
+      + 'tree, or the button announces as "See original See staged". Three classes, because '
+      + 'styles.css\'s `body.language-loaded [data-lang] { visibility: visible }` is (0,2,1) and '
+      + 'matches both spans — a one-class rule loses and paints them on top of each other.',
+  );
+  assert.match(
+    rule('.hp-original .hp-original__label .hp-original__word.is-on'), /visibility:\s*visible/,
+    'the label for the photo on screen must be revealed by .is-on',
+  );
+  assert.ok(
+    !/\.hp-original[^{]*\{[^}]*min-width/.test(CSS_CODE),
+    'a min-width on the pill is not a substitute for stacking both labels: the staged label is '
+      + 'the longer of the pair in Chinese, French, Japanese and Korean, so any fixed number '
+      + 'still jumps or clips somewhere.',
+  );
 });
 
 test('motion is suppressed for visitors who ask for it', () => {

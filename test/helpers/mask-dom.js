@@ -234,11 +234,15 @@ export function installMaskDom({ mobile = false, visualViewport = null } = {}) {
 
   const head = new FakeEl('head');
   const body = new FakeEl('body');
+  // <html>. Real islands put pre-paint state on it as a class (see
+  // public/scripts/session-class.js and the hero's upgrade nudge), so the shim needs one.
+  const documentElement = new FakeEl('html');
   const byId = new Map();
 
   const doc = {
     head,
     body,
+    documentElement,
     createElement(tag) {
       if (tag === 'canvas') return domCanvas();
       return new FakeEl(tag);
@@ -269,6 +273,7 @@ export function installMaskDom({ mobile = false, visualViewport = null } = {}) {
     win,
     head,
     body,
+    documentElement,
     /** Make an element, register its id, and attach it under body. */
     el(tag, id, className) {
       const e = new FakeEl(tag);

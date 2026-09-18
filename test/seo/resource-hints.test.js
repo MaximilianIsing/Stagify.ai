@@ -9,6 +9,13 @@
 //    a closed dropdown, competing with the LCP image. The visible flag must stay EAGER —
 //    lazy-loading it would delay a flag that is on screen immediately.
 //
+//    There are TWO switchers of that shape, under different class names: the site one
+//    (.lang-switch) on the marketing pages, and the blog's own no-JS picker (.blog-langs,
+//    a <details> baked by lib/i18n/blog-langs.js) — blog pages load none of the client
+//    i18n stack, so they cannot share the markup. The byte cost is identical either way,
+//    so the rule is written once here and applied to both. test/i18n/blog-langs.test.js
+//    is the other half: it asserts a blog page never carries the site switcher.
+//
 // 2. ANALYTICS PRECONNECT. scripts/gtag.js injects the googletagmanager.com loader at
 //    runtime, so that origin appears nowhere in the markup and the preload scanner cannot
 //    discover it. A `preconnect` is the only way to warm DNS/TCP/TLS before the deferred
@@ -65,6 +72,19 @@ function flagImgs(html) {
   return (html.match(/<img\b[^>]*media-webp\/flags\/[^>]*>/gi) || []);
 }
 
+/**
+ * The flag a page paints immediately: the site switcher's current flag, or — on a blog
+ * page — the one inside the blog picker's <summary> trigger. Every other flag sits in a
+ * menu that is closed on load.
+ * @param {string} html
+ * @returns {string[]}
+ */
+function visibleFlagImgs(html) {
+  const site = flagImgs(html).filter((t) => /class="[^"]*\blang-switch__flag\b/.test(t));
+  const trigger = html.match(/<summary\b[^>]*\bblog-langs__button\b[\s\S]*?<\/summary>/i);
+  return [...site, ...(trigger ? flagImgs(trigger[0]) : [])];
+}
+
 test('the page inventory is non-empty', () => {
   assert.ok(PAGES.length >= 30, `expected 30+ HTML pages, found ${PAGES.length}`);
 });
@@ -74,14 +94,15 @@ test('switcher dropdown flags are lazy and the visible flag is eager', () => {
   assert.ok(withSwitcher.length >= 8, `expected 8+ pages with a switcher, found ${withSwitcher.length}`);
 
   for (const page of withSwitcher) {
-    const imgs = flagImgs(read(page));
-    const visible = imgs.filter((t) => /class="[^"]*\blang-switch__flag\b/.test(t));
-    const dropdown = imgs.filter((t) => !/class="[^"]*\blang-switch__flag\b/.test(t));
+    const html = read(page);
+    const imgs = flagImgs(html);
+    const visible = visibleFlagImgs(html);
+    const dropdown = imgs.filter((t) => !visible.includes(t));
 
-    assert.equal(visible.length, 1, `${page}: expected exactly 1 visible .lang-switch__flag, got ${visible.length}`);
+    assert.equal(visible.length, 1, `${page}: expected exactly 1 visible switcher flag, got ${visible.length}`);
     assert.ok(
       !/loading\s*=\s*"lazy"/i.test(visible[0]),
-      `${page}: the VISIBLE .lang-switch__flag must stay eager — it paints immediately, so lazy-loading `
+      `${page}: the VISIBLE switcher flag must stay eager — it paints immediately, so lazy-loading `
         + 'it only delays it.',
     );
 

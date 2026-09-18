@@ -73,9 +73,20 @@
     let startY = 0;
     let axis = /** @type {'x'|'y'|null} */ (null);
 
-    function pct(clientX) {
+    /* The immersive ("rotate to landscape") view turns the whole stage 90deg, and a
+       rotated element's getBoundingClientRect() still reports its AXIS-ALIGNED box —
+       so mapping clientX through it silently reads the wrong axis and the wipe stops
+       responding to a horizontal swipe. scripts/immersive-view.js publishes the flag
+       on <html> for exactly this. rotate(90deg) sends the element's local +x to screen
+       +y, so the widget's left edge is the box's TOP edge while it is on. */
+    function rotated() {
+      return document.documentElement.dataset.imvRotate === "90";
+    }
+
+    function pct(e) {
       const r = ba.getBoundingClientRect();
-      return ((clientX - r.left) / r.width) * 100;
+      if (rotated()) return ((e.clientY - r.top) / r.height) * 100;
+      return ((e.clientX - r.left) / r.width) * 100;
     }
 
     function beginDrag() {
@@ -105,7 +116,7 @@
         // the click position immediately. preventDefault stops the image drag-ghost.
         e.preventDefault();
         beginDrag();
-        setPos(pct(e.clientX));
+        setPos(pct(e));
       }
       // Guarded: capturing a pointer that the browser has already released throws
       // NotFoundError, and losing the capture is not a reason to lose the drag.
@@ -119,10 +130,14 @@
     ba.addEventListener("pointermove", (e) => {
       if (dragId === null || e.pointerId !== dragId) return;
       if (axis === null) {
+        // `along` is travel across the widget, `across` is travel that should scroll
+        // the page instead — the two swap over when the stage is rotated.
         const dx = Math.abs(e.clientX - startX);
         const dy = Math.abs(e.clientY - startY);
+        const along = rotated() ? dy : dx;
+        const across = rotated() ? dx : dy;
         if (dx + dy <= AXIS_LOCK_PX) return;
-        if (dy > dx) {
+        if (across > along) {
           // Vertical intent: let the page scroll and stay out of the way.
           endDrag();
           return;
@@ -130,7 +145,7 @@
         beginDrag();
       }
       if (axis !== "x") return;
-      setPos(pct(e.clientX));
+      setPos(pct(e));
     });
 
     ba.addEventListener("pointerup", endDrag);

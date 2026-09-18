@@ -5,6 +5,7 @@ import { syncExteriorAccess } from './exterior-studio/access.js';
 import { syncMaskingStudioAccess } from './masking-studio/access.js';
 import { syncDesignerAccess } from './ai-designer/access.js';
 import { syncPlusRail } from './app/plus-rail.js';
+import { updateHeroFreeGensLine } from './app/hero-stats.js';
 
 (function () {
   var TOKEN_KEY = 'stagifyAuthToken';
@@ -205,13 +206,17 @@ import { syncPlusRail } from './app/plus-rail.js';
       // exists for. Signing out has to bring it back, and this is the branch that runs.
       syncPlusRail();
 
+      // The home page's "Try Stagify+ today" line under the hero CTA. Imported and called
+      // directly rather than through window.__stagifyUpdateHeroFreeGensLine, which was app.js's
+      // hook: app.js loads after `load`, so routing through it left a free account's answer
+      // waiting on 38 unrelated modules. Called before the early return for the same reason as
+      // the writers above — signing out has to put the nudge away.
+      updateHeroFreeGensLine();
+
       if (!u) {
         if (proPanel) proPanel.classList.add('hidden');
         if (window.StagifyProfileMenu && typeof window.StagifyProfileMenu.refresh === 'function') {
           window.StagifyProfileMenu.refresh();
-        }
-        if (typeof window.__stagifyUpdateHeroFreeGensLine === 'function') {
-          window.__stagifyUpdateHeroFreeGensLine();
         }
         return;
       }
@@ -223,9 +228,6 @@ import { syncPlusRail } from './app/plus-rail.js';
 
       if (window.StagifyProfileMenu && typeof window.StagifyProfileMenu.refresh === 'function') {
         window.StagifyProfileMenu.refresh();
-      }
-      if (typeof window.__stagifyUpdateHeroFreeGensLine === 'function') {
-        window.__stagifyUpdateHeroFreeGensLine();
       }
     },
   };

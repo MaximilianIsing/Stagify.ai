@@ -45,7 +45,10 @@ a { color: var(--brand); }
   backdrop-filter: saturate(180%) blur(10px);
   border-bottom: 1px solid var(--line);
 }
+/* Takes the free space, so the picker and the CTA sit together on the right rather
+   than the picker being centred by the topbar's space-between. */
 .blog-brand {
+  margin-right: auto;
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -330,10 +333,103 @@ a { color: var(--brand); }
   white-space: pre;
 }
 
+/* ---------- Language picker (topbar) ----------------------------------------- */
+/* Server-rendered by lib/i18n/blog-langs.js, listing only the languages an article was
+   actually translated into. A <details> rather than a <select>: blog pages load no
+   JavaScript beyond footer-year.js, and <summary> gives a real dropdown — keyboard
+   operable, no script — where a <select> would need one to navigate on change. */
+.blog-langs {
+  position: relative;
+  flex: none;
+}
+.blog-langs__button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  /* Both needed: the standard property and the WebKit pseudo-element, or the disclosure
+     triangle sits next to the globe on one engine or the other. */
+  list-style: none;
+  user-select: none;
+}
+.blog-langs__button::-webkit-details-marker { display: none; }
+.blog-langs__button:hover { color: var(--ink); border-color: #cbd5e1; }
+.blog-langs[open] .blog-langs__button { color: var(--ink); border-color: #cbd5e1; }
+/* Matches .lang-switch__flag on the marketing pages: same box, same rounding, so the two
+   language controls look like the same control. */
+.blog-langs__flag {
+  width: 22px;
+  height: 15px;
+  border-radius: 2px;
+  object-fit: contain;
+  flex: none;
+}
+.blog-langs__caret { flex: none; transition: transform 0.15s ease; }
+.blog-langs[open] .blog-langs__caret { transform: rotate(180deg); }
+/* The accessible name. The button shows the current language; a topbar has no room for
+   the sentence, but a screen reader still needs it. */
+.blog-langs__hint {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.blog-langs__menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 20;
+  min-width: 170px;
+  max-height: min(70vh, 420px);
+  overflow-y: auto;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+}
+.blog-langs__menu a {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  color: var(--ink);
+  font-size: 13.5px;
+  text-decoration: none;
+}
+.blog-langs__menu a:hover { background: #f1f5f9; }
+/* The page you are already on: still a link (it is a real URL, and a crawler should see
+   the self-reference), but no longer offered as somewhere to go. */
+.blog-langs__menu a[aria-current="page"] {
+  color: var(--brand);
+  font-weight: 700;
+  cursor: default;
+  pointer-events: none;
+}
+
 /* ---------- Responsive ------------------------------------------------------- */
 @media (max-width: 640px) {
   .blog-hero h1 { font-size: 2rem; }
   .article-title { font-size: 1.85rem; }
   .blog-topbar { padding: 10px 16px; }
+  /* The globe and caret still read as a language control; the name is the part a
+     narrow topbar cannot afford beside the brand and the CTA. */
+  .blog-langs__current { display: none; }
+  .blog-langs__button { padding: 7px 8px; }
   .article-figure .ba { grid-template-columns: 1fr; }
 }

@@ -95,17 +95,26 @@
         {
           "@type": "Person",
           "name": "Maximilian Ising",
-          "jobTitle": "Co-Founder, Head of Development and AI"
+          "jobTitle": "Co-Founder, Head of Development and AI",
+          "sameAs": [
+            "https://www.linkedin.com/in/maximilian-ising-2751423a4/"
+          ]
         },
         {
           "@type": "Person",
           "name": "Lucas Shtainer",
-          "jobTitle": "Co-Founder, Head of Marketing"
+          "jobTitle": "Co-Founder, Head of Marketing",
+          "sameAs": [
+            "https://www.linkedin.com/in/lucas-shtainer-8113a6384/"
+          ]
         },
         {
           "@type": "Person",
           "name": "Ryan Croman",
-          "jobTitle": "Co-Founder, Head of Outreach"
+          "jobTitle": "Co-Founder, Head of Outreach",
+          "sameAs": [
+            "https://www.linkedin.com/in/ryan-croman-03363213b/"
+          ]
         }
       ],
       "contactPoint": [
@@ -135,6 +144,9 @@
         "https://www.tiktok.com/@stagify.ai",
         "https://www.linkedin.com/company/stagify-ai/",
         "https://www.crunchbase.com/organization/stagify-ai",
+        "https://app.dealroom.co/companies/stagify_ai",
+        "https://tracxn.com/d/companies/stagify/__C__95DTV_j_Kf97U5Vte9CuKVtZLNVjliYAfAYa9r_U",
+        "https://search.agent.spot/product/52b95797-675c-4030-a8ae-17b7bcba3404",
         "https://www.indiehackers.com/Stagify",
         "https://stagify.substack.com",
         "https://stagifyai.blogspot.com",
@@ -561,9 +573,15 @@
     <script type="module" src="scripts/stagify-plus-blackhole.js"></script>
 
     <footer style="text-align:center;padding:20px 16px 28px;font-size:13px;color:#374151;">
-      <a href="privacy.html" style="color:#2563eb;text-decoration:none;" data-lang="footer.privacy">Privacy Policy</a>
-      &nbsp;·&nbsp;
-      <a href="terms.html" style="color:#2563eb;text-decoration:none;" data-lang="footer.terms">Terms of Service</a>
+      <details class="legal-menu" data-legal-menu>
+        <summary class="legal-menu__trigger" data-lang="footer.legal">Legal</summary>
+        <ul class="legal-menu__list">
+          <li><a class="legal-menu__item" href="privacy.html" data-lang="footer.privacy">Privacy Policy</a></li>
+          <li><a class="legal-menu__item" href="terms.html" data-lang="footer.terms">Terms of Service</a></li>
+          <li><a class="legal-menu__item" href="legal/subprocessors.html" data-lang="footer.subprocessors">Subprocessors</a></li>
+          <li><a class="legal-menu__item" href="legal/enterprise-msa.html" rel="nofollow" data-lang="footer.msa">Enterprise MSA</a></li>
+        </ul>
+      </details>
       &nbsp;·&nbsp;
       <a href="about.html" style="color:#2563eb;text-decoration:none;" data-lang="navigation.about">About</a>
       &nbsp;·&nbsp;
@@ -578,5 +596,6 @@
     <!-- card-spotlight.js is deliberately NOT loaded here any more: its only target on
          this page was .sp-feature, and the feature grid is gone. -->
     <script type="module" src="scripts/footer-year.js"></script>
+    <script type="module" src="scripts/legal-menu.js"></script>
 </body>
 </html>

@@ -88,7 +88,7 @@ test('every indexable page carries exactly one Organization node, identical to t
 });
 
 test('the press corroboration rides only on the two pages that are about the company', () => {
-  // ~7 KB of subjectOf. On the homepage and /about it is the third-party evidence that
+  // ~8 KB of subjectOf. On the homepage and /about it is the third-party evidence that
   // makes the entity more than a self-claim; on twenty other pages it would be weight.
   const withPress = identityPages()
     .filter((page) => jsonLd(read(page.file)).some((n) => n['@id'] === ORGANIZATION_ID && n.subjectOf))
@@ -162,6 +162,16 @@ test('llms.txt tells the same story as the JSON-LD', () => {
   assert.ok(/not affiliated with/i.test(txt), 'llms.txt must carry the non-affiliation statement');
 });
 
+test('every sameAs profile is also a real link on /about.html', () => {
+  // sameAs is an assertion in structured data; the profile row under "Where to find us"
+  // is the same claim where a crawler (and a person) can follow it. They are two
+  // hand-kept copies of one list, and llms.txt is a third — that one is already guarded
+  // above, so this closes the last unguarded copy.
+  const html = read('about.html');
+  const missing = SAME_AS.filter((url) => !html.includes(`href="${url}"`));
+  assert.deepEqual(missing, [], `sameAs claims these profiles, but /about.html links none of them: ${missing.join(', ')}`);
+});
+
 test('/about.html renders every FAQ answer it declares — no invisible Q&A', () => {
   // Cloaking guard, and the reason the disambiguation Q&A lives here rather than being
   // hidden in the homepage's FAQPage: Google requires FAQ answers to be visible on the
@@ -172,9 +182,13 @@ test('/about.html renders every FAQ answer it declares — no invisible Q&A', ()
   assert.ok(faq, 'about.html no longer declares an FAQPage');
 
   // Strip tags and entities so the comparison is against what a reader actually sees.
+  // Tags collapse to nothing rather than to a space, because the answers contain inline
+  // links — every "Stagify.ai" in the copy is a link to the home page — and substituting
+  // a space would turn "at <a>stagify.ai</a>." into "at stagify.ai ." and fail against a
+  // JSON-LD answer that is correctly punctuated.
   const visible = html
     .replace(/<script[\s\S]*?<\/script>/gi, ' ')
-    .replace(/<[^>]+>/g, ' ')
+    .replace(/<[^>]+>/g, '')
     .replace(/&nbsp;/g, ' ')
     .replace(/\s+/g, ' ');
 

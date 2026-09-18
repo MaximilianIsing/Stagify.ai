@@ -1,0 +1,84 @@
+{
+  "cover-7": {
+    "eyebrow": "Cronograma de outono",
+    "months": [
+      "AGO",
+      "SET",
+      "OUT"
+    ]
+  },
+  "cover-9": {
+    "eyebrow": "Por foto mobiliada",
+    "was": "$16 a $75",
+    "now": "$0",
+    "nowCaption": "no plano gratuito",
+    "footnote": "Sem marca d'água · Resolução total · Sua para publicar"
+  },
+  "cover-10": {
+    "eyebrow": "Divulgação",
+    "headline": "Quem realmente exige",
+    "rows": [
+      {
+        "label": "California",
+        "value": "Já em vigor"
+      },
+      {
+        "label": "Wisconsin",
+        "value": "Janeiro de 2027"
+      },
+      {
+        "label": "Em todo o resto",
+        "value": "Seu MLS"
+      }
+    ]
+  },
+  "cover-11": {
+    "forSale": "Vende-se",
+    "byOwner": "Pelo proprietário",
+    "strapline": "São as fotos que vendem"
+  },
+  "cover-12": {
+    "eyebrow": "Na planta",
+    "figure": "77%",
+    "rest": "das casas novas à venda não estão prontas"
+  },
+  "cover-13": {
+    "eyebrow": "API para devs",
+    "headline": "Uma chamada HTTP. Uma foto mobiliada.",
+    "rows": [
+      {
+        "label": "Por imagem",
+        "value": "$0.15"
+      },
+      {
+        "label": "Assinatura",
+        "value": "Zero"
+      },
+      {
+        "label": "Fila de espera",
+        "value": "Zero"
+      }
+    ]
+  },
+  "cover-14": {
+    "eyebrow": "Preparar uma casa vazia",
+    "headline": "O staging físico cobra todo mês. O virtual não cobra nada.",
+    "install": "$4,000 de instalação",
+    "monthly": "e mais +$900 por mês parada",
+    "physical": {
+      "value": "$6,700",
+      "label": "Staging físico"
+    },
+    "virtual": {
+      "value": "$0",
+      "label": "Staging virtual"
+    },
+    "axis": "Dias no mercado"
+  },
+  "cover-15": {
+    "eyebrow": "Remoção de móveis",
+    "headline": "Os móveis deles saem primeiro.",
+    "captionLeft": "Como fotografado",
+    "captionRight": "Vazio, pronto para mobiliar"
+  }
+}

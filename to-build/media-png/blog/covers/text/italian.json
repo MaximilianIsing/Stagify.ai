@@ -1,0 +1,84 @@
+{
+  "cover-7": {
+    "eyebrow": "Calendario d'autunno",
+    "months": [
+      "AGO",
+      "SET",
+      "OTT"
+    ]
+  },
+  "cover-9": {
+    "eyebrow": "Per foto arredata",
+    "was": "da $16 a $75",
+    "now": "$0",
+    "nowCaption": "nel piano gratuito",
+    "footnote": "Senza filigrana · Risoluzione piena · Tua da pubblicare"
+  },
+  "cover-10": {
+    "eyebrow": "Trasparenza",
+    "headline": "Chi lo richiede davvero",
+    "rows": [
+      {
+        "label": "California",
+        "value": "Già in vigore"
+      },
+      {
+        "label": "Wisconsin",
+        "value": "Gennaio 2027"
+      },
+      {
+        "label": "Ovunque altrove",
+        "value": "Il tuo MLS"
+      }
+    ]
+  },
+  "cover-11": {
+    "forSale": "Vendesi",
+    "byOwner": "Dal proprietario",
+    "strapline": "Sono le foto a vendere"
+  },
+  "cover-12": {
+    "eyebrow": "Vendita su carta",
+    "figure": "77%",
+    "rest": "delle case nuove in vendita non è finita"
+  },
+  "cover-13": {
+    "eyebrow": "API sviluppatori",
+    "headline": "Una chiamata HTTP. Una foto arredata.",
+    "rows": [
+      {
+        "label": "Per foto",
+        "value": "$0.15"
+      },
+      {
+        "label": "Abbonamento",
+        "value": "Zero"
+      },
+      {
+        "label": "Coda",
+        "value": "Zero"
+      }
+    ]
+  },
+  "cover-14": {
+    "eyebrow": "Allestire una casa vuota",
+    "headline": "L’home staging fisico costa ogni mese. Quello virtuale non costa nulla.",
+    "install": "$4,000 di allestimento",
+    "monthly": "poi +$900 per ogni mese di giacenza",
+    "physical": {
+      "value": "$6,700",
+      "label": "Staging fisico"
+    },
+    "virtual": {
+      "value": "$0",
+      "label": "Staging virtuale"
+    },
+    "axis": "Giorni sul mercato"
+  },
+  "cover-15": {
+    "eyebrow": "Rimozione mobili",
+    "headline": "Prima escono i loro mobili.",
+    "captionLeft": "Come fotografata",
+    "captionRight": "Vuota, pronta da arredare"
+  }
+}

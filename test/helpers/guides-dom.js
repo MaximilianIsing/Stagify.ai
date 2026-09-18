@@ -58,6 +58,14 @@ class FakeEl {
 
   setAttribute(name, value) { this.attrs[name] = String(value); }
   getAttribute(name) { return Object.hasOwn(this.attrs, name) ? this.attrs[name] : null; }
+  /** Class selectors only — enough for the one ancestor lookup guides.js makes. */
+  closest(sel) {
+    const name = sel.replace(/^\./, '');
+    for (let node = this; node; node = node.parentEl) {
+      if (node.classList.contains(name)) return node;
+    }
+    return null;
+  }
   addEventListener(type, fn) { (this.listeners[type] ||= []).push(fn); }
   focus() { if (this.ownerDocument) this.ownerDocument.activeElement = this; }
   scrollIntoView(opts) { this.scrolledIntoView = opts || {}; }
@@ -80,12 +88,26 @@ export function guidesDocument({ hash = '', reducedMotion = true } = {}) {
   const docListeners = {};
   const winListeners = {};
 
+  // `[data-guide-fullscreen]` is the one attribute selector the page uses, and the
+  // control it names has no class of its own that guides.js looks up — so resolving it
+  // is what lets the fullscreen wiring be exercised rather than silently skipped.
+  const byAttr = new Map();
+  const resolve = (sel) => {
+    const attr = /^\[([a-z-]+)\]$/.exec(sel.trim());
+    if (attr) return byAttr.get(attr[1]) ?? [];
+    return byClass.get(sel.replace(/^\./, '')) ?? [];
+  };
+
   const doc = {
     activeElement: null,
+    fullscreenEnabled: true,
+    fullscreenElement: null,
     getElementById: (id) => byId.get(id) ?? null,
-    querySelector: (sel) => (byClass.get(sel.replace(/^\./, '')) ?? [])[0] ?? null,
-    querySelectorAll: (sel) => byClass.get(sel.replace(/^\./, '')) ?? [],
+    querySelector: (sel) => resolve(sel)[0] ?? null,
+    querySelectorAll: (sel) => resolve(sel),
     addEventListener(type, fn) { (docListeners[type] ||= []).push(fn); },
+    fire(type, event = {}) { for (const fn of docListeners[type] ?? []) fn(event); },
+    exitFullscreen() { doc.fullscreenElement = null; doc.fire('fullscreenchange'); },
   };
 
   const make = (tag, id, className) => {
@@ -98,6 +120,17 @@ export function guidesDocument({ hash = '', reducedMotion = true } = {}) {
       byClass.get(name).push(node);
     }
     if (id) byId.set(id, node);
+    return node;
+  };
+
+  /** Park an element under `parent` and index whichever attributes it carries. */
+  const attach = (node, parent, attrs = {}) => {
+    node.parentEl = parent;
+    for (const [name, value] of Object.entries(attrs)) {
+      node.setAttribute(name, value);
+      if (!byAttr.has(name)) byAttr.set(name, []);
+      byAttr.get(name).push(node);
+    }
     return node;
   };
 
@@ -128,6 +161,17 @@ export function guidesDocument({ hash = '', reducedMotion = true } = {}) {
     const el = make('div', tab.controls, `guide-demo-panel${i === 0 ? ' is-active' : ''}`);
     el.setAttribute('data-demo', tab.demo);
     el.hidden = i !== 0;
+    // The expand control the real page ships inside every walkthrough panel. It is a
+    // CHILD, so guides.js's `btn.closest('.guide-demo-panel')` resolves to the panel.
+    const btn = make('button', '', 'guide-demo-fs');
+    attach(btn, el, { 'data-guide-fullscreen': '' });
+    btn.setAttribute('aria-pressed', 'false');
+    el.fsButton = btn;
+    el.requestFullscreen = () => {
+      doc.fullscreenElement = el;
+      doc.fire('fullscreenchange');
+      return Promise.resolve();
+    };
     return el;
   });
 
@@ -138,6 +182,7 @@ export function guidesDocument({ hash = '', reducedMotion = true } = {}) {
     panels,
     picker,
     replacedUrls: replaced,
+    fsButtons: panels.map((p) => p.fsButton),
     tabFor: (demo) => tabEls.find((t) => t.getAttribute('data-demo') === demo),
     panelFor: (demo) => panels.find((p) => p.getAttribute('data-demo') === demo),
   };

@@ -434,6 +434,38 @@
   transition: background 0.18s, border-color 0.18s, color 0.18s, box-shadow 0.18s;
 }
 
+/* Both labels ship, stacked in one grid cell, and only one of them is visible. The cell is
+   as wide as the WIDER of the two, so the pill holds a single width across the toggle
+   instead of snapping narrower the moment it says "See staged". A min-width could not do
+   this job: the staged label is the LONGER of the pair in Chinese, French, Japanese and
+   Korean, so the width to reserve is per-language and has to come from the strings
+   themselves rather than from a number picked against English.
+
+   `visibility: hidden` rather than `opacity: 0` or `display: none`: the twin has to keep its
+   box — that is the entire point — but it must not reach the accessibility tree, or the
+   button announces as "See original See staged". */
+.hp-original__label {
+  display: grid;
+  justify-items: center;
+}
+
+.hp-original__word {
+  grid-area: 1 / 1;
+}
+
+/* THREE CLASSES ON THE VISIBILITY PAIR, and it is not style. The anti-FOUC rule in
+   styles.css — `body.language-loaded [data-lang] { visibility: visible }`, (0,2,1) — matches
+   every element carrying a key, and both of these carry one. A one-class
+   `visibility: hidden` loses to it outright, and the pill ships with BOTH labels painted on
+   top of each other. Same trap, same fix as `.rs__error` in home.css. */
+.hp-original .hp-original__label .hp-original__word {
+  visibility: hidden;
+}
+
+.hp-original .hp-original__label .hp-original__word.is-on {
+  visibility: visible;
+}
+
 /* Two stacked frames, and the FILLED one is whichever photo you are looking at: bottom-right
    for the staged render, top-left for the original. It carries the state a second way for
    anyone who reads the control as a shape before they read the words. */

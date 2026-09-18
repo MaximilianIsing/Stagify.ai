@@ -19,6 +19,7 @@ import {
   slugsForLocale,
 } from '../lib/i18n/blog-packs.js';
 import { pruneHubForLocale } from '../lib/i18n/blog-hub.js';
+import { markCurrentLang } from '../lib/i18n/blog-langs.js';
 import { logger } from '../lib/logger.js';
 
 /**
@@ -77,9 +78,24 @@ export default function createI18nRouter({ __dirname, DEBUG_MODE, blogViews = nu
   }
 
   for (const locale of LOCALES) {
+    // Which paths this locale can link to: the marketing set, plus its blog hub and only
+    // the articles it actually has a pack for. Computed before the marketing pages are
+    // registered because THEY need it too — a footer "Blog" link on /es that resolves to
+    // the English /blog/ drops the reader out of their language mid-session, and leaves
+    // the localized blog reachable only from the sitemap. An article this language lacks
+    // stays an English link, which is correct: the alternative is a 404.
+    const available = slugsForLocale(locale.prefix);
+    const localizedPaths = new Set([
+      ...LOCALIZED_PATHS,
+      ...(available.size ? [BLOG_HUB.path, ...articlesForLocale(locale.prefix).map((a) => a.path)] : []),
+    ]);
+
     for (const page of LOCALIZED_PAGES) {
       const url = page.path === '/' ? `/${locale.prefix}` : `/${locale.prefix}${page.path}`;
-      router.get(url, (req, res) => serve(res, locale, page));
+      // Spread rather than mutate: LOCALIZED_PAGES is shared config, and the renderer
+      // memoises per (prefix, file, path) so the wrapper costs one object per route.
+      const localized = { ...page, localizedPaths };
+      router.get(url, (req, res) => serve(res, locale, localized));
     }
     // /<prefix>/index.html isn't a canonical URL (nothing links to it) — 301 it to
     // /<prefix>. The trailing-slash form /<prefix>/ needs no redirect: Express's
@@ -101,16 +117,7 @@ export default function createI18nRouter({ __dirname, DEBUG_MODE, blogViews = nu
     // to the 404 handler, which renders in the right locale by itself, so a URL exists if
     // and only if the translation behind it does. A /:prefix/blog/:slug param route would
     // instead answer for every slug and need its own 404 branch.
-    const available = slugsForLocale(locale.prefix);
     if (available.size === 0) continue;
-
-    // Which paths this locale can link to: the marketing set, its hub, and only the
-    // articles it actually has. An article this language lacks stays an English link.
-    const localizedPaths = new Set([
-      ...LOCALIZED_PATHS,
-      BLOG_HUB.path,
-      ...articlesForLocale(locale.prefix).map((a) => a.path),
-    ]);
 
     for (const article of articlesForLocale(locale.prefix)) {
       const page = {
@@ -122,6 +129,9 @@ export default function createI18nRouter({ __dirname, DEBUG_MODE, blogViews = nu
         // in the eleven shared packs the way every LOCALIZED_PAGES crumb must.
         crumbKeys: new Map([[BLOG_HUB.path, 'navigation.blog'], [article.path, 'post.crumb']]),
         locales: articleLocales(article.slug),
+        // The language nav is baked into the English file with English marked current; a
+        // localized render is the same nav with the marker moved. See lib/i18n/blog-langs.js.
+        postProcess: (html) => markCurrentLang(html, locale.hreflang),
       };
       router.get(`/${locale.prefix}${article.path}`, (req, res) => {
         countRead(req, article.slug, locale);
@@ -140,7 +150,7 @@ export default function createI18nRouter({ __dirname, DEBUG_MODE, blogViews = nu
       // The grid is one file shared by every locale, so the cards for articles this
       // language has no pack for have to come out — following one would 404, because the
       // route behind it is never registered. See lib/i18n/blog-hub.js.
-      postProcess: (html) => pruneHubForLocale(html, available, locale.prefix),
+      postProcess: (html) => markCurrentLang(pruneHubForLocale(html, available, locale.prefix), locale.hreflang),
     };
     // Registered without the trailing slash: Express's non-strict routing answers both
     // /es/blog and /es/blog/, and the page's self-referential canonical names the
