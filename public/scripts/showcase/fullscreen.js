@@ -68,6 +68,11 @@ export function wireFullscreen(sc, onViewChange) {
     });
   });
   document.addEventListener('fullscreenchange', () => {
+    // The immersive view may itself have taken native fullscreen (Android), which
+    // fires this event with the OVERLAY as the fullscreen element — not the media. The
+    // comparison below would then read `false` and strip the close glyph off a button
+    // that is very much open. The overlay owns the button's state while it is up.
+    if (anyImmersiveOpen()) return;
     buttons.forEach((btn) => {
       const on = document.fullscreenElement === btn.closest('.shw__media');
       btn.classList.toggle('is-fs', on);

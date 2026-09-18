@@ -510,21 +510,21 @@
   "cover-11": {
     "base": "cover-11.webp",
     "slug": "fsbo-listing-photos",
-    "note": "A flat vector yard sign composited onto the photo — navy header band, white body, hairline rule, blue strapline. The plates sit INSIDE the board rather than over it, so its rounded corners and drop shadow survive untouched. Sign: x 92..591, navy y 452..517, white y 518..719.",
+    "note": "A flat vector yard sign composited onto the photo — navy header band (#0d162a), white body, hairline rule (#cbd5e1), blue strapline (#2563eb). The plates sit INSIDE the board rather than over it, so its rounded corners and drop shadow survive. Sign: x 92..591, navy y 452..517, white y 518..719.",
     "plates": [
       {
         "x": 96,
         "y": 466,
         "w": 492,
         "h": 46,
-        "fill": "#0d162a"
+        "rowFrom": 507
       },
       {
         "x": 96,
         "y": 532,
         "w": 492,
         "h": 160,
-        "fill": "#ffffff"
+        "rowFrom": 700
       }
     ],
     "rules": [
@@ -581,56 +581,56 @@
   "cover-14": {
     "base": "cover-14.webp",
     "slug": "home-staging-cost",
-    "note": "A step chart on a flat canvas. Every label sits on one of exactly two flat fields — the canvas #111827 or the chart fill #1d293c — so each is an ordinary plate and none of the plotted geometry is repainted: the in-chart plates stop below the gridline at y 475 and above the step line at y 547 / y 503. The axis numbers (30/60/90/120) are figures, not words, so they are left alone.",
+    "note": "A step chart on a flat canvas (#111827) with a lighter plotted fill (#1d293c). Every label sits on one of exactly those two flat fields, so each is an ordinary plate and none of the plotted geometry is repainted: the in-chart plates stop below the gridline at y 475 and above the step line at y 547 / y 503. Every plate uses rowFrom, because a hard-coded hex does not match the lossy WebP base and shows as a rectangle. The axis numbers (30/60/90/120) are figures, not words, so they are left alone.",
     "plates": [
       {
         "x": 125,
         "y": 125,
         "w": 700,
         "h": 40,
-        "fill": "#111827"
+        "rowFrom": 175
       },
       {
         "x": 125,
         "y": 172,
         "w": 1150,
         "h": 168,
-        "fill": "#111827"
+        "rowFrom": 350
       },
       {
         "x": 145,
         "y": 484,
         "w": 305,
         "h": 62,
-        "fill": "#111827"
+        "rowFrom": 482
       },
       {
         "x": 462,
         "y": 510,
         "w": 770,
         "h": 36,
-        "fill": "#1d293c"
+        "rowFrom": 580
       },
       {
         "x": 1265,
         "y": 380,
         "w": 335,
         "h": 85,
-        "fill": "#111827"
+        "rowFrom": 470
       },
       {
         "x": 1265,
         "y": 700,
         "w": 335,
         "h": 90,
-        "fill": "#111827"
+        "rowFrom": 795
       },
       {
         "x": 125,
         "y": 815,
         "w": 400,
         "h": 32,
-        "fill": "#111827"
+        "rowFrom": 855
       }
     ],
     "rules": [

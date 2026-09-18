@@ -343,16 +343,25 @@
 /* On a phone this is not a fullscreen toggle at all — it opens the rotate-to-landscape
    view (scripts/immersive-view.js), so it shows a phone-rotating glyph instead of the
    expand arrows. `.is-mobile-rotate` is added by that module from PHONE_QUERY and
-   re-evaluated when the query flips. Once the view is open `.is-fs` takes the glyph
-   back, because the button is then a close affordance. Mirrors home.css. */
+   re-evaluated when the query flips. Once the view is open the button turns it back,
+   which the block below draws as the same glyph mirrored. Mirrors home.css. */
 .guide-demo-fs.is-mobile-rotate .guide-demo-fs__open {
   display: none;
 }
 .guide-demo-fs.is-mobile-rotate .guide-demo-fs__rotate {
   display: block;
 }
-.guide-demo-fs.is-mobile-rotate.is-fs .guide-demo-fs__rotate {
+/* Open, on a phone, the control turns the view BACK — so it keeps the rotation glyph
+   and mirrors it, rather than falling back to the collapse arrows the desktop path
+   uses. Those arrows mean "leave fullscreen", which is not what this button does here.
+   Mirroring the same path is deliberate: one glyph, two directions, and the pair can
+   never drift the way two hand-drawn arcs would. */
+.guide-demo-fs.is-mobile-rotate.is-fs .guide-demo-fs__close {
   display: none;
+}
+.guide-demo-fs.is-mobile-rotate.is-fs .guide-demo-fs__rotate {
+  display: block;
+  transform: scaleX(-1);
 }
 /* Revealed on hover, and always for keyboard users, so it does not sit on the
    capture while you are reading the step it points at. */

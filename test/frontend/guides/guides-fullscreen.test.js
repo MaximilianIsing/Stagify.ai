@@ -63,7 +63,7 @@ test('guides.css restates [hidden] so the script can actually hide the control',
   );
 });
 
-test('the rotate glyph is the phone default and yields to the close glyph once open', () => {
+test('the rotate glyph is the phone default and mirrors itself once open', () => {
   const css = guidesCss().replace(/\/\*[\s\S]*?\*\//g, '');
   assert.match(css, /\.guide-demo-fs__rotate[^{]*\{[^}]*display:\s*none/, 'hidden by default');
   assert.match(
@@ -71,10 +71,16 @@ test('the rotate glyph is the phone default and yields to the close glyph once o
     /\.guide-demo-fs\.is-mobile-rotate \.guide-demo-fs__rotate\s*\{[^}]*display:\s*block/,
     'shown once immersive-view.js marks the button as a phone control'
   );
+  // Open, the button turns the view BACK. The desktop collapse arrows mean "leave
+  // fullscreen", which is not what this does — so the glyph stays and flips instead.
+  const open = css.match(/\.guide-demo-fs\.is-mobile-rotate\.is-fs \.guide-demo-fs__rotate\s*\{([^}]*)\}/);
+  assert.ok(open, 'the open state still draws the rotation glyph');
+  assert.match(open[1], /display:\s*block/, 'it stays visible');
+  assert.match(open[1], /transform:\s*scaleX\(-1\)/, 'mirrored, so it reads as the other direction');
   assert.match(
     css,
-    /\.guide-demo-fs\.is-mobile-rotate\.is-fs \.guide-demo-fs__rotate\s*\{[^}]*display:\s*none/,
-    'and gives way once the view is open, where the button is a close affordance'
+    /\.guide-demo-fs\.is-mobile-rotate\.is-fs \.guide-demo-fs__close\s*\{[^}]*display:\s*none/,
+    'and the collapse arrows stay out of the phone path entirely'
   );
 });
 

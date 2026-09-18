@@ -165,7 +165,13 @@ export function createImmersive({ target, button, doc, win, onChange }) {
   /** Apply or drop the CSS rotation for the device's current orientation. */
   function syncRotation() {
     if (!overlay) return;
-    const want = wantsRotation(w) && !overlay.dataset.imvNative;
+    // The ONE question: is the viewport still portrait? If the native lock below
+    // actually turned the device, `(orientation: portrait)` has already flipped and
+    // this drops the CSS rotation by itself. If the lock resolved without rotating
+    // anything — a headless browser, a refused lock, a desktop Chrome pretending to be
+    // a phone — the query is still true and the CSS keeps doing the work. Trusting the
+    // promise instead of the query is how you get an un-rotated portrait letterbox.
+    const want = wantsRotation(w);
     const had = overlay.classList.contains('imv--rotated');
     overlay.classList.toggle('imv--rotated', want);
     // staging-studio.js maps a before/after drag through getBoundingClientRect(),
@@ -177,29 +183,30 @@ export function createImmersive({ target, button, doc, win, onChange }) {
   }
 
   /**
-   * Take the native pair where the platform offers it (Android Chrome). If the lock
-   * resolves the OS did the rotation for real, so the CSS rotation stands down.
+   * Take the native pair where the platform offers it: Android Chrome can enter real
+   * fullscreen and then `screen.orientation.lock('landscape')`, which turns the device
+   * for real and beats a simulated turn. iOS has neither half.
+   *
+   * This is a pure BONUS. It changes nothing about how the view is presented — the
+   * overlay is already up and correct before this runs, and syncRotation() keys off
+   * the orientation query alone, so a lock that really rotates the device drops the
+   * CSS rotation as a consequence rather than by being told to. Every step can be
+   * refused, so every step swallows.
+   *
    * Isolated here so the whole attempt can be deleted in one edit if it misbehaves.
    */
   function tryNativeLock() {
     if (!overlay || !d.fullscreenEnabled || typeof overlay.requestFullscreen !== 'function') return;
     const orientation = w.screen && w.screen.orientation;
     if (!orientation || typeof orientation.lock !== 'function') return;
-    // Every step can be refused by the UA and there is nothing to recover — the
-    // overlay is already up and correct without any of it.
     Promise.resolve(overlay.requestFullscreen())
       .then(() => orientation.lock('landscape'))
       .then(() => {
         if (!overlay) return;
-        overlay.dataset.imvNative = '1';
+        // A lost lock (the shade pulled down, another app taking over) re-runs the same
+        // query and puts the CSS rotation back rather than leaving a portrait letterbox.
+        on(orientation, 'change', syncRotation);
         syncRotation();
-        // A lost lock (the user pulled down the shade, another app took over) puts us
-        // back on the CSS path rather than leaving a portrait-letterboxed demo.
-        on(orientation, 'change', () => {
-          if (!overlay) return;
-          if (/portrait/.test(String(orientation.type || ''))) delete overlay.dataset.imvNative;
-          syncRotation();
-        });
       })
       .catch(() => {});
   }
@@ -259,6 +266,11 @@ export function createImmersive({ target, button, doc, win, onChange }) {
       overlay.style.zIndex = Z;
       overlay.setAttribute('role', 'dialog');
       overlay.setAttribute('aria-modal', 'true');
+      // A dialog with no accessible name is announced as just "dialog". Borrow the
+      // control's own label, which is already localised and already describes exactly
+      // what this is.
+      const name = button && button.getAttribute('aria-label');
+      if (name) overlay.setAttribute('aria-label', name);
       const stage = d.createElement('div');
       stage.className = 'imv__stage';
       overlay.appendChild(stage);
@@ -317,6 +329,10 @@ export function createImmersive({ target, button, doc, win, onChange }) {
       teardown = [];
       setInert(false);
       delete d.documentElement.dataset.imvRotate;
+      const orientation = w.screen && w.screen.orientation;
+      if (orientation && typeof orientation.unlock === 'function') {
+        try { orientation.unlock(); } catch (_e) { /* never locked */ }
+      }
       if (d.fullscreenElement === ov && typeof d.exitFullscreen === 'function') {
         Promise.resolve(d.exitFullscreen()).catch(() => {});
       }

@@ -18,7 +18,7 @@ import {
   packDirFor,
   slugsForLocale,
 } from '../lib/i18n/blog-packs.js';
-import { pruneHubForLocale } from '../lib/i18n/blog-hub.js';
+import { pruneHubForLocale, withCardReadTimes } from '../lib/i18n/blog-hub.js';
 import { markCurrentLang } from '../lib/i18n/blog-langs.js';
 import { logger } from '../lib/logger.js';
 
@@ -95,6 +95,16 @@ export default function createI18nRouter({ __dirname, DEBUG_MODE, blogViews = nu
       // Spread rather than mutate: LOCALIZED_PAGES is shared config, and the renderer
       // memoises per (prefix, file, path) so the wrapper costs one object per route.
       const localized = { ...page, localizedPaths };
+      // The home page's blog teaser shows six of the hub's cards, so it reads the HUB pack
+      // rather than carrying its own copy of six titles in all eleven site packs. Those
+      // strings are already translated, and duplicating them is how they drift apart.
+      if (page.path === '/' && available.size) {
+        Object.assign(localized, {
+          packDir: HUB_PACK_DIR,
+          packKey: 'hub',
+          packTransform: withCardReadTimes,
+        });
+      }
       router.get(url, (req, res) => serve(res, locale, localized));
     }
     // /<prefix>/index.html isn't a canonical URL (nothing links to it) — 301 it to

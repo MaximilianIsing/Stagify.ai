@@ -63,10 +63,29 @@ test.describe('Rotate to landscape — phone', () => {
     expect(box.width).toBeGreaterThanOrEqual(vp.width - 2);
     expect(box.height).toBeGreaterThanOrEqual(vp.height - 2);
 
-    // Portrait device, landscape content: a quarter turn, i.e. matrix(0, 1, -1, 0, …).
-    await expect(overlay).toHaveClass(/imv--rotated/);
-    const m = await page.locator('.imv__stage').evaluate((el) => getComputedStyle(el).transform);
-    expect(m).toMatch(/^matrix\(-?0?\.?0*\d*e?-?\d*,\s*1,/);
+    /* Portrait device, landscape content. The rotation keys off `(orientation:
+       portrait)` alone — never off the orientation-lock promise, which resolves in
+       headless Chromium without turning anything — so whichever way the view got to
+       landscape, the query and the class agree. Assert THAT relationship rather than
+       one branch of it, since the harness reaches landscape by a route a phone will
+       not. A quarter turn is matrix(0, 1, -1, 0, …). */
+    const portrait = await page.evaluate(() => matchMedia('(orientation: portrait)').matches);
+    // Polled, not read once: the turn is a 280ms transition, so a single read lands
+    // mid-rotation on some cosine of the angle rather than on either endpoint.
+    const angle = () =>
+      page.locator('.imv__stage').evaluate((el) => {
+        const m = getComputedStyle(el).transform;
+        if (m === 'none') return 0;
+        const [a, b] = m.slice(7).split(',').map(Number);
+        return Math.round((Math.atan2(b, a) * 180) / Math.PI);
+      });
+    if (portrait) {
+      await expect(overlay).toHaveClass(/imv--rotated/);
+      await expect.poll(angle).toBe(90);
+    } else {
+      await expect(overlay).not.toHaveClass(/imv--rotated/);
+      await expect.poll(angle).toBe(0);
+    }
 
     // The media travelled with it, and is presented by the class-path twin of the
     // :fullscreen block rather than left at its in-page size.
@@ -76,7 +95,9 @@ test.describe('Rotate to landscape — phone', () => {
     await page.mouse.wheel(0, 500);
     expect(await page.evaluate(() => window.scrollY)).toBe(0); // body is position:fixed
 
-    await btn.tap();
+    // The button travelled with the media, so close it from inside the overlay — the
+    // panel-scoped locator above no longer matches anything, which is the point.
+    await page.locator(`${OVERLAY} .shw__fs`).tap();
     await expect(page.locator(OVERLAY)).toHaveCount(0);
     // Back where the reader was, in the panel they came from.
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(scrolledTo);
@@ -111,20 +132,23 @@ test.describe('Rotate to landscape — phone', () => {
     await page.goto('/index.html');
     await expect(page.locator('[data-showcase].shw--ready')).toBeAttached({ timeout: 30000 });
 
-    // Step the carousel to the exterior panel, the one with the .ba slider.
-    const next = page.locator('[data-shw-arrow="1"]');
-    for (let i = 0; i < 5; i += 1) {
-      if (await page.locator('.shw__panel[data-shw-state="front"] .ba').count()) break;
-      await next.tap();
-      await page.waitForTimeout(450);
-    }
-    const ba = page.locator('.shw__panel[data-shw-state="front"] .ba');
+    // #exterior-studio-demo is a published deep link the script brings to the front on
+    // load, which is a far steadier way to reach that panel than five timed arrow taps.
+    await page.evaluate(() => { window.location.hash = '#exterior-studio-demo'; });
+    await expect(page.locator('#exterior-studio-demo')).toHaveAttribute('data-shw-state', 'front');
+    await expect(page.locator('#exterior-studio-demo .ba')).toBeVisible();
+
+    await page.locator('#exterior-studio-demo .shw__fs').tap();
+    await expect(page.locator(OVERLAY)).toHaveClass(/imv--rotated/);
+    // Scoped to the overlay from here on: .shw__media has been MOVED out of the panel,
+    // so `#exterior-studio-demo .ba` no longer matches anything. That relocation is
+    // the whole mechanism, and a selector that ignores it just times out.
+    const ba = page.locator(`${OVERLAY} .ba`);
     await expect(ba).toBeVisible();
 
-    await page.locator('.shw__panel[data-shw-state="front"] .shw__fs').tap();
-    await expect(page.locator(OVERLAY)).toHaveClass(/imv--rotated/);
-
     const before = await ba.evaluate((el) => getComputedStyle(el).getPropertyValue('--pos'));
+    // Let the turn finish before measuring the box the drag is mapped against.
+    await page.waitForTimeout(400);
     const box = await ba.boundingBox();
     const x = box.x + box.width / 2;
     await page.mouse.move(x, box.y + box.height * 0.3);

@@ -1077,16 +1077,25 @@ body.page-home main {
    from PHONE_QUERY and re-evaluated when the query flips, so a tablet that gets
    rotated or a laptop that gains a trackpad lands on the right glyph.
 
-   Once the view is OPEN the button is a close affordance again, so `.is-fs` takes
-   the glyph back — the same close arrows the native path uses. */
+   Once the view is OPEN the button turns the view back, which the block below draws
+   as the same glyph mirrored. */
 .shw__fs.is-mobile-rotate .shw__fs-open {
   display: none;
 }
 .shw__fs.is-mobile-rotate .shw__fs-rotate {
   display: block;
 }
-.shw__fs.is-mobile-rotate.is-fs .shw__fs-rotate {
+/* Open, on a phone, the control turns the view BACK — so it keeps the rotation glyph
+   and mirrors it, rather than falling back to the collapse arrows the desktop path
+   uses. Those arrows mean "leave fullscreen", which is not what this button does here.
+   Mirroring the same path is deliberate: one glyph, two directions, and the pair can
+   never drift the way two hand-drawn arcs would. */
+.shw__fs.is-mobile-rotate.is-fs .shw__fs-close {
   display: none;
+}
+.shw__fs.is-mobile-rotate.is-fs .shw__fs-rotate {
+  display: block;
+  transform: scaleX(-1);
 }
 /* Revealed on hover of the front panel, and always for keyboard users. Hidden by
    default so it does not sit on top of the artwork in a screenshot-still page. */
