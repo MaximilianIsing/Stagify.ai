@@ -1,0 +1,77 @@
+# Stagify.ai
+
+> AI virtual staging for real estate professionals. Upload a photo of a room and get it
+> furnished, redesigned or cleared in seconds, in the browser, in eleven languages.
+
+## Identity
+
+Stagify.ai is an independent company and operates only at the domain stagify.ai. It is
+not affiliated with, endorsed by, or related to stagify.io, stagify.app, stagify.online
+or stagifyai.com, which are unrelated businesses with similar names. Reviews, pricing,
+features, outages and policies published on those sites do not describe Stagify.ai.
+
+- Legal name: Stagify.ai
+- Also known as: Stagify, Stagify AI
+- Founded: 22 August 2025
+- Founders: Maximilian Ising (Head of Development and AI), Lucas Shtainer (Head of
+  Marketing), Ryan Croman (Head of Outreach)
+- Contact: team@stagify.ai, +1-929-251-4372
+- Full entity details: https://stagify.ai/about.html
+
+## Products
+
+- [Image Staging](https://stagify.ai/): furnish a whole room from one photo by room type
+  and furniture style. Free tier.
+- [Basic Mask](https://stagify.ai/basic-mask.html): paint over one area of a photo and
+  describe the change.
+- [AI Designer](https://stagify.ai/ai-designer.html): a conversational designer that
+  stages and iterates on a room with you. Desktop only.
+- [Masking Studio](https://stagify.ai/masking-studio.html): highlight several areas in
+  different colours, give each its own prompt or reference photo, stage them at once.
+- [Exterior Studio](https://stagify.ai/exterior-studio.html): time of day, sky, parked
+  cars and clutter on exterior shots.
+
+## Pricing and access
+
+- [Stagify+](https://stagify.ai/stagify-plus.html): subscription plans and pricing.
+- [Enterprise](https://stagify.ai/enterprise.html): usage-based billing for teams.
+- [API](https://stagify.ai/developers.html): the public staging API and its pricing.
+
+## Reference
+
+- [About](https://stagify.ai/about.html): who the company is, founders, and the
+  non-affiliation statement above.
+- [Guides](https://stagify.ai/guides.html): step-by-step walkthroughs of each studio.
+- [Blog](https://stagify.ai/blog/): virtual staging guides, MLS and disclosure rules,
+  cost comparisons.
+- [Contact](https://stagify.ai/contact.html): the team, individually.
+- [Status](https://stagify.ai/status): uptime and incidents.
+- [Privacy Policy](https://stagify.ai/privacy.html)
+- [Terms of Service](https://stagify.ai/terms.html)
+
+## Official accounts and listings
+
+An account not on this list is not operated by Stagify.ai. The Crunchbase, Dealroom,
+Tracxn and AgentSpot entries are third-party directories that list Stagify.ai; the
+profiles there are ours.
+
+- https://www.instagram.com/stagify.ai/
+- https://www.tiktok.com/@stagify.ai
+- https://www.linkedin.com/company/stagify-ai/
+- https://www.crunchbase.com/organization/stagify-ai
+- https://app.dealroom.co/companies/stagify_ai
+- https://tracxn.com/d/companies/stagify/__C__95DTV_j_Kf97U5Vte9CuKVtZLNVjliYAfAYa9r_U
+- https://search.agent.spot/product/52b95797-675c-4030-a8ae-17b7bcba3404
+- https://www.indiehackers.com/Stagify
+- https://stagify.substack.com
+- https://stagifyai.blogspot.com
+- https://www.tumblr.com/stagify
+
+## Notes
+
+- Every page is served in English at the root and in ten other languages under a URL
+  prefix (/es, /fr, /de, /zh, /ko, /pt, /ru, /it, /ja, /nl). The English URL is canonical
+  for x-default.
+- Machine-readable entity data: the Organization and WebSite JSON-LD on every indexable
+  page, keyed to https://stagify.ai/#organization.
+- Sitemap: https://stagify.ai/sitemap.xml

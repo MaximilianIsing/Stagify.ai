@@ -1,0 +1,8 @@
+# https://securitytxt.org/ — where to report a vulnerability in stagify.ai.
+# Served at /.well-known/security.txt by an explicit route in routes/public.js,
+# because express.static ignores dot-directories.
+Contact: mailto:team@stagify.ai
+Expires: 2027-09-17T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://stagify.ai/.well-known/security.txt
+Policy: https://stagify.ai/terms.html

@@ -267,7 +267,7 @@
   margin: -19px 0 0 -19px;
   border-radius: 50%;
   border: 3px solid rgba(30, 58, 138, 0.16);
-  border-top-color: var(--brand, #2563eb);
+  border-top-color: var(--brand);
   animation: guideDemoSpin 0.8s linear infinite;
 }
 .guide-demo-panel.is-mounted::before,
