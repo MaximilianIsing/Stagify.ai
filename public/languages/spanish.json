@@ -1980,6 +1980,7 @@
     "checking": "Comprobando el estado…",
     "operational": "Todos los sistemas operativos",
     "disruption": "Interrupción detectada",
+    "degraded": "Algunos sistemas están degradados",
     "unableToLoad": "No se pudo cargar el estado",
     "uptime": "disponibilidad",
     "now": "ahora",
@@ -2029,7 +2030,64 @@
       "never": "nunca",
       "template": "hace {v}"
     },
-    "foot": "Se actualiza cada 60 segundos · Reinicios registrados: {count} · La disponibilidad se mide a partir del propio latido del servidor. Para una comprobación independiente, <a href=\"/health\">/health</a> devuelve el estado en vivo en JSON."
+    "foot": "Se actualiza cada 60 segundos · Reinicios registrados: {count} · La disponibilidad se mide a partir del propio latido del servidor. Para una comprobación independiente, <a href=\"/health\">/health</a> devuelve el estado en vivo en JSON.",
+    "components": {
+      "heading": "Componentes",
+      "loading": "Cargando…",
+      "checked": "Comprobado hace {ago}",
+      "state": {
+        "operational": "Operativo",
+        "degraded": "Degradado",
+        "down": "Caído",
+        "unknown": "Desconocido"
+      },
+      "name": {
+        "app": "Sitio web y API",
+        "staging": "Home staging virtual",
+        "chat": "Diseñador con IA",
+        "accounts": "Cuentas e inicio de sesión",
+        "billing": "Pagos",
+        "email": "Correo electrónico",
+        "storage": "Almacenamiento de imágenes",
+        "database": "Base de datos"
+      },
+      "reason": {
+        "APP_SERVING": "Atendiendo solicitudes con normalidad.",
+        "APP_INCIDENT_OPEN": "Hay una incidencia abierta en el servicio.",
+        "APP_SATURATED": "La cola de renderizado está al límite; se están rechazando nuevos renders de la API.",
+        "DB_READY": "Respondiendo a las consultas.",
+        "DB_SLOW": "Responde, pero más despacio de lo habitual.",
+        "DB_CLOSED": "La conexión con la base de datos está cerrada.",
+        "DB_UNREACHABLE": "La base de datos no respondió.",
+        "STORAGE_READY": "El almacenamiento de imágenes es accesible.",
+        "STORAGE_LOCAL": "Sirviendo imágenes desde el disco local.",
+        "STORAGE_DISABLED": "El almacenamiento de imágenes no está configurado, así que los renders guardados no están disponibles.",
+        "STORAGE_UNREACHABLE": "El almacenamiento de imágenes no respondió.",
+        "STORAGE_SLOW": "El almacenamiento de imágenes responde con lentitud.",
+        "STORAGE_CLEANUP_FAILING": "Las imágenes eliminadas no se están borrando del almacenamiento.",
+        "STORAGE_CLEANUP_BACKLOG": "Hay imágenes eliminadas pendientes de borrarse del almacenamiento.",
+        "AI_READY": "Los renders de staging se completan con normalidad.",
+        "AI_NOT_CONFIGURED": "El modelo de staging no está configurado.",
+        "RENDERS_DEGRADED": "Están fallando más renders de staging de lo habitual.",
+        "RENDERS_FAILING": "La mayoría de los renders de staging están fallando.",
+        "CHAT_READY": "El diseñador con IA está disponible.",
+        "CHAT_FALLBACK_ONLY": "El diseñador con IA funciona sin su modelo de conversación.",
+        "CHAT_NOT_CONFIGURED": "El diseñador con IA no está configurado.",
+        "BILLING_READY": "El pago y las suscripciones están disponibles.",
+        "BILLING_NOT_CONFIGURED": "Los pagos no están configurados.",
+        "BILLING_EVENTS_STUCK": "Hay eventos de pago pendientes de procesar.",
+        "EMAIL_READY": "El correo transaccional está disponible.",
+        "EMAIL_NOT_CONFIGURED": "El correo transaccional no está configurado.",
+        "ACCOUNTS_READY": "El inicio de sesión y el registro están disponibles.",
+        "ACCOUNTS_DEGRADED": "El inicio de sesión puede no estar disponible mientras la base de datos sea inaccesible.",
+        "OAUTH_NOT_CONFIGURED": "El inicio de sesión con Google no está disponible.",
+        "SIGNUP_EMAIL_UNAVAILABLE": "Los nuevos registros no se pueden verificar mientras el correo no esté disponible.",
+        "CHECK_PENDING": "La primera comprobación aún no ha terminado.",
+        "CHECK_TIMEOUT": "La comprobación no terminó a tiempo.",
+        "CHECK_FAILED": "No se pudo completar la comprobación.",
+        "CHECK_UNAVAILABLE": "Esta comprobación no está disponible en este servidor."
+      }
+    }
   },
   "enterprise": {
     "hero": {

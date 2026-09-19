@@ -159,6 +159,57 @@ test('healthHandler reports aiConfigured false when genAI is null', () => {
   assert.equal(res.jsonBody.aiConfigured, false);
 });
 
+test('healthHandler spreads healthFlags, and omitting it leaves the old body exactly as it was', () => {
+  const withFlags = guards({
+    genAI: { some: 'client' },
+    LOGS_ACCESS_KEY: KEY,
+    endpointKeyMatches: plainMatches,
+    healthFlags: () => ({ dbOpen: true, storageBackend: 'r2', billingConfigured: false }),
+  });
+  const res = makeRes();
+  withFlags.healthHandler(makeReq(), res);
+  assert.equal(res.jsonBody.dbOpen, true);
+  assert.equal(res.jsonBody.storageBackend, 'r2');
+  assert.equal(res.jsonBody.billingConfigured, false);
+  // The two fields an external monitor already alerts on must not move.
+  assert.equal(res.jsonBody.status, 'healthy');
+  assert.equal(res.jsonBody.aiConfigured, true);
+
+  const without = guards({ genAI: null, LOGS_ACCESS_KEY: KEY, endpointKeyMatches: plainMatches });
+  const res2 = makeRes();
+  without.healthHandler(makeReq(), res2);
+  assert.deepEqual(Object.keys(res2.jsonBody).sort(), ['aiConfigured', 'status', 'timestamp']);
+});
+
+test('healthHandler still answers when healthFlags throws', () => {
+  // /health is what an external monitor polls. Answering with fewer fields beats
+  // 500ing because a boolean threw.
+  const { healthHandler } = guards({
+    genAI: null,
+    LOGS_ACCESS_KEY: KEY,
+    endpointKeyMatches: plainMatches,
+    healthFlags: () => { throw new Error('store closed'); },
+  });
+  const res = makeRes();
+  healthHandler(makeReq(), res);
+  assert.equal(res.jsonBody.status, 'healthy');
+  assert.equal(res.statusCode, undefined);
+});
+
+test('healthHandler runs no probe of its own — it only reads what it is handed', () => {
+  // The probing view of the same question is /api/status; this endpoint is polled far
+  // more often and must stay a property read.
+  let calls = 0;
+  const { healthHandler } = guards({
+    genAI: null,
+    LOGS_ACCESS_KEY: KEY,
+    endpointKeyMatches: plainMatches,
+    healthFlags: () => { calls += 1; return { dbOpen: true }; },
+  });
+  healthHandler(makeReq(), makeRes());
+  assert.equal(calls, 1, 'exactly one read per request, and nothing else');
+});
+
 // ===========================================================================
 // protectLogs — header-only, constant-time, sets sensitive headers
 // ===========================================================================

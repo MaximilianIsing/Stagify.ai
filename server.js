@@ -26,6 +26,7 @@ import { createRenderRefs } from './lib/data/render-refs.js';
 import { createGalleryShares } from './lib/data/gallery-shares.js';
 import { getDb } from './lib/data/db.js';
 import { createAdminMetrics } from './lib/analytics/admin-metrics.js';
+import { createServiceHealth, healthFlags } from './lib/health/service-health.js';
 import { createApiUsageStats } from './lib/analytics/api-usage.js';
 import { createAdminBrief } from './lib/services/admin-brief.js';
 import { createAdminAnalyst } from './lib/services/admin-analyst.js';
@@ -351,7 +352,11 @@ const { blueprintTo3D } = createCadHandling({ genAI });
 // Passed to the admin/public routers WHOLE (as `hostedImages`), same rationale as
 // `email` above. Note `getDataLogDir` going IN stays a loose factory input.
 const hostedImages = createHostedImages({ getDataLogDir });
-const { healthHandler, protectLogs, requireEndpointKey, stagingEndpointKeyGuard } = createHttpGuards({ genAI, LOGS_ACCESS_KEY, endpointKeyMatches, adminSessions, adminAccess });
+const healthDeps = { getDb: () => getDb(__dirname), objectStore, openai, stripe, resend, googleOAuthClient };
+const { healthHandler, protectLogs, requireEndpointKey, stagingEndpointKeyGuard } = createHttpGuards({
+  genAI, LOGS_ACCESS_KEY, endpointKeyMatches, adminSessions, adminAccess,
+  healthFlags: () => healthFlags(healthDeps),
+});
 
 // ---------------------------------------------------------------------------
 // Self-check quality gate
@@ -459,6 +464,15 @@ app.use(createAuthRouter({ authStore, googleOAuthClient, resend, LOGS_ACCESS_KEY
 // above, which are what create the tables it prepares against.
 const adminMetrics = createAdminMetrics({ db: getDb(__dirname), getDataLogDir });
 const adminBrief = createAdminBrief({ openai });
+// Per-subsystem health for /status and the console's status tab. Built here because it
+// needs adminMetrics above; `getInFlight` is read through a closure because the API
+// concurrency gate is created further down (nothing calls it until a request arrives).
+const serviceHealth = createServiceHealth({
+  ...healthDeps, genAI,
+  getHealthCounters: () => adminMetrics.healthCounters(),
+  getInFlight: () => apiInFlight(),
+  concurrencyLimit: Number(process.env.API_CONCURRENCY_GLOBAL || 12),
+});
 // The Signals drawer's analyst. Same client, opposite instrument: the brief restates
 // findings that are already computed, this one answers a question by calling tools
 // the browser then runs against the data it already holds.
@@ -481,7 +495,7 @@ app.use(createAdminBlogRouter({ blogViews, protectLogs, __dirname }));
 // MUST stay above createAdminRouter: it records GET /api/admin/ping by matching it
 // first and falling through to the real handler there. See routes/admin-access.js.
 app.use(createAdminAccessRouter({ adminAccess, protectLogs }));
-app.use(createAdminRouter({ authStore, uptimeMonitor, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, deleteUser, getDataLogDir, hostedImages, protectLogs, requireEndpointKey, adminSessions, __dirname, HOSTED_IMAGE_MIME_EXT, emailCatalog, sendTestEmail, referralLinks, adminMetrics, adminBrief, adminAccess }));
+app.use(createAdminRouter({ authStore, uptimeMonitor, serviceHealth, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, deleteUser, getDataLogDir, hostedImages, protectLogs, requireEndpointKey, adminSessions, __dirname, HOSTED_IMAGE_MIME_EXT, emailCatalog, sendTestEmail, referralLinks, adminMetrics, adminBrief, adminAccess }));
 
 // staging routes (routes/staging.js)
 app.use(createStagingRouter({ genAI, genLimiter, stagingProcessUpload, DEBUG_MODE, MAX_MASK_PROMPT_LENGTH, MAX_SEGMENT_QUERY_LENGTH, QUALITY_MAX_ATTEMPTS, setSensitiveHeaders, getAuthUserFromRequest, enterpriseDomainForUser, reportEnterpriseUsage, recordStagingActivity, requireProAccount, logMaskEditToFile, logRejectionToFile, downscaleImage, padBufferToAspectRatio, buildMarkedRoomImage, normalizeMaskOutputToRoom, reviewMaskEdit, compositeForReview, generateWithQualityRetry, maskReferencePromptSuffix, validateStageableImage, handleVirtualStagingMultipart, handleExteriorMultipart, handleMaskingSave, stagingEndpointKeyGuard }));
@@ -496,7 +510,7 @@ const { requireApiKey } = createApiKeyAuth({ apiKeys, authStore, apiBilling });
 // script monopolising the box; the global one is what stops twelve customers doing it
 // collectively. Both are far below what a queue would allow, which is the trade a
 // synchronous API makes on purpose.
-const { gate: apiConcurrencyGate } = createConcurrencyGate({
+const { gate: apiConcurrencyGate, inFlight: apiInFlight } = createConcurrencyGate({
   limit: Number(process.env.API_CONCURRENCY_PER_KEY || 3),
   globalLimit: Number(process.env.API_CONCURRENCY_GLOBAL || 12),
   onReject: (req, scope) => logRejectionToFile('api_concurrency', 'CONCURRENCY_LIMIT', scope, { req }),
@@ -526,7 +540,7 @@ app.use(createChatRouter({ openai, genLimiter, chatUpload, DEBUG_MODE, requirePr
 app.use(createI18nRouter({ __dirname, DEBUG_MODE, blogViews }));
 
 // public routes (routes/public.js)
-app.use(createPublicRouter({ authStore, uptimeMonitor, resend, LOGS_ACCESS_KEY, endpointKeyMatches, emailLimiter, RESEND_FROM_EMAIL, DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS, hostedImages, email, healthHandler, getPromptCount, getContactCount, incContactCount , blogViews, emailOptOut, __dirname }));
+app.use(createPublicRouter({ authStore, uptimeMonitor, serviceHealth, resend, LOGS_ACCESS_KEY, endpointKeyMatches, emailLimiter, RESEND_FROM_EMAIL, DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS, hostedImages, email, healthHandler, getPromptCount, getContactCount, incContactCount , blogViews, emailOptOut, __dirname }));
 
 // The owner's gallery (routes/gallery.js) and the public share page
 // (routes/share-public.js). Two routers rather than one because they answer to very
@@ -604,6 +618,14 @@ app.listen(PORT, () => {
       uptimeMonitor.start();
     } catch (err) {
       logger.error('Uptime monitor failed to start:', err.message);
+    }
+
+    // Prime the per-subsystem checks and keep them warm, so the first visitor to
+    // /status sees verdicts rather than "checking…".
+    try {
+      serviceHealth.start();
+    } catch (err) {
+      logger.error('Service health checks failed to start:', err.message);
     }
 
     // Behaviour-based trial emails (activation nudge + mid-trial value). The

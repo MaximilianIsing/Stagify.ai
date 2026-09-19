@@ -1980,6 +1980,7 @@
     "checking": "Status controleren…",
     "operational": "Alle systemen operationeel",
     "disruption": "Storing gedetecteerd",
+    "degraded": "Sommige systemen werken verminderd",
     "unableToLoad": "Status kan niet worden geladen",
     "uptime": "uptime",
     "now": "nu",
@@ -2029,7 +2030,64 @@
       "never": "nooit",
       "template": "{v} geleden"
     },
-    "foot": "Vernieuwt elke 60 seconden · Geregistreerde herstarts: {count} · Beschikbaarheid wordt gemeten aan de hand van de eigen heartbeat van de server. Voor een onafhankelijke controle geeft <a href=\"/health\">/health</a> live status-JSON."
+    "foot": "Vernieuwt elke 60 seconden · Geregistreerde herstarts: {count} · Beschikbaarheid wordt gemeten aan de hand van de eigen heartbeat van de server. Voor een onafhankelijke controle geeft <a href=\"/health\">/health</a> live status-JSON.",
+    "components": {
+      "heading": "Onderdelen",
+      "loading": "Laden…",
+      "checked": "{ago} geleden gecontroleerd",
+      "state": {
+        "operational": "Operationeel",
+        "degraded": "Verminderd",
+        "down": "Offline",
+        "unknown": "Onbekend"
+      },
+      "name": {
+        "app": "Website en API",
+        "staging": "Virtuele styling",
+        "chat": "AI-ontwerper",
+        "accounts": "Accounts en inloggen",
+        "billing": "Betalingen",
+        "email": "E-mail",
+        "storage": "Afbeeldingsopslag",
+        "database": "Database"
+      },
+      "reason": {
+        "APP_SERVING": "Verzoeken worden normaal afgehandeld.",
+        "APP_INCIDENT_OPEN": "Er staat een incident open voor de dienst.",
+        "APP_SATURATED": "De renderwachtrij zit vol; nieuwe API-renders worden geweigerd.",
+        "DB_READY": "Beantwoordt query’s.",
+        "DB_SLOW": "Reageert, maar trager dan gebruikelijk.",
+        "DB_CLOSED": "De databaseverbinding is gesloten.",
+        "DB_UNREACHABLE": "De database gaf geen antwoord.",
+        "STORAGE_READY": "De afbeeldingsopslag is bereikbaar.",
+        "STORAGE_LOCAL": "Afbeeldingen worden vanaf de lokale schijf geserveerd.",
+        "STORAGE_DISABLED": "De afbeeldingsopslag is niet geconfigureerd, dus opgeslagen renders zijn niet beschikbaar.",
+        "STORAGE_UNREACHABLE": "De afbeeldingsopslag gaf geen antwoord.",
+        "STORAGE_SLOW": "De afbeeldingsopslag reageert traag.",
+        "STORAGE_CLEANUP_FAILING": "Verwijderde afbeeldingen worden niet uit de opslag gehaald.",
+        "STORAGE_CLEANUP_BACKLOG": "Er wachten verwijderde afbeeldingen om uit de opslag gehaald te worden.",
+        "AI_READY": "Stagingrenders worden normaal voltooid.",
+        "AI_NOT_CONFIGURED": "Het stagingmodel is niet geconfigureerd.",
+        "RENDERS_DEGRADED": "Er mislukken meer stagingrenders dan gebruikelijk.",
+        "RENDERS_FAILING": "De meeste stagingrenders mislukken.",
+        "CHAT_READY": "De AI-ontwerper is beschikbaar.",
+        "CHAT_FALLBACK_ONLY": "De AI-ontwerper draait zonder zijn gespreksmodel.",
+        "CHAT_NOT_CONFIGURED": "De AI-ontwerper is niet geconfigureerd.",
+        "BILLING_READY": "Afrekenen en abonnementen zijn beschikbaar.",
+        "BILLING_NOT_CONFIGURED": "Betalingen zijn niet geconfigureerd.",
+        "BILLING_EVENTS_STUCK": "Er wachten betalingsgebeurtenissen op verwerking.",
+        "EMAIL_READY": "Transactionele e-mail is beschikbaar.",
+        "EMAIL_NOT_CONFIGURED": "Transactionele e-mail is niet geconfigureerd.",
+        "ACCOUNTS_READY": "Inloggen en registreren zijn beschikbaar.",
+        "ACCOUNTS_DEGRADED": "Inloggen kan onbeschikbaar zijn zolang de database onbereikbaar is.",
+        "OAUTH_NOT_CONFIGURED": "Inloggen met Google is niet beschikbaar.",
+        "SIGNUP_EMAIL_UNAVAILABLE": "Nieuwe registraties kunnen niet worden geverifieerd zolang e-mail onbeschikbaar is.",
+        "CHECK_PENDING": "De eerste controle is nog niet klaar.",
+        "CHECK_TIMEOUT": "De controle was niet op tijd klaar.",
+        "CHECK_FAILED": "De controle kon niet worden uitgevoerd.",
+        "CHECK_UNAVAILABLE": "Deze controle is niet beschikbaar op deze server."
+      }
+    }
   },
   "enterprise": {
     "hero": {

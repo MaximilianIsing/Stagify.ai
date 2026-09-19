@@ -1980,6 +1980,7 @@
     "checking": "正在检查状态…",
     "operational": "所有系统运行正常",
     "disruption": "检测到服务中断",
+    "degraded": "部分系统性能下降",
     "unableToLoad": "无法加载状态",
     "uptime": "运行时间",
     "now": "现在",
@@ -2029,7 +2030,64 @@
       "never": "从不",
       "template": "{v}前"
     },
-    "foot": "每 60 秒自动刷新 · 已记录重启次数：{count} · 可用性根据服务器自身的心跳信号测量。如需独立检查，<a href=\"/health\">/health</a> 会返回实时状态 JSON。"
+    "foot": "每 60 秒自动刷新 · 已记录重启次数：{count} · 可用性根据服务器自身的心跳信号测量。如需独立检查，<a href=\"/health\">/health</a> 会返回实时状态 JSON。",
+    "components": {
+      "heading": "组件",
+      "loading": "加载中…",
+      "checked": "{ago}前检查",
+      "state": {
+        "operational": "正常",
+        "degraded": "性能下降",
+        "down": "中断",
+        "unknown": "未知"
+      },
+      "name": {
+        "app": "网站与 API",
+        "staging": "虚拟软装",
+        "chat": "AI 设计师",
+        "accounts": "账户与登录",
+        "billing": "支付",
+        "email": "电子邮件",
+        "storage": "图片存储",
+        "database": "数据库"
+      },
+      "reason": {
+        "APP_SERVING": "正常处理请求。",
+        "APP_INCIDENT_OPEN": "该服务有一个未解决的故障。",
+        "APP_SATURATED": "渲染队列已满，新的 API 渲染请求正被拒绝。",
+        "DB_READY": "正常响应查询。",
+        "DB_SLOW": "可以响应，但比平时慢。",
+        "DB_CLOSED": "数据库连接已关闭。",
+        "DB_UNREACHABLE": "数据库没有响应。",
+        "STORAGE_READY": "图片存储可以访问。",
+        "STORAGE_LOCAL": "正在从本地磁盘提供图片。",
+        "STORAGE_DISABLED": "图片存储未配置，因此无法使用已保存的渲染图。",
+        "STORAGE_UNREACHABLE": "图片存储没有响应。",
+        "STORAGE_SLOW": "图片存储响应缓慢。",
+        "STORAGE_CLEANUP_FAILING": "已删除的图片未能从存储中移除。",
+        "STORAGE_CLEANUP_BACKLOG": "有一批已删除的图片正等待从存储中移除。",
+        "AI_READY": "软装渲染正常完成。",
+        "AI_NOT_CONFIGURED": "软装模型未配置。",
+        "RENDERS_DEGRADED": "软装渲染的失败次数高于平时。",
+        "RENDERS_FAILING": "大部分软装渲染都失败了。",
+        "CHAT_READY": "AI 设计师可用。",
+        "CHAT_FALLBACK_ONLY": "AI 设计师正在没有对话模型的情况下运行。",
+        "CHAT_NOT_CONFIGURED": "AI 设计师未配置。",
+        "BILLING_READY": "结账与订阅可用。",
+        "BILLING_NOT_CONFIGURED": "支付未配置。",
+        "BILLING_EVENTS_STUCK": "有支付事件正在等待处理。",
+        "EMAIL_READY": "事务性邮件可用。",
+        "EMAIL_NOT_CONFIGURED": "事务性邮件未配置。",
+        "ACCOUNTS_READY": "登录与注册可用。",
+        "ACCOUNTS_DEGRADED": "在数据库无法访问期间，登录可能不可用。",
+        "OAUTH_NOT_CONFIGURED": "无法使用 Google 登录。",
+        "SIGNUP_EMAIL_UNAVAILABLE": "邮件不可用期间，新注册无法完成验证。",
+        "CHECK_PENDING": "首次检查尚未完成。",
+        "CHECK_TIMEOUT": "检查未能及时完成。",
+        "CHECK_FAILED": "检查无法完成。",
+        "CHECK_UNAVAILABLE": "此服务器上没有该项检查。"
+      }
+    }
   },
   "enterprise": {
     "hero": {

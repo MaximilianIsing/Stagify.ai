@@ -1980,6 +1980,7 @@
     "checking": "Verifica dello stato…",
     "operational": "Tutti i sistemi operativi",
     "disruption": "Interruzione rilevata",
+    "degraded": "Alcuni sistemi sono degradati",
     "unableToLoad": "Impossibile caricare lo stato",
     "uptime": "disponibilità",
     "now": "ora",
@@ -2029,7 +2030,64 @@
       "never": "mai",
       "template": "{v} fa"
     },
-    "foot": "Si aggiorna ogni 60 secondi · Riavvii registrati: {count} · La disponibilità è misurata dal segnale di attività del server. Per un controllo indipendente, <a href=\"/health\">/health</a> restituisce lo stato in tempo reale in JSON."
+    "foot": "Si aggiorna ogni 60 secondi · Riavvii registrati: {count} · La disponibilità è misurata dal segnale di attività del server. Per un controllo indipendente, <a href=\"/health\">/health</a> restituisce lo stato in tempo reale in JSON.",
+    "components": {
+      "heading": "Componenti",
+      "loading": "Caricamento…",
+      "checked": "Verificato {ago} fa",
+      "state": {
+        "operational": "Operativo",
+        "degraded": "Degradato",
+        "down": "Non disponibile",
+        "unknown": "Sconosciuto"
+      },
+      "name": {
+        "app": "Sito web e API",
+        "staging": "Home staging virtuale",
+        "chat": "Designer IA",
+        "accounts": "Account e accesso",
+        "billing": "Pagamenti",
+        "email": "E-mail",
+        "storage": "Archiviazione immagini",
+        "database": "Database"
+      },
+      "reason": {
+        "APP_SERVING": "Le richieste vengono gestite normalmente.",
+        "APP_INCIDENT_OPEN": "È aperto un incidente sul servizio.",
+        "APP_SATURATED": "La coda di rendering è al limite; i nuovi render dell’API vengono rifiutati.",
+        "DB_READY": "Risponde alle query.",
+        "DB_SLOW": "Risponde, ma più lentamente del solito.",
+        "DB_CLOSED": "La connessione al database è chiusa.",
+        "DB_UNREACHABLE": "Il database non ha risposto.",
+        "STORAGE_READY": "L’archiviazione immagini è raggiungibile.",
+        "STORAGE_LOCAL": "Immagini servite dal disco locale.",
+        "STORAGE_DISABLED": "L’archiviazione immagini non è configurata, quindi i render salvati non sono disponibili.",
+        "STORAGE_UNREACHABLE": "L’archiviazione immagini non ha risposto.",
+        "STORAGE_SLOW": "L’archiviazione immagini risponde lentamente.",
+        "STORAGE_CLEANUP_FAILING": "Le immagini eliminate non vengono rimosse dall’archiviazione.",
+        "STORAGE_CLEANUP_BACKLOG": "Ci sono immagini eliminate in attesa di essere rimosse dall’archiviazione.",
+        "AI_READY": "I render di staging si completano normalmente.",
+        "AI_NOT_CONFIGURED": "Il modello di staging non è configurato.",
+        "RENDERS_DEGRADED": "Più render di staging del solito stanno fallendo.",
+        "RENDERS_FAILING": "La maggior parte dei render di staging sta fallendo.",
+        "CHAT_READY": "Il designer IA è disponibile.",
+        "CHAT_FALLBACK_ONLY": "Il designer IA funziona senza il suo modello di conversazione.",
+        "CHAT_NOT_CONFIGURED": "Il designer IA non è configurato.",
+        "BILLING_READY": "Checkout e abbonamenti sono disponibili.",
+        "BILLING_NOT_CONFIGURED": "I pagamenti non sono configurati.",
+        "BILLING_EVENTS_STUCK": "Ci sono eventi di pagamento in attesa di elaborazione.",
+        "EMAIL_READY": "L’e-mail transazionale è disponibile.",
+        "EMAIL_NOT_CONFIGURED": "L’e-mail transazionale non è configurata.",
+        "ACCOUNTS_READY": "Accesso e registrazione sono disponibili.",
+        "ACCOUNTS_DEGRADED": "L’accesso potrebbe non essere disponibile finché il database è irraggiungibile.",
+        "OAUTH_NOT_CONFIGURED": "L’accesso con Google non è disponibile.",
+        "SIGNUP_EMAIL_UNAVAILABLE": "Le nuove registrazioni non possono essere verificate finché l’e-mail non è disponibile.",
+        "CHECK_PENDING": "Il primo controllo non è ancora terminato.",
+        "CHECK_TIMEOUT": "Il controllo non è terminato in tempo.",
+        "CHECK_FAILED": "Non è stato possibile completare il controllo.",
+        "CHECK_UNAVAILABLE": "Questo controllo non è disponibile su questo server."
+      }
+    }
   },
   "enterprise": {
     "hero": {

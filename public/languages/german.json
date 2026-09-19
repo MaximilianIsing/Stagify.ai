@@ -1980,6 +1980,7 @@
     "checking": "Status wird geprüft…",
     "operational": "Alle Systeme betriebsbereit",
     "disruption": "Störung erkannt",
+    "degraded": "Einige Systeme sind beeinträchtigt",
     "unableToLoad": "Status kann nicht geladen werden",
     "uptime": "Verfügbarkeit",
     "now": "jetzt",
@@ -2029,7 +2030,64 @@
       "never": "nie",
       "template": "vor {v}"
     },
-    "foot": "Aktualisiert alle 60 Sekunden · Erfasste Neustarts: {count} · Die Verfügbarkeit wird anhand des Heartbeats des Servers gemessen. Für eine unabhängige Prüfung liefert <a href=\"/health\">/health</a> Live-Status-JSON."
+    "foot": "Aktualisiert alle 60 Sekunden · Erfasste Neustarts: {count} · Die Verfügbarkeit wird anhand des Heartbeats des Servers gemessen. Für eine unabhängige Prüfung liefert <a href=\"/health\">/health</a> Live-Status-JSON.",
+    "components": {
+      "heading": "Komponenten",
+      "loading": "Wird geladen…",
+      "checked": "Geprüft vor {ago}",
+      "state": {
+        "operational": "Betriebsbereit",
+        "degraded": "Beeinträchtigt",
+        "down": "Ausgefallen",
+        "unknown": "Unbekannt"
+      },
+      "name": {
+        "app": "Website & API",
+        "staging": "Virtuelles Home Staging",
+        "chat": "KI-Designer",
+        "accounts": "Konten & Anmeldung",
+        "billing": "Zahlungen",
+        "email": "E-Mail",
+        "storage": "Bildspeicher",
+        "database": "Datenbank"
+      },
+      "reason": {
+        "APP_SERVING": "Anfragen werden normal bearbeitet.",
+        "APP_INCIDENT_OPEN": "Für den Dienst ist eine Störung offen.",
+        "APP_SATURATED": "Die Render-Warteschlange ist ausgelastet; neue API-Renders werden abgewiesen.",
+        "DB_READY": "Beantwortet Abfragen.",
+        "DB_SLOW": "Antwortet, aber langsamer als üblich.",
+        "DB_CLOSED": "Die Datenbankverbindung ist geschlossen.",
+        "DB_UNREACHABLE": "Die Datenbank hat nicht geantwortet.",
+        "STORAGE_READY": "Der Bildspeicher ist erreichbar.",
+        "STORAGE_LOCAL": "Bilder werden von der lokalen Festplatte ausgeliefert.",
+        "STORAGE_DISABLED": "Der Bildspeicher ist nicht konfiguriert, gespeicherte Renders sind daher nicht verfügbar.",
+        "STORAGE_UNREACHABLE": "Der Bildspeicher hat nicht geantwortet.",
+        "STORAGE_SLOW": "Der Bildspeicher antwortet langsam.",
+        "STORAGE_CLEANUP_FAILING": "Gelöschte Bilder werden nicht aus dem Speicher entfernt.",
+        "STORAGE_CLEANUP_BACKLOG": "Gelöschte Bilder warten darauf, aus dem Speicher entfernt zu werden.",
+        "AI_READY": "Staging-Renders werden normal abgeschlossen.",
+        "AI_NOT_CONFIGURED": "Das Staging-Modell ist nicht konfiguriert.",
+        "RENDERS_DEGRADED": "Mehr Staging-Renders als üblich schlagen fehl.",
+        "RENDERS_FAILING": "Die meisten Staging-Renders schlagen fehl.",
+        "CHAT_READY": "Der KI-Designer ist verfügbar.",
+        "CHAT_FALLBACK_ONLY": "Der KI-Designer läuft ohne sein Konversationsmodell.",
+        "CHAT_NOT_CONFIGURED": "Der KI-Designer ist nicht konfiguriert.",
+        "BILLING_READY": "Kasse und Abonnements sind verfügbar.",
+        "BILLING_NOT_CONFIGURED": "Zahlungen sind nicht konfiguriert.",
+        "BILLING_EVENTS_STUCK": "Zahlungsereignisse warten auf Verarbeitung.",
+        "EMAIL_READY": "Transaktions-E-Mails sind verfügbar.",
+        "EMAIL_NOT_CONFIGURED": "Transaktions-E-Mails sind nicht konfiguriert.",
+        "ACCOUNTS_READY": "Anmeldung und Registrierung sind verfügbar.",
+        "ACCOUNTS_DEGRADED": "Die Anmeldung kann nicht verfügbar sein, solange die Datenbank nicht erreichbar ist.",
+        "OAUTH_NOT_CONFIGURED": "Die Anmeldung mit Google ist nicht verfügbar.",
+        "SIGNUP_EMAIL_UNAVAILABLE": "Neue Registrierungen können nicht bestätigt werden, solange E-Mail nicht verfügbar ist.",
+        "CHECK_PENDING": "Die erste Prüfung ist noch nicht abgeschlossen.",
+        "CHECK_TIMEOUT": "Die Prüfung wurde nicht rechtzeitig abgeschlossen.",
+        "CHECK_FAILED": "Die Prüfung konnte nicht durchgeführt werden.",
+        "CHECK_UNAVAILABLE": "Diese Prüfung ist auf diesem Server nicht verfügbar."
+      }
+    }
   },
   "enterprise": {
     "hero": {

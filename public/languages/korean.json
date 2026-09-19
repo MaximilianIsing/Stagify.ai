@@ -1980,6 +1980,7 @@
     "checking": "상태 확인 중…",
     "operational": "모든 시스템 정상 작동",
     "disruption": "장애가 감지됨",
+    "degraded": "일부 시스템의 성능이 저하되었습니다",
     "unableToLoad": "상태를 불러올 수 없습니다",
     "uptime": "가동 시간",
     "now": "지금",
@@ -2029,7 +2030,64 @@
       "never": "없음",
       "template": "{v} 전"
     },
-    "foot": "60초마다 자동 새로 고침 · 기록된 재시작 횟수: {count} · 가용성은 서버 자체의 하트비트를 기준으로 측정됩니다. 독립적인 확인을 위해 <a href=\"/health\">/health</a>에서 실시간 상태 JSON을 반환합니다."
+    "foot": "60초마다 자동 새로 고침 · 기록된 재시작 횟수: {count} · 가용성은 서버 자체의 하트비트를 기준으로 측정됩니다. 독립적인 확인을 위해 <a href=\"/health\">/health</a>에서 실시간 상태 JSON을 반환합니다.",
+    "components": {
+      "heading": "구성 요소",
+      "loading": "불러오는 중…",
+      "checked": "{ago} 전 확인",
+      "state": {
+        "operational": "정상",
+        "degraded": "성능 저하",
+        "down": "중단",
+        "unknown": "알 수 없음"
+      },
+      "name": {
+        "app": "웹사이트 및 API",
+        "staging": "가상 스테이징",
+        "chat": "AI 디자이너",
+        "accounts": "계정 및 로그인",
+        "billing": "결제",
+        "email": "이메일",
+        "storage": "이미지 저장소",
+        "database": "데이터베이스"
+      },
+      "reason": {
+        "APP_SERVING": "요청을 정상적으로 처리하고 있습니다.",
+        "APP_INCIDENT_OPEN": "서비스에 미해결 장애가 있습니다.",
+        "APP_SATURATED": "렌더링 대기열이 가득 차 새로운 API 렌더링을 받지 못하고 있습니다.",
+        "DB_READY": "쿼리에 응답하고 있습니다.",
+        "DB_SLOW": "응답하지만 평소보다 느립니다.",
+        "DB_CLOSED": "데이터베이스 연결이 닫혀 있습니다.",
+        "DB_UNREACHABLE": "데이터베이스가 응답하지 않았습니다.",
+        "STORAGE_READY": "이미지 저장소에 연결할 수 있습니다.",
+        "STORAGE_LOCAL": "로컬 디스크에서 이미지를 제공하고 있습니다.",
+        "STORAGE_DISABLED": "이미지 저장소가 설정되지 않아 저장된 렌더링을 사용할 수 없습니다.",
+        "STORAGE_UNREACHABLE": "이미지 저장소가 응답하지 않았습니다.",
+        "STORAGE_SLOW": "이미지 저장소의 응답이 느립니다.",
+        "STORAGE_CLEANUP_FAILING": "삭제된 이미지가 저장소에서 제거되지 않고 있습니다.",
+        "STORAGE_CLEANUP_BACKLOG": "삭제된 이미지가 저장소에서 제거되기를 기다리고 있습니다.",
+        "AI_READY": "스테이징 렌더링이 정상적으로 완료되고 있습니다.",
+        "AI_NOT_CONFIGURED": "스테이징 모델이 설정되지 않았습니다.",
+        "RENDERS_DEGRADED": "평소보다 많은 스테이징 렌더링이 실패하고 있습니다.",
+        "RENDERS_FAILING": "대부분의 스테이징 렌더링이 실패하고 있습니다.",
+        "CHAT_READY": "AI 디자이너를 사용할 수 있습니다.",
+        "CHAT_FALLBACK_ONLY": "AI 디자이너가 대화 모델 없이 동작하고 있습니다.",
+        "CHAT_NOT_CONFIGURED": "AI 디자이너가 설정되지 않았습니다.",
+        "BILLING_READY": "결제와 구독을 사용할 수 있습니다.",
+        "BILLING_NOT_CONFIGURED": "결제가 설정되지 않았습니다.",
+        "BILLING_EVENTS_STUCK": "결제 이벤트가 처리를 기다리고 있습니다.",
+        "EMAIL_READY": "트랜잭션 이메일을 사용할 수 있습니다.",
+        "EMAIL_NOT_CONFIGURED": "트랜잭션 이메일이 설정되지 않았습니다.",
+        "ACCOUNTS_READY": "로그인과 가입을 사용할 수 있습니다.",
+        "ACCOUNTS_DEGRADED": "데이터베이스에 연결할 수 없는 동안 로그인이 불가능할 수 있습니다.",
+        "OAUTH_NOT_CONFIGURED": "Google 로그인을 사용할 수 없습니다.",
+        "SIGNUP_EMAIL_UNAVAILABLE": "이메일을 사용할 수 없는 동안 신규 가입을 인증할 수 없습니다.",
+        "CHECK_PENDING": "첫 번째 점검이 아직 끝나지 않았습니다.",
+        "CHECK_TIMEOUT": "점검이 제시간에 끝나지 않았습니다.",
+        "CHECK_FAILED": "점검을 완료하지 못했습니다.",
+        "CHECK_UNAVAILABLE": "이 서버에서는 해당 점검을 사용할 수 없습니다."
+      }
+    }
   },
   "enterprise": {
     "hero": {

@@ -209,11 +209,71 @@ export function createStatusPanel({ apiSend }) {
     return wrap;
   }
 
+  /**
+   * The per-subsystem checks (lib/health/service-health.js), with everything the public
+   * page is not allowed to show: the raw reason CODE rather than its translated
+   * sentence, the probe `detail` (an R2 error body, a SQLite message), the latency, and
+   * whether the section is stale. This is the half of the tab that answers "what do I
+   * go and fix", so it sits directly under the live header.
+   */
+  function componentsCard(data) {
+    const components = data.components || [];
+    const card = el('div', { className: 'adm-card adm-components' });
+    const worst = (data.componentsSummary && data.componentsSummary.worst) || 'operational';
+    card.appendChild(el('div', { className: 'adm-chart-head' }, [
+      el('h2', {}, [
+        document.createTextNode('Components'),
+        el('span', { className: 'adm-card-tag', textContent: 'overall: ' + (data.overall || worst) }),
+      ]),
+      el('span', {
+        className: 'adm-live-beat',
+        textContent: data.componentsCheckedAt
+          ? 'checked ' + fmtAgo(Date.now() - data.componentsCheckedAt) + (data.componentsStale ? ' (refreshing)' : '')
+          : 'not checked yet',
+      }),
+    ]));
+
+    if (!components.length) {
+      card.appendChild(el('p', { className: 'adm-live-note', textContent: 'No component checks reported.' }));
+      return card;
+    }
+
+    for (const c of components) {
+      const row = el('div', { className: 'adm-comp-row' });
+      row.appendChild(el('span', {
+        className: 'adm-badge adm-comp-badge adm-comp-badge--' + (c.state || 'unknown'),
+        textContent: c.state || 'unknown',
+      }));
+      const bits = [c.reasonCode];
+      if (c.detail) bits.push(c.detail);
+      if (c.latencyMs != null) bits.push(c.latencyMs + ' ms');
+      row.appendChild(el('div', { className: 'adm-comp-main' }, [
+        el('div', { className: 'adm-comp-id' }, [
+          document.createTextNode(c.id),
+          c.core ? el('span', { className: 'adm-card-tag', textContent: 'core' }) : null,
+        ]),
+        // The CODE, untranslated on purpose: it is what greps the source and what a
+        // report should quote, whereas the operator's language is not.
+        el('div', { className: 'adm-comp-reason', textContent: bits.join(' · ') }),
+      ]));
+      card.appendChild(row);
+    }
+
+    card.appendChild(el('p', {
+      className: 'adm-live-note',
+      textContent: 'Verdicts come from configuration, recorded outcomes (render failures, stuck '
+        + 'payment events, failing image deletes) and two free probes. No paid API is pinged, so '
+        + '"operational" means nothing has gone wrong that we can see — not that a vendor answered.',
+    }));
+    return card;
+  }
+
   function renderBody() {
     const host = qs('#adm-status-body');
     if (!host || !snapshot) return;
     host.innerHTML = '';
     host.appendChild(liveCard(snapshot));
+    host.appendChild(componentsCard(snapshot));
     host.appendChild(windowCards(snapshot));
     const grid = el('div', { className: 'adm-chart-grid adm-chart-grid--2col' });
     grid.appendChild(barsCard(snapshot, '24h', 'Last 24 hours'));

@@ -748,6 +748,19 @@ body.page-admin main { flex: 0 0 auto; overflow: visible; width: 100% }
 
 /* ── Server status tab ─────────────────────────────────────────────────── */
 
+
+/* Per-subsystem checks. The badge carries the verdict; the line beside it carries the
+   raw reason CODE and the probe detail, which is the half /status deliberately hides. */
+.adm-comp-row { display: flex; align-items: flex-start; gap: .7rem; padding: .55rem 0; border-top: 1px solid var(--adm-line) }
+.adm-comp-row:first-of-type { border-top: none }
+.adm-comp-main { flex: 1 1 auto; min-width: 0 }
+.adm-comp-id { font-weight: 600; font-size: .875rem; display: flex; align-items: center; gap: .4rem }
+.adm-comp-reason { color: var(--adm-muted); font-size: .8125rem; margin-top: .15rem; word-break: break-word }
+.adm-comp-badge { min-width: 5.5rem; justify-content: center; text-align: center }
+.adm-comp-badge--operational { color: var(--adm-pos); background: var(--adm-pos-wash); border-color: var(--adm-pos-line) }
+.adm-comp-badge--degraded { color: var(--adm-warn); background: var(--adm-warn-wash); border-color: var(--adm-warn-line) }
+.adm-comp-badge--down { color: var(--adm-neg); background: var(--adm-neg-wash); border-color: var(--adm-neg-line) }
+.adm-comp-badge--unknown { color: var(--adm-muted); background: var(--adm-sunken); border-color: var(--adm-line) }
 .adm-live-head { display: flex; align-items: center; gap: .7rem; flex-wrap: wrap; margin-bottom: 1rem }
 .adm-live-pill {
   display: inline-flex; align-items: center; gap: .45rem;

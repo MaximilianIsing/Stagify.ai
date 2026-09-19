@@ -1,3 +1,5 @@
+      import { componentLabel, componentReason, stateLabel, stateClass, bannerClass, bannerText } from './status-components.js';
+
       (function () {
         'use strict';
         var ENDPOINT = '/api/status';
@@ -134,8 +136,14 @@
           return svg;
         }
 
+        // Two or fewer entries is not a feed, so it is left to size itself — a scroll
+        // viewport around a single row reads as a cropped one.
+        var INCIDENT_SCROLL_FROM = 3;
+
         function renderIncidents(root, incidents) {
           root.textContent = '';
+          var many = !!incidents && incidents.length >= INCIDENT_SCROLL_FROM;
+          root.className = 'st-incidents__scroll' + (many ? '' : ' is-short');
           if (!incidents || !incidents.length) {
             var wrap = document.createElement('div');
             wrap.className = 'st-empty';
@@ -186,17 +194,75 @@
           });
         }
 
+        // ---- Components --------------------------------------------------------
+        // One row per subsystem: name, state pill, and the reason in plain language.
+        // Built with createElement/textContent rather than innerHTML because `reason`
+        // is server copy — and a hand-rolled client could put anything in it, so it is
+        // never given a chance to be markup.
+        function renderComponents(root, components) {
+          if (!root) return;
+          root.textContent = '';
+          root.className = 'st-tiles';
+          if (!components || !components.length) {
+            var empty = document.createElement('p');
+            empty.className = 'st-empty';
+            var emptyText = document.createElement('span');
+            emptyText.className = 'st-empty__text';
+            emptyText.textContent = t('status.components.loading', 'Loading…');
+            empty.appendChild(emptyText);
+            // The placeholder is one centred line, not a grid cell.
+            root.className = '';
+            root.appendChild(empty);
+            return;
+          }
+          // A tile per component rather than a full-width row each: eight rows pushed
+          // the uptime graphs off the first screen, and "everything is fine" does not
+          // deserve eight lines. The reason sentence is shown only when it says
+          // something — a healthy tile is the name and the word Operational — and the
+          // full sentence is always on the title attribute for the healthy ones.
+          components.forEach(function (c) {
+            var ok = c.state === 'operational';
+            var reason = componentReason(c, t);
+
+            var tile = document.createElement('div');
+            tile.className = 'st-tile ' + stateClass(c.state);
+            if (ok && reason) tile.title = reason;
+
+            var head = document.createElement('div');
+            head.className = 'st-tile__head';
+            var dot = document.createElement('span');
+            dot.className = 'st-tile__dot';
+            var name = document.createElement('span');
+            name.className = 'st-tile__name';
+            name.textContent = componentLabel(c.id, t);
+            head.appendChild(dot);
+            head.appendChild(name);
+
+            var state = document.createElement('div');
+            state.className = 'st-tile__state';
+            state.textContent = stateLabel(c.state, t);
+
+            tile.appendChild(head);
+            tile.appendChild(state);
+            // Only an unhealthy tile spends a third line on why.
+            if (!ok && reason) {
+              var why = document.createElement('div');
+              why.className = 'st-tile__reason';
+              why.textContent = reason;
+              tile.appendChild(why);
+            }
+            root.appendChild(tile);
+          });
+        }
+
         function setStatus(data) {
           var pill = $('[data-status]');
           var text = $('.up-status-text', pill);
-          pill.classList.remove('is-loading', 'is-up', 'is-down');
-          if (data.currentState === 'up') {
-            pill.classList.add('is-up');
-            text.textContent = t('status.operational', 'All systems operational');
-          } else {
-            pill.classList.add('is-down');
-            text.textContent = t('status.disruption', 'Service disruption detected');
-          }
+          pill.classList.remove('is-loading', 'is-up', 'is-degraded', 'is-down');
+          // bannerClass prefers `overall` (component-aware) and falls back to
+          // `currentState`, so an older cached bundle and an older server both work.
+          pill.classList.add(bannerClass(data));
+          text.textContent = bannerText(data, t);
         }
 
         function render(data) {
@@ -218,6 +284,15 @@
           if (data.buckets) {
             renderBars($('[data-bars="24h"]'), data.buckets['24h']);
             renderBars($('[data-bars="7d"]'), data.buckets['7d']);
+          }
+
+          renderComponents($('[data-components]'), data.components);
+          var checked = $('[data-components-checked]');
+          if (checked) {
+            checked.textContent = data.componentsCheckedAt
+              ? interpolate(t('status.components.checked', 'Checked {ago}'),
+                { ago: fmtAgo(Math.max(0, Date.now() - data.componentsCheckedAt)) })
+              : '';
           }
 
           renderIncidents($('[data-incidents]'), data.incidents);
