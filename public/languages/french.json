@@ -1980,6 +1980,7 @@
     "checking": "Vérification de l’état…",
     "operational": "Tous les systèmes sont opérationnels",
     "disruption": "Interruption détectée",
+    "degraded": "Certains systèmes sont dégradés",
     "unableToLoad": "Impossible de charger l’état",
     "uptime": "disponibilité",
     "now": "maintenant",
@@ -2029,7 +2030,64 @@
       "never": "jamais",
       "template": "il y a {v}"
     },
-    "foot": "Actualisation toutes les 60 secondes · Redémarrages enregistrés : {count} · La disponibilité est mesurée à partir du signal de présence du serveur. Pour une vérification indépendante, <a href=\"/health\">/health</a> renvoie l’état en direct au format JSON."
+    "foot": "Actualisation toutes les 60 secondes · Redémarrages enregistrés : {count} · La disponibilité est mesurée à partir du signal de présence du serveur. Pour une vérification indépendante, <a href=\"/health\">/health</a> renvoie l’état en direct au format JSON.",
+    "components": {
+      "heading": "Composants",
+      "loading": "Chargement…",
+      "checked": "Vérifié il y a {ago}",
+      "state": {
+        "operational": "Opérationnel",
+        "degraded": "Dégradé",
+        "down": "Hors service",
+        "unknown": "Inconnu"
+      },
+      "name": {
+        "app": "Site web et API",
+        "staging": "Home staging virtuel",
+        "chat": "Designer IA",
+        "accounts": "Comptes et connexion",
+        "billing": "Paiements",
+        "email": "E-mail",
+        "storage": "Stockage des images",
+        "database": "Base de données"
+      },
+      "reason": {
+        "APP_SERVING": "Les requêtes sont traitées normalement.",
+        "APP_INCIDENT_OPEN": "Un incident est en cours sur le service.",
+        "APP_SATURATED": "La file de rendu est saturée ; les nouveaux rendus de l’API sont refusés.",
+        "DB_READY": "Répond aux requêtes.",
+        "DB_SLOW": "Répond, mais plus lentement que d’habitude.",
+        "DB_CLOSED": "La connexion à la base de données est fermée.",
+        "DB_UNREACHABLE": "La base de données n’a pas répondu.",
+        "STORAGE_READY": "Le stockage des images est accessible.",
+        "STORAGE_LOCAL": "Images servies depuis le disque local.",
+        "STORAGE_DISABLED": "Le stockage des images n’est pas configuré : les rendus enregistrés sont indisponibles.",
+        "STORAGE_UNREACHABLE": "Le stockage des images n’a pas répondu.",
+        "STORAGE_SLOW": "Le stockage des images répond lentement.",
+        "STORAGE_CLEANUP_FAILING": "Les images supprimées ne sont pas retirées du stockage.",
+        "STORAGE_CLEANUP_BACKLOG": "Des images supprimées attendent d’être retirées du stockage.",
+        "AI_READY": "Les rendus de staging aboutissent normalement.",
+        "AI_NOT_CONFIGURED": "Le modèle de staging n’est pas configuré.",
+        "RENDERS_DEGRADED": "Plus de rendus de staging que d’habitude échouent.",
+        "RENDERS_FAILING": "La plupart des rendus de staging échouent.",
+        "CHAT_READY": "Le designer IA est disponible.",
+        "CHAT_FALLBACK_ONLY": "Le designer IA fonctionne sans son modèle de conversation.",
+        "CHAT_NOT_CONFIGURED": "Le designer IA n’est pas configuré.",
+        "BILLING_READY": "Le paiement et les abonnements sont disponibles.",
+        "BILLING_NOT_CONFIGURED": "Les paiements ne sont pas configurés.",
+        "BILLING_EVENTS_STUCK": "Des événements de paiement attendent d’être traités.",
+        "EMAIL_READY": "L’e-mail transactionnel est disponible.",
+        "EMAIL_NOT_CONFIGURED": "L’e-mail transactionnel n’est pas configuré.",
+        "ACCOUNTS_READY": "La connexion et l’inscription sont disponibles.",
+        "ACCOUNTS_DEGRADED": "La connexion peut être indisponible tant que la base de données est injoignable.",
+        "OAUTH_NOT_CONFIGURED": "La connexion avec Google est indisponible.",
+        "SIGNUP_EMAIL_UNAVAILABLE": "Les nouvelles inscriptions ne peuvent pas être vérifiées tant que l’e-mail est indisponible.",
+        "CHECK_PENDING": "La première vérification n’est pas encore terminée.",
+        "CHECK_TIMEOUT": "La vérification n’a pas abouti à temps.",
+        "CHECK_FAILED": "La vérification n’a pas pu être effectuée.",
+        "CHECK_UNAVAILABLE": "Cette vérification n’est pas disponible sur ce serveur."
+      }
+    }
   },
   "enterprise": {
     "hero": {

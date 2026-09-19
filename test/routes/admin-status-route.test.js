@@ -13,6 +13,7 @@
 import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { mountAdmin, ADMIN_KEY } from '../helpers/admin-app.js';
+import { createServiceHealth } from '../../lib/health/service-health.js';
 
 const auth = { 'X-Stagify-Endpoint-Key': ADMIN_KEY };
 const jsonAuth = { ...auth, 'Content-Type': 'application/json' };
@@ -183,4 +184,53 @@ test('resetting the history clears posted incidents as well as detected ones', a
   assert.equal(res.status, 200);
   assert.equal((await adminStatus()).manual.length, 0,
     'the confirm dialog promises everything goes; leaving posted entries would contradict it');
+});
+
+
+// ---- Per-subsystem components ----------------------------------------------
+//
+// The console is the one place the probe DETAIL belongs: an operator acting on a red
+// pill needs the R2 error body, not a translated sentence about it. /api/status
+// strips the same field, and public-status-components.test.js pins that it does.
+
+/** A health runner with one failing probe, so there is a detail worth showing. */
+async function healthWithBrokenBucket() {
+  const health = createServiceHealth({
+    getDb: () => ({ open: true, prepare: () => ({ get: () => ({}) }) }),
+    objectStore: { backend: 'r2', head: async () => { throw new Error('HTTP 403 AccessDenied'); } },
+    genAI: {}, openai: {}, stripe: {}, resend: {}, googleOAuthClient: {},
+    getHealthCounters: () => ({
+      renders7d: { total: 0, failed: 0 },
+      stuckStripeEvents: 0, tombstoneBacklog: 0, tombstonesFailing: 0, lastTombstoneError: null,
+    }),
+  });
+  await health.refresh();
+  return health;
+}
+
+test('the admin snapshot carries the component checks, detail included', async () => {
+  app = await mountAdmin({ realUptime: true, serviceHealth: await healthWithBrokenBucket() });
+  const data = await adminStatus();
+
+  assert.equal(data.components.length, 8);
+  assert.equal(data.overall, 'down', 'a core component being down is an outage');
+  assert.equal(data.componentsSummary.down, 1);
+  const storage = data.components.find((c) => c.id === 'storage');
+  assert.equal(storage.reasonCode, 'STORAGE_UNREACHABLE');
+  assert.match(storage.detail, /AccessDenied/, 'the operator gets what the public page is denied');
+  assert.ok(data.windows['24h'], 'and the uptime half of the payload is untouched');
+});
+
+test('the component checks stay behind the same gate as everything else', async () => {
+  app = await mountAdmin({ realUptime: true, serviceHealth: await healthWithBrokenBucket() });
+  const res = await fetch(app.baseUrl + '/api/admin/status');
+  assert.equal(res.status, 403);
+});
+
+test('without the health dep the admin status payload is unchanged', async () => {
+  app = await mountAdmin({ realUptime: true });
+  const data = await adminStatus();
+  assert.equal(data.components, undefined);
+  assert.equal(data.overall, undefined);
+  assert.ok(data.windows['24h'], 'the uptime view still answers on its own');
 });

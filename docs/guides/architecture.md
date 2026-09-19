@@ -180,6 +180,12 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 | `counters.js` | The prompt/contact counters shown in the hero stats. |
 | `uptime-monitor.js` | Self-hosted uptime tracking (heartbeat → the `uptime_state` row in `auth-store.db`); powers `/api/status` and the status page. |
 
+**`lib/health/`** — per-subsystem health, deliberately **beside** the uptime monitor rather than inside it.
+
+| Module | Responsibility |
+|---|---|
+| `service-health.js` | The component registry, the rules that decide each component's state, and the runner that caches them. The uptime monitor answers one question retroactively — *did the process stop beating* — so every failure the process **survives** (a dead key, an unauthenticated bucket, Stripe webhooks piling up) leaves `/status` green. This module reads what the app already records (`staged_renders` outcomes, stuck `stripe_events`, failing `blob_tombstones`) plus two free probes (SQLite `SELECT 1`, an R2 signed `HEAD`) and turns it into a per-component verdict with a **stable reason code** the browser localizes. It never pings a paid API. It is not folded into `buildSnapshot` because that function is pure, synchronous, pinned by three spec files and persisted to SQLite, while this is I/O-derived and ephemeral — the two routes compose them with `statusPayload()`. `getSection()` is synchronous and probe-free (30 s cache, stale-while-revalidate), because `/api/status` is polled by every visitor to `/status`. |
+
 **`lib/data/` — the gallery** (saved renders). Rows here, bytes in R2.
 
 | Module | Responsibility |

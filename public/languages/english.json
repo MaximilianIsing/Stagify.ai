@@ -1980,6 +1980,7 @@
     "checking": "Checking status…",
     "operational": "All systems operational",
     "disruption": "Service disruption detected",
+    "degraded": "Some systems are degraded",
     "unableToLoad": "Unable to load status",
     "uptime": "uptime",
     "now": "now",
@@ -2029,7 +2030,64 @@
       "never": "never",
       "template": "{v} ago"
     },
-    "foot": "Auto-refreshes every 60 seconds · Restarts logged: {count} · Availability is measured from the server’s own heartbeat. For an independent check, <a href=\"/health\">/health</a> returns live status JSON."
+    "foot": "Auto-refreshes every 60 seconds · Restarts logged: {count} · Availability is measured from the server’s own heartbeat. For an independent check, <a href=\"/health\">/health</a> returns live status JSON.",
+    "components": {
+      "heading": "Components",
+      "loading": "Loading…",
+      "checked": "Checked {ago}",
+      "state": {
+        "operational": "Operational",
+        "degraded": "Degraded",
+        "down": "Down",
+        "unknown": "Unknown"
+      },
+      "name": {
+        "app": "Website & API",
+        "staging": "Virtual staging",
+        "chat": "AI designer",
+        "accounts": "Accounts & sign-in",
+        "billing": "Payments",
+        "email": "Email",
+        "storage": "Image storage",
+        "database": "Database"
+      },
+      "reason": {
+        "APP_SERVING": "Serving requests normally.",
+        "APP_INCIDENT_OPEN": "An incident is open on the service.",
+        "APP_SATURATED": "The render queue is at capacity; new API renders are being turned away.",
+        "DB_READY": "Responding to queries.",
+        "DB_SLOW": "Responding, but more slowly than usual.",
+        "DB_CLOSED": "The database connection is closed.",
+        "DB_UNREACHABLE": "The database did not answer.",
+        "STORAGE_READY": "Image storage is reachable.",
+        "STORAGE_LOCAL": "Serving images from local disk.",
+        "STORAGE_DISABLED": "Image storage is not configured, so saved renders are unavailable.",
+        "STORAGE_UNREACHABLE": "Image storage did not answer.",
+        "STORAGE_SLOW": "Image storage is answering slowly.",
+        "STORAGE_CLEANUP_FAILING": "Deleted images are not being removed from storage.",
+        "STORAGE_CLEANUP_BACKLOG": "A backlog of deleted images is waiting to be removed from storage.",
+        "AI_READY": "Staging renders are completing normally.",
+        "AI_NOT_CONFIGURED": "The staging model is not configured.",
+        "RENDERS_DEGRADED": "More staging renders than usual are failing.",
+        "RENDERS_FAILING": "Most staging renders are failing.",
+        "CHAT_READY": "The AI designer is available.",
+        "CHAT_FALLBACK_ONLY": "The AI designer is running without its conversation model.",
+        "CHAT_NOT_CONFIGURED": "The AI designer is not configured.",
+        "BILLING_READY": "Checkout and subscriptions are available.",
+        "BILLING_NOT_CONFIGURED": "Payments are not configured.",
+        "BILLING_EVENTS_STUCK": "Payment events are waiting to be processed.",
+        "EMAIL_READY": "Transactional email is available.",
+        "EMAIL_NOT_CONFIGURED": "Transactional email is not configured.",
+        "ACCOUNTS_READY": "Sign-in and registration are available.",
+        "ACCOUNTS_DEGRADED": "Sign-in may be unavailable while the database is unreachable.",
+        "OAUTH_NOT_CONFIGURED": "Sign-in with Google is unavailable.",
+        "SIGNUP_EMAIL_UNAVAILABLE": "New registrations cannot be verified while email is unavailable.",
+        "CHECK_PENDING": "The first check has not finished yet.",
+        "CHECK_TIMEOUT": "The check did not finish in time.",
+        "CHECK_FAILED": "The check could not be completed.",
+        "CHECK_UNAVAILABLE": "This check is not available on this server."
+      }
+    }
   },
   "enterprise": {
     "hero": {

@@ -8,6 +8,7 @@ import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
 import { logger } from '../lib/logger.js';
+import { statusPayload } from '../lib/health/service-health.js';
 
 /**
  * Build the admin router (dashboard, hosted-image upload/list/delete, CSV log
@@ -16,6 +17,7 @@ import { logger } from '../lib/logger.js';
  * @param {{
  *   authStore: any,
  *   uptimeMonitor: any,
+ *   serviceHealth?: ReturnType<typeof import('../lib/health/service-health.js').createServiceHealth> | null,
  *   enterpriseStore: any,
  *   hostImageUpload: import('express').RequestHandler,
  *   DEBUG_MODE: boolean,
@@ -43,10 +45,11 @@ import { logger } from '../lib/logger.js';
  *   readers (SQL aggregates + the written brief). Both of the last two are
  *   OPTIONAL: absent, their routes answer with a null payload rather than 503, so
  *   the tab degrades to its deterministic half instead of erroring. `adminAccess`
- *   is optional for the same reason: without it, a sign-in simply is not recorded.
+ *   is optional for the same reason: without it, a sign-in simply is not recorded, and
+ *   `serviceHealth` likewise — absent, the status tab is exactly the uptime view it was.
  */
 export default function createAdminRouter(deps) {
-  const { authStore, uptimeMonitor, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, deleteUser, getDataLogDir, hostedImages, protectLogs, requireEndpointKey, adminSessions, __dirname, HOSTED_IMAGE_MIME_EXT, emailCatalog, sendTestEmail, referralLinks, adminMetrics, adminBrief, adminAccess } = deps;
+  const { authStore, uptimeMonitor, serviceHealth, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, deleteUser, getDataLogDir, hostedImages, protectLogs, requireEndpointKey, adminSessions, __dirname, HOSTED_IMAGE_MIME_EXT, emailCatalog, sendTestEmail, referralLinks, adminMetrics, adminBrief, adminAccess } = deps;
   const router = createAsyncRouter();
 
 router.get('/admin', (req, res) => {
@@ -280,9 +283,11 @@ router.get('/resetmemories', protectLogs, (req, res) => {
 // their own list, the monitor's configuration — hangs off a separate admin route
 // rather than being added to it.
 
+// includeDetail, unlike the public route: the operator is the one person who needs the
+// R2 error body, the SQLite message and the probe latencies to act on a red pill.
 router.get('/api/admin/status', protectLogs, (req, res) => {
   res.set('Cache-Control', 'no-store');
-  return res.json(uptimeMonitor.getAdminSnapshot());
+  return res.json(statusPayload(uptimeMonitor.getAdminSnapshot(), serviceHealth, { includeDetail: true }));
 });
 
 // Post an incident by hand. The heartbeat can only see the process dying, so this is

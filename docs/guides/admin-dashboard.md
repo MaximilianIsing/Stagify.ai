@@ -885,11 +885,23 @@ The operator's view of the same monitor that feeds the public
 [`/status`](../../public/status.html) page — plus the one thing that page cannot have:
 a way to **post an incident by hand**.
 
+**Components.** Directly under the live header sits the per-subsystem check
+([`lib/health/service-health.js`](../../lib/health/service-health.js)) — one row per
+component with its state, the **raw untranslated reason code**, the probe `detail` and
+latency, and whether the section is stale. The public page shows the same verdicts with
+a translated sentence and **no** `detail`; this is the half that tells you what to go
+and fix, so the R2 error body and the SQLite message appear here and nowhere else.
+Verdicts come from configuration, recorded outcomes and two free probes — no paid API is
+pinged — so *operational* means "nothing has gone wrong that we can see", not "the
+vendor answered".
+
 **Why posting exists at all.** [`uptime-monitor.js`](../../lib/data/uptime-monitor.js)
 infers downtime from *missed heartbeats*, so it only ever learns that the **process**
-died. An outage the process survived — a dead upstream model, a bad deploy, an expired
-key — is invisible to it, and the page cheerfully reports 100% through the whole thing.
-A posted incident is the only way that reaches a reader.
+died. The component checks above close part of that gap — they see a broken bucket or a
+render failure rate the heartbeat cannot — but an outage that leaves no trace in either
+(a bad deploy, a model quietly producing rubbish) is still invisible, and the page would
+cheerfully report 100% through the whole thing. A posted incident is the only way that
+reaches a reader.
 
 **What each posted entry carries:** a title (what the public page shows, verbatim), a
 start, an end (**blank = ongoing**), and `affectsUptime`. That last flag is the reason a

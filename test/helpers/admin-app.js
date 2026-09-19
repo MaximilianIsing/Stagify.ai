@@ -58,6 +58,9 @@ function makeSpy(impl) {
  *     and makes protectLogs key-only,
  *   - `realUptime` (default false) → mount the REAL uptime monitor on a temp data dir
  *     instead of the `reset`-only stub, for the server-status and incident endpoints,
+ *   - `serviceHealth` → a per-subsystem health runner for the status routes; omitted
+ *     (the default) the admin status payload is exactly the uptime snapshot, which is
+ *     what every older assertion in this suite expects,
  *   - `realKeyLimiter` (default false) → wire the SHARED endpoint-key limiter, i.e.
  *     production; by default a pass-through is injected so unrelated 403 cases in one
  *     file don't share a bucket. `endpointKeyLimiter` injects a specific one.
@@ -72,7 +75,7 @@ export async function mountAdmin(options = {}) {
   const {
     logsAccessKey = ADMIN_KEY, uploadFile, uploadError, dataLogFiles = {},
     withReferrals = true, withAdminSessions = true, realUptime = false,
-    realKeyLimiter = false, endpointKeyLimiter, realUpload = false,
+    realKeyLimiter = false, endpointKeyLimiter, realUpload = false, serviceHealth,
     withMetrics = true, metricsSnapshot = { generatedAt: 0, renders: { total: 0 } }, metricsError,
     withBrief = true, briefResult = { summary: 'All quiet.', model: 'gpt-4o-mini' },
     grantResult = { ok: true, userId: 'u_1', email: 'granted@example.com', expiresAt: '2026-08-22T00:00:00.000Z' },
@@ -182,6 +185,7 @@ export async function mountAdmin(options = {}) {
   const deps = {
     authStore,
     uptimeMonitor,
+    serviceHealth,
     enterpriseStore,
     hostImageUpload,
     DEBUG_MODE: false,

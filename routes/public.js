@@ -10,6 +10,7 @@ import { emailPixelLimiter as defaultEmailPixelLimiter, EMAIL_PIXEL_RATE_LIMITED
 import path from 'path';
 import fs from 'fs';
 import { logger } from '../lib/logger.js';
+import { statusPayload } from '../lib/health/service-health.js';
 
 /**
  * Build the public router (static pages, robots/sitemap, hosted-image serving,
@@ -19,6 +20,7 @@ import { logger } from '../lib/logger.js';
  * @param {{
  *   authStore: any,
  *   uptimeMonitor: any,
+ *   serviceHealth?: ReturnType<typeof import('../lib/health/service-health.js').createServiceHealth> | null,
  *   resend: any,
  *   LOGS_ACCESS_KEY: string,
  *   endpointKeyMatches: (received: string, expected: string) => boolean,
@@ -47,10 +49,12 @@ import { logger } from '../lib/logger.js';
  *   `blogViews` is OPTIONAL: absent, the articles are served exactly as before and
  *   simply go uncounted, so the router still mounts without the store. `emailOptOut`
  *   is optional on the same terms: without it the unsubscribe route still answers,
- *   and answers honestly, by telling the reader to email us instead.
+ *   and answers honestly, by telling the reader to email us instead. `serviceHealth`
+ *   is optional too: absent, /api/status answers with exactly the payload it always
+ *   did, so a spec that stubs the uptime monitor alone still passes.
  */
 export default function createPublicRouter(deps) {
-  const { authStore, uptimeMonitor, resend, LOGS_ACCESS_KEY, endpointKeyMatches, emailLimiter, emailPixelLimiter, RESEND_FROM_EMAIL, DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS, hostedImages, email: emailService, healthHandler, getPromptCount, getContactCount, incContactCount , blogViews, emailOptOut, __dirname } = deps;
+  const { authStore, uptimeMonitor, serviceHealth, resend, LOGS_ACCESS_KEY, endpointKeyMatches, emailLimiter, emailPixelLimiter, RESEND_FROM_EMAIL, DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS, hostedImages, email: emailService, healthHandler, getPromptCount, getContactCount, incContactCount , blogViews, emailOptOut, __dirname } = deps;
   const router = createAsyncRouter();
   const pixelLimiter = emailPixelLimiter ?? defaultEmailPixelLimiter;
 
@@ -546,9 +550,13 @@ router.get('/health', healthHandler);
 
 router.get('/api/health', healthHandler);
 
+// statusPayload is synchronous and never probes — this endpoint is polled by every
+// visitor to /status on a 60-second timer, and a burst of readers must not become a
+// burst of HEADs against R2. `includeDetail` is false: `detail` can carry an R2 error
+// body or a SQLite message, which is infrastructure a public page must not leak.
 router.get('/api/status', (req, res) => {
   res.set('Cache-Control', 'no-store');
-  res.json(uptimeMonitor.getSnapshot());
+  return res.json(statusPayload(uptimeMonitor.getSnapshot(), serviceHealth));
 });
 
 router.get('/api/prompt-count', (req, res) => {

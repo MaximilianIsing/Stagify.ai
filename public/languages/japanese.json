@@ -1980,6 +1980,7 @@
     "checking": "ステータスを確認中…",
     "operational": "すべてのシステムが正常に稼働しています",
     "disruption": "障害を検出しました",
+    "degraded": "一部のシステムが低下しています",
     "unableToLoad": "ステータスを読み込めません",
     "uptime": "稼働率",
     "now": "現在",
@@ -2029,7 +2030,64 @@
       "never": "なし",
       "template": "{v}前"
     },
-    "foot": "60秒ごとに自動更新 · 記録された再起動回数：{count} · 稼働状況はサーバー自身のハートビートに基づいて測定されます。独立した確認には、<a href=\"/health\">/health</a> がリアルタイムのステータス JSON を返します。"
+    "foot": "60秒ごとに自動更新 · 記録された再起動回数：{count} · 稼働状況はサーバー自身のハートビートに基づいて測定されます。独立した確認には、<a href=\"/health\">/health</a> がリアルタイムのステータス JSON を返します。",
+    "components": {
+      "heading": "コンポーネント",
+      "loading": "読み込み中…",
+      "checked": "{ago}前に確認",
+      "state": {
+        "operational": "正常",
+        "degraded": "低下",
+        "down": "停止",
+        "unknown": "不明"
+      },
+      "name": {
+        "app": "ウェブサイトと API",
+        "staging": "バーチャルステージング",
+        "chat": "AI デザイナー",
+        "accounts": "アカウントとログイン",
+        "billing": "決済",
+        "email": "メール",
+        "storage": "画像ストレージ",
+        "database": "データベース"
+      },
+      "reason": {
+        "APP_SERVING": "リクエストを正常に処理しています。",
+        "APP_INCIDENT_OPEN": "このサービスで障害が発生中です。",
+        "APP_SATURATED": "レンダリングの待ち行列が上限に達し、新しい API レンダリングを受け付けていません。",
+        "DB_READY": "クエリに応答しています。",
+        "DB_SLOW": "応答していますが、通常より遅くなっています。",
+        "DB_CLOSED": "データベース接続が閉じています。",
+        "DB_UNREACHABLE": "データベースが応答しませんでした。",
+        "STORAGE_READY": "画像ストレージに接続できます。",
+        "STORAGE_LOCAL": "ローカルディスクから画像を配信しています。",
+        "STORAGE_DISABLED": "画像ストレージが未設定のため、保存されたレンダリングを利用できません。",
+        "STORAGE_UNREACHABLE": "画像ストレージが応答しませんでした。",
+        "STORAGE_SLOW": "画像ストレージの応答が遅くなっています。",
+        "STORAGE_CLEANUP_FAILING": "削除された画像がストレージから取り除かれていません。",
+        "STORAGE_CLEANUP_BACKLOG": "削除された画像がストレージからの削除待ちになっています。",
+        "AI_READY": "ステージングのレンダリングは正常に完了しています。",
+        "AI_NOT_CONFIGURED": "ステージング用モデルが設定されていません。",
+        "RENDERS_DEGRADED": "ステージングのレンダリング失敗が通常より増えています。",
+        "RENDERS_FAILING": "ステージングのレンダリングがほとんど失敗しています。",
+        "CHAT_READY": "AI デザイナーを利用できます。",
+        "CHAT_FALLBACK_ONLY": "AI デザイナーは会話モデルなしで動作しています。",
+        "CHAT_NOT_CONFIGURED": "AI デザイナーが設定されていません。",
+        "BILLING_READY": "決済とサブスクリプションを利用できます。",
+        "BILLING_NOT_CONFIGURED": "決済が設定されていません。",
+        "BILLING_EVENTS_STUCK": "決済イベントが処理待ちになっています。",
+        "EMAIL_READY": "トランザクションメールを利用できます。",
+        "EMAIL_NOT_CONFIGURED": "トランザクションメールが設定されていません。",
+        "ACCOUNTS_READY": "ログインと登録を利用できます。",
+        "ACCOUNTS_DEGRADED": "データベースに接続できない間、ログインを利用できない場合があります。",
+        "OAUTH_NOT_CONFIGURED": "Google でのログインを利用できません。",
+        "SIGNUP_EMAIL_UNAVAILABLE": "メールが利用できない間、新規登録の確認ができません。",
+        "CHECK_PENDING": "最初のチェックがまだ完了していません。",
+        "CHECK_TIMEOUT": "チェックが時間内に完了しませんでした。",
+        "CHECK_FAILED": "チェックを完了できませんでした。",
+        "CHECK_UNAVAILABLE": "このサーバーではこのチェックを利用できません。"
+      }
+    }
   },
   "enterprise": {
     "hero": {
