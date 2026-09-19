@@ -100,3 +100,71 @@ export function bannerText(data, t) {
   if (cls === 'is-degraded') return lookup('status.degraded', 'Some systems are degraded');
   return lookup('status.disruption', 'Service disruption detected');
 }
+
+/**
+ * A glyph per component, as data rather than markup.
+ *
+ * Kept here beside the names, and as plain `[tag, attrs]` pairs rather than an SVG
+ * string, for two reasons: this module stays DOM-free so node can load it, and the
+ * renderer builds the nodes with createElementNS instead of assigning innerHTML — the
+ * one habit on this page that keeps a future "icon from the server" idea from becoming
+ * an injection seam.
+ *
+ * Every shape is a 24x24 stroked outline, so one CSS rule sizes and colours the lot.
+ * test/frontend/status-components.test.js fails if a component id has no entry.
+ */
+export const COMPONENT_ICONS = {
+  // globe
+  app: [
+    ['circle', { cx: '12', cy: '12', r: '9' }],
+    ['path', { d: 'M3 12h18' }],
+    ['path', { d: 'M12 3a14 14 0 0 1 0 18a14 14 0 0 1 0-18z' }],
+  ],
+  // framed picture
+  staging: [
+    ['rect', { x: '3', y: '4', width: '18', height: '16', rx: '2' }],
+    ['circle', { cx: '9', cy: '10', r: '1.6' }],
+    ['path', { d: 'M4 17l5-4 4 3 3-2 4 3' }],
+  ],
+  // speech bubble
+  chat: [
+    ['path', { d: 'M20 15a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2z' }],
+  ],
+  // person
+  accounts: [
+    ['circle', { cx: '12', cy: '8', r: '3.6' }],
+    ['path', { d: 'M5 20v-1a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v1' }],
+  ],
+  // card
+  billing: [
+    ['rect', { x: '2.5', y: '5', width: '19', height: '14', rx: '2' }],
+    ['path', { d: 'M2.5 10h19' }],
+    ['path', { d: 'M6 15h4' }],
+  ],
+  // envelope
+  email: [
+    ['rect', { x: '2.5', y: '5', width: '19', height: '14', rx: '2' }],
+    ['path', { d: 'M3 7l9 6 9-6' }],
+  ],
+  // stacked drives
+  storage: [
+    ['rect', { x: '3', y: '4', width: '18', height: '7', rx: '1.8' }],
+    ['rect', { x: '3', y: '13', width: '18', height: '7', rx: '1.8' }],
+    ['path', { d: 'M7 7.5h.01M7 16.5h.01' }],
+  ],
+  // cylinder
+  database: [
+    ['ellipse', { cx: '12', cy: '6', rx: '7.5', ry: '3' }],
+    ['path', { d: 'M4.5 6v12c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3V6' }],
+    ['path', { d: 'M4.5 12c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3' }],
+  ],
+};
+
+/**
+ * The shapes for one component id, or an empty list when it has none — an id this
+ * bundle has never heard of renders without a glyph rather than without a tile.
+ * @param {string} id
+ */
+export function componentIcon(id) {
+  return Object.prototype.hasOwnProperty.call(COMPONENT_ICONS, id) ? COMPONENT_ICONS[id] : [];
+}

@@ -29,7 +29,7 @@
       /* ---- Status banner ---------------------------------------------------- */
       .st-banner {
         display: flex; align-items: center; gap: 16px;
-        padding: 18px 22px; margin-bottom: 22px;
+        padding: 14px 20px; margin-bottom: 20px;
         background: var(--bg-elevated); border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--shadow);
         transition: background .25s ease, border-color .25s ease;
       }
@@ -37,7 +37,7 @@
       .st-banner.is-down { background: linear-gradient(180deg, #fef2f2 0%, var(--bg-elevated) 62%); border-color: #fbcfcf; }
       .st-banner.is-degraded { background: linear-gradient(180deg, #fffbeb 0%, var(--bg-elevated) 62%); border-color: #fde68a; }
       .st-banner__badge {
-        width: 46px; height: 46px; border-radius: 50%; flex: 0 0 auto;
+        width: 40px; height: 40px; border-radius: 50%; flex: 0 0 auto;
         display: grid; place-items: center; background: #eef2f7;
       }
       .is-up .st-banner__badge { background: #d6f7e8; }
@@ -62,12 +62,48 @@
         70% { box-shadow: 0 0 0 11px rgba(245, 158, 11, 0); }
         100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
       }
-      .st-banner__body { flex: 1 1 auto; min-width: 0; }
+      /* Title and sub on ONE row. Stacked, the banner spent two lines plus a 46px badge
+         on a sentence that is usually "All systems operational" and a timestamp — the
+         tallest block on the page for the least information. Baseline-aligned so the
+         13px sub sits on the same line as the 19px title, and allowed to wrap so a long
+         localized string still fits on a phone. */
+      .st-banner__body {
+        flex: 1 1 auto; min-width: 0;
+        display: flex; flex-wrap: wrap; align-items: baseline; gap: 1px 10px;
+      }
       .st-banner__title { font-size: 19px; font-weight: 750; color: var(--ink); }
       .is-up .st-banner__title { color: #065f46; }
       .is-down .st-banner__title { color: #991b1b; }
       .is-degraded .st-banner__title { color: #92400e; }
-      .st-banner__sub { color: var(--muted); font-size: 13px; margin-top: 3px; }
+      .st-banner__sub { color: var(--muted); font-size: 13px; }
+
+      /* The manual refresh control. Styled after .st-incident__dur's pill rather than the
+         global .btn: that one is uppercase with 12/24 padding, a CTA built for the
+         marketing pages, and it would be the loudest thing on a page whose whole scale is
+         11-13px. This is the first content button the status page has ever had. */
+      .st-refresh {
+        flex: 0 0 auto; align-self: center;
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 6px 12px;
+        font: inherit; font-size: 12.5px; font-weight: 650;
+        color: var(--muted); background: var(--bg-elevated);
+        border: 1px solid var(--line); border-radius: 999px;
+        cursor: pointer;
+        transition: color .15s ease, border-color .15s ease, background .15s ease;
+      }
+      .st-refresh:hover:not(:disabled) { color: var(--brand); border-color: var(--brand); }
+      .st-refresh:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+      .st-refresh:disabled { opacity: .55; cursor: not-allowed; }
+      /* Tabular figures so the countdown does not reflow the button once a second. */
+      .st-refresh__count { font-variant-numeric: tabular-nums; }
+      .st-refresh__icon { flex: 0 0 auto; }
+      .st-refresh.is-spinning .st-refresh__icon { animation: st-spin .6s linear infinite; }
+      /* Named st-spin, NOT st-pulse: this file already defines @keyframes st-pulse twice
+         (the banner dot and the incident dot) and the later one wins. A third would
+         silently retarget one of them. */
+      @keyframes st-spin {
+        to { transform: rotate(360deg); }
+      }
       /* ---- Components ------------------------------------------------------- */
       /* A tile grid, not a list of rows: eight full-width rows pushed the uptime
          graphs off the first screen, and "everything is fine" does not deserve eight
@@ -83,11 +119,18 @@
         background: var(--bg-elevated); min-width: 0;
       }
       .st-tile__head { display: flex; align-items: center; gap: 7px; min-width: 0; }
+      /* Pushed to the right edge by the name's own flex, so it reserves its space
+         rather than sitting over wrapped text. Deliberately quiet: it identifies the
+         subsystem, while the dot to its left is the one that carries the verdict. */
+      .st-tile__icon { width: 17px; height: 17px; flex: 0 0 auto; margin-left: auto; color: var(--faint); opacity: .85; }
+      .st-tile.is-operational .st-tile__icon { color: var(--green-deep); opacity: .45; }
+      .st-tile.is-degraded .st-tile__icon { color: #92400e; opacity: .55; }
+      .st-tile.is-down .st-tile__icon { color: var(--red-deep); opacity: .55; }
       .st-tile__dot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; background: var(--faint); }
       /* Wraps rather than ellipsises: two columns on a phone is narrow enough that
          "Accounts & sign-in" would clip, and a truncated component name is the one
          word on the tile the reader cannot do without. */
-      .st-tile__name { font-weight: 650; color: var(--ink); font-size: 13px; line-height: 1.3; }
+      .st-tile__name { font-weight: 650; color: var(--ink); font-size: 13px; line-height: 1.3; flex: 1 1 auto; }
       .st-tile__state { font-size: 12px; color: var(--muted); margin-top: 3px; padding-left: 15px; }
       /* Wraps, because a reason is a sentence and clipping it would hide the one thing
          the reader came for. Only shown on a tile that is not operational. */
@@ -114,34 +157,43 @@
          percentages are already printed on the graph blocks below, so this strip is a
          summary, not the headline. It stays three-across at every width for the same
          reason: stacked on a phone it was the tallest thing on the page. */
-      .st-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+      .st-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
       .st-card {
         background: var(--bg-elevated); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow);
-        padding: 12px 10px; text-align: center; transition: transform .16s ease, box-shadow .16s ease;
+        padding: 9px 10px; text-align: center; transition: transform .16s ease, box-shadow .16s ease;
       }
       .st-card:hover { transform: translateY(-2px); box-shadow: 0 1px 2px rgba(16, 24, 40, .05), 0 22px 44px -22px rgba(16, 24, 40, .38); }
       .st-card__eyebrow { font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); }
-      .st-card__val { font-size: clamp(20px, 3.2vw, 26px); font-weight: 800; letter-spacing: -.02em; color: var(--ink); line-height: 1.1; margin: 4px 0 1px; }
-      .st-card__cap { font-size: 11.5px; color: var(--muted); }
+      /* Three stacked lines for four numbers made these the tallest thing on the page
+         after the graphs. The figure and its caption are one phrase ("99.98% uptime"),
+         so they share a line: inline-block rather than a wrapper element, since the
+         card is already text-align:center and the newline between the two divs gives
+         the space. Saves a line and its leading on every card. */
+      .st-card__val {
+        display: inline-block;
+        font-size: clamp(20px, 3.2vw, 26px); font-weight: 800; letter-spacing: -.02em;
+        color: var(--ink); line-height: 1.15; margin: 1px 0 0;
+      }
+      .st-card__cap { display: inline-block; font-size: 11.5px; color: var(--muted); }
 
       /* ---- Graph blocks ----------------------------------------------------- */
       .st-block {
         background: var(--bg-elevated); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow);
-        padding: 22px 22px 20px; margin-bottom: 18px;
+        padding: 16px 20px 14px; margin-bottom: 14px;
       }
-      .st-block__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+      .st-block__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 11px; }
       .st-block__head h2 { font-size: 15px; font-weight: 700; color: var(--ink); margin: 0; }
       .st-block__meta { font-size: 11.5px; color: var(--faint); font-weight: 500; margin-left: 8px; }
       .st-block__pct { font-size: 16px; font-weight: 800; color: var(--green-deep); }
 
-      .st-bars { display: flex; align-items: stretch; gap: 2px; height: 56px; }
+      .st-bars { display: flex; align-items: stretch; gap: 2px; height: 44px; }
       .st-bar { flex: 1 1 0; min-width: 0; border-radius: 4px; background: #eef2f7; transition: transform .1s ease, filter .1s ease; cursor: default; }
       .st-bar:hover { transform: scaleY(1.07); filter: brightness(1.08) saturate(1.05); }
       .st-bar.up { background: linear-gradient(180deg, #34d399, #10b981); }
       .st-bar.partial { background: linear-gradient(180deg, #fbbf24, #f59e0b); }
       .st-bar.down { background: linear-gradient(180deg, #f87171, #ef4444); }
       .st-bar.nodata { background: #eaeff5; }
-      .st-axis { display: flex; justify-content: space-between; margin-top: 11px; font-size: 11.5px; color: var(--faint); }
+      .st-axis { display: flex; justify-content: space-between; margin-top: 7px; font-size: 11.5px; color: var(--faint); }
 
       /* ---- Legend ----------------------------------------------------------- */
       .st-legend { display: flex; flex-wrap: wrap; gap: 10px 18px; justify-content: center; margin: 6px 0 24px; }
@@ -163,6 +215,13 @@
         max-height: 244px; overflow-y: auto; overscroll-behavior: contain;
         /* Room for the scrollbar so the rows do not jump sideways when one appears. */
         padding-right: 6px; margin-right: -6px;
+        /* And room on the LEFT for the severity dot's halo. Setting overflow-y to auto
+           makes the browser compute overflow-x as auto as well, so this box clips at its
+           content edge — and .st-incident__sev paints a box-shadow ring 4px wide, 8px at
+           the peak of the ongoing pulse, starting at x=0. Without this the left side of
+           every dot was sliced off. The negative margin keeps the rows where they were,
+           eating into the card's own 20px padding. */
+        padding-left: 9px; margin-left: -9px;
       }
       .st-incidents__scroll::-webkit-scrollbar { width: 6px; }
       .st-incidents__scroll::-webkit-scrollbar-track { background: transparent; }
@@ -184,6 +243,7 @@
       }
       @media (prefers-reduced-motion: reduce) {
         .st-incident__sev.is-ongoing { animation: none; }
+        .st-refresh.is-spinning .st-refresh__icon { animation: none; }
       }
       .st-incident__main { flex: 1 1 auto; min-width: 0; }
       .st-incident__title { font-weight: 650; color: var(--ink); font-size: 14px; }
@@ -216,7 +276,10 @@
       }
       @media (max-width: 600px) {
         .status-inner { padding-top: 22px; }
-        .st-card { padding: 10px 6px; }
+        /* Two by two rather than four across: four of these on a 400px screen leaves
+           about 85px a card, which is not enough for "100.0%". */
+        .st-cards { grid-template-columns: repeat(2, 1fr); }
+        .st-card { padding: 8px 6px; }
         /* Taller than two phone rows on purpose: the rows wrap to three lines here, so
            216px cut cleanly after the second and the feed looked complete. */
         .st-incidents__scroll { max-height: 262px; }

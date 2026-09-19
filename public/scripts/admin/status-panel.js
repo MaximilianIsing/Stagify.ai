@@ -26,6 +26,7 @@ const WINDOWS = [
   { key: '24h', label: '24 hours' },
   { key: '7d', label: '7 days' },
   { key: '30d', label: '30 days' },
+  { key: 'all', label: 'All time' },
 ];
 
 /** Compact duration: the same shape the public page uses, so the two agree. */

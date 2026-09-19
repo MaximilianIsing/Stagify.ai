@@ -66,6 +66,7 @@ import { stagingProcessUpload, chatUpload, hostImageUpload, HOSTED_IMAGE_MIME_EX
 import { authLimiter, emailLimiter, genLimiter, setRateLimitRejectionLogger } from './lib/http/rate-limiters.js';
 import { logger } from './lib/logger.js';
 import { applyEdgeMiddleware, applyBodyAndStatic } from './lib/http/app-middleware.js';
+import { applyVanityRedirects } from './lib/http/vanity-redirects.js';
 import { multerErrorHandler } from './lib/http/multer-errors.js';
 import { createStagingGeneration } from './lib/staging/staging-generation.js';
 import { createVirtualStagingHandler } from './lib/staging/virtual-staging-handler.js';
@@ -262,6 +263,10 @@ app.use(
     creditTopup,
   })
 );
+
+// Short vanity URLs (/brand → /about.html#brand-kit). BEFORE the static middleware:
+// public/brand/ is a real directory → lib/http/vanity-redirects.js explains why.
+applyVanityRedirects(app);
 
 // JSON body parsing (small/large per-route limits + the JSON SyntaxError/413
 // handler) and static-asset serving → lib/http/app-middleware.js. Mounted AFTER

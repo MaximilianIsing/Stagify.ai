@@ -74,6 +74,7 @@ than exporting by eye:
 | Master | Script | Produces |
 |---|---|---|
 | `media-png/blog/cover-N.png` | `node scripts/build-blog-thumbs.js` | `public/media-webp/blog/cover-N-thumb.webp` (800×450) |
+| `media-png/logo/logo-full.png`, `media-png/logo/Logo{64,180}.png`, `brand/pfp/Stagify_pfp.png`, `OG_Image/OG_Image.png` | `node scripts/build-brand-kit.js` | `public/brand/**` — the downloadable kit linked from /about#brand-kit, including `stagify-brand-kit.zip` |
 
 The blog covers ship at **two** sizes. `cover-N.webp` (1600×900) is the article hero and
 is exported by hand as usual; `cover-N-thumb.webp` is the card thumbnail used by the
@@ -84,3 +85,18 @@ After replacing a cover master, re-export the hero **and** re-run the script. Be
 `media-webp/` is served `immutable` for a year, a regenerated thumb under the same
 filename will not reach returning visitors — rename it or add a `?v=`, exactly as
 `docs/reference/caching.md` requires for every other image here.
+
+### `brand/` — the outward-facing marks
+
+`brand/pfp/`, `brand/linkedin/`, `brand/facebook/` and `brand/advertisements/` are the
+artwork we hand to other platforms: profile pictures, channel covers and the ad creatives.
+Nothing under `public/` referenced any of it until the brand kit existed, and most of it
+still does not — uploading a cover to LinkedIn is not a deploy. The one exception is
+`brand/pfp/Stagify_pfp.png`, which `scripts/build-brand-kit.js` now copies to
+`public/brand/stagify-avatar.png` so third parties use the same avatar we do.
+
+The kit’s colours are **not** stored here: `scripts/build-brand-kit.js` reads them out of
+the `:root` block in `public/styles/styles.css` at build time, so the README inside the zip
+cannot drift from what the site actually paints. `test/frontend/brand-kit.test.js` fails the
+build if the committed `public/brand/` no longer matches these masters, if the zip is stale,
+or if a hex printed on the about page disagrees with its token.

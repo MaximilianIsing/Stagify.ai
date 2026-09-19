@@ -1795,6 +1795,30 @@
             </table>
           </div>
 
+          <!-- The one IN-BODY link on this page to the entity hub; the footer link is the
+               other one. It sits here rather than in a section of its own because the
+               scoreboard has just finished arguing the case, and "who is actually behind
+               this" is the next question a reader has.
+
+               href="about.html", NOT "/about". routes/public.js keeps the .html URL
+               canonical and treats /about as an alias, and rewriteAnchors() in
+               lib/i18n/render-page.js only rewrites RELATIVE internal hrefs into the
+               locale prefix -- so this becomes es/about.html on /es, while an absolute
+               /about would send every non-English reader to the English page.
+
+               The <a> is static markup carrying a data-lang KEY, not a data-lang-html
+               string with the anchor baked into it: language-loader.js assigns
+               textContent, so the href it was rewritten to survives a client-side
+               language switch. Baked into the pack value it would not.
+
+               The whole line is the link, deliberately -- "About us" hanging off a
+               separate sentence reads as a bare word to a screen reader announcing
+               links out of context, where this names its own destination. That is also
+               why it does not reuse navigation.about the way the footer does. -->
+          <p class="whyus-byline">
+            <a class="whyus-byline__link" href="about.html" data-lang="whyUs.byline">Find out more on the About page</a>
+          </p>
+
         </div>
       </section>
 
@@ -1842,7 +1866,15 @@
               <li data-lang="home.plus.pro.f3">Multiple variations per generation</li>
               <li data-lang="home.plus.pro.f1">Furniture references: stage with pieces you choose</li>
             </ul>
-            <a class="plus-cta" href="stagify-plus.html" data-lang="home.plus.pro.cta">View Stagify+</a>
+            <!-- .plus-cta STAYS on both plate buttons: plus-cta-auth.js selects on it to
+                 open the register modal for signed-out visitors, so dropping it would
+                 silently remove that prompt. .plus-plate only re-skins it (home.css).
+                 The label lives in a CHILD span because data-lang assigns textContent —
+                 on the <a> it would wipe the arrow on the first translation pass. -->
+            <a class="plus-cta plus-plate plus-plate--pro" href="stagify-plus.html">
+              <span class="plus-plate__label" data-lang="home.plus.pro.cta">View Stagify+</span>
+              <span class="plus-plate__arrow" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg></span>
+            </a>
           </article>
           <article class="plus-card plus-card--ent reveal reveal--right" style="--reveal-delay:90ms">
             <div class="plus-card__top">
@@ -1858,7 +1890,10 @@
               <li data-lang="home.plus.ent.f3">One invoice, billed monthly by usage</li>
               <li data-lang="home.plus.ent.f4">Every Stagify+ feature included for the team</li>
             </ul>
-            <a class="plus-cta plus-cta--ghost" href="enterprise.html" data-lang="home.plus.ent.cta">Explore Enterprise</a>
+            <a class="plus-cta plus-plate plus-plate--ent" href="enterprise.html">
+              <span class="plus-plate__label" data-lang="home.plus.ent.cta">View Stagify Enterprise</span>
+              <span class="plus-plate__arrow" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg></span>
+            </a>
           </article>
         </div>
         <!-- A quiet line under the cards, NOT a third card. The API is a minority

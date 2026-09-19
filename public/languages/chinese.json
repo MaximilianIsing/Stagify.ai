@@ -24,28 +24,52 @@
       "heading": "在哪里找到我们",
       "blog": "我们的博客"
     },
+    "brand": {
+      "heading": "品牌资源包",
+      "body": "这些是官方文件。您无需事先征求同意即可用它们指代 Stagify.ai。请不要重绘标志，也不要暗示我们为您的产品背书。",
+      "paletteLabel": "颜色",
+      "colors": {
+        "brand": "品牌蓝",
+        "strong": "深品牌蓝",
+        "navy": "藏青",
+        "soft": "浅蓝",
+        "tint": "淡蓝",
+        "ink": "墨色"
+      },
+      "copyHint": "点选颜色即可复制其十六进制代码。",
+      "downloadsLabel": "下载",
+      "zip": "全部文件（ZIP）",
+      "logoPng": "完整标志（PNG）",
+      "iconSvg": "图标（SVG）",
+      "iconPng": "图标（PNG）",
+      "avatar": "头像（PNG）",
+      "ogImage": "社交卡片（PNG）",
+      "usage": "没有矢量文字标识：名称使用 <a href=\"https://rsms.me/inter/\" rel=\"nofollow noopener noreferrer\" target=\"_blank\">Inter</a> 排版，请直接排版为文字。请勿更改颜色、旋转、拉伸或重绘标志。完整规范见压缩包内的 README.txt。",
+      "copied": "已复制 {hex} 到剪贴板",
+      "copyFailed": "无法访问剪贴板。色值为 {hex}"
+    },
     "faq": {
       "heading": "常见问题",
       "q1": "Stagify.ai 和 stagify.io、stagify.app、stagify.online 或 stagifyai.com 是同一家公司吗？",
       "a1": "都不是。名字相同，公司不同。它们公布的价格、功能或服务，与我们无关。",
-      "q2": "怎么确认我进的是正确的网站？",
-      "a2": "看地址栏。我们的域名以 .ai 结尾。",
-      "q3": "你们还有别的产品或域名吗？",
-      "a3": "没有。我们只做一件事，只在一个地方做。别处叫 Stagify 的都不是我们的。",
-      "q4": "Stagify.ai 是谁创立的，现在由谁运营？",
-      "a4": "Maximilian Ising、Lucas Shtainer 和 Ryan Croman 在 2025 年 8 月创立，现在仍由我们三个人运营。",
-      "q5": "哪些账号才是你们的？",
-      "a5": "只有上面链接的那些。不在名单里的账号，都不是我们开的。",
-      "q6": "怎么联系到真人？",
-      "a6": "发邮件到 team@stagify.ai，或致电 (929) 251-4372。",
-      "q7": "你们会用我的照片训练 AI 模型吗？",
-      "a7": "不会。你上传的图片和生成的结果都不会用于训练我们的模型，我们使用的 AI 服务商默认也不会用 API 数据训练。<a href=\"privacy.html\">隐私政策</a>第 5 节有详细说明。",
-      "q8": "订阅可以随时取消吗？",
-      "a8": "可以，随时都行。已付费的周期内继续可用，到期后不再自动续费。",
-      "q9": "还有谁能看到我上传的内容？",
-      "a9": "只有运行服务必需的供应商：AI 模型、主机、支付和邮件。全部列在<a href=\"legal/subprocessors.html\">子处理方页面</a>上，并签有数据处理协议。",
-      "q10": "中介公司可以为整个团队购买吗？",
-      "a10": "可以。<a href=\"enterprise.html\">Enterprise</a> 按用量对你的整个邮箱域名计费，如果法务需要，也可以签署 MSA。"
+      "q2": "你们还有别的产品或域名吗？",
+      "a2": "没有。我们只做一件事，只在一个地方做。别处叫 Stagify 的都不是我们的。",
+      "q3": "Stagify.ai 是谁创立的，现在由谁运营？",
+      "a3": "Maximilian Ising、Lucas Shtainer 和 Ryan Croman 在 2025 年 8 月创立，现在仍由我们三个人运营。",
+      "q4": "怎么联系到真人？",
+      "a4": "发邮件到 team@stagify.ai，或致电 (929) 251-4372。",
+      "q5": "你们会用我的照片训练 AI 模型吗？",
+      "a5": "不会。你上传的图片和生成的结果都不会用于训练我们的模型，我们使用的 AI 服务商默认也不会用 API 数据训练。<a href=\"privacy.html\">隐私政策</a>第 5 节有详细说明。",
+      "q6": "订阅可以随时取消吗？",
+      "a6": "可以，随时都行。已付费的周期内继续可用，到期后不再自动续费。",
+      "q7": "还有谁能看到我上传的内容？",
+      "a7": "只有运行服务必需的供应商：AI 模型、主机、支付和邮件。全部列在<a href=\"legal/subprocessors.html\">子处理方页面</a>上，并签有数据处理协议。",
+      "q8": "中介公司可以为整个团队购买吗？",
+      "a8": "可以。<a href=\"enterprise.html\">Enterprise</a> 按用量对你的整个邮箱域名计费，如果法务需要，也可以签署 MSA。",
+      "q9": "有页面可以查看 Stagify.ai 是否正常运行吗？",
+      "a9": "有。<a href=\"/status\">状态页</a>实时显示网站、装修生成流程和 API 的可用性，以及正在处理的任何故障。",
+      "q10": "在哪里可以找到条款、隐私政策和其他法律文件？",
+      "a10": "都在页脚的“法律”中：<a href=\"terms.html\">服务条款</a>、<a href=\"privacy.html\">隐私政策</a>、<a href=\"legal/subprocessors.html\">次级处理方页面</a>和<a href=\"legal/enterprise-msa.html\" rel=\"nofollow\">企业版 MSA</a>。"
     }
   },
   "meta": {
@@ -960,7 +984,7 @@
         "f2": "按用量计费，无按席位收费",
         "f3": "每月一张账单，按用量结算",
         "f4": "团队成员均享 Stagify+ 全部功能",
-        "cta": "了解企业版"
+        "cta": "查看 Stagify Enterprise"
       }
     },
     "instagram": {
@@ -1205,6 +1229,7 @@
   },
   "whyUs": {
     "title": "为什么选择我们？",
+    "byline": "在「关于」页面了解更多",
     "stagify": {
       "features": {
         "free": "免费，想改多少次都行"
@@ -1987,17 +2012,16 @@
     "cards": {
       "24h": "24 小时",
       "7d": "7 天",
-      "30d": "30 天"
+      "30d": "30 天",
+      "all": "全部时间"
     },
     "graph24h": {
       "title": "过去 24 小时",
-      "meta": "48 个条形 · 每个 30 分钟",
       "aria": "过去 24 小时的可用性条形图",
       "axisStart": "24 小时前"
     },
     "graph7d": {
       "title": "过去 7 天",
-      "meta": "56 个条形 · 每个 3 小时",
       "aria": "过去 7 天的可用性条形图",
       "axisStart": "7 天前"
     },
@@ -2087,7 +2111,8 @@
         "CHECK_FAILED": "检查无法完成。",
         "CHECK_UNAVAILABLE": "此服务器上没有该项检查。"
       }
-    }
+    },
+    "refresh": "刷新"
   },
   "enterprise": {
     "hero": {

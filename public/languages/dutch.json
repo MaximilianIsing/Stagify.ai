@@ -24,28 +24,52 @@
       "heading": "Waar je ons vindt",
       "blog": "Ons Blog"
     },
+    "brand": {
+      "heading": "Merkkit",
+      "body": "Dit zijn de officiële bestanden. Je mag ze zonder toestemming gebruiken om naar Stagify.ai te verwijzen. Teken het merk niet na en wek niet de indruk dat wij jouw product aanbevelen.",
+      "paletteLabel": "Kleuren",
+      "colors": {
+        "brand": "Merkblauw",
+        "strong": "Diepblauw",
+        "navy": "Marineblauw",
+        "soft": "Lichtblauw",
+        "tint": "Tint",
+        "ink": "Inkt"
+      },
+      "copyHint": "Selecteer een kleur om de hexcode te kopiëren.",
+      "downloadsLabel": "Downloads",
+      "zip": "Alles (ZIP)",
+      "logoPng": "Volledig logo (PNG)",
+      "iconSvg": "Pictogram (SVG)",
+      "iconPng": "Pictogram (PNG)",
+      "avatar": "Profielfoto (PNG)",
+      "ogImage": "Socialecard (PNG)",
+      "usage": "Er is geen vectorwoordmerk: de naam is gezet in <a href=\"https://rsms.me/inter/\" rel=\"nofollow noopener noreferrer\" target=\"_blank\">Inter</a>, dus zet hem als tekst. Verander de kleur van het merk niet, draai of rek het niet uit en teken het niet na. De volledige richtlijnen staan in README.txt in het archief.",
+      "copied": "{hex} gekopieerd naar het klembord",
+      "copyFailed": "Geen toegang tot het klembord. De hexcode is {hex}"
+    },
     "faq": {
       "heading": "Veelgestelde vragen",
       "q1": "Is Stagify.ai hetzelfde bedrijf als stagify.io, stagify.app, stagify.online of stagifyai.com?",
       "a1": "Nee, geen van alle. Zelfde woord, andere bedrijven. Wat zij publiceren over prijzen, functies of service zegt niets over ons.",
-      "q2": "Hoe weet ik dat ik op de juiste site zit?",
-      "a2": "Kijk in de adresbalk. De onze eindigt op .ai.",
-      "q3": "Hebben jullie nog andere producten of domeinen?",
-      "a3": "Nee. We maken één ding en we doen dat op één plek. Wat elders Stagify heet, is niet van ons.",
-      "q4": "Wie heeft Stagify.ai opgericht en wie runt het nu?",
-      "a4": "Maximilian Ising, Lucas Shtainer en Ryan Croman begonnen in augustus 2025, en wij drieën runnen het nog steeds.",
-      "q5": "Welke accounts zijn echt van jullie?",
-      "a5": "Alleen de accounts die hierboven staan. Staat een account niet in die lijst, dan hebben wij het niet gemaakt.",
-      "q6": "Hoe bereik ik een mens?",
-      "a6": "Mail team@stagify.ai of bel (929) 251-4372.",
-      "q7": "Trainen jullie AI-modellen op mijn foto’s?",
-      "a7": "Nee. Je uploads en de beelden die je genereert worden nooit gebruikt om onze modellen te trainen, en de AI-leveranciers die wij gebruiken trainen standaard niet op API-data. Sectie 5 van het <a href=\"privacy.html\">privacybeleid</a> legt het uit.",
-      "q8": "Kan ik mijn abonnement opzeggen wanneer ik wil?",
-      "a8": "Ja, wanneer je wilt. Het blijft werken tot het eind van de periode die je al betaald hebt en verlengt daarna niet meer.",
-      "q9": "Wie kan er nog meer zien wat ik upload?",
-      "a9": "Alleen de leveranciers die we nodig hebben om de dienst te draaien: de AI-modellen, hosting, betalingen en e-mail. Ze staan allemaal met naam op de <a href=\"legal/subprocessors.html\">subverwerkerspagina</a>, met verwerkersovereenkomsten.",
-      "q10": "Kan een makelaarskantoor dit voor een heel team afnemen?",
-      "a10": "Ja. <a href=\"enterprise.html\">Enterprise</a> rekent af op gebruik over je hele e-maildomein, met een ondertekenbare MSA als je juristen die nodig hebben."
+      "q2": "Hebben jullie nog andere producten of domeinen?",
+      "a2": "Nee. We maken één ding en we doen dat op één plek. Wat elders Stagify heet, is niet van ons.",
+      "q3": "Wie heeft Stagify.ai opgericht en wie runt het nu?",
+      "a3": "Maximilian Ising, Lucas Shtainer en Ryan Croman begonnen in augustus 2025, en wij drieën runnen het nog steeds.",
+      "q4": "Hoe bereik ik een mens?",
+      "a4": "Mail team@stagify.ai of bel (929) 251-4372.",
+      "q5": "Trainen jullie AI-modellen op mijn foto’s?",
+      "a5": "Nee. Je uploads en de beelden die je genereert worden nooit gebruikt om onze modellen te trainen, en de AI-leveranciers die wij gebruiken trainen standaard niet op API-data. Sectie 5 van het <a href=\"privacy.html\">privacybeleid</a> legt het uit.",
+      "q6": "Kan ik mijn abonnement opzeggen wanneer ik wil?",
+      "a6": "Ja, wanneer je wilt. Het blijft werken tot het eind van de periode die je al betaald hebt en verlengt daarna niet meer.",
+      "q7": "Wie kan er nog meer zien wat ik upload?",
+      "a7": "Alleen de leveranciers die we nodig hebben om de dienst te draaien: de AI-modellen, hosting, betalingen en e-mail. Ze staan allemaal met naam op de <a href=\"legal/subprocessors.html\">subverwerkerspagina</a>, met verwerkersovereenkomsten.",
+      "q8": "Kan een makelaarskantoor dit voor een heel team afnemen?",
+      "a8": "Ja. <a href=\"enterprise.html\">Enterprise</a> rekent af op gebruik over je hele e-maildomein, met een ondertekenbare MSA als je juristen die nodig hebben.",
+      "q9": "Is er een pagina die laat zien of Stagify.ai het doet?",
+      "a9": "Ja. De <a href=\"/status\">statuspagina</a> toont live de beschikbaarheid van de site, de staging-pipeline en de API, plus elke storing waar we mee bezig zijn.",
+      "q10": "Waar vind ik de voorwaarden, het privacybeleid en de andere juridische documenten?",
+      "a10": "Alles staat onder Juridisch in de voettekst: de <a href=\"terms.html\">Servicevoorwaarden</a>, het <a href=\"privacy.html\">Privacybeleid</a>, de <a href=\"legal/subprocessors.html\">subverwerkerspagina</a> en de <a href=\"legal/enterprise-msa.html\" rel=\"nofollow\">Enterprise-MSA</a>."
     }
   },
   "meta": {
@@ -960,7 +984,7 @@
         "f2": "Verbruiksgebaseerde facturering, geen kosten per gebruiker",
         "f3": "Eén factuur, maandelijks gefactureerd op verbruik",
         "f4": "Elke Stagify+-functie inbegrepen voor het team",
-        "cta": "Ontdek Enterprise"
+        "cta": "Bekijk Stagify Enterprise"
       }
     },
     "instagram": {
@@ -1205,6 +1229,7 @@
   },
   "whyUs": {
     "title": "Waarom voor ons kiezen?",
+    "byline": "Lees meer op de pagina Over ons",
     "stagify": {
       "features": {
         "free": "Gratis, zo vaak je wilt"
@@ -1987,17 +2012,16 @@
     "cards": {
       "24h": "24 uur",
       "7d": "7 dagen",
-      "30d": "30 dagen"
+      "30d": "30 dagen",
+      "all": "Sinds het begin"
     },
     "graph24h": {
       "title": "Laatste 24 uur",
-      "meta": "48 balken · elk 30 min",
       "aria": "Uptime-balken voor de laatste 24 uur",
       "axisStart": "24 uur geleden"
     },
     "graph7d": {
       "title": "Laatste 7 dagen",
-      "meta": "56 balken · elk 3 uur",
       "aria": "Uptime-balken voor de laatste 7 dagen",
       "axisStart": "7 dagen geleden"
     },
@@ -2087,7 +2111,8 @@
         "CHECK_FAILED": "De controle kon niet worden uitgevoerd.",
         "CHECK_UNAVAILABLE": "Deze controle is niet beschikbaar op deze server."
       }
-    }
+    },
+    "refresh": "Vernieuwen"
   },
   "enterprise": {
     "hero": {

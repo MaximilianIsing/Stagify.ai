@@ -85,6 +85,9 @@ export const DEFERRED = [
   // scoped to the two data figures and shares their ramp/observer scaffolding, none
   // of which this needs — it is plain pointer and focus wiring.
   { src: 'scripts/home-whyus.js', module: true },
+  // The outro's Google-review stars: it only decides where the hover wave starts, so
+  // home.css owns the whole animation and this file is pure pointer wiring.
+  { src: 'scripts/home-review-stars.js', module: true },
   // #faq's floor plan. Generates SVG only — the accordion itself is native <details>,
   // so nothing here is load-bearing for reading the FAQ. Mounts its OWN
   // IntersectionObserver for the same reason home-figures.js does.
