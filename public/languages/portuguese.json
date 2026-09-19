@@ -24,28 +24,52 @@
       "heading": "Onde nos encontrar",
       "blog": "Nosso Blog"
     },
+    "brand": {
+      "heading": "Kit de marca",
+      "body": "Estes são os arquivos oficiais. Use-os para se referir ao Stagify.ai sem pedir permissão. Não redesenhe a marca nem dê a entender que apoiamos o seu produto.",
+      "paletteLabel": "Cores",
+      "colors": {
+        "brand": "Azul da marca",
+        "strong": "Azul forte",
+        "navy": "Azul-marinho",
+        "soft": "Azul suave",
+        "tint": "Tom claro",
+        "ink": "Tinta"
+      },
+      "copyHint": "Selecione uma cor para copiar o código hexadecimal.",
+      "downloadsLabel": "Downloads",
+      "zip": "Tudo (ZIP)",
+      "logoPng": "Logotipo completo (PNG)",
+      "iconSvg": "Ícone (SVG)",
+      "iconPng": "Ícone (PNG)",
+      "avatar": "Foto de perfil (PNG)",
+      "ogImage": "Cartão social (PNG)",
+      "usage": "Não há logotipo vetorial: o nome é composto em <a href=\"https://rsms.me/inter/\" rel=\"nofollow noopener noreferrer\" target=\"_blank\">Inter</a>, então componha-o como texto. Não altere a cor, gire, estique nem redesenhe a marca. As orientações completas estão no README.txt do arquivo.",
+      "copied": "{hex} copiado para a área de transferência",
+      "copyFailed": "Não foi possível acessar a área de transferência. O código é {hex}"
+    },
     "faq": {
       "heading": "Perguntas frequentes",
       "q1": "A Stagify.ai é a mesma empresa que stagify.io, stagify.app, stagify.online ou stagifyai.com?",
       "a1": "Não, nenhuma delas. Mesma palavra, empresas diferentes. O que elas publicam sobre preços, recursos ou atendimento não diz nada sobre nós.",
-      "q2": "Como sei que estou no site certo?",
-      "a2": "Olhe a barra de endereços. O nosso termina em .ai.",
-      "q3": "Vocês têm outros produtos ou domínios?",
-      "a3": "Não. Fazemos uma coisa só e num lugar só. Qualquer coisa chamada Stagify em outro lugar não é nossa.",
-      "q4": "Quem fundou a Stagify.ai e quem toca a empresa hoje?",
-      "a4": "Maximilian Ising, Lucas Shtainer e Ryan Croman começaram em agosto de 2025, e nós três continuamos à frente.",
-      "q5": "Quais contas são realmente de vocês?",
-      "a5": "As que estão linkadas acima, e mais nenhuma. Se uma conta não está nessa lista, não fomos nós que criamos.",
-      "q6": "Como falo com uma pessoa?",
-      "a6": "Escreva para team@stagify.ai ou ligue para (929) 251-4372.",
-      "q7": "Vocês treinam modelos de IA com as minhas fotos?",
-      "a7": "Não. As imagens que você envia e as que gera nunca são usadas para treinar os nossos modelos, e os provedores de IA que usamos não treinam com dados da API por padrão. A seção 5 da <a href=\"privacy.html\">Política de Privacidade</a> detalha isso.",
-      "q8": "Posso cancelar a assinatura quando quiser?",
-      "a8": "Sim, a qualquer momento. Ela continua valendo até o fim do período que você já pagou e depois para de renovar.",
-      "q9": "Quem mais pode ver o que eu envio?",
-      "a9": "Apenas os fornecedores necessários para o serviço funcionar: os modelos de IA, a hospedagem, os pagamentos e o e-mail. Todos estão nomeados na <a href=\"legal/subprocessors.html\">página de suboperadores</a>, com acordos de tratamento de dados.",
-      "q10": "Uma imobiliária pode contratar para a equipe inteira?",
-      "a10": "Sim. O <a href=\"enterprise.html\">Enterprise</a> cobra por uso em todo o seu domínio de e-mail, com um MSA assinável se o jurídico precisar."
+      "q2": "Vocês têm outros produtos ou domínios?",
+      "a2": "Não. Fazemos uma coisa só e num lugar só. Qualquer coisa chamada Stagify em outro lugar não é nossa.",
+      "q3": "Quem fundou a Stagify.ai e quem toca a empresa hoje?",
+      "a3": "Maximilian Ising, Lucas Shtainer e Ryan Croman começaram em agosto de 2025, e nós três continuamos à frente.",
+      "q4": "Como falo com uma pessoa?",
+      "a4": "Escreva para team@stagify.ai ou ligue para (929) 251-4372.",
+      "q5": "Vocês treinam modelos de IA com as minhas fotos?",
+      "a5": "Não. As imagens que você envia e as que gera nunca são usadas para treinar os nossos modelos, e os provedores de IA que usamos não treinam com dados da API por padrão. A seção 5 da <a href=\"privacy.html\">Política de Privacidade</a> detalha isso.",
+      "q6": "Posso cancelar a assinatura quando quiser?",
+      "a6": "Sim, a qualquer momento. Ela continua valendo até o fim do período que você já pagou e depois para de renovar.",
+      "q7": "Quem mais pode ver o que eu envio?",
+      "a7": "Apenas os fornecedores necessários para o serviço funcionar: os modelos de IA, a hospedagem, os pagamentos e o e-mail. Todos estão nomeados na <a href=\"legal/subprocessors.html\">página de suboperadores</a>, com acordos de tratamento de dados.",
+      "q8": "Uma imobiliária pode contratar para a equipe inteira?",
+      "a8": "Sim. O <a href=\"enterprise.html\">Enterprise</a> cobra por uso em todo o seu domínio de e-mail, com um MSA assinável se o jurídico precisar.",
+      "q9": "Existe uma página que mostre se o Stagify.ai está no ar?",
+      "a9": "Sim. A <a href=\"/status\">página de status</a> mostra a disponibilidade em tempo real do site, do pipeline de staging e da API, além de qualquer incidente em andamento.",
+      "q10": "Onde estão os termos, a política de privacidade e os demais documentos legais?",
+      "a10": "Todos ficam em Jurídico, no rodapé: os <a href=\"terms.html\">Termos de Serviço</a>, a <a href=\"privacy.html\">Política de Privacidade</a>, a <a href=\"legal/subprocessors.html\">página de suboperadores</a> e o <a href=\"legal/enterprise-msa.html\" rel=\"nofollow\">MSA Enterprise</a>."
     }
   },
   "meta": {
@@ -960,7 +984,7 @@
         "f2": "Cobrança por uso, sem taxas por usuário",
         "f3": "Uma única fatura, cobrada mensalmente por uso",
         "f4": "Todos os recursos do Stagify+ incluídos para a equipe",
-        "cta": "Conheça o Enterprise"
+        "cta": "Conheça o Stagify Enterprise"
       }
     },
     "instagram": {
@@ -1205,6 +1229,7 @@
   },
   "whyUs": {
     "title": "Por que nos escolher?",
+    "byline": "Saiba mais na página Sobre",
     "stagify": {
       "features": {
         "free": "Grátis, quantas vezes quiser"
@@ -1987,17 +2012,16 @@
     "cards": {
       "24h": "24 horas",
       "7d": "7 dias",
-      "30d": "30 dias"
+      "30d": "30 dias",
+      "all": "Desde o início"
     },
     "graph24h": {
       "title": "Últimas 24 horas",
-      "meta": "48 barras · 30 min cada",
       "aria": "Barras de disponibilidade das últimas 24 horas",
       "axisStart": "24 horas atrás"
     },
     "graph7d": {
       "title": "Últimos 7 dias",
-      "meta": "56 barras · 3 h cada",
       "aria": "Barras de disponibilidade dos últimos 7 dias",
       "axisStart": "7 dias atrás"
     },
@@ -2087,7 +2111,8 @@
         "CHECK_FAILED": "Não foi possível concluir a verificação.",
         "CHECK_UNAVAILABLE": "Esta verificação não está disponível neste servidor."
       }
-    }
+    },
+    "refresh": "Atualizar"
   },
   "enterprise": {
     "hero": {

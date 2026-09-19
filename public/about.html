@@ -92,7 +92,7 @@
     <!-- The disambiguation Q&A. Every answer below is rendered VISIBLY on this page, in
          the same words — an FAQPage whose answers a human cannot see is cloaking, and
          risks the rich result for the homepage FAQ along with it. -->
-    <script type="application/ld+json" id="about-faq-jsonld">
+    <script type="application/ld+json" id="about-faq-jsonld" data-lang-faq="about.faq">
     {
       "@context": "https://schema.org",
       "@type": "FAQPage",
@@ -104,15 +104,6 @@
           "acceptedAnswer": {
             "@type": "Answer",
             "text": "No, none of them. Same word, different companies. What they publish about prices, features or service says nothing about us."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "How do I know I am on the right site?",
-          "url": "https://stagify.ai/about.html#about-faq",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Look at the address bar. Ours ends in .ai."
           }
         },
         {
@@ -131,15 +122,6 @@
           "acceptedAnswer": {
             "@type": "Answer",
             "text": "Maximilian Ising, Lucas Shtainer and Ryan Croman started it in August 2025, and the three of us still run it."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Which accounts are actually yours?",
-          "url": "https://stagify.ai/about.html#about-faq",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "The ones linked above, and nothing else. If an account is not on that list, we did not make it."
           }
         },
         {
@@ -185,6 +167,24 @@
           "acceptedAnswer": {
             "@type": "Answer",
             "text": "Yes. Enterprise bills by usage across your whole email domain, with a signable MSA if your legal team needs one."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is there a page showing whether Stagify.ai is up?",
+          "url": "https://stagify.ai/about.html#about-faq",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. The status page shows live availability for the site, the staging pipeline and the API, plus anything we are currently working on."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Where are your terms, privacy policy and other legal documents?",
+          "url": "https://stagify.ai/about.html#about-faq",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "All of them sit under Legal in the footer: the Terms of Service, the Privacy Policy, the subprocessors page and the Enterprise MSA."
           }
         }
       ]
@@ -613,41 +613,75 @@
             <p data-lang-html="about.faq.a1">No, none of them. Same word, different companies. What they publish about prices, features or service says nothing about us.</p>
           </details>
           <details class="about__qa">
-            <summary data-lang="about.faq.q2">How do I know I am on the right site?</summary>
-            <p data-lang-html="about.faq.a2">Look at the address bar. Ours ends in .ai.</p>
+            <summary data-lang="about.faq.q2">Do you run any other products or domains?</summary>
+            <p data-lang-html="about.faq.a2">No. We make one thing and we run it in one place. Anything called Stagify anywhere else is not ours.</p>
           </details>
           <details class="about__qa">
-            <summary data-lang="about.faq.q3">Do you run any other products or domains?</summary>
-            <p data-lang-html="about.faq.a3">No. We make one thing and we run it in one place. Anything called Stagify anywhere else is not ours.</p>
+            <summary data-lang="about.faq.q3">Who founded Stagify.ai, and who runs it now?</summary>
+            <p data-lang-html="about.faq.a3">Maximilian Ising, Lucas Shtainer and Ryan Croman started it in August 2025, and the three of us still run it.</p>
           </details>
           <details class="about__qa">
-            <summary data-lang="about.faq.q4">Who founded Stagify.ai, and who runs it now?</summary>
-            <p data-lang-html="about.faq.a4">Maximilian Ising, Lucas Shtainer and Ryan Croman started it in August 2025, and the three of us still run it.</p>
+            <summary data-lang="about.faq.q4">How do I reach a person?</summary>
+            <p data-lang-html="about.faq.a4">Email team@stagify.ai or call (929) 251-4372.</p>
           </details>
           <details class="about__qa">
-            <summary data-lang="about.faq.q5">Which accounts are actually yours?</summary>
-            <p data-lang-html="about.faq.a5">The ones linked above, and nothing else. If an account is not on that list, we did not make it.</p>
+            <summary data-lang="about.faq.q5">Do you train AI models on my photos?</summary>
+            <p data-lang-html="about.faq.a5">No. Your uploads and the images you generate are never used to train our models, and the AI providers we use do not train on API data by default. Section 5 of the <a href="privacy.html">Privacy Policy</a> spells it out.</p>
           </details>
           <details class="about__qa">
-            <summary data-lang="about.faq.q6">How do I reach a person?</summary>
-            <p data-lang-html="about.faq.a6">Email team@stagify.ai or call (929) 251-4372.</p>
+            <summary data-lang="about.faq.q6">Can I cancel a subscription whenever I want?</summary>
+            <p data-lang-html="about.faq.a6">Yes, any time. It keeps working until the end of the period you already paid for, then stops renewing.</p>
           </details>
           <details class="about__qa">
-            <summary data-lang="about.faq.q7">Do you train AI models on my photos?</summary>
-            <p data-lang-html="about.faq.a7">No. Your uploads and the images you generate are never used to train our models, and the AI providers we use do not train on API data by default. Section 5 of the <a href="privacy.html">Privacy Policy</a> spells it out.</p>
+            <summary data-lang="about.faq.q7">Who else can see what I upload?</summary>
+            <p data-lang-html="about.faq.a7">Only the providers we need to run the service: the AI models, hosting, payments and email. All of them are named on the <a href="legal/subprocessors.html">subprocessors page</a>, under data processing agreements.</p>
           </details>
           <details class="about__qa">
-            <summary data-lang="about.faq.q8">Can I cancel a subscription whenever I want?</summary>
-            <p data-lang-html="about.faq.a8">Yes, any time. It keeps working until the end of the period you already paid for, then stops renewing.</p>
+            <summary data-lang="about.faq.q8">Can a brokerage or agency buy this for a whole team?</summary>
+            <p data-lang-html="about.faq.a8">Yes. <a href="enterprise.html">Enterprise</a> bills by usage across your whole email domain, with a signable MSA if your legal team needs one.</p>
           </details>
           <details class="about__qa">
-            <summary data-lang="about.faq.q9">Who else can see what I upload?</summary>
-            <p data-lang-html="about.faq.a9">Only the providers we need to run the service: the AI models, hosting, payments and email. All of them are named on the <a href="legal/subprocessors.html">subprocessors page</a>, under data processing agreements.</p>
+            <summary data-lang="about.faq.q9">Is there a page showing whether Stagify.ai is up?</summary>
+            <p data-lang-html="about.faq.a9">Yes. The <a href="/status">status page</a> shows live availability for the site, the staging pipeline and the API, plus anything we are currently working on.</p>
           </details>
           <details class="about__qa">
-            <summary data-lang="about.faq.q10">Can a brokerage or agency buy this for a whole team?</summary>
-            <p data-lang-html="about.faq.a10">Yes. <a href="enterprise.html">Enterprise</a> bills by usage across your whole email domain, with a signable MSA if your legal team needs one.</p>
+            <summary data-lang="about.faq.q10">Where are your terms, privacy policy and other legal documents?</summary>
+            <p data-lang-html="about.faq.a10">All of them sit under Legal in the footer: the <a href="terms.html">Terms of Service</a>, the <a href="privacy.html">Privacy Policy</a>, the <a href="legal/subprocessors.html">subprocessors page</a> and the <a href="legal/enterprise-msa.html" rel="nofollow">Enterprise MSA</a>.</p>
           </details>
+        </section>
+
+        <section class="about__card" id="brand-kit">
+          <h2 data-lang="about.brand.heading">Brand kit</h2>
+          <p data-lang-html="about.brand.body">These are the official files. Use them to refer to Stagify.ai without asking. Please do not redraw the mark or imply we endorse your product.</p>
+
+          <h3 class="about__subhead" data-lang="about.brand.paletteLabel">Colours</h3>
+          <p class="about__hint" data-lang="about.brand.copyHint">Select a colour to copy its hex code.</p>
+          <ul class="brand-swatches" data-brand-swatches>
+            <li><button type="button" class="brand-swatch" data-copy="#2563eb" style="--swatch:var(--brand)"><span class="brand-swatch__chip" aria-hidden="true"></span><span class="brand-swatch__name" data-lang="about.brand.colors.brand">Brand blue</span><span class="brand-swatch__hex">#2563eb</span></button></li>
+            <li><button type="button" class="brand-swatch" data-copy="#1d4ed8" style="--swatch:var(--brand-strong)"><span class="brand-swatch__chip" aria-hidden="true"></span><span class="brand-swatch__name" data-lang="about.brand.colors.strong">Strong blue</span><span class="brand-swatch__hex">#1d4ed8</span></button></li>
+            <li><button type="button" class="brand-swatch" data-copy="#1e3a8a" style="--swatch:var(--brand-deep)"><span class="brand-swatch__chip" aria-hidden="true"></span><span class="brand-swatch__name" data-lang="about.brand.colors.navy">Navy</span><span class="brand-swatch__hex">#1e3a8a</span></button></li>
+            <li><button type="button" class="brand-swatch" data-copy="#60a5fa" style="--swatch:var(--brand-soft)"><span class="brand-swatch__chip" aria-hidden="true"></span><span class="brand-swatch__name" data-lang="about.brand.colors.soft">Soft blue</span><span class="brand-swatch__hex">#60a5fa</span></button></li>
+            <li><button type="button" class="brand-swatch" data-copy="#dbeafe" style="--swatch:var(--brand-tint)"><span class="brand-swatch__chip" aria-hidden="true"></span><span class="brand-swatch__name" data-lang="about.brand.colors.tint">Tint</span><span class="brand-swatch__hex">#dbeafe</span></button></li>
+            <li><button type="button" class="brand-swatch" data-copy="#111827" style="--swatch:var(--text-heading)"><span class="brand-swatch__chip" aria-hidden="true"></span><span class="brand-swatch__name" data-lang="about.brand.colors.ink">Ink</span><span class="brand-swatch__hex">#111827</span></button></li>
+          </ul>
+
+          <h3 class="about__subhead" data-lang="about.brand.downloadsLabel">Downloads</h3>
+          <ul class="about__profiles about__profiles--kit">
+            <li><a class="about__profile about__profile--download" href="brand/stagify-brand-kit.zip" download><svg class="about__profile-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true" focusable="false"><path d="M12 3a1 1 0 0 1 1 1v9.59l3.3-3.3a1 1 0 0 1 1.4 1.42l-5 5a1 1 0 0 1-1.4 0l-5-5a1 1 0 1 1 1.4-1.42l3.3 3.3V4a1 1 0 0 1 1-1zM4 19a1 1 0 0 1 1-1h14a1 1 0 1 1 0 2H5a1 1 0 0 1-1-1z"/></svg><span data-lang="about.brand.zip">Everything (ZIP)</span></a></li>
+            <li><a class="about__profile about__profile--download" href="brand/stagify-logo-full.png" download><svg class="about__profile-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true" focusable="false"><path d="M12 3a1 1 0 0 1 1 1v9.59l3.3-3.3a1 1 0 0 1 1.4 1.42l-5 5a1 1 0 0 1-1.4 0l-5-5a1 1 0 1 1 1.4-1.42l3.3 3.3V4a1 1 0 0 1 1-1zM4 19a1 1 0 0 1 1-1h14a1 1 0 1 1 0 2H5a1 1 0 0 1-1-1z"/></svg><span data-lang="about.brand.logoPng">Full logo (PNG)</span></a></li>
+            <li><a class="about__profile about__profile--download" href="brand/stagify-icon.svg" download><svg class="about__profile-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true" focusable="false"><path d="M12 3a1 1 0 0 1 1 1v9.59l3.3-3.3a1 1 0 0 1 1.4 1.42l-5 5a1 1 0 0 1-1.4 0l-5-5a1 1 0 1 1 1.4-1.42l3.3 3.3V4a1 1 0 0 1 1-1zM4 19a1 1 0 0 1 1-1h14a1 1 0 1 1 0 2H5a1 1 0 0 1-1-1z"/></svg><span data-lang="about.brand.iconSvg">Icon (SVG)</span></a></li>
+            <li><a class="about__profile about__profile--download" href="brand/stagify-icon-180.png" download><svg class="about__profile-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true" focusable="false"><path d="M12 3a1 1 0 0 1 1 1v9.59l3.3-3.3a1 1 0 0 1 1.4 1.42l-5 5a1 1 0 0 1-1.4 0l-5-5a1 1 0 1 1 1.4-1.42l3.3 3.3V4a1 1 0 0 1 1-1zM4 19a1 1 0 0 1 1-1h14a1 1 0 1 1 0 2H5a1 1 0 0 1-1-1z"/></svg><span data-lang="about.brand.iconPng">Icon (PNG)</span></a></li>
+            <li><a class="about__profile about__profile--download" href="brand/stagify-avatar.png" download><svg class="about__profile-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true" focusable="false"><path d="M12 3a1 1 0 0 1 1 1v9.59l3.3-3.3a1 1 0 0 1 1.4 1.42l-5 5a1 1 0 0 1-1.4 0l-5-5a1 1 0 1 1 1.4-1.42l3.3 3.3V4a1 1 0 0 1 1-1zM4 19a1 1 0 0 1 1-1h14a1 1 0 1 1 0 2H5a1 1 0 0 1-1-1z"/></svg><span data-lang="about.brand.avatar">PFP (PNG)</span></a></li>
+            <li><a class="about__profile about__profile--download" href="brand/stagify-og-image.png" download><svg class="about__profile-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true" focusable="false"><path d="M12 3a1 1 0 0 1 1 1v9.59l3.3-3.3a1 1 0 0 1 1.4 1.42l-5 5a1 1 0 0 1-1.4 0l-5-5a1 1 0 1 1 1.4-1.42l3.3 3.3V4a1 1 0 0 1 1-1zM4 19a1 1 0 0 1 1-1h14a1 1 0 1 1 0 2H5a1 1 0 0 1-1-1z"/></svg><span data-lang="about.brand.ogImage">Social card (PNG)</span></a></li>
+          </ul>
+
+          <p class="about__note" data-lang-html="about.brand.usage">There is no vector wordmark: the name is set in <a href="https://rsms.me/inter/" rel="nofollow noopener noreferrer" target="_blank">Inter</a>, so set it as type. Please do not recolour, rotate, stretch or redraw the mark. Full guidance is in the archive’s README.txt.</p>
+
+          <!-- Messages for scripts/brand-kit.js. Parked in the markup rather than in the
+               module so they go through language-loader.js like every other string; the
+               module reads their textContent and substitutes {hex}. -->
+          <span class="brand-copy-msg" data-brand-copy-ok data-lang="about.brand.copied" hidden>Copied {hex} to the clipboard</span>
+          <span class="brand-copy-msg" data-brand-copy-fail data-lang="about.brand.copyFailed" hidden>Could not reach the clipboard. The hex is {hex}</span>
         </section>
       </section>
     </main>
@@ -679,5 +713,6 @@
     <script type="module" src="scripts/hover-glow.js"></script>
     <script type="module" src="scripts/footer-year.js"></script>
     <script type="module" src="scripts/legal-menu.js"></script>
+    <script type="module" src="scripts/brand-kit.js"></script>
 </body>
 </html>

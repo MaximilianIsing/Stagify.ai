@@ -24,28 +24,52 @@
       "heading": "Where to find us",
       "blog": "Our Blog"
     },
+    "brand": {
+      "heading": "Brand kit",
+      "body": "These are the official files. Use them to refer to Stagify.ai without asking. Please do not redraw the mark or imply we endorse your product.",
+      "paletteLabel": "Colours",
+      "colors": {
+        "brand": "Brand blue",
+        "strong": "Strong blue",
+        "navy": "Navy",
+        "soft": "Soft blue",
+        "tint": "Tint",
+        "ink": "Ink"
+      },
+      "copyHint": "Select a colour to copy its hex code.",
+      "downloadsLabel": "Downloads",
+      "zip": "Everything (ZIP)",
+      "logoPng": "Full logo (PNG)",
+      "iconSvg": "Icon (SVG)",
+      "iconPng": "Icon (PNG)",
+      "avatar": "PFP (PNG)",
+      "ogImage": "Social card (PNG)",
+      "usage": "There is no vector wordmark: the name is set in <a href=\"https://rsms.me/inter/\" rel=\"nofollow noopener noreferrer\" target=\"_blank\">Inter</a>, so set it as type. Please do not recolour, rotate, stretch or redraw the mark. Full guidance is in the archive’s README.txt.",
+      "copied": "Copied {hex} to the clipboard",
+      "copyFailed": "Could not reach the clipboard. The hex is {hex}"
+    },
     "faq": {
       "heading": "Common questions",
       "q1": "Is Stagify.ai the same company as stagify.io, stagify.app, stagify.online or stagifyai.com?",
       "a1": "No, none of them. Same word, different companies. What they publish about prices, features or service says nothing about us.",
-      "q2": "How do I know I am on the right site?",
-      "a2": "Look at the address bar. Ours ends in .ai.",
-      "q3": "Do you run any other products or domains?",
-      "a3": "No. We make one thing and we run it in one place. Anything called Stagify anywhere else is not ours.",
-      "q4": "Who founded Stagify.ai, and who runs it now?",
-      "a4": "Maximilian Ising, Lucas Shtainer and Ryan Croman started it in August 2025, and the three of us still run it.",
-      "q5": "Which accounts are actually yours?",
-      "a5": "The ones linked above, and nothing else. If an account is not on that list, we did not make it.",
-      "q6": "How do I reach a person?",
-      "a6": "Email team@stagify.ai or call (929) 251-4372.",
-      "q7": "Do you train AI models on my photos?",
-      "a7": "No. Your uploads and the images you generate are never used to train our models, and the AI providers we use do not train on API data by default. Section 5 of the <a href=\"privacy.html\">Privacy Policy</a> spells it out.",
-      "q8": "Can I cancel a subscription whenever I want?",
-      "a8": "Yes, any time. It keeps working until the end of the period you already paid for, then stops renewing.",
-      "q9": "Who else can see what I upload?",
-      "a9": "Only the providers we need to run the service: the AI models, hosting, payments and email. All of them are named on the <a href=\"legal/subprocessors.html\">subprocessors page</a>, under data processing agreements.",
-      "q10": "Can a brokerage or agency buy this for a whole team?",
-      "a10": "Yes. <a href=\"enterprise.html\">Enterprise</a> bills by usage across your whole email domain, with a signable MSA if your legal team needs one."
+      "q2": "Do you run any other products or domains?",
+      "a2": "No. We make one thing and we run it in one place. Anything called Stagify anywhere else is not ours.",
+      "q3": "Who founded Stagify.ai, and who runs it now?",
+      "a3": "Maximilian Ising, Lucas Shtainer and Ryan Croman started it in August 2025, and the three of us still run it.",
+      "q4": "How do I reach a person?",
+      "a4": "Email team@stagify.ai or call (929) 251-4372.",
+      "q5": "Do you train AI models on my photos?",
+      "a5": "No. Your uploads and the images you generate are never used to train our models, and the AI providers we use do not train on API data by default. Section 5 of the <a href=\"privacy.html\">Privacy Policy</a> spells it out.",
+      "q6": "Can I cancel a subscription whenever I want?",
+      "a6": "Yes, any time. It keeps working until the end of the period you already paid for, then stops renewing.",
+      "q7": "Who else can see what I upload?",
+      "a7": "Only the providers we need to run the service: the AI models, hosting, payments and email. All of them are named on the <a href=\"legal/subprocessors.html\">subprocessors page</a>, under data processing agreements.",
+      "q8": "Can a brokerage or agency buy this for a whole team?",
+      "a8": "Yes. <a href=\"enterprise.html\">Enterprise</a> bills by usage across your whole email domain, with a signable MSA if your legal team needs one.",
+      "q9": "Is there a page showing whether Stagify.ai is up?",
+      "a9": "Yes. The <a href=\"/status\">status page</a> shows live availability for the site, the staging pipeline and the API, plus anything we are currently working on.",
+      "q10": "Where are your terms, privacy policy and other legal documents?",
+      "a10": "All of them sit under Legal in the footer: the <a href=\"terms.html\">Terms of Service</a>, the <a href=\"privacy.html\">Privacy Policy</a>, the <a href=\"legal/subprocessors.html\">subprocessors page</a> and the <a href=\"legal/enterprise-msa.html\" rel=\"nofollow\">Enterprise MSA</a>."
     }
   },
   "meta": {
@@ -960,7 +984,7 @@
         "f2": "Usage-based billing, no per-seat fees",
         "f3": "One invoice, billed monthly by usage",
         "f4": "Every Stagify+ feature included for the team",
-        "cta": "Explore Enterprise"
+        "cta": "View Stagify Enterprise"
       }
     },
     "instagram": {
@@ -1205,6 +1229,7 @@
   },
   "whyUs": {
     "title": "Why choose us?",
+    "byline": "Find out more on the About page",
     "stagify": {
       "features": {
         "free": "Free, as often as you like"
@@ -1987,17 +2012,16 @@
     "cards": {
       "24h": "24 hours",
       "7d": "7 days",
-      "30d": "30 days"
+      "30d": "30 days",
+      "all": "All time"
     },
     "graph24h": {
       "title": "Last 24 hours",
-      "meta": "48 bars · 30 min each",
       "aria": "Uptime bars for the last 24 hours",
       "axisStart": "24 hours ago"
     },
     "graph7d": {
       "title": "Last 7 days",
-      "meta": "56 bars · 3 h each",
       "aria": "Uptime bars for the last 7 days",
       "axisStart": "7 days ago"
     },
@@ -2087,7 +2111,8 @@
         "CHECK_FAILED": "The check could not be completed.",
         "CHECK_UNAVAILABLE": "This check is not available on this server."
       }
-    }
+    },
+    "refresh": "Refresh"
   },
   "enterprise": {
     "hero": {

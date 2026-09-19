@@ -140,6 +140,36 @@ test('buildSnapshot returns windows, sized graph buckets, and operational status
   assert.equal(snap.incidents[0].durationMs, 5 * 60 * 1000);
 });
 
+test('buildSnapshot adds an all-time window covering everything ever watched', () => {
+  const state = {
+    monitoringStart: NOW - 10 * DAY,
+    lastBeat: NOW - 5000,
+    bootCount: 1,
+    // One hour down, ten days ago — inside all-time, outside the 24h and 7d windows.
+    incidents: [{ start: NOW - 9 * DAY, end: NOW - 9 * DAY + HOUR }],
+  };
+  const all = buildSnapshot(state, NOW).windows.all;
+
+  assert.equal(all.monitoredMs, 10 * DAY);
+  // Coverage is 1 BY CONSTRUCTION: the window is the monitored period, so this is the
+  // one figure on the page no "we only started watching on Tuesday" caveat applies to.
+  assert.equal(all.coverage, 1);
+  assert.equal(all.downMs, HOUR);
+  assert.equal(all.incidents, 1);
+  assert.equal(all.uptimePct, 99.583);
+  // And it is strictly the longest view: the outage predates the 7-day window.
+  assert.equal(buildSnapshot(state, NOW).windows['7d'].downMs, 0);
+});
+
+test('the all-time window reports nothing rather than 100% before monitoring starts', () => {
+  // A monitor that has never beaten has observed nothing; claiming perfect uptime for
+  // it would be the exact lie every other window in this file is written to avoid.
+  const snap = buildSnapshot({ monitoringStart: null, lastBeat: null, incidents: [] }, NOW);
+  assert.equal(snap.windows.all.uptimePct, null);
+  assert.equal(snap.windows.all.monitoredMs, 0);
+  assert.equal(snap.windows.all.coverage, 0);
+});
+
 test('buildSnapshot flags degraded when the heartbeat is stale', () => {
   const state = {
     monitoringStart: NOW - 10 * DAY,

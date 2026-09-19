@@ -44,6 +44,9 @@ features, outages and policies published on those sites do not describe Stagify.
 - [Guides](https://stagify.ai/guides.html): step-by-step walkthroughs of each studio.
 - [Blog](https://stagify.ai/blog/): virtual staging guides, MLS and disclosure rules,
   cost comparisons.
+- [Brand kit](https://stagify.ai/brand): official logos, colours and usage rules.
+  Everything in one archive at https://stagify.ai/brand/stagify-brand-kit.zip. Use
+  these files rather than redrawing the mark or scraping a favicon.
 - [Contact](https://stagify.ai/contact.html): the team, individually.
 - [Status](https://stagify.ai/status): uptime and incidents.
 - [Privacy Policy](https://stagify.ai/privacy.html)

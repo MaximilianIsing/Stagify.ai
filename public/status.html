@@ -259,6 +259,16 @@
           <div class="st-banner__title up-status-text">Checking status…</div>
           <div class="st-banner__sub" data-monitoring>&nbsp;</div>
         </div>
+        <!-- aria-live="off" is load-bearing: this button sits inside an aria-live="polite"
+             region, so without it a screen reader would announce every tick of the
+             cooldown countdown, once a second, for ten seconds. The countdown itself is a
+             separate aria-hidden span rather than part of the label, because the label is
+             a data-lang node the language runtime owns and rewrites on every translation
+             pass. -->
+        <button type="button" class="st-refresh" data-refresh aria-live="off">
+          <svg class="st-refresh__icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>
+          <span data-lang="status.refresh">Refresh</span><span class="st-refresh__count" data-refresh-count aria-hidden="true"></span>
+        </button>
       </section>
 
       <section class="st-block st-components">
@@ -284,11 +294,16 @@
           <div class="st-card__val up-card-val" data-pct="30d">—</div>
           <div class="st-card__cap" data-lang="status.uptime">uptime</div>
         </div>
+        <div class="st-card">
+          <div class="st-card__eyebrow" data-lang="status.cards.all">All time</div>
+          <div class="st-card__val up-card-val" data-pct="all">—</div>
+          <div class="st-card__cap" data-lang="status.uptime">uptime</div>
+        </div>
       </div>
 
       <section class="st-block">
         <div class="st-block__head">
-          <h2><span data-lang="status.graph24h.title">Last 24 hours</span><span class="st-block__meta" data-lang="status.graph24h.meta">48 bars · 30 min each</span></h2>
+          <h2><span data-lang="status.graph24h.title">Last 24 hours</span></h2>
           <span class="st-block__pct up-block-pct" data-pct="24h">—</span>
         </div>
         <div class="st-bars" data-bars="24h" role="img" aria-label="Uptime bars for the last 24 hours" data-lang-attr="status.graph24h.aria|aria-label"></div>
@@ -297,7 +312,7 @@
 
       <section class="st-block">
         <div class="st-block__head">
-          <h2><span data-lang="status.graph7d.title">Last 7 days</span><span class="st-block__meta" data-lang="status.graph7d.meta">56 bars · 3 h each</span></h2>
+          <h2><span data-lang="status.graph7d.title">Last 7 days</span></h2>
           <span class="st-block__pct up-block-pct" data-pct="7d">—</span>
         </div>
         <div class="st-bars" data-bars="7d" role="img" aria-label="Uptime bars for the last 7 days" data-lang-attr="status.graph7d.aria|aria-label"></div>

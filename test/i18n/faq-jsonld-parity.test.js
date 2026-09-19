@@ -16,10 +16,15 @@
 // section is regenerated from english.json, so the correct fix for a failure here is
 // almost always to edit english.json and re-derive, not to patch one copy.
 //
-// The JSON-LD is deliberately NOT translated: language-loader.js:117 only ever touches
-// the FIRST ld+json block in the document, and #faq-jsonld is the fourth. Localized
-// pages therefore serve English FAQPage data. That is existing, intentional behaviour —
-// this file pins the English parity, not a per-locale one.
+// THIS homepage block is deliberately NOT translated: language-loader.js:117 only ever
+// touches the FIRST ld+json block in the document, and #faq-jsonld is the fourth.
+// Localized homepages therefore serve English FAQPage data. That is existing,
+// intentional behaviour — this file pins the English parity, not a per-locale one.
+//
+// The scope of that decision is the homepage only. /about's FAQPage IS translated: it
+// carries a `data-lang-faq` marker that localizeFaq() in lib/i18n/render-page.js
+// resolves per locale, and test/i18n/about-faq-i18n.test.js pins the per-locale parity
+// there. If this homepage block ever grows the same marker, that test is the model.
 //
 // On the packs: test/server/static.test.js already gates key PRESENCE across all 11
 // (english.json is the baseline). What it cannot check is the shape of a value, so the

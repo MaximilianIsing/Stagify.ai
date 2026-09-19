@@ -69,6 +69,11 @@ to-build/disclosure-badges/fonts/
 # build fails before it gets that far.
 !public/llms.txt
 !public/well-known/security.txt
+# The brand kit's usage sheet, generated into public/brand/ by
+# scripts/build-brand-kit.js and served straight out of express.static. That script
+# does not run on Render, so an ignored README.txt ships absent and /brand/README.txt
+# 404s — the one file of the kit that is not also inside the zip.
+!public/brand/README.txt
 # The instagram/ hand-off files are plain text BY DESIGN (caption, hashtags, alt text)
 # and are meant to be committed. The *.txt rule above was written for the legacy
 # secret files at the repo root (key.txt, gpt-key.txt), not for these. Re-inclusion

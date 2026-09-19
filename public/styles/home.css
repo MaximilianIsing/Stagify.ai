@@ -3081,7 +3081,7 @@ body.page-home main {
 }
 .ig-cta {
   text-align: center;
-  margin-top: 28px;
+  margin-top: 18px;
 }
 .ig-follow {
   display: inline-flex;
@@ -3373,16 +3373,264 @@ body.page-home main {
   transform: translateY(-2px);
   box-shadow: 0 14px 30px rgba(30, 58, 138, 0.38);
 }
-.plus-cta--ghost {
-  color: var(--brand-deep);
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(30, 58, 138, 0.25);
-  box-shadow: none;
+/* ==========================================================================
+   The two plan CTAs — "scene plates"
+   ==========================================================================
+   These two buttons used to be a filled .plus-cta and a .plus-cta--ghost
+   outline of it. The ghost was the problem: it read as the ABSENCE of a
+   design rather than as a deliberate second voice, so the Enterprise card
+   looked like the cheap half of the pair. The fix is not to fill it in —
+   two identical filled buttons flatten the hierarchy — but to make both
+   buttons the same OBJECT in two inks, and let each carry a small scene.
+
+   .plus-plate is a re-skin of .plus-cta, not a replacement:
+   • .plus-cta STAYS in the class list on both. plus-cta-auth.js selects on
+     it to open the register modal for signed-out visitors; dropping it
+     would silently remove that prompt (and on BOTH buttons — Enterprise has
+     always been intercepted too, which is existing behaviour, not a bug).
+   • Selectors are .plus-cta.plus-plate (0,2,0) so they beat the plain
+     .plus-cta rules above regardless of source order.
+   • .plus-rail__cta also carries .plus-cta but NOT .plus-plate, so the
+     account rail's button is untouched.
+
+   Geometry is shared and fixed: same padding, radius, label size, arrow
+   well, hover lift. Only the sky/fill and the scene differ. Each plate
+   paints two layers — ::before is the world, ::after is what is in it —
+   which is what lets the hover do something more than a 2px nudge.
+
+   The scenes are inline SVG data URIs rather than files under
+   public/media-webp/. That is deliberate: they are ~4KB each, gzip hard,
+   cost no extra requests on the home page's critical path, and they are
+   not derived from a to-build/ master the way the WebP art is. Edit them
+   here; there is no build step behind them. */
+.plus-cta.plus-plate {
+  /* Colourway knobs. Declared here with the Enterprise (navy) values so no
+     var() is ever bare — a bare var() would drop the whole declaration —
+     and --pro below restates only what differs. */
+  --plate-line: rgba(147, 163, 204, 0.35);
+  --plate-cast: rgba(13, 21, 38, 0.36);
+  --plate-arrow: rgba(147, 163, 204, 0.18);
+  --plate-arrow-line: rgba(147, 163, 204, 0.34);
+  --plate-arrow-ink: #dce6ff;
+  /* The horizontal pan. Every scene layer reads it, at a different
+     multiplier, which is what gives the sky its depth on hover. */
+  --scene-x: 0px;
+
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--plate-line);
+  box-shadow: 0 10px 26px var(--plate-cast), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.4s ease;
 }
-.plus-cta--ghost:hover {
-  border-color: var(--brand);
-  background: rgba(255, 255, 255, 0.85);
-  box-shadow: 0 8px 20px rgba(30, 58, 138, 0.16);
+/* Both scene layers. background-position is transitioned over 1.2s on a long
+   ease-out: the drift has to feel like parallax, not like a slide. */
+.plus-cta.plus-plate::before,
+.plus-cta.plus-plate::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-repeat: repeat-x;
+  transition: background-position 1.2s cubic-bezier(0.22, 0.8, 0.3, 1),
+    opacity 0.5s ease, transform 0.55s cubic-bezier(0.22, 0.8, 0.3, 1);
+}
+/* z-index 3 clears BOTH scene layers (0) and the Enterprise scrim (1). */
+.plus-plate__label,
+.plus-plate__arrow {
+  position: relative;
+  z-index: 3;
+}
+.plus-plate__label {
+  font-size: 15.5px;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--bg-elevated);
+  /* A soft shadow, not a hard one: it has to survive over the lit windows of
+     the city without looking like letterpress over the flat blue. */
+  text-shadow: 0 1px 8px rgba(6, 12, 28, 0.6);
+}
+.plus-plate__arrow {
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: var(--plate-arrow-ink);
+  background: var(--plate-arrow);
+  border: 1px solid var(--plate-arrow-line);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+}
+.plus-cta.plus-plate:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 34px var(--plate-cast);
+}
+.plus-cta.plus-plate:hover .plus-plate__arrow {
+  background: var(--plate-arrow-line);
+  transform: translateX(3px);
+}
+.plus-cta.plus-plate:focus-visible {
+  outline: 3px solid var(--brand-soft);
+  outline-offset: 3px;
+}
+
+/* --------------------------------------------------------------------------
+   Stagify+ — the production CTA fill, unchanged, with three rooms on it
+   --------------------------------------------------------------------------
+   The fill is still var(--cta-gradient): this is the same blue button the
+   site has always used for its primary action, and the hierarchy against
+   Enterprise's navy depends on it staying that way. What is new is the
+   scene — an isometric living room, bedroom and kitchen-diner, each with
+   its own floor treatment and its own furniture, on a faint grid of the
+   neighbouring units that runs off all four edges.
+
+   That grid is not decoration, it is the fix for a real problem: three
+   isometric rooms in a row end in POINTS at the far left and right, and a
+   point leaves an empty triangle above and below it. Filling the corners
+   with the rest of the block is cheaper than redrawing the rooms, it is two
+   gradients rather than any artwork, and it tiles forever — so the plate is
+   full at 320px and full at 1600px without retuning. */
+.plus-cta.plus-plate--pro {
+  --plate-line: rgba(190, 214, 255, 0.45);
+  --plate-cast: rgba(30, 58, 138, 0.3);
+  --plate-arrow: rgba(255, 255, 255, 0.2);
+  --plate-arrow-line: rgba(255, 255, 255, 0.4);
+  --plate-arrow-ink: var(--bg-elevated);
+
+  /* The floors: three room diamonds, each a different surface — a woven
+     weave under the living room with a warm rug, plain boards under the
+     bedroom with a small mat, chequered tile under the kitchen. */
+  --rooms-shell: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='210' height='58' viewBox='0 0 210 58'%3E%3Cdefs%3E%3Cpattern id='tile' width='8' height='4' patternUnits='userSpaceOnUse' patternTransform='skewY(-26.57)'%3E%3Crect width='4' height='4' fill='%23ffffff' fill-opacity='.07'/%3E%3C/pattern%3E%3Cpattern id='weave' width='6' height='6' patternUnits='userSpaceOnUse'%3E%3Cpath d='M0 6L6 0' stroke='%23ffffff' stroke-opacity='.09' stroke-width='1'/%3E%3C/pattern%3E%3C/defs%3E%3Cg%3E%3Cpath d='M6 34L38 18L70 34L38 50Z' fill='%23ffffff' fill-opacity='.14'/%3E%3Cpath d='M6 34L38 18L70 34L38 50Z' fill='url(%23weave)'/%3E%3Cpath d='M18 34L38 24L58 34L38 44Z' fill='%23ffe3ab' fill-opacity='.16'/%3E%3Cpath d='M18 34L38 24L58 34L38 44Z' fill='none' stroke='%23ffe3ab' stroke-opacity='.3' stroke-width='.8'/%3E%3Cpath d='M72 34L104 18L136 34L104 50Z' fill='%23ffffff' fill-opacity='.09'/%3E%3Cpath d='M90 40L104 33L118 40L104 47Z' fill='%23ffffff' fill-opacity='.1'/%3E%3Cpath d='M138 34L170 18L202 34L170 50Z' fill='%23ffffff' fill-opacity='.2'/%3E%3Cpath d='M138 34L170 18L202 34L170 50Z' fill='url(%23tile)'/%3E%3C/g%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.42' stroke-width='1.1'%3E%3Cpath d='M6 34L38 18L70 34L38 50Z'/%3E%3Cpath d='M72 34L104 18L136 34L104 50Z'/%3E%3Cpath d='M138 34L170 18L202 34L170 50Z'/%3E%3C/g%3E%3Cg stroke='%23ffffff' stroke-opacity='.3' stroke-width='1.1'%3E%3Cpath d='M70 34L70 26M72 34L72 26M136 34L136 26M138 34L138 26'/%3E%3C/g%3E%3C/svg%3E");
+  /* What is in them: sofa with two cushions, coffee table, TV unit with a
+     wall-mounted screen, floor lamp, plant / bed with pillows and a
+     headboard, two nightstands (one lit), tall wardrobe, plant / dining
+     table with four chairs, a counter run, a hanging pendant, plant. */
+  --rooms-stuff: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='210' height='58' viewBox='0 0 210 58'%3E%3Cg%3E%3Cpath d='M16 30L26 25L36 30L26 35Z' fill='%23ffffff' fill-opacity='.34'/%3E%3Cpath d='M16 30L16 35L26 40L26 35Z' fill='%23ffffff' fill-opacity='.2'/%3E%3Cpath d='M36 30L36 35L26 40L26 35Z' fill='%23ffffff' fill-opacity='.12'/%3E%3Cpath d='M16 30L21 27.5L21 20L16 22.5Z' fill='%23ffffff' fill-opacity='.4'/%3E%3Cpath d='M21 20L31 25L36 30L26 25Z' fill='%23ffffff' fill-opacity='.3'/%3E%3Cpath d='M19 27l3 1.5v3l-3-1.5z' fill='%23ffffff' fill-opacity='.45'/%3E%3Cpath d='M25 30l3 1.5v3l-3-1.5z' fill='%23ffffff' fill-opacity='.45'/%3E%3Cpath d='M36 36L43 32.5L50 36L43 39.5Z' fill='%23ffffff' fill-opacity='.36'/%3E%3Cpath d='M36 36L36 39L43 42.5L43 39.5Z' fill='%23ffffff' fill-opacity='.2'/%3E%3Cpath d='M50 36L50 39L43 42.5L43 39.5Z' fill='%23ffffff' fill-opacity='.13'/%3E%3Cpath d='M50 29L57 25.5L64 29L57 32.5Z' fill='%23ffffff' fill-opacity='.3'/%3E%3Cpath d='M50 29L50 34L57 37.5L57 32.5Z' fill='%23ffffff' fill-opacity='.18'/%3E%3Cpath d='M64 29L64 34L57 37.5L57 32.5Z' fill='%23ffffff' fill-opacity='.11'/%3E%3Cpath d='M52 26h10v-7H52z' fill='%23ffffff' fill-opacity='.22'/%3E%3Cpath d='M52 26h10v-7H52z' fill='none' stroke='%23ffffff' stroke-opacity='.4' stroke-width='.8'/%3E%3Cpath d='M11 24L15 22L19 24L15 26Z' fill='%23ffe3ab' fill-opacity='.75'/%3E%3Cpath d='M15 26L15 36' stroke='%23ffffff' stroke-opacity='.45' stroke-width='1'/%3E%3Cpath d='M11 36L15 34L19 36L15 38Z' fill='%23ffffff' fill-opacity='.35'/%3E%3Cpath d='M60 38L64 36L68 38L64 40Z' fill='%23ffffff' fill-opacity='.3'/%3E%3Cpath d='M64 36c-3-3-3-6 0-9 3 3 3 6 0 9z' fill='%23bfe6c8' fill-opacity='.45'/%3E%3C/g%3E%3Cg%3E%3Cpath d='M86 32L100 25L114 32L100 39Z' fill='%23ffffff' fill-opacity='.32'/%3E%3Cpath d='M86 32L86 37L100 44L100 39Z' fill='%23ffffff' fill-opacity='.2'/%3E%3Cpath d='M114 32L114 37L100 44L100 39Z' fill='%23ffffff' fill-opacity='.12'/%3E%3Cpath d='M88 30.5L95 27L102 30.5L95 34Z' fill='%23ffffff' fill-opacity='.5'/%3E%3Cpath d='M94 27.5L100 24.5L106 27.5L100 30.5Z' fill='%23ffffff' fill-opacity='.42'/%3E%3Cpath d='M86 32L92 29L92 23L86 26Z' fill='%23ffffff' fill-opacity='.38'/%3E%3Cpath d='M76 30L80 28L84 30L80 32Z' fill='%23ffffff' fill-opacity='.34'/%3E%3Cpath d='M76 30L76 34L80 36L80 32Z' fill='%23ffffff' fill-opacity='.2'/%3E%3Cpath d='M84 30L84 34L80 36L80 32Z' fill='%23ffffff' fill-opacity='.13'/%3E%3Cpath d='M77 27.5L80 26L83 27.5L80 29Z' fill='%23ffe3ab' fill-opacity='.7'/%3E%3Cpath d='M112 24L116 22L120 24L116 26Z' fill='%23ffffff' fill-opacity='.34'/%3E%3Cpath d='M112 24L112 28L116 30L116 26Z' fill='%23ffffff' fill-opacity='.2'/%3E%3Cpath d='M120 24L120 28L116 30L116 26Z' fill='%23ffffff' fill-opacity='.13'/%3E%3Cpath d='M118 32L126 28L134 32L126 36Z' fill='%23ffffff' fill-opacity='.3'/%3E%3Cpath d='M118 32L118 43L126 47L126 36Z' fill='%23ffffff' fill-opacity='.19'/%3E%3Cpath d='M134 32L134 43L126 47L126 36Z' fill='%23ffffff' fill-opacity='.11'/%3E%3Cpath d='M122 36L122 45' stroke='%23ffffff' stroke-opacity='.35' stroke-width='.8'/%3E%3Cpath d='M126 21L130 19L134 21L130 23Z' fill='%23ffffff' fill-opacity='.28'/%3E%3Cpath d='M130 23c-3-3-3-6 0-9 3 3 3 6 0 9z' fill='%23bfe6c8' fill-opacity='.4'/%3E%3C/g%3E%3Cg%3E%3Cpath d='M156 33L166 28L176 33L166 38Z' fill='%23ffffff' fill-opacity='.38'/%3E%3Cpath d='M156 33L156 36L166 41L166 38Z' fill='%23ffffff' fill-opacity='.22'/%3E%3Cpath d='M176 33L176 36L166 41L166 38Z' fill='%23ffffff' fill-opacity='.14'/%3E%3Cpath d='M148 33L152 31L156 33L152 35Z' fill='%23ffffff' fill-opacity='.34'/%3E%3Cpath d='M148 33L148 37L152 39L152 35Z' fill='%23ffffff' fill-opacity='.2'/%3E%3Cpath d='M156 33L156 37L152 39L152 35Z' fill='%23ffffff' fill-opacity='.12'/%3E%3Cpath d='M176 33L180 31L184 33L180 35Z' fill='%23ffffff' fill-opacity='.34'/%3E%3Cpath d='M176 33L176 37L180 39L180 35Z' fill='%23ffffff' fill-opacity='.2'/%3E%3Cpath d='M184 33L184 37L180 39L180 35Z' fill='%23ffffff' fill-opacity='.12'/%3E%3Cpath d='M162 27L166 25L170 27L166 29Z' fill='%23ffffff' fill-opacity='.34'/%3E%3Cpath d='M162 27L162 31L166 33L166 29Z' fill='%23ffffff' fill-opacity='.2'/%3E%3Cpath d='M170 27L170 31L166 33L166 29Z' fill='%23ffffff' fill-opacity='.12'/%3E%3Cpath d='M162 39L166 37L170 39L166 41Z' fill='%23ffffff' fill-opacity='.34'/%3E%3Cpath d='M162 39L162 43L166 45L166 41Z' fill='%23ffffff' fill-opacity='.2'/%3E%3Cpath d='M170 39L170 43L166 45L166 41Z' fill='%23ffffff' fill-opacity='.12'/%3E%3Cpath d='M180 26L192 20L204 26L192 32Z' fill='%23ffffff' fill-opacity='.3'/%3E%3Cpath d='M180 26L180 34L192 40L192 32Z' fill='%23ffffff' fill-opacity='.19'/%3E%3Cpath d='M204 26L204 34L192 40L192 32Z' fill='%23ffffff' fill-opacity='.11'/%3E%3Cpath d='M184 30L184 37M190 33L190 40M196 31L196 38' stroke='%23ffffff' stroke-opacity='.3' stroke-width='.8'/%3E%3Cpath d='M166 12L166 20' stroke='%23ffffff' stroke-opacity='.4' stroke-width='.9'/%3E%3Cpath d='M161 22L166 19.5L171 22L166 24.5Z' fill='%23ffe3ab' fill-opacity='.8'/%3E%3Cpath d='M144 28L148 26L152 28L148 30Z' fill='%23ffffff' fill-opacity='.26'/%3E%3Cpath d='M148 26c-3-3-3-7 0-10 3 3 3 7 0 10z' fill='%23bfe6c8' fill-opacity='.4'/%3E%3C/g%3E%3C/svg%3E");
+  /* The neighbouring units. 26.57deg is atan(0.5) — the isometric angle the
+     rooms are drawn at — so the grid lines up with them instead of crossing
+     them. Pure gradients, so it tiles at any size with no seam. */
+  --grid-iso:
+    repeating-linear-gradient(26.57deg, rgba(255, 255, 255, 0.075) 0 1px, transparent 1px 33px),
+    repeating-linear-gradient(-26.57deg, rgba(255, 255, 255, 0.075) 0 1px, transparent 1px 33px);
+
+  background: var(--cta-gradient);
+}
+.plus-cta.plus-plate--pro:hover {
+  background: var(--cta-gradient-hover);
+}
+/* transform-origin sits at 35% rather than centre so the push-in lands on
+   the living room — the most legible of the three — instead of splitting
+   the difference between the bedroom and the kitchen. */
+.plus-cta.plus-plate--pro::before,
+.plus-cta.plus-plate--pro::after {
+  background-repeat: no-repeat;
+  background-size: auto 100%;
+  background-position: 50% 100%;
+  transform-origin: 35% 100%;
+}
+.plus-cta.plus-plate--pro::before {
+  background-image: var(--rooms-shell), var(--grid-iso);
+  background-repeat: no-repeat, repeat, repeat;
+  background-size: auto 100%, auto, auto;
+  background-position: 50% 100%, 0 0, 0 0;
+  opacity: 0.9;
+  z-index: 0;
+}
+.plus-cta.plus-plate--pro::after {
+  background-image: var(--rooms-stuff);
+  opacity: 0.95;
+  z-index: 1;
+}
+/* The grid slides the other way from the rooms: the building stays put and
+   the camera moves, rather than the whole drawing sliding as one sheet. */
+.plus-cta.plus-plate--pro:hover::before {
+  transform: scale(1.14);
+  background-position: 50% 100%, 8px -4px, 8px 4px;
+}
+.plus-cta.plus-plate--pro:hover::after {
+  transform: scale(1.14);
+}
+
+/* --------------------------------------------------------------------------
+   Stagify Enterprise — a city at night
+   --------------------------------------------------------------------------
+   The city tile is authored 92 units tall but rendered at 158% of the
+   plate's height and anchored to the TOP, so the buildings' bases run off
+   the bottom edge. That crop is the whole trick: standing them on a visible
+   baseline made them read as little blocks sitting in a button, and cutting
+   them off at the ankles makes them read as towers.
+
+   Sky, stars, cloud and city each pan a different distance on hover (14px /
+   20px / 42px), which is what sells the depth; the moon does not move at
+   all, because it is supposed to be a very long way away. */
+.plus-cta.plus-plate--ent {
+  --city: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='166' height='92' viewBox='0 0 166 92'%3E%3Cg%3E%3Cpath d='M0 38L10 33L20 38L10 43Z' fill='%235d729f'/%3E%3Cpath d='M0 38L0 92L10 97L10 43Z' fill='%23334269'/%3E%3Cpath d='M20 38L20 92L10 97L10 43Z' fill='%23212e52'/%3E%3Cpath d='M24 22L33 17.5L42 22L33 26.5Z' fill='%235d729f'/%3E%3Cpath d='M24 22L24 92L33 96.5L33 26.5Z' fill='%23334269'/%3E%3Cpath d='M42 22L42 92L33 96.5L33 26.5Z' fill='%23212e52'/%3E%3Cpath d='M27 12L33 9L39 12L33 15Z' fill='%236a80ad'/%3E%3Cpath d='M27 12L27 22L33 25L33 15Z' fill='%233b4a74'/%3E%3Cpath d='M39 12L39 22L33 25L33 15Z' fill='%23283558'/%3E%3Cpath d='M33 9L33 1' stroke='%238ea6de' stroke-width='1'/%3E%3Ccircle cx='33' cy='1' r='1.4' fill='%23ffd48a'/%3E%3Cpath d='M46 46L59 39.5L72 46L59 52.5Z' fill='%235d729f'/%3E%3Cpath d='M46 46L46 92L59 98.5L59 52.5Z' fill='%23334269'/%3E%3Cpath d='M72 46L72 92L59 98.5L59 52.5Z' fill='%23212e52'/%3E%3Cpath d='M76 28L84 24L92 28L84 32Z' fill='%235d729f'/%3E%3Cpath d='M76 28L76 92L84 96L84 32Z' fill='%23334269'/%3E%3Cpath d='M92 28L92 92L84 96L84 32Z' fill='%23212e52'/%3E%3Cpath d='M76 28L84 32L84 14Z' fill='%236a80ad'/%3E%3Cpath d='M92 28L84 32L84 14Z' fill='%23384874'/%3E%3Cpath d='M96 40L107 34.5L118 40L107 45.5Z' fill='%235d729f'/%3E%3Cpath d='M96 40L96 92L107 97.5L107 45.5Z' fill='%23334269'/%3E%3Cpath d='M118 40L118 92L107 97.5L107 45.5Z' fill='%23212e52'/%3E%3Cpath d='M99 30L107 26L115 30L107 34Z' fill='%236a80ad'/%3E%3Cpath d='M99 30L99 40L107 44L107 34Z' fill='%233b4a74'/%3E%3Cpath d='M115 30L115 40L107 44L107 34Z' fill='%23283558'/%3E%3Cpath d='M122 18L129 14.5L136 18L129 21.5Z' fill='%235d729f'/%3E%3Cpath d='M122 18L122 92L129 95.5L129 21.5Z' fill='%23334269'/%3E%3Cpath d='M136 18L136 92L129 95.5L129 21.5Z' fill='%23212e52'/%3E%3Cpath d='M140 34L152 28L164 34L152 40Z' fill='%235d729f'/%3E%3Cpath d='M140 34L140 92L152 98L152 40Z' fill='%23334269'/%3E%3Cpath d='M164 34L164 92L152 98L152 40Z' fill='%23212e52'/%3E%3C/g%3E%3Cg fill='%23ffd48a' fill-opacity='.85'%3E%3Cpath d='M2 46l3 1.5v4l-3-1.5z'/%3E%3Cpath d='M2 56l3 1.5v4l-3-1.5z'/%3E%3Cpath d='M13 44l3-1.5v4l-3 1.5z'/%3E%3Cpath d='M13 54l3-1.5v4l-3 1.5z'/%3E%3Cpath d='M26 30l3 1.5v4l-3-1.5z'/%3E%3Cpath d='M26 40l3 1.5v4l-3-1.5z'/%3E%3Cpath d='M26 50l3 1.5v4l-3-1.5z'/%3E%3Cpath d='M35 33l3-1.5v4l-3 1.5z'/%3E%3Cpath d='M35 43l3-1.5v4l-3 1.5z'/%3E%3Cpath d='M49 55l3 1.5v4l-3-1.5z'/%3E%3Cpath d='M55 58l3 1.5v4l-3-1.5z'/%3E%3Cpath d='M62 53l3-1.5v4l-3 1.5z'/%3E%3Cpath d='M62 63l3-1.5v4l-3 1.5z'/%3E%3Cpath d='M78 37l3 1.5v4l-3-1.5z'/%3E%3Cpath d='M78 47l3 1.5v4l-3-1.5z'/%3E%3Cpath d='M86 39l3-1.5v4l-3 1.5z'/%3E%3Cpath d='M86 49l3-1.5v4l-3 1.5z'/%3E%3Cpath d='M99 50l3 1.5v4l-3-1.5z'/%3E%3Cpath d='M110 48l3-1.5v4l-3 1.5z'/%3E%3Cpath d='M110 58l3-1.5v4l-3 1.5z'/%3E%3Cpath d='M123 26l3 1.5v4l-3-1.5z'/%3E%3Cpath d='M123 38l3 1.5v4l-3-1.5z'/%3E%3Cpath d='M131 27l3-1.5v4l-3 1.5z'/%3E%3Cpath d='M131 39l3-1.5v4l-3 1.5z'/%3E%3Cpath d='M143 44l3 1.5v4l-3-1.5z'/%3E%3Cpath d='M143 56l3 1.5v4l-3-1.5z'/%3E%3Cpath d='M155 43l3-1.5v4l-3 1.5z'/%3E%3Cpath d='M155 55l3-1.5v4l-3 1.5z'/%3E%3C/g%3E%3C/svg%3E");
+  --sky-stars: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='60' viewBox='0 0 220 60'%3E%3Cg fill='%23ffffff'%3E%3Ccircle cx='12' cy='8' r='.9' opacity='.8'/%3E%3Ccircle cx='34' cy='18' r='.6' opacity='.5'/%3E%3Ccircle cx='51' cy='5' r='1.1' opacity='.9'/%3E%3Ccircle cx='68' cy='14' r='.7' opacity='.6'/%3E%3Ccircle cx='83' cy='4' r='.6' opacity='.45'/%3E%3Ccircle cx='97' cy='11' r='1' opacity='.75'/%3E%3Ccircle cx='114' cy='6' r='.7' opacity='.55'/%3E%3Ccircle cx='129' cy='16' r='.9' opacity='.7'/%3E%3Ccircle cx='146' cy='7' r='.6' opacity='.5'/%3E%3Ccircle cx='160' cy='13' r='1' opacity='.8'/%3E%3Ccircle cx='176' cy='4' r='.7' opacity='.6'/%3E%3Ccircle cx='191' cy='12' r='.9' opacity='.7'/%3E%3Ccircle cx='206' cy='7' r='.6' opacity='.5'/%3E%3Ccircle cx='23' cy='26' r='.6' opacity='.4'/%3E%3Ccircle cx='75' cy='24' r='.6' opacity='.35'/%3E%3Ccircle cx='140' cy='25' r='.6' opacity='.4'/%3E%3Ccircle cx='199' cy='23' r='.6' opacity='.35'/%3E%3C/g%3E%3C/svg%3E");
+  --sky-clouds: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='60' viewBox='0 0 260 60'%3E%3Cg fill='%23c8d8ff'%3E%3Cellipse cx='50' cy='16' rx='46' ry='3.4' opacity='.1'/%3E%3Cellipse cx='62' cy='12' rx='28' ry='2.4' opacity='.08'/%3E%3Cellipse cx='168' cy='24' rx='54' ry='3' opacity='.09'/%3E%3Cellipse cx='150' cy='20' rx='30' ry='2.2' opacity='.07'/%3E%3Cellipse cx='232' cy='10' rx='34' ry='2.6' opacity='.08'/%3E%3C/g%3E%3C/svg%3E");
+  --sky-moon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='70' height='60' viewBox='0 0 70 60'%3E%3Ccircle cx='46' cy='15' r='13' fill='%23ffe9c4' opacity='.1'/%3E%3Ccircle cx='46' cy='15' r='8' fill='%23ffe9c4' opacity='.16'/%3E%3Ccircle cx='46' cy='15' r='5' fill='%23fff4de' opacity='.85'/%3E%3Ccircle cx='44' cy='13.4' r='1' fill='%23e6d7bb' opacity='.6'/%3E%3Ccircle cx='47.6' cy='16.8' r='1.4' fill='%23e6d7bb' opacity='.5'/%3E%3C/svg%3E");
+
+  background: linear-gradient(180deg, #22305a 0%, #141e3a 52%, #0a1120 100%);
+}
+.plus-cta.plus-plate--ent::before {
+  background-image: var(--sky-moon), var(--sky-clouds), var(--sky-stars), var(--city);
+  background-repeat: no-repeat, repeat-x, repeat-x, repeat-x;
+  background-size: auto 100%, auto 100%, auto 100%, auto 158%;
+  background-position: right 16px top 0, var(--scene-x) 0, var(--scene-x) 0, var(--scene-x) 0;
+  z-index: 0;
+}
+.plus-cta.plus-plate--ent:hover::before {
+  background-position: right 16px top 0, -14px 0, -20px 0, -42px 0;
+}
+/* THE SCRIM, and it is load-bearing, not decoration. White 15.5px type over
+   a skyline full of lit gold windows is genuinely hard to read; a navy wash
+   in the Enterprise colourway puts floor under the label without flattening
+   the picture. It is carried all the way across at a low level rather than
+   faded out, because the longer language packs ("Stagify Enterprise
+   ansehen", "Ver Stagify Enterprise") push the label further right than the
+   English does, and a scrim that ends at 60% would strand them. */
+.plus-cta.plus-plate--ent::after {
+  content: "";
+  background: linear-gradient(
+    90deg,
+    rgba(16, 23, 45, 0.58) 0%,
+    rgba(16, 23, 45, 0.4) 48%,
+    rgba(16, 23, 45, 0.26) 78%,
+    rgba(16, 23, 45, 0.16) 100%
+  );
+  z-index: 1;
+}
+
+/* Everything the plates do beyond existing is motion, so it all goes. The
+   scenes stay — they are the design, not the animation — but nothing pans,
+   scales or lifts. */
+@media (prefers-reduced-motion: reduce) {
+  .plus-cta.plus-plate,
+  .plus-cta.plus-plate::before,
+  .plus-cta.plus-plate::after,
+  .plus-cta.plus-plate .plus-plate__arrow {
+    transition: none;
+  }
+  .plus-cta.plus-plate:hover,
+  .plus-cta.plus-plate:hover::before,
+  .plus-cta.plus-plate:hover::after,
+  .plus-cta.plus-plate:hover .plus-plate__arrow {
+    transform: none;
+  }
+  /* The pans are re-stated as their resting values rather than left to snap:
+     with the transition off, a hover would otherwise teleport the sky. */
+  .plus-cta.plus-plate--pro:hover::before {
+    background-position: 50% 100%, 0 0, 0 0;
+  }
+  .plus-cta.plus-plate--ent:hover::before {
+    background-position: right 16px top 0, 0 0, 0 0, 0 0;
+  }
 }
 /* The API footnote under the two plan cards. Sits on the page background (#ddeeff), not
    on a translucent card, so the colours are picked against THAT: --brand-deep gives the
@@ -3475,6 +3723,38 @@ body.page-home main {
 .whyus-scroller:focus-visible {
   outline: 2px solid var(--brand);
   outline-offset: 3px;
+}
+
+/* --- The About byline ----------------------------------------------------
+   One quiet line under the board, and the whole line is the link to the
+   entity hub (see the note on it in index.html).
+
+   --brand-deep, NOT --brand, and this is the one thing to keep if the copy
+   changes again. The line sits BELOW the scroller, so unlike every other
+   string in this block it is not on rgba(255,255,255,.62) -- it is on the
+   bare page gradient, the #e2e9fc composite the table at the top of this
+   section measures against. The site link blue #2563eb is 5.17:1 on white
+   but only 4.37:1 there, so at 13px it misses AA; --brand-deep lands at
+   8.7:1. styles.css does the same swap for the footer links on mobile, for
+   the same reason. Measure against the composite, never against #fff. */
+.whyus-byline {
+  margin: 14px auto 0;
+  text-align: center;
+  font-size: 13px;
+}
+.whyus-byline__link {
+  color: var(--brand-deep);
+  font-weight: 600;
+  text-decoration: none;
+}
+.whyus-byline__link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.whyus-byline__link:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 3px;
+  border-radius: 4px;
 }
 .whyus-table {
   width: 100%;
@@ -4118,6 +4398,20 @@ body.page-home main {
 .qr__stars svg:nth-child(3) { animation-delay: 0.9s; }
 .qr__stars svg:nth-child(4) { animation-delay: 1.35s; }
 .qr__stars svg:nth-child(5) { animation-delay: 1.8s; }
+/* THE RIPPLE ORIGIN. `--qr-star-step` is a star's distance IN POSITIONS from wherever the
+   hover wave starts, and the hover rule below turns it into a transition-delay. The values
+   authored here are the left-to-right wave (0,1,2,3,4) this shipped with, and they are what
+   a visitor gets with no JS and what a KEYBOARD focus always gets, since there is no cursor
+   to originate at.
+   scripts/home-review-stars.js overrides them inline on pointerenter with the distance from
+   the star nearest the cursor, so entering on the middle star gives 2,1,0,1,2 (outward) and
+   entering over the label gives 4,3,2,1,0 (right to left). It clears the inline value on
+   pointerleave, which is what hands the defaults below back to the next focus. */
+.qr__stars svg:nth-child(1) { --qr-star-step: 0; }
+.qr__stars svg:nth-child(2) { --qr-star-step: 1; }
+.qr__stars svg:nth-child(3) { --qr-star-step: 2; }
+.qr__stars svg:nth-child(4) { --qr-star-step: 3; }
+.qr__stars svg:nth-child(5) { --qr-star-step: 4; }
 @keyframes qrStarGlow {
   0%,
   100% {
@@ -4130,22 +4424,10 @@ body.page-home main {
 .qr__review:hover .qr__stars svg,
 .qr__review:focus-visible .qr__stars svg {
   scale: 1.22;
-}
-.qr__review:hover .qr__stars svg:nth-child(2),
-.qr__review:focus-visible .qr__stars svg:nth-child(2) {
-  transition-delay: 0.06s;
-}
-.qr__review:hover .qr__stars svg:nth-child(3),
-.qr__review:focus-visible .qr__stars svg:nth-child(3) {
-  transition-delay: 0.12s;
-}
-.qr__review:hover .qr__stars svg:nth-child(4),
-.qr__review:focus-visible .qr__stars svg:nth-child(4) {
-  transition-delay: 0.18s;
-}
-.qr__review:hover .qr__stars svg:nth-child(5),
-.qr__review:focus-visible .qr__stars svg:nth-child(5) {
-  transition-delay: 0.24s;
+  /* 0.06s per position away from the origin. Only the GROW is staggered: the base rule
+     carries no transition-delay, so leaving the link retracts all five together rather
+     than replaying the wave backwards on the way out. */
+  transition-delay: calc(var(--qr-star-step, 0) * 0.06s);
 }
 @media (prefers-reduced-motion: reduce) {
   .qr__cta,
@@ -4777,7 +5059,7 @@ a.tw-name:focus-visible .tw-li {
 }
 .home-blog__all {
   text-align: center;
-  margin-top: 26px;
+  margin-top: 16px;
 }
 .home-blog__all a {
   color: var(--brand);

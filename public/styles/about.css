@@ -318,6 +318,130 @@
   opacity: 1;
 }
 
+/* --- brand kit ------------------------------------------------------------------- */
+
+/* The first card with two groups in it, so it is the first to need a heading BELOW the
+   card's h2. Deliberately quiet — a third type size competing with the h2 would read as
+   two cards that forgot their border. */
+.about__subhead {
+  margin: 18px 0 0;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--slate);
+}
+
+.about__hint {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 13.5px;
+}
+
+.brand-swatches {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  /* auto-fill rather than a fixed column count: the card is 860px at most and 343px at
+     least, and the six swatches should reflow rather than squeeze. 184px is the width at
+     which the longest name ("Brand blue strong") still fits beside its chip and hex. */
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(184px, 1fr));
+  gap: 10px;
+}
+
+/* A button, not a div: copying is an action, and this way it is in the tab order and
+   fires on Enter and Space for free. Styled to match .about__profile, since the two
+   lists sit one above the other in the same card and any difference reads as a mistake. */
+.brand-swatch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--fg);
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.1s ease-out, background 0.1s ease-out, transform 0.1s ease-out;
+}
+
+.brand-swatch:hover {
+  border-color: var(--brand-soft);
+  background: var(--brand-wash);
+  transform: translateY(-1px);
+}
+
+/* :focus-visible only — a mouse click on a swatch should not leave a ring behind, but a
+   keyboard user must be able to see which of the six they are on. */
+.brand-swatch:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+/* The colour itself arrives as --swatch, authored inline in about.html as a var(--brand…)
+   reference. That indirection is what keeps this sheet free of the brand hexes:
+   test/frontend/css-tokens.test.js fails on a literal that already has a token, and
+   test/frontend/brand-kit.test.js checks the visible hex text against styles.css. */
+.brand-swatch__chip {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: var(--swatch);
+  /* An inset hairline, not a border: --brand-tint is nearly white and would otherwise
+     read as an empty box on the card. */
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.14);
+}
+
+.brand-swatch__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.brand-swatch__hex {
+  flex: 0 0 auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12.5px;
+  letter-spacing: 0.2px;
+  color: var(--muted);
+}
+
+.brand-swatch:hover .brand-swatch__hex {
+  color: var(--brand-deep);
+}
+
+/* The two toast templates scripts/brand-kit.js reads. They carry `hidden`, so the UA
+   already keeps them off the page — this rule is the belt to that brace, because
+   `hidden` is only `display: none` at the UA level and any later rule that gives these
+   spans a display would print both messages under the swatches. They are markup solely
+   so language-loader.js translates them. */
+.brand-copy-msg {
+  display: none;
+}
+
+/* The downloads are a deliberate 3x2, not the auto-fit row .about__profiles gives the
+   social pills: six files of visibly different name lengths reflow into a ragged 4+2 at
+   this card width, which reads as an accident. Fixed columns keep the block rectangular
+   and let the longest label set the row height. */
+.about__profiles--kit {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+/* The download pills share .about__profile with the social row above them, but their
+   glyph is one generic arrow rather than eight third-party logos — so it takes the brand
+   blue instead of an inline per-site colour. */
+.about__profile--download .about__profile-icon {
+  color: var(--brand);
+}
+
 /* --- phones ---------------------------------------------------------------------- */
 
 @media (max-width: 768px) {
@@ -343,6 +467,18 @@
 
   .about__card {
     padding: 16px 18px;
+  }
+
+  /* One column: two 184px swatches plus the grid gap do not fit a 375px card, and
+     auto-fill would drop to one anyway — this just stops the 768-414px band from
+     rendering a second column with the name ellipsised to three characters. */
+  .brand-swatches {
+    grid-template-columns: 1fr;
+  }
+
+  /* 2x3 on a phone. Three columns of pill would leave about 90px per label. */
+  .about__profiles--kit {
+    grid-template-columns: repeat(2, 1fr);
   }
 
   /* Stacked: a 116px label column leaves under half a phone for the value. */
