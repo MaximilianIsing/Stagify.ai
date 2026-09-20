@@ -5,9 +5,12 @@
   "private": true,
   "main": "server.js",
   "scripts": {
+    "prestart": "node scripts/check-native-abi.js",
     "start": "node --import ./instrument.js server.js",
+    "predev": "node scripts/check-native-abi.js",
     "dev": "nodemon --import ./instrument.js server.js",
     "typecheck": "tsc --noEmit && node scripts/typecheck-frontend.js",
+    "pretest": "node scripts/check-native-abi.js",
     "test": "npm run typecheck && node --test \"test/**/*.test.js\"",
     "test:coverage": "node scripts/test-coverage.js",
     "test:e2e": "playwright test",

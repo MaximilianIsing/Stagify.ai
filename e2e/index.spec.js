@@ -101,6 +101,50 @@ test.describe('Home page — load smoke', () => {
     await expect(photo).toHaveClass(/is-on/);
   });
 
+  test('a remembered pick is on screen from the first paint, with no second image', async ({ page }) => {
+    // The remembered pick used to arrive the slow way: the default photo painted, then
+    // hero-picker.js (a module, so end-of-parse) fetched the visitor's pair and cross-faded
+    // into it — a visible flash of a modern bedroom on every visit. scripts/hero-restore.js
+    // repoints the static <img> before the paint instead, and hero-picker.js adopts what it
+    // finds rather than fetching it again.
+    //
+    // This has to be a browser test. Both halves of it are about WHEN things run: that the
+    // classic script beats the module, and that the module then does nothing. A source scan
+    // sees neither, and both fail by being slow rather than by being wrong.
+    await page.addInitScript(() => {
+      try {
+        localStorage.setItem('heroPick', 'coastal|livingRoom');
+        localStorage.setItem('heroPickImg', 'coastal-living-room');
+      } catch { /* ignore */ }
+    });
+
+    const requested = [];
+    page.on('request', (r) => {
+      if (/media-webp\/example\//.test(r.url())) requested.push(r.url());
+    });
+
+    await page.goto('/index.html');
+
+    // The LCP node itself carries the pick — not a second <img> stacked over it.
+    const photo = page.locator('.hp-canvas img[data-hp-img]');
+    await expect(photo).toHaveAttribute('data-hp-restored', 'coastal-living-room');
+    await expect(photo).toHaveAttribute('src', 'media-webp/example/coastal-living-room.webp');
+    await expect(photo).toHaveClass(/is-on/);
+    await expect(page.locator('.hp-canvas')).toHaveAttribute('data-hp-adopted', '');
+
+    // The sentence agrees with the photo, and only one render exists: hero-picker.js took
+    // the adopt path rather than building a second layer and fading it in.
+    await expect(page.locator('#hero-style-label')).toHaveText('Coastal');
+    await expect(page.locator('.hp-canvas > img')).toHaveCount(1);
+    await expect(page.locator('.hp-canvas > img.is-on')).toHaveCount(1);
+
+    // And nothing ever asked the network for the remembered pair twice. The <head> preload
+    // of the default pair is still fetched — index.html is one static file for everybody —
+    // but the visitor's own photo is requested once and is the only one that paints.
+    const pick = requested.filter((u) => u.includes('coastal-living-room'));
+    expect(pick.length, `the remembered pair was fetched more than once: ${pick.join(', ')}`).toBe(1);
+  });
+
   test('picking a style swaps the photo and rewrites the sentence', async ({ page }) => {
     // The whole point of the hero: the headline is a control, not a slogan. If the menu
     // opens but the photo never changes, the page still looks finished.
@@ -231,10 +275,16 @@ test.describe('Home page — load smoke', () => {
       'media-webp/example/farmhouse-kitchen.webp',
     );
 
-    // The adopted LCP node survives the restore. show() hides it, it does not remove it,
-    // and removing it would break the adopt guarantee the test above pins.
+    // The adopted LCP node survives the restore — and IS the restore: scripts/hero-restore.js
+    // repointed that same node before the paint, so there is no second layer and no
+    // modern-bedroom anywhere. (Before that script, the default painted and a new <img> faded
+    // in over it, which is what this line used to assert.)
     await expect(page.locator('.hp-canvas')).toHaveAttribute('data-hp-adopted', '');
-    await expect(page.locator('.hp-canvas > img[src*="modern-bedroom"]')).toHaveCount(1);
+    await expect(page.locator('.hp-canvas > img')).toHaveCount(1);
+    await expect(page.locator('.hp-canvas > img[data-hp-img]')).toHaveAttribute(
+      'src',
+      'media-webp/example/farmhouse-kitchen.webp',
+    );
 
     // A pick naming a room or style that no longer exists must fall back to the default,
     // not build a path to a render that was never generated. That is what happens the day
@@ -249,6 +299,12 @@ test.describe('Home page — load smoke', () => {
       'src',
       'media-webp/example/modern-bedroom.webp',
     );
+
+    // hero-restore.js will have put the old kitchen on screen from the stale IMG_KEY — it
+    // validates a shape, not a pick — and hero-picker.js overruled it, because readStored()
+    // is the pick of record. It also drops the orphan, so the next load starts clean rather
+    // than flashing a kitchen again.
+    expect(await page.evaluate(() => window.localStorage.getItem('heroPickImg'))).toBeNull();
   });
 
 

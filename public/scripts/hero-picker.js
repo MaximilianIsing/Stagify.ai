@@ -320,8 +320,13 @@ function initHeroPicker() {
      a rejected value, a 404 that reverted) this is null and the markup's default stands. */
   const restored = pairFromKey(baseImg.getAttribute('data-hp-restored'));
 
-  let room = restored ? restored.room : byKey(ROOMS, DEFAULT_ROOM);
-  let style = restored ? restored.style : byKey(STYLES, DEFAULT_STYLE);
+  /* The SELECTION still starts at the default. What hero-restore.js left is a fact about the
+     photo, not a pick: it knows one basename and nothing about what a valid pick is, so a
+     stale IMG_KEY (a dropped room type, storage cleared half-way) can put a pair on screen
+     that readStored() will not have. The pick of record decides below, and the photo is made
+     to agree with it. */
+  let room = byKey(ROOMS, DEFAULT_ROOM);
+  let style = byKey(STYLES, DEFAULT_STYLE);
   let showingOriginal = false;
   let originalImg = null;
   let menusBuilt = false;
@@ -337,7 +342,8 @@ function initHeroPicker() {
   const src = (r, s) => base(r, s) + '.webp';
   const pairKey = (r, s) => s.slug + '-' + r.slug;
 
-  cache[pairKey(room, style)] = baseImg;
+  const adoptedKey = restored ? pairKey(restored.room, restored.style) : pairKey(room, style);
+  cache[adoptedKey] = baseImg;
 
   /**
    * Point an <img> at a pair, as two candidates rather than one file.
@@ -716,6 +722,21 @@ function initHeroPicker() {
     fitPending = window.requestAnimationFrame(() => { fitPending = 0; fitSentence(); });
   }, { passive: true });
 
+  /**
+   * Tell the rest of the page which furniture style is showing.
+   *
+   * scripts/hero-van.js redraws #hero-upload's street for the style (a different house per
+   * style) and has no way to import this file's state — this file has no imports and must
+   * not be imported into app.js's graph. So the pick is published twice: as `data-hp-style`
+   * on the stage, which hero-van.js reads when it mounts after `load` (long after this ran),
+   * and as a `stagify:hero-style` event on document for every change after that. Room is
+   * not published; the street does not depend on it.
+   */
+  function publishStyle() {
+    stage.setAttribute('data-hp-style', style.key);
+    document.dispatchEvent(new CustomEvent('stagify:hero-style', { detail: { style: style.key } }));
+  }
+
   function pick(which, item) {
     if (which === 'room') room = item; else style = item;
     if (showingOriginal) toggleOriginal(false);
@@ -724,6 +745,7 @@ function initHeroPicker() {
     paintAdded();
     show(room, style);
     buildMenus();
+    publishStyle();
   }
 
   /* ------------------------------------------------------------ open / close / keys */
@@ -973,30 +995,42 @@ function initHeroPicker() {
        is what gives a visitor who last picked before hero-restore.js shipped their IMG_KEY.
        They pay the old flash once, on this visit, and never again. */
     remember(room, style);
+  } else if (restored) {
+    /* A photo with no pick behind it: IMG_KEY outlived STORE_KEY, or the pick it belongs to
+       names a room or style this build no longer offers. The selection stays the default and
+       the photo is put back below, so drop the value rather than restoring it again tomorrow. */
+    try { window.localStorage.removeItem(IMG_KEY); } catch { /* nothing to do about it */ }
   }
+
+  /* The alt describes the PIXELS, so it follows the node's own pair even when that pair is
+     about to be replaced below — hero-restore.js changes pixels, not prose, so what is there
+     is still the markup's "A bedroom virtually staged in a modern style". */
+  if (restored) baseImg.alt = altFor(restored.room, restored.style);
 
   if (room !== byKey(ROOMS, DEFAULT_ROOM) || style !== byKey(STYLES, DEFAULT_STYLE)) {
     paintSentence();
     paintAdded();
   }
 
-  if (restored && restored.room === room && restored.style === style) {
-    /* The adopted node still carries the markup's alt ("A bedroom virtually staged in a
-       modern style") — hero-restore.js changes pixels, not prose. altFor() is the string the
-       rest of this file uses, and the languagechange handler keeps it right from here. */
-    baseImg.alt = altFor(room, style);
-    announce(baseImg.alt);
-  } else if (room !== restoredRoomOnNode() || style !== restoredStyleOnNode()) {
-    /* Either nothing was pre-restored, or storage disagrees with what was. Either way the
-       pair on screen is not the one selected, so it goes through show() like any other
-       change: the photo already painted stays until the right one has decoded. */
+  if (pairKey(room, style) !== adoptedKey) {
+    /* Either nothing was pre-restored, or the pick of record disagrees with what was. Either
+       way the photo on screen is not the selected one, so it goes through show() like any
+       other change: what already painted stays up until the right one has decoded. */
     show(room, style, true);
+  } else if (restored) {
+    /* Nothing to fetch — the pre-restored photo IS the selection, which is the whole point
+       of hero-restore.js. Say so, since nothing else in this path will. */
+    announce(baseImg.alt);
   }
 
   /* After the restore, so the one measurement covers the labels actually on screen. The size
      does not depend on the pick, but the `is-fitted` class does have to land before the first
      paint of the adopted hero or the sentence wraps for a frame and the CTA under it jumps. */
   fitSentence();
+
+  /* After the restore, so the stage carries the pick of record (not the markup's default)
+     by the time hero-van.js reads it. */
+  publishStyle();
 
   if ('requestIdleCallback' in window) {
     /** @type {any} */ (window).requestIdleCallback(prefetchRow);

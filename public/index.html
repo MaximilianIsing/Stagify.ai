@@ -92,7 +92,7 @@
     <link rel="preload" as="image" href="media-webp/example/modern-bedroom.webp" imagesrcset="media-webp/example/modern-bedroom-900.webp 900w, media-webp/example/modern-bedroom.webp 1248w, media-webp/example/modern-bedroom-1872.webp 1872w, media-webp/example/modern-bedroom-2496.webp 2496w" imagesizes="(min-width: 1180px) 1110px, 94vw" fetchpriority="high">
 
 
-    <!-- The hero's remembered pick, applied to the LCP <img> before it paints. Same
+    <!-- The hero’s remembered pick, applied to the LCP <img> before it paints. Same
          reasoning as the session-class.js preload below: it is a parser-blocking classic
          script and it sits low in the body, so without this the scanner discovers it behind
          everything else and first paint waits on it. It is ~1 KB. See its own header, and
@@ -517,7 +517,17 @@
           <h1 class="hp-sentence"><span data-lang="hero.sentence.before">Stage this </span><span class="hp-slot"><button type="button" class="hp-slot__btn" id="hero-room-btn" aria-haspopup="listbox" aria-expanded="false" aria-controls="hero-room-menu"><span id="hero-room-label" data-lang="hero.rooms.bedroom">bedroom</span><span class="hp-slot__chev" aria-hidden="true"></span></button><span class="hp-menu" id="hero-room-menu" hidden><span class="hp-menu__list" id="hero-room-list" role="listbox" aria-label="Room type" data-lang-attr="hero.roomMenuLabel|aria-label"></span></span></span><span data-lang="hero.sentence.middle"> in </span><span class="hp-slot"><button type="button" class="hp-slot__btn" id="hero-style-btn" aria-haspopup="listbox" aria-expanded="false" aria-controls="hero-style-menu"><span id="hero-style-label" data-lang="furnitureStyles.modern">Modern</span><span class="hp-slot__chev" aria-hidden="true"></span></button><span class="hp-menu" id="hero-style-menu" hidden><span class="hp-menu__list" id="hero-style-list" role="listbox" aria-label="Furniture style" data-lang-attr="hero.styleMenuLabel|aria-label"></span></span></span><span data-lang="hero.sentence.after"></span></h1>
               <div class="hero-ctas">
                 <div class="hero-cta-button-wrap">
-                  <button id="hero-upload" class="btn btn-primary"><strong data-lang="hero.cta">Upload image for free</strong></button>
+                  <!-- ON DESKTOP THIS IS A DRAWN STREET, not a gradient button. `.hu` picks up the plate
+                       shell in styles/hero-picker.css (navy, 376px, one line of label) at 769px and
+                       above with a hovering pointer; scripts/hero-van.js (after `load`) fills
+                       `.hu-scene` with the scene for the picker’s current furniture style and swaps it
+                       when that changes. Below the breakpoint the two spans are empty and invisible and
+                       the button is the classic `.btn-primary` — the mobile rules in styles.css are
+                       untouched. The label keeps its `data-lang` and stays the button’s only text, so
+                       its accessible name is the label in all 11 languages and the scene (aria-hidden)
+                       adds nothing to it. The `.hu-veil` is the scrim under the label; it belongs in
+                       the markup rather than a pseudo-element because ::before is the old shimmer. -->
+                  <button id="hero-upload" class="btn btn-primary hu"><span class="hu-scene" aria-hidden="true"></span><span class="hu-veil" aria-hidden="true"></span><strong data-lang="hero.cta">Upload image for free</strong></button>
                   <!-- The upgrade nudge for signed-in FREE accounts. Its copy ships here rather than
                        being written in by JS, and it is shown/hidden by `html.has-free-plan` (set
                        pre-paint in scripts/session-class.js, corrected by app/hero-stats.js once
