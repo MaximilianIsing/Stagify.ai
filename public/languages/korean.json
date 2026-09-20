@@ -2172,7 +2172,6 @@
     "plan": {
       "hintAccountFirst": "먼저 무료 계정을 만드세요. 그래야 구독이 회원님 계정에 연결됩니다.",
       "hintTip": "팁: 결제를 Stagify 계정에 연결할 수 있도록 먼저 프로필 메뉴에서 로그인하세요.",
-      "hintStagingDisabled": "스테이징 사이트에서는 구독이 비활성화되어 있습니다.",
       "billedMonthly": "매월 청구 · 언제든지 취소 가능",
       "perMonth": "/ 월",
       "trialPill": "7일 무료로 시작하기",

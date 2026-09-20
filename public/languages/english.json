@@ -2172,7 +2172,6 @@
     "plan": {
       "hintAccountFirst": "Create a free account first. That’s how your subscription gets linked to you.",
       "hintTip": "Tip: sign in from the profile menu first so checkout can link payment to your Stagify account.",
-      "hintStagingDisabled": "Subscriptions are disabled on the staging site.",
       "billedMonthly": "Billed monthly · Cancel anytime",
       "perMonth": "/ month",
       "trialPill": "Start with 7 days free",

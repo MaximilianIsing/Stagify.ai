@@ -389,7 +389,7 @@
        the sheet, so it is the first thing a lighter backing pushes under AA: 0.74 on the
        new panel measures 4.2:1. 0.86 puts it back at 5.0:1, which is where it was. */
     color: rgba(255, 255, 255, 0.86);
-    font-size: clamp(11.5px, 1.4cqw, 16px);
+    font-size: clamp(13px, 1.65cqw, 19px);
     line-height: 1.55;
   }
   .faq-plan:has(.faq-room__label:hover) .faq-plan__hint,
@@ -444,7 +444,7 @@
        stays in the accessibility tree. It doubles as the hover preview for free. */
     opacity: 0;
     color: rgba(255, 255, 255, 0.96);
-    font-size: clamp(14px, 1.85cqw, 23px);
+    font-size: clamp(16px, 2.15cqw, 27px);
     font-weight: 800;
     letter-spacing: -0.2px;
     line-height: 1.3;
@@ -484,7 +484,7 @@
     /* 0.9, up from 0.87, for the same reason as the hint above — body copy on a panel
        that got lighter. 5.3:1 at the panel's light end. */
     color: rgba(255, 255, 255, 0.9);
-    font-size: clamp(11px, 1.3cqw, 16.5px);
+    font-size: clamp(14px, 1.7cqw, 21px);
     line-height: 1.62;
     pointer-events: auto;
   }

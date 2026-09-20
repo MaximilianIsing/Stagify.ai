@@ -80,5 +80,14 @@
     "headline": "Leurs meubles sortent d'abord.",
     "captionLeft": "Photo d'origine",
     "captionRight": "Vidée, prête à meubler"
+  },
+  "cover-16": {
+    "eyebrow": "Styles de mobilier",
+    "headline": "Une pièce. Trois styles. Trois acheteurs différents.",
+    "labels": [
+      "Scandinave",
+      "Campagne",
+      "Luxe"
+    ]
   }
 }

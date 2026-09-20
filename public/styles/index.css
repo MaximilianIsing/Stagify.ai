@@ -31,18 +31,10 @@
         }
       }
       
-      /* Make upload button 20% larger (growing down and right only) - Desktop only */
-      @media (min-width: 769px) {
-        #hero-upload {
-          padding: 14.4px 28.8px !important;
-          font-size: 24px !important;
-          transform-origin: top left;
-        }
-        
-        #hero-upload strong {
-          font-size: 24px !important;
-        }
-      }
+      /* The desktop button used to be sized up 20% here (24px label, !important). It is a
+         drawn street now — `#hero-upload.hu` in styles/hero-picker.css owns every desktop
+         dimension — so that block is gone; anything re-added here with !important would
+         override the plate. The mobile button is untouched (styles.css, max-width:768px). */
       /* THE HERO STAT PILLS USED TO LIVE HERE, and they were the most intricate block in
          this file: two `.stat-pill` divs that star-border.js destroyed and replaced with
          `.star-border-container > .inner-content` a second after load, kept pixel-identical

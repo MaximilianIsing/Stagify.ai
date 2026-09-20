@@ -371,11 +371,44 @@ export function indexForHash(panelIds, hash) {
  *
  * @param {Showcase} sc
  */
-function wireDrag(sc) {
+export function wireDrag(sc) {
   let id = /** @type {number|null} */ (null);
   let startX = 0;
   let startY = 0;
   let axis = /** @type {'x'|'y'|null} */ (null);
+  let captured = false;
+
+  /**
+   * Take the pointer, but ONLY once the gesture has committed to the x axis.
+   *
+   * Capture is what makes a drag survive leaving the stage — every listener here is on
+   * the stage, which is only ~520px tall inside a section the side panels bleed out of,
+   * so a pointerup released outside it never reached end() and left id and startX stale.
+   * A mouse keeps its pointerId for the whole session, so the next plain mouse move
+   * across the stage matched, measured dx against that stale origin, cleared the
+   * threshold and flicked the carousel with no button held.
+   *
+   * It cannot be taken on pointerdown, which is where it used to be. While a capture
+   * override is set the compat mouse events — and therefore the synthesized click — are
+   * dispatched at the CAPTURE element, so the click's path became stage -> .shw and no
+   * longer passed through .shw__panel, killing the click-a-neighbour-to-bring-it-forward
+   * handler in init() outright (the stage is an ancestor of every panel; the tabs and
+   * arrows never noticed, being buttons pointerdown bails out on). A press that is only
+   * a click must therefore never capture — and by the time the axis locks we are
+   * dragging, where a synthesized click is one no panel should act on anyway.
+   *
+   * @param {PointerEvent} e
+   */
+  function capture(e) {
+    try { sc.stage.setPointerCapture(e.pointerId); captured = true; } catch (_e) { /* not capturable */ }
+  }
+
+  /** @param {PointerEvent} e */
+  function release(e) {
+    if (!captured) return;
+    captured = false;
+    try { sc.stage.releasePointerCapture(e.pointerId); } catch (_e) { /* already released */ }
+  }
 
   sc.stage.addEventListener('pointerdown', (e) => {
     if (expanded()) return; // see the note on expanded()
@@ -390,23 +423,22 @@ function wireDrag(sc) {
     startX = e.clientX;
     startY = e.clientY;
     axis = null;
-    // Capture, because every listener here is on the stage and the stage is only ~520px
-    // tall inside a section the side panels bleed out of: release the pointer OUTSIDE it
-    // before crossing the threshold and end() never ran, leaving id and startX stale. A
-    // mouse keeps its pointerId for the whole session, so the next plain mouse move
-    // across the stage matched, measured dx against that stale origin, cleared 60px and
-    // flicked the carousel with no button held. Capture retargets the matching
-    // pointerup/pointercancel here wherever it happens.
-    try { sc.stage.setPointerCapture(e.pointerId); } catch (_e) { /* not capturable */ }
   });
 
   sc.stage.addEventListener('pointermove', (e) => {
     if (id === null || e.pointerId !== id) return;
+    // The stale-origin guard that capture() no longer covers on its own, now that the
+    // capture is deferred: a mouse moving over the stage with no button held is not the
+    // drag we started, whatever its pointerId says.
+    if (e.pointerType === 'mouse' && e.buttons === 0) { id = null; return; }
     const dx = e.clientX - startX;
     const dy = e.clientY - startY;
     // Lock to an axis once past the noise floor, so a mostly-vertical drag scrolls
     // the page instead of flicking the carousel.
-    if (axis === null && Math.abs(dx) + Math.abs(dy) > 12) axis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+    if (axis === null && Math.abs(dx) + Math.abs(dy) > 12) {
+      axis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+      if (axis === 'x') capture(e);
+    }
     if (axis !== 'x') return;
     if (Math.abs(dx) < DRAG_THRESHOLD) return;
     select(sc, sc.active + (dx < 0 ? 1 : -1));
@@ -415,6 +447,7 @@ function wireDrag(sc) {
 
   const end = (/** @type {PointerEvent} */ e) => {
     if (id !== null && e.pointerId === id) id = null;
+    release(e);
   };
   sc.stage.addEventListener('pointerup', end);
   sc.stage.addEventListener('pointercancel', end);

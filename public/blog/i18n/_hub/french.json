@@ -1,10 +1,10 @@
 {
   "_meta": {
-    "sourceHash": "sha256:187d5dafab0a91e44c4a414a091e4e320a4fce84a9f6b037903c6f2438dbdb43",
+    "sourceHash": "sha256:90f67dddc33524db8b141401d836a51d8e94ccab3730616f434ee848cfdf4513",
     "slug": null,
     "lang": "french",
     "hreflang": "fr",
-    "translatedAt": "2026-09-17",
+    "translatedAt": "2026-09-20",
     "reviewed": false
   },
   "meta": {
@@ -16,6 +16,13 @@
     "body": "Des guides concrets sur le home staging virtuel, la divulgation au MLS et la commercialisation plus rapide de vos annonces, pour les agents, les vendeurs et les photographes."
   },
   "cards": {
+    "which-virtual-staging-style": {
+      "tag": "Guides",
+      "title": "Une pièce, sept styles. Un seul vend la maison.",
+      "excerpt": "Sept préréglages et la plupart des gens choisissent celui qu'ils préfèrent. L'architecture, le sol, la lumière et l'acheteur en décident autrement, et chacun des sept a une façon bien précise de mal tourner.",
+      "meta": "20 septembre 2026 · 10 min de lecture",
+      "alt": "Trois photographies du même salon vide, aménagé de trois façons différentes sur fond sombre : une version Scandinave avec un canapé gris clair et une table en chêne clair, une version Campagne avec un canapé en lin, un tapis en jute et une table en bois de récupération, et une version Luxe avec un canapé en velours vert, un tapis à motifs, une table en marbre et un lustre en laiton"
+    },
     "remove-furniture-from-listing-photos": {
       "tag": "Guides",
       "title": "La plupart des biens sont occupés. Photographiez-les quand même.",

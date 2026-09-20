@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hero CTA — plate backgrounds</title>
+<style>
+:root{
+  --bg:#ddeeff; --bg-elevated:#fff; --fg:#1f2937; --muted:#6b7280; --border:#e5e7eb;
+  --primary:#1e40af; --primary-light:#3b82f6;
+  --brand:#2563eb; --brand-strong:#1d4ed8; --brand-deep:#1e3a8a; --brand-soft:#60a5fa;
+  --brand-pale:#93c5fd; --brand-tint:#dbeafe; --brand-wash:#eff6ff;
+  --slate:#64748b; --good:#047857; --bad:#b91c1c;
+  --cta-gradient:
+    radial-gradient(circle at 20% 50%, var(--primary-light) 0, transparent 50%),
+    radial-gradient(circle at 80% 20%, var(--brand-strong) 0, transparent 50%),
+    radial-gradient(circle at 40% 80%, var(--brand) 0, transparent 50%),
+    radial-gradient(circle at 0 100%, var(--primary) 0, transparent 50%),
+    radial-gradient(circle at 100% 0, var(--brand-soft) 0, transparent 50%),
+    var(--brand-deep);
+  --cta-gradient-hover:
+    radial-gradient(circle at 30% 40%, var(--primary-light) 0, transparent 60%),
+    radial-gradient(circle at 70% 30%, var(--brand-strong) 0, transparent 60%),
+    radial-gradient(circle at 50% 70%, var(--brand) 0, transparent 60%),
+    radial-gradient(circle at 10% 90%, var(--primary) 0, transparent 60%),
+    radial-gradient(circle at 90% 10%, var(--brand-soft) 0, transparent 60%),
+    var(--brand-deep);
+}
+@property --a{syntax:'<angle>';inherits:false;initial-value:0deg}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+a{color:var(--brand-strong)}
+.page{max-width:1180px;margin:0 auto;padding:0 20px 120px}
+
+header.top{padding:40px 0 20px}
+header.top h1{margin:0 0 6px;font-size:26px;letter-spacing:-.4px}
+header.top .req{margin:0;font-size:15px;color:var(--brand-deep);font-weight:600;max-width:90ch}
+header.top .meta{margin:10px 0 0;font-size:13px;color:var(--muted);max-width:92ch;line-height:1.6}
+nav.jump{position:sticky;top:0;z-index:50;display:flex;gap:6px;overflow-x:auto;
+  padding:10px 0;margin-bottom:22px;background:rgba(221,238,255,.93);
+  backdrop-filter:blur(8px);border-bottom:1px solid rgba(30,58,138,.12)}
+nav.jump a{flex:none;font-size:12.5px;font-weight:700;text-decoration:none;color:var(--brand-deep);
+  background:#fff;border:1px solid var(--brand-tint);border-radius:999px;padding:6px 12px}
+nav.jump a:hover{background:var(--brand-wash);border-color:var(--brand-soft)}
+
+.canvas{background:#fff;border:1px solid rgba(30,58,138,.16);border-radius:18px;
+  box-shadow:0 10px 30px rgba(30,58,138,.07);margin:0 0 34px;overflow:hidden}
+.cap{padding:16px 20px 18px;border-bottom:1px solid var(--border)}
+.cap .n{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;
+  color:#fff;background:var(--brand-deep);border-radius:6px;padding:3px 8px;margin-right:10px}
+.cap h2{display:inline;font-size:17px;margin:0;letter-spacing:-.2px}
+.cap .lede{margin:9px 0 0;font-size:13.5px;color:var(--slate);line-height:1.55;max-width:80ch}
+.pc{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;max-width:900px}
+.pc ul{margin:0;padding:10px 14px 12px 30px;border-radius:12px;font-size:12.8px;line-height:1.55}
+.pc .pro{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+.pc .con{background:#fef2f2;border:1px solid #fecaca;color:#7f1d1d}
+.pc h4{margin:0 0 4px;font-size:11px;letter-spacing:.7px;text-transform:uppercase;padding-left:0}
+.pc li{margin:3px 0}
+.pc li::marker{opacity:.6}
+@media(max-width:720px){.pc{grid-template-columns:1fr}}
+
+/* ---------- mock hero ---------- */
+.hero{position:relative;height:430px;overflow:hidden}
+.hero .shot{position:absolute;inset:0;background:
+    radial-gradient(circle at 78% 22%, rgba(255,244,222,.9) 0 6%, transparent 40%),
+    linear-gradient(105deg, rgba(255,255,255,.35) 0 22%, transparent 55%),
+    linear-gradient(180deg,#efe3d2 0 44%, #d3bfa6 44% 56%, #93795c 56% 100%)}
+.hero .shot::after{content:"";position:absolute;inset:0;background:
+    linear-gradient(90deg, rgba(120,95,70,.22) 0 1px, transparent 1px 78px),
+    radial-gradient(ellipse at 30% 70%, rgba(80,60,40,.25), transparent 60%)}
+.hero .scrim{position:absolute;left:0;right:0;bottom:0;padding:70px 30px 26px;
+  display:grid;grid-template-columns:minmax(0,1fr) auto;gap:30px;align-items:end;
+  background:linear-gradient(180deg,rgba(9,17,45,0) 0,rgba(9,17,45,.22) 20px,
+    rgba(9,17,45,.7) 70px,rgba(9,17,45,.88) 170px,rgba(9,17,45,.95) 100%)}
+.eyebrow{margin:0 0 8px;font-size:1rem;font-weight:700;color:#fff;text-shadow:0 1px 10px rgba(9,17,45,.5)}
+.sentence{margin:0 0 18px;font-size:clamp(22px,3.2vw,34px);font-weight:800;color:#fff;line-height:1.15;
+  text-shadow:0 2px 14px rgba(9,17,45,.55)}
+.sentence u{text-decoration:none;border-bottom:2px dashed rgba(147,197,253,.75)}
+.freeline{margin:13px 0 0;font-size:13px;color:rgba(255,255,255,.9);text-shadow:0 1px 8px rgba(9,17,45,.6)}
+.freeline a{color:inherit}
+.side{display:flex;flex-direction:column;align-items:flex-end;gap:14px;text-align:right;color:#fff}
+.side .stat b{display:block;font-size:24px;font-weight:800;line-height:1}
+.side .stat span{font-size:12px;color:rgba(255,255,255,.72)}
+@media(max-width:760px){.hero{height:auto;min-height:450px}.hero .scrim{grid-template-columns:1fr}.side{display:none}}
+
+/* =========================================================
+   THE SHARED PLATE — geometry is frozen across all ten.
+   Only the scene inside (::before / ::after / .fx) differs.
+   ========================================================= */
+.plate{position:relative;overflow:hidden;isolation:isolate;
+  display:flex;align-items:center;justify-content:space-between;gap:20px;
+  width:376px;max-width:100%;padding:16px 18px;border-radius:14px;cursor:pointer;
+  border:1px solid rgba(190,214,255,.45);background:var(--cta-gradient);
+  box-shadow:0 12px 30px rgba(30,58,138,.35),inset 0 1px 0 rgba(255,255,255,.14);
+  transition:transform .22s cubic-bezier(.22,.8,.3,1),box-shadow .25s ease,background .4s ease}
+.plate:hover{transform:translateY(-2px);background:var(--cta-gradient-hover);
+  box-shadow:0 18px 40px rgba(30,58,138,.42)}
+.plate:active{transform:translateY(0) scale(.988);transition-duration:.06s}
+.plate:focus-visible{outline:3px solid var(--brand-soft);outline-offset:3px}
+.plate .txt{position:relative;z-index:5;text-align:left}
+.plate .lbl{display:block;font-size:17px;font-weight:800;color:#fff;letter-spacing:-.1px;
+  text-shadow:0 1px 8px rgba(6,12,28,.65)}
+.plate .sub{display:block;margin-top:3px;font-size:12.5px;font-weight:500;color:rgba(222,236,255,.9);
+  text-shadow:0 1px 6px rgba(6,12,28,.5)}
+.plate .arrow{position:relative;z-index:5;flex:none;width:38px;height:38px;border-radius:10px;
+  display:grid;place-items:center;color:#fff;background:rgba(255,255,255,.2);
+  border:1px solid rgba(255,255,255,.4);backdrop-filter:blur(3px);
+  transition:transform .2s ease,background .2s ease}
+.plate:hover .arrow{transform:translateY(-2px);background:rgba(255,255,255,.36)}
+.plate:active .arrow{transform:translateY(1px) scale(.94)}
+/* click ripple, shared — this is half of "satisfying to click" */
+.ripple{position:absolute;z-index:4;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,rgba(255,255,255,.55),rgba(255,255,255,0) 68%);
+  transform:translate(-50%,-50%) scale(0);animation:rip .62s cubic-bezier(.2,.7,.3,1) forwards}
+@keyframes rip{to{transform:translate(-50%,-50%) scale(1);opacity:0}}
+.scene{position:absolute;inset:0;z-index:0;pointer-events:none}
+.scene.top{z-index:3}
+
+/* ---------- 01 · Furnishing Room ---------- */
+.p1 .floor{position:absolute;inset:0;
+  background-image:
+    repeating-linear-gradient(26.57deg, rgba(255,255,255,.085) 0 1px, transparent 1px 30px),
+    repeating-linear-gradient(-26.57deg, rgba(255,255,255,.085) 0 1px, transparent 1px 30px);
+  transition:transform .6s cubic-bezier(.22,.8,.3,1),background-position 1.2s cubic-bezier(.22,.8,.3,1)}
+.p1:hover .floor{transform:scale(1.12);background-position:10px -5px,10px 5px}
+.p1 .fur{position:absolute;inset:0}
+.p1 .fur i{position:absolute;display:block;background:rgba(255,255,255,.34);
+  border:1px solid rgba(255,255,255,.5);opacity:0;transform:translateY(-16px) scale(.9);
+  transition:opacity .34s ease,transform .5s cubic-bezier(.2,1.4,.4,1)}
+.p1:hover .fur i{opacity:1;transform:none}
+.p1 .fur i:nth-child(1){left:20px;bottom:12px;width:62px;height:20px;border-radius:4px;transition-delay:.02s}
+.p1 .fur i:nth-child(2){left:96px;bottom:9px;width:30px;height:12px;border-radius:3px;transition-delay:.1s}
+.p1 .fur i:nth-child(3){left:142px;bottom:12px;width:16px;height:34px;border-radius:3px;transition-delay:.18s}
+.p1 .fur i:nth-child(4){right:96px;bottom:10px;width:44px;height:16px;border-radius:3px;transition-delay:.26s}
+.p1 .fur i:nth-child(5){right:44px;bottom:11px;width:12px;height:12px;border-radius:50%;
+  background:rgba(191,230,200,.6);transition-delay:.34s}
+.p1 .fur i:nth-child(6){right:18px;bottom:14px;width:9px;height:26px;border-radius:2px;
+  background:rgba(255,227,171,.65);transition-delay:.42s}
+
+/* ---------- 02 · Reveal Wipe ---------- */
+.p2 .empty{position:absolute;inset:0;background:
+  linear-gradient(180deg,#d9c7ad 0 58%, #9d8263 58% 100%)}
+.p2 .empty::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(90deg,rgba(120,95,70,.25) 0 1px,transparent 1px 44px)}
+.p2 .staged{position:absolute;inset:0;background:var(--cta-gradient);
+  clip-path:polygon(0 0,0 0,-14% 100%,-14% 100%);
+  transition:clip-path 1s cubic-bezier(.22,.8,.3,1)}
+.p2 .staged::after{content:"";position:absolute;inset:0;
+  background-image:
+    repeating-linear-gradient(26.57deg, rgba(255,255,255,.1) 0 1px, transparent 1px 28px),
+    repeating-linear-gradient(-26.57deg, rgba(255,255,255,.1) 0 1px, transparent 1px 28px)}
+.p2:hover .staged{clip-path:polygon(0 0,114% 0,100% 100%,0 100%)}
+.p2 .seam{position:absolute;top:0;bottom:0;width:2px;left:-6%;
+  background:linear-gradient(180deg,rgba(255,255,255,0),#fff,rgba(255,255,255,0));
+  box-shadow:0 0 14px rgba(255,255,255,.8);transform:skewX(-8deg);
+  transition:left 1s cubic-bezier(.22,.8,.3,1);opacity:.9}
+.p2:hover .seam{left:104%}
+.p2 .tag{position:absolute;left:14px;bottom:8px;font-size:9.5px;font-weight:800;letter-spacing:.8px;
+  color:rgba(60,42,25,.8);z-index:2;transition:opacity .3s}
+.p2:hover .tag{opacity:0}
+
+/* ---------- 03 · Blueprint Draw ---------- */
+.p3 .plan{position:absolute;inset:0;opacity:.85}
+.p3 .plan svg{width:100%;height:100%}
+.p3 .plan path,.p3 .plan rect,.p3 .plan circle{stroke:rgba(190,220,255,.85);fill:none;stroke-width:1.2;
+  stroke-dasharray:var(--len,300);stroke-dashoffset:var(--len,300);
+  transition:stroke-dashoffset 1.1s cubic-bezier(.25,.8,.35,1)}
+.p3:hover .plan path,.p3:hover .plan rect,.p3:hover .plan circle{stroke-dashoffset:0}
+.p3 .grid{position:absolute;inset:0;background-image:
+  linear-gradient(rgba(255,255,255,.07) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(255,255,255,.07) 1px,transparent 1px);background-size:14px 14px}
+.p3 .sweep{position:absolute;top:0;bottom:0;width:120px;left:-140px;
+  background:linear-gradient(90deg,transparent,rgba(147,197,253,.28),transparent)}
+.p3:hover .sweep{animation:sweepx 1.6s ease-in-out}
+@keyframes sweepx{to{left:110%}}
+
+/* ---------- 04 · Lidar Scan ---------- */
+.p4 .dots{position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.4) 1px,transparent 1px);
+  background-size:12px 12px;opacity:.35;transition:opacity .4s}
+.p4:hover .dots{opacity:.75}
+.p4 .beam{position:absolute;top:-30%;bottom:-30%;width:70px;left:-90px;
+  background:linear-gradient(90deg,transparent,rgba(125,211,252,.55),rgba(255,255,255,.85),transparent);
+  filter:blur(.4px);transform:skewX(-12deg);opacity:0}
+.p4:hover .beam{opacity:1;animation:beam 2.1s linear infinite}
+@keyframes beam{0%{left:-90px}100%{left:104%}}
+.p4 .marks{position:absolute;inset:0}
+.p4 .marks b{position:absolute;width:11px;height:11px;border:1.4px solid rgba(255,255,255,.85);
+  border-radius:2px;opacity:0;transform:scale(.4)}
+.p4:hover .marks b{animation:pop 2.1s linear infinite}
+.p4 .marks b:nth-child(1){left:22%;top:34%;animation-delay:.25s}
+.p4 .marks b:nth-child(2){left:44%;top:62%;animation-delay:.6s}
+.p4 .marks b:nth-child(3){left:66%;top:28%;animation-delay:.95s}
+.p4 .marks b:nth-child(4){left:84%;top:58%;animation-delay:1.3s}
+@keyframes pop{0%,8%{opacity:0;transform:scale(.4)}16%{opacity:1;transform:scale(1)}70%{opacity:.7}100%{opacity:0}}
+
+/* ---------- 05 · Aurora Drift ---------- */
+.p5{background:#12255e}
+.p5:hover{background:#12255e}
+.p5 .au{position:absolute;inset:-40%;filter:blur(26px);opacity:.95}
+.p5 .au i{position:absolute;display:block;border-radius:50%;mix-blend-mode:screen}
+.p5 .au i:nth-child(1){width:60%;height:180%;left:-4%;top:-40%;background:#3b82f6;animation:dr1 11s ease-in-out infinite alternate}
+.p5 .au i:nth-child(2){width:55%;height:170%;left:34%;top:-30%;background:#1d4ed8;animation:dr2 13s ease-in-out infinite alternate}
+.p5 .au i:nth-child(3){width:48%;height:160%;left:62%;top:-36%;background:#60a5fa;animation:dr3 9s ease-in-out infinite alternate}
+.p5 .au i:nth-child(4){width:40%;height:150%;left:18%;top:-20%;background:#1e3a8a;animation:dr2 15s ease-in-out infinite alternate-reverse}
+@keyframes dr1{to{transform:translate(18%,8%) scale(1.15)}}
+@keyframes dr2{to{transform:translate(-16%,-6%) scale(1.2)}}
+@keyframes dr3{to{transform:translate(12%,-10%) scale(1.1)}}
+.p5 .grain{position:absolute;inset:0;opacity:.22;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='90' height='90' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E")}
+.p5:hover .au{animation:none;filter:blur(20px)}
+
+/* ---------- 06 · Render Reel ---------- */
+.p6 .reel{position:absolute;inset:0;display:flex;align-items:center;gap:8px;padding:0 6px;
+  animation:reel 26s linear infinite;opacity:.55;transition:opacity .35s}
+.p6:hover .reel{opacity:.85;animation-duration:13s}
+.p6 .reel span{flex:none;width:74px;height:46px;border-radius:6px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.22)}
+@keyframes reel{to{transform:translateX(-50%)}}
+.p6 .fade{position:absolute;inset:0;background:
+  linear-gradient(90deg,rgba(18,37,94,.92) 0 18%,rgba(18,37,94,.35) 44%,rgba(18,37,94,.9) 100%)}
+.r-a{background:linear-gradient(150deg,#e9dcc9,#9a7f60)}
+.r-b{background:linear-gradient(150deg,#dbe6f5,#5d6f8e)}
+.r-c{background:linear-gradient(150deg,#f3e7e7,#9d7a79)}
+.r-d{background:linear-gradient(150deg,#e4f0e6,#6e8a72)}
+.r-e{background:linear-gradient(150deg,#f0ecd9,#8d8560)}
+
+/* ---------- 07 · Constellation ---------- */
+.p7 canvas{position:absolute;inset:0;width:100%;height:100%}
+
+/* ---------- 08 · Liquid Sheen ---------- */
+.p8{background:linear-gradient(135deg,#1e3a8a,#2563eb 45%,#1d4ed8)}
+.p8:hover{background:linear-gradient(135deg,#1e3a8a,#3b82f6 45%,#1d4ed8)}
+.p8 .blob{position:absolute;inset:-30%;filter:blur(14px) contrast(16px);opacity:.5}
+.p8 .blob i{position:absolute;border-radius:50%;background:#7cc0ff;display:block}
+.p8 .blob i:nth-child(1){width:110px;height:110px;left:6%;top:14%;animation:bl1 9s ease-in-out infinite alternate}
+.p8 .blob i:nth-child(2){width:90px;height:90px;left:40%;top:36%;animation:bl2 7s ease-in-out infinite alternate}
+.p8 .blob i:nth-child(3){width:130px;height:130px;left:70%;top:6%;animation:bl3 11s ease-in-out infinite alternate}
+@keyframes bl1{to{transform:translate(40px,22px)}}
+@keyframes bl2{to{transform:translate(-34px,-18px) scale(1.2)}}
+@keyframes bl3{to{transform:translate(-26px,26px)}}
+.p8 .sheen{position:absolute;width:320px;height:320px;border-radius:50%;left:var(--mx,50%);top:var(--my,50%);
+  transform:translate(-50%,-50%);opacity:0;transition:opacity .3s;
+  background:radial-gradient(circle,rgba(255,255,255,.4),rgba(255,255,255,0) 62%)}
+.p8:hover .sheen{opacity:1}
+
+/* ---------- 09 · Window Depth (parallax) ---------- */
+.p9{perspective:700px;background:linear-gradient(180deg,#16306e,#0e1f4d)}
+.p9 .lay{position:absolute;inset:-6%;transition:transform .18s ease-out}
+.p9 .l-sky{background:
+  radial-gradient(ellipse at 74% 16%, rgba(255,236,196,.55), transparent 58%),
+  linear-gradient(180deg,#1b3d84,#0d1c46)}
+.p9 .l-win{background:
+  linear-gradient(90deg,transparent 0 58%,rgba(255,240,205,.30) 58% 78%,transparent 78%),
+  linear-gradient(180deg,transparent 0 12%,rgba(255,240,205,.16) 12% 62%,transparent 62%)}
+.p9 .l-room{background-image:
+  repeating-linear-gradient(26.57deg, rgba(255,255,255,.1) 0 1px, transparent 1px 32px),
+  repeating-linear-gradient(-26.57deg, rgba(255,255,255,.1) 0 1px, transparent 1px 32px)}
+.p9 .l-fur{background:
+  linear-gradient(90deg,transparent 0 8%,rgba(255,255,255,.28) 8% 26%,transparent 26%) bottom/100% 22px no-repeat,
+  linear-gradient(90deg,transparent 0 62%,rgba(255,255,255,.22) 62% 74%,transparent 74%) bottom/100% 32px no-repeat}
+.p9 .beamlight{position:absolute;inset:0;opacity:0;transition:opacity .4s;
+  background:linear-gradient(112deg,transparent 40%,rgba(255,238,200,.22) 58%,transparent 72%)}
+.p9:hover .beamlight{opacity:1}
+
+/* ---------- 10 · Pixel Flip ---------- */
+.p10 .px{position:absolute;inset:0;display:grid;
+  grid-template-columns:repeat(18,1fr);grid-template-rows:repeat(5,1fr)}
+.p10 .px i{display:block;background:#c9b193;transition:background .34s ease,transform .34s ease;
+  box-shadow:inset 0 0 0 .5px rgba(0,0,0,.07)}
+.p10:hover .px i{background:var(--brand)}
+.p10 .px i.lit{background:var(--brand-soft)}
+.p10 .veil{position:absolute;inset:0;background:linear-gradient(180deg,rgba(9,17,45,.34),rgba(9,17,45,.5))}
+
+.note{font-size:12px;color:var(--muted);padding:12px 20px 16px;border-top:1px solid var(--border);background:#fafcff}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header class="top">
+  <h1>Hero CTA — round 2: the plate, ten backgrounds</h1>
+  <p class="req">“01 is the closest to the idea I want. Some sort of interesting background to make it more satisfying and interesting to click.”</p>
+  <p class="meta">
+    The <b>geometry is now fixed</b> and identical in all ten — the round-1 “Room Plate” shell: 376px, 14px radius, label + sub + 38px arrow well, −2px hover lift, a scale(.988) press, and a white click ripple. The <b>only</b> variable is the scene painted inside it. Hover each one, then click it; several only reveal themselves on press. Shown over the real hero scrim so contrast is judged honestly. Tokens from <code>public/styles/styles.css</code>; scene technique matches <code>.plus-plate</code> in <code>public/styles/home.css</code> (inline gradients/SVG, no new requests).
+  </p>
+</header>
+
+<nav class="jump" id="jump"></nav>
+<div id="variants"></div>
+
+</div>
+
+<script>
+const LBL = `<span class="txt"><span class="lbl">Upload image for free</span><span class="sub">JPG or PNG · staged in about 20 seconds</span></span>
+<span class="arrow" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></span>`;
+
+const V = [
+{
+ id:'p1', name:'Furnishing Room',
+ lede:'The round-1 plate, but the isometric grid is now an actual room that <em>fills with furniture</em> on hover — sofa, table, lamp, wardrobe, plant, each dropping in on its own 80ms beat. The button performs the product in one second.',
+ pros:['Literal: the animation <em>is</em> what the button does, so it needs no caption.',
+       'Staggered entry reads as craft; the spring easing is the satisfying part.',
+       'Pure CSS transitions on 6 divs — no canvas, no JS, no layout cost.',
+       'Degrades to the static grid with <code>prefers-reduced-motion</code>.'],
+ cons:['Only fires on hover, so touch visitors never see it.',
+       'Six abstract rectangles read as furniture only because of context — at 376px they are close to noise.',
+       'Once seen, it is seen; no reason to hover twice.'],
+ scene:`<span class="scene p1floor"></span>`,
+ inner:`<span class="scene"><span class="floor"></span></span>
+        <span class="scene"><span class="fur"><i></i><i></i><i></i><i></i><i></i><i></i></span></span>`
+},
+{
+ id:'p2', name:'Reveal Wipe',
+ lede:'The plate starts as a bare beige room and a diagonal light seam sweeps across it, leaving the blue staged version behind. It is the before/after slider you already sell, shrunk into a button.',
+ pros:['Strongest message-per-pixel here: empty → staged, no words needed.',
+       'The travelling seam is a genuine “ooh” moment and reads at a glance.',
+       'Matches the hero’s own “See original / See staged” toggle, so the page tells one story.'],
+ cons:['The un-hovered state is <b>beige, not brand blue</b> — it loses the CTA colour that marks it as the primary action.',
+       'White label over beige needs its own shadow; contrast is the weakest of the ten before hover.',
+       'On touch it is permanently beige unless you auto-play it, which then competes with the hero.'],
+ inner:`<span class="scene"><span class="empty"></span><span class="tag">EMPTY</span><span class="staged"></span><span class="seam"></span></span>`
+},
+{
+ id:'p3', name:'Blueprint Draw',
+ lede:'A faint floor plan draws itself line by line on hover — walls, a door arc, furniture blocks — over a fine drafting grid, with a survey sweep passing once.',
+ pros:['Signals “measured, architectural, precise”, which is the objection real-estate buyers actually have about AI staging.',
+       'Line-draw on <code>stroke-dashoffset</code> is cheap and looks expensive.',
+       'The quietest of the animated set — it will not fight the hero photo.'],
+ cons:['Blueprint is a <b>pre-visualisation</b> metaphor; Stagify sells finished photos, so it slightly undersells the output.',
+       'Thin 1.2px strokes over a gradient are fragile — they nearly vanish on a bright render behind the scrim.',
+       'Needs inline SVG per plate; more markup than the gradient-only options.'],
+ inner:`<span class="scene"><span class="grid"></span></span>
+        <span class="scene"><span class="plan">
+          <svg viewBox="0 0 376 74" preserveAspectRatio="none">
+            <path style="--len:900" d="M14 62 L14 14 L150 14 L150 40 L232 40 L232 12 L362 12 L362 62 Z"/>
+            <path style="--len:120" d="M150 40 L150 62"/>
+            <path style="--len:90" d="M232 40 A22 22 0 0 1 254 62"/>
+            <rect style="--len:150" x="30" y="40" width="62" height="16" rx="2"/>
+            <rect style="--len:90" x="104" y="44" width="30" height="12" rx="2"/>
+            <rect style="--len:120" x="266" y="26" width="44" height="22" rx="2"/>
+            <circle style="--len:70" cx="336" cy="40" r="10"/>
+          </svg>
+        </span></span>
+        <span class="scene"><span class="sweep"></span></span>`
+},
+{
+ id:'p4', name:'Lidar Scan',
+ lede:'A dot lattice with a bright scanning beam running left to right on a loop, popping little corner brackets as it passes each “detected” object. Reads as the model looking at the room.',
+ pros:['The only variant that animates <b>continuously</b> — it is alive before anyone hovers, which is exactly what “not dead” means.',
+       'Communicates AI/computer-vision without a robot icon or sparkle cliché.',
+       'Works identically on touch since nothing depends on hover.'],
+ cons:['A permanent loop at the top of the page is an attention tax and a battery cost.',
+       'Scan-lines are a crowded visual trope; it will look like every other AI product.',
+       'Must be gated on <code>prefers-reduced-motion</code>, and then the fallback is just a dot grid.'],
+ inner:`<span class="scene"><span class="dots"></span></span>
+        <span class="scene"><span class="marks"><b></b><b></b><b></b><b></b></span></span>
+        <span class="scene top"><span class="beam"></span></span>`
+},
+{
+ id:'p5', name:'Aurora Drift',
+ lede:'No literal scene at all: four blurred colour bodies from the brand ramp drift through each other behind a film of grain, so the fill is never the same twice. Abstract, slow, premium.',
+ pros:['Never repeats and never resolves into a picture, so it does not get stale.',
+       'Pure brand colour — the strongest, most CTA-like fill of the ten.',
+       'Grain film kills gradient banding, which the current five-stop button has on wide screens.',
+       'Says nothing specific, so it survives copy changes and all 11 languages.'],
+ cons:['Says nothing specific — zero product meaning, unlike 01 or 02.',
+       'Four blurred layers animating forever is the heaviest paint cost here; blur is the expensive part.',
+       'Generic “AI startup” texture; close to what everyone ships.'],
+ inner:`<span class="scene"><span class="au"><i></i><i></i><i></i><i></i></span></span>
+        <span class="scene"><span class="grain"></span></span>`
+},
+{
+ id:'p6', name:'Render Reel',
+ lede:'Actual staged renders scroll slowly behind the label, held back by a heavy scrim so only the colour and rhythm come through. Hovering speeds the reel up and lifts the veil.',
+ pros:['The background is <b>real output</b>, not an abstraction — the most honest proof on the page.',
+       'Hover-to-accelerate is a rare, genuinely pleasing feedback: the button responds like a dial.',
+       'Reuses assets you already ship; no new artwork to design.'],
+ cons:['Real photos need real bytes — this is the only option that adds image requests to the LCP path.',
+       'Motion behind text is the classic legibility trap; the scrim that fixes it also hides the photos.',
+       'A moving strip next to the hero’s own picker makes the top of the page busy.'],
+ inner:`<span class="scene"><span class="reel">
+          <span class="r-a"></span><span class="r-b"></span><span class="r-c"></span><span class="r-d"></span><span class="r-e"></span>
+          <span class="r-a"></span><span class="r-b"></span><span class="r-c"></span><span class="r-d"></span><span class="r-e"></span>
+        </span></span>
+        <span class="scene"><span class="fade"></span></span>`
+},
+{
+ id:'p7', name:'Constellation',
+ lede:'Drifting points joined by thin lines; the cursor pulls the nearest nodes toward it, and a click fires a shockwave that scatters them before they settle back.',
+ pros:['The most <b>satisfying to click</b> by a distance — the press has a physical consequence, not just a colour change.',
+       'Cursor attraction makes it feel responsive before the click, which is what “interesting” usually means.',
+       'Scales to any plate width with no art direction.'],
+ cons:['Needs a <code>&lt;canvas&gt;</code> and a JS loop on the home page’s critical path — the one thing this repo has been optimising away.',
+       'Network-graph particles are a decade-old look and carry no staging meaning.',
+       'An always-running rAF loop above the fold will show in your LCP and INP numbers.'],
+ inner:`<canvas></canvas>`, canvas:true
+},
+{
+ id:'p8', name:'Liquid Sheen',
+ lede:'Metaball blobs merge and split under a gooey filter while a specular highlight tracks your cursor across the surface, like light on wet glass.',
+ pros:['Best-in-class hover feel: the sheen makes the plate feel like a lit physical object.',
+       'The merge/split of the blobs is organic and slow — pleasant, not attention-grabbing.',
+       'Cursor tracking is 4 lines of JS and no canvas.'],
+ cons:['<code>filter: blur + contrast</code> for the goo is GPU-heavy and renders inconsistently in Safari.',
+       'Zero relationship to interiors — could be a button on any SaaS site.',
+       'Sheen is mouse-only; on a phone you get blobs and nothing else.'],
+ inner:`<span class="scene"><span class="blob"><i></i><i></i><i></i></span></span>
+        <span class="scene"><span class="sheen"></span></span>`, track:true
+},
+{
+ id:'p9', name:'Window Depth',
+ lede:'Four stacked layers — sky, window light, room grid, furniture — that parallax against each other as the cursor moves, so the button has depth you can look into. A warm light beam crosses on hover.',
+ pros:['Depth from cursor movement is the most premium-feeling effect here and it never plays on its own.',
+       'Warm light versus cool room is exactly the interior-photography language the site sells.',
+       'Four flat gradient layers: cheap to paint, no blur, no canvas.'],
+ cons:['Pointer-only. On touch it is a static, slightly murky navy plate — the weakest still frame of the ten.',
+       'The warm cast pulls the fill away from the brand blue, weakening the tie to the Stagify+ plate.',
+       'Small transforms on hover need a <code>will-change</code> or it judders on low-end hardware.'],
+ inner:`<span class="scene"><span class="lay l-sky" data-d="4"></span></span>
+        <span class="scene"><span class="lay l-win" data-d="9"></span></span>
+        <span class="scene"><span class="lay l-room" data-d="15"></span></span>
+        <span class="scene"><span class="lay l-fur" data-d="24"></span></span>
+        <span class="scene"><span class="beamlight"></span></span>`, tilt:true
+},
+{
+ id:'p10', name:'Pixel Flip',
+ lede:'A 18×5 mosaic of the empty room. Hover and it flips to staged blue in a diagonal wave, tile by tile; click and the wave restarts from the point you pressed.',
+ pros:['The click actually <b>originates where you clicked</b> — the single most satisfying detail in this whole round.',
+       'Same empty→staged story as 02, but in the plate’s own pixel language rather than a photo pastiche.',
+       'Ninety divs and two transitions: no canvas, no filters, no images.'],
+ cons:['Ninety elements per button, and a second copy of it exists on the outro CTA.',
+       'Tile grid reads as “loading skeleton” to some people — the opposite of finished.',
+       'Beige resting state has the same contrast problem as 02.'],
+ inner:`<span class="scene"><span class="px"></span></span><span class="scene"><span class="veil"></span></span>`, pixels:true
+}
+];
+
+const jump=document.getElementById('jump'), wrap=document.getElementById('variants');
+V.forEach((v,i)=>{
+  jump.insertAdjacentHTML('beforeend',`<a href="#${v.id}">${String(i+1).padStart(2,'0')} ${v.name}</a>`);
+  wrap.insertAdjacentHTML('beforeend',`
+  <section class="canvas" id="${v.id}">
+    <div class="cap">
+      <span class="n">${String(i+1).padStart(2,'0')}</span><h2>${v.name}</h2>
+      <p class="lede">${v.lede}</p>
+      <div class="pc">
+        <ul class="pro"><h4>Pros</h4>${v.pros.map(p=>`<li>${p}</li>`).join('')}</ul>
+        <ul class="con"><h4>Cons</h4>${v.cons.map(p=>`<li>${p}</li>`).join('')}</ul>
+      </div>
+    </div>
+    <div class="hero">
+      <div class="shot"></div>
+      <div class="scrim">
+        <div>
+          <p class="eyebrow">Free virtual staging</p>
+          <h3 class="sentence">Stage this <u>bedroom</u> in <u>Modern</u></h3>
+          <button class="plate ${v.id}" type="button">${v.inner}${LBL}</button>
+          <p class="freeline">3 free generations left today · <a href="#${v.id}">Try Stagify+</a></p>
+        </div>
+        <div class="side">
+          <div class="stat"><b>36</b><span>room × style pairs</span></div>
+          <div class="stat"><b>11</b><span>languages</span></div>
+        </div>
+      </div>
+    </div>
+    <p class="note">Hover the plate, then click it. Geometry, label, lift and ripple are identical to every other variant — only the scene differs.</p>
+  </section>`);
+});
+
+/* ---------- shared: click ripple ---------- */
+document.querySelectorAll('.plate').forEach(b=>{
+  b.addEventListener('pointerdown',e=>{
+    const r=b.getBoundingClientRect(), d=Math.max(r.width,r.height)*2.1;
+    const s=document.createElement('span');
+    s.className='ripple'; s.style.width=s.style.height=d+'px';
+    s.style.left=(e.clientX-r.left)+'px'; s.style.top=(e.clientY-r.top)+'px';
+    b.appendChild(s); setTimeout(()=>s.remove(),640);
+  });
+});
+
+/* ---------- 07 constellation ---------- */
+(function(){
+  const host=document.querySelector('.p7 canvas'); if(!host) return;
+  const ctx=host.getContext('2d'); let W=0,H=0,pts=[],mouse={x:-999,y:-999};
+  function size(){const r=host.getBoundingClientRect();W=host.width=r.width*2;H=host.height=r.height*2;}
+  function init(){size();pts=Array.from({length:34},()=>({
+    x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.35,vy:(Math.random()-.5)*.35}));}
+  init(); window.addEventListener('resize',init);
+  const plate=document.querySelector('.p7');
+  plate.addEventListener('pointermove',e=>{const r=host.getBoundingClientRect();
+    mouse.x=(e.clientX-r.left)*2; mouse.y=(e.clientY-r.top)*2;});
+  plate.addEventListener('pointerleave',()=>{mouse.x=mouse.y=-999;});
+  plate.addEventListener('pointerdown',e=>{const r=host.getBoundingClientRect();
+    const cx=(e.clientX-r.left)*2, cy=(e.clientY-r.top)*2;
+    pts.forEach(p=>{const dx=p.x-cx,dy=p.y-cy,d=Math.hypot(dx,dy)||1;
+      if(d<260){p.vx+=dx/d*6;p.vy+=dy/d*6;}});});
+  (function loop(){
+    ctx.clearRect(0,0,W,H);
+    pts.forEach(p=>{
+      const dx=mouse.x-p.x,dy=mouse.y-p.y,d=Math.hypot(dx,dy);
+      if(d<180){p.vx+=dx/d*.12;p.vy+=dy/d*.12;}
+      p.vx*=.95;p.vy*=.95;p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0||p.x>W)p.vx*=-1; if(p.y<0||p.y>H)p.vy*=-1;
+      p.x=Math.max(0,Math.min(W,p.x));p.y=Math.max(0,Math.min(H,p.y));
+    });
+    for(let i=0;i<pts.length;i++){
+      for(let j=i+1;j<pts.length;j++){
+        const a=pts[i],b=pts[j],d=Math.hypot(a.x-b.x,a.y-b.y);
+        if(d<120){ctx.strokeStyle='rgba(190,220,255,'+(1-d/120)*.5+')';ctx.lineWidth=1.4;
+          ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();}
+      }
+      ctx.fillStyle='rgba(255,255,255,.75)';ctx.beginPath();ctx.arc(pts[i].x,pts[i].y,2.4,0,7);ctx.fill();
+    }
+    requestAnimationFrame(loop);
+  })();
+})();
+
+/* ---------- 08 sheen tracking ---------- */
+(function(){
+  const p=document.querySelector('.p8'); if(!p) return;
+  p.addEventListener('pointermove',e=>{const r=p.getBoundingClientRect();
+    p.style.setProperty('--mx',(e.clientX-r.left)+'px');
+    p.style.setProperty('--my',(e.clientY-r.top)+'px');});
+})();
+
+/* ---------- 09 parallax ---------- */
+(function(){
+  const p=document.querySelector('.p9'); if(!p) return;
+  const lays=[...p.querySelectorAll('.lay')];
+  p.addEventListener('pointermove',e=>{const r=p.getBoundingClientRect();
+    const nx=(e.clientX-r.left)/r.width-.5, ny=(e.clientY-r.top)/r.height-.5;
+    lays.forEach(l=>{const d=+l.dataset.d;
+      l.style.transform=`translate(${-nx*d}px, ${-ny*d*.5}px)`;});});
+  p.addEventListener('pointerleave',()=>lays.forEach(l=>l.style.transform=''));
+})();
+
+/* ---------- 10 pixel flip ---------- */
+(function(){
+  const p=document.querySelector('.p10'); if(!p) return;
+  const grid=p.querySelector('.px'), COLS=18, ROWS=5;
+  for(let i=0;i<COLS*ROWS;i++) grid.appendChild(document.createElement('i'));
+  const cells=[...grid.children];
+  function wave(cx,cy){
+    cells.forEach((c,i)=>{
+      const x=i%COLS, y=(i/COLS)|0;
+      const d=Math.hypot(x-cx,(y-cy)*1.8);
+      c.classList.remove('lit');
+      setTimeout(()=>{c.classList.add('lit');setTimeout(()=>c.classList.remove('lit'),260);}, d*34);
+    });
+  }
+  p.addEventListener('pointerenter',()=>wave(0,2));
+  p.addEventListener('pointerdown',e=>{const r=grid.getBoundingClientRect();
+    wave(((e.clientX-r.left)/r.width)*COLS, ((e.clientY-r.top)/r.height)*ROWS);});
+})();
+</script>
+</body>
+</html>

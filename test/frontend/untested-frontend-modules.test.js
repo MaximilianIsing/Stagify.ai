@@ -192,6 +192,12 @@ const BLOCKED_CLASSIC = [
   'faq-redirect.js',
   'gallery-gate.js',
   'gtag.js',
+  // The hero's pre-paint pick restore. Behaviourally covered by
+  // test/frontend/hero-restore.test.js on the same `new Function` harness as the gates
+  // here; listed only because an IIFE with no exports is not something node can import,
+  // and it has to stay an IIFE — a module runs after parsing, which is the flash it exists
+  // to remove.
+  'hero-restore.js',
   // The shared reshaping gate, behaviourally covered by test/frontend/preview-gate.test.js
   // on the same `new Function` harness. Two entries used to sit beside it and are DELETED,
   // not delisted for coverage: `masking-studio-gate.js`, because that page became a public

@@ -2172,7 +2172,6 @@
     "plan": {
       "hintAccountFirst": "请先创建免费账户，这样您的订阅才能与您关联。",
       "hintTip": "提示：请先从个人资料菜单登录，以便结账时将付款与您的 Stagify 账户关联。",
-      "hintStagingDisabled": "预发布站点已停用订阅功能。",
       "billedMonthly": "按月计费 · 随时取消",
       "perMonth": "/ 月",
       "trialPill": "先免费试用 7 天",

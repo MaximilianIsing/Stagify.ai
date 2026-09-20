@@ -2172,7 +2172,6 @@
     "plan": {
       "hintAccountFirst": "Créez d’abord un compte gratuit : c’est ainsi que votre abonnement est lié à vous.",
       "hintTip": "Astuce : connectez-vous d’abord via le menu profil pour que le paiement puisse être lié à votre compte Stagify.",
-      "hintStagingDisabled": "Les abonnements sont désactivés sur le site de préproduction.",
       "billedMonthly": "Facturation mensuelle · Annulable à tout moment",
       "perMonth": "/ mois",
       "trialPill": "Commencez avec 7 jours gratuits",

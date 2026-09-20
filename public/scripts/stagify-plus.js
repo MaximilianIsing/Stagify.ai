@@ -130,6 +130,7 @@ export function applyStripeCheckout(user) {
     link.removeAttribute('role');
     link.setAttribute('tabindex', '-1');
     link.setAttribute('aria-disabled', 'true');
+    link.classList.remove('sp-gradient-checkout-btn--inert');
     link.classList.add('sp-gradient-checkout-btn--subscribed');
     link.innerHTML = '<strong>' + t('stagifyPlus.plan.subscribed', 'Subscribed ✓') + '</strong>';
     if (hint) {
@@ -147,7 +148,14 @@ export function applyStripeCheckout(user) {
     return;
   }
 
-  // Staging site: block the subscribe button — no real Stripe checkout.
+  // Staging site: block the subscribe button — no real Stripe checkout. The label
+  // is the only tell; there is deliberately no explanatory paragraph, because staging
+  // is meant to read as the live page. For the same reason the button gets --inert
+  // (cursor only) and NOT --subscribed: that class means "this viewer is Stagify+"
+  // to scripts/stagify-plus-blackhole.js, which pins the black hole to zero for it.
+  // A staging visitor who is not Stagify+ should still get the effect — and a staging
+  // visitor who IS returned from the plan === 'pro' branch above, before reaching here.
+  // The remove() is for a re-render after that branch ran (sign-out, languagechange).
   if (IS_STAGING) {
     link.removeAttribute('href');
     link.removeAttribute('target');
@@ -155,11 +163,12 @@ export function applyStripeCheckout(user) {
     link.removeAttribute('role');
     link.setAttribute('tabindex', '-1');
     link.setAttribute('aria-disabled', 'true');
-    link.classList.add('sp-gradient-checkout-btn--subscribed');
+    link.classList.remove('sp-gradient-checkout-btn--subscribed');
+    link.classList.add('sp-gradient-checkout-btn--inert');
     link.innerHTML = '<strong>' + t('stagifyPlus.plan.unavailableStaging', 'Unavailable on staging') + '</strong>';
     if (hint) {
-      hint.textContent = t('stagifyPlus.plan.hintStagingDisabled', 'Subscriptions are disabled on the staging site.');
-      hint.classList.remove('hidden');
+      hint.textContent = '';
+      hint.classList.add('hidden');
     }
     if (manageWrap) manageWrap.classList.add('hidden');
     return;
@@ -168,6 +177,7 @@ export function applyStripeCheckout(user) {
   link.removeAttribute('tabindex');
   link.removeAttribute('aria-disabled');
   link.classList.remove('sp-gradient-checkout-btn--subscribed');
+  link.classList.remove('sp-gradient-checkout-btn--inert');
   link.innerHTML = '<strong>' + t('stagifyPlus.plan.startTrial', 'Start free trial') + '</strong>';
 
   var signedIn = !!(user && user.id);

@@ -24,11 +24,20 @@
  * markup ships the default sentence and the default photo. All that is lost is the ability
  * to change them.
  *
- * IT REMEMBERS THE VISITOR'S PICK across visits (see STORE_KEY below). That is a real cost
- * to the LCP work above and it is worth being honest about it: a returning visitor whose
- * pick is not the default pays for two images on the first paint, and their LCP is the
- * second one. The markup cannot ship their pick instead, because index.html is one static
- * file served to everyone and cached as such.
+ * IT REMEMBERS THE VISITOR'S PICK across visits (see STORE_KEY below), and that pick is
+ * applied to the markup's <img> BEFORE THE FIRST PAINT, by scripts/hero-restore.js — a
+ * classic parser-blocking script sitting next to the element, because this file is a module
+ * and a module runs too late for it. Without it a returning visitor watched the default
+ * photo paint and then cross-fade into theirs, which is the flash that file removes.
+ *
+ * The cost is still real and still worth being honest about: index.html is one static file
+ * served to everyone, so the <head> preload is always the default pair, and a returning
+ * visitor whose pick is not the default does fetch two images. What changed is which one
+ * they see — only their own is ever painted, and it is their LCP.
+ *
+ * This file adopts whatever hero-restore.js left on the node (data-hp-restored below) rather
+ * than assuming the default is on screen; when it isn't there, the restore happens here as
+ * it always did.
  */
 
 /* Room types, in menu order. The keys are the ones lib/staging/promptMatrix.js uses, and
@@ -207,6 +216,24 @@ function addedFor(r, s) {
 
 const byKey = (list, key) => list.find((x) => x.key === key) || list[0];
 
+/**
+ * The pair a "<style>-<room>" key names, or null if either half is no longer a thing.
+ *
+ * The key is the image basename, which is also the cache key below and the value
+ * scripts/hero-restore.js leaves on the adopted <img>. Style slugs are single words, so the
+ * first segment is the style and everything after it is the room ("living-room"). Like
+ * readStored(), an unrecognised half means null rather than a fallback: a rename must read
+ * as "no pair", not as a different pair.
+ * @param {string|null} key
+ * @returns {{room: object, style: object}|null}
+ */
+function pairFromKey(key) {
+  const [styleSlug, ...roomParts] = String(key || '').split('-');
+  const style = STYLES.find((x) => x.slug === styleSlug);
+  const room = ROOMS.find((x) => x.slug === roomParts.join('-'));
+  return style && room ? { room, style } : null;
+}
+
 /* ------------------------------------------------------------------- remembering */
 
 /* Where the last pick is kept. localStorage rather than a cookie because nothing here needs
@@ -214,6 +241,13 @@ const byKey = (list, key) => list.find((x) => x.key === key) || list[0];
  * visitor. Only the two selections are stored; "See original" is a way of looking at the
  * current pick, not part of it, so it always starts off. */
 const STORE_KEY = 'heroPick';
+
+/* The same pick, denormalized to the image basename ("coastal-living-room"), for
+ * scripts/hero-restore.js. That file runs before the first paint and must stay free of the
+ * ROOMS/STYLES tables above — a second hand-written copy of the slugs is precisely how they
+ * drift — so the slug arithmetic is done here, where the tables are, and it only reads the
+ * answer. Nothing in THIS file ever reads it back: STORE_KEY remains the pick of record. */
+const IMG_KEY = 'heroPickImg';
 
 /**
  * The remembered pair, or null if there isn't one.
@@ -247,6 +281,7 @@ function readStored() {
 function remember(r, s) {
   try {
     window.localStorage.setItem(STORE_KEY, s.key + '|' + r.key);
+    window.localStorage.setItem(IMG_KEY, s.slug + '-' + r.slug);
   } catch { /* remembering is a nicety, never a requirement */ }
 }
 
@@ -279,19 +314,36 @@ function initHeroPicker() {
     : null;
   if (!roomMenu || !styleMenu || !roomList || !styleList || !roomLabel || !styleLabel) return;
 
+  /* WHAT IS ACTUALLY ON THE NODE, which is not always the default pair. scripts/hero-restore.js
+     repoints this <img> at the visitor's remembered pair before the first paint; when it has,
+     it says so here, and that pair is the one being adopted. Absent (first visit, no storage,
+     a rejected value, a 404 that reverted) this is null and the markup's default stands. */
+  const restored = pairFromKey(baseImg.getAttribute('data-hp-restored'));
+
+  /* The SELECTION still starts at the default. What hero-restore.js left is a fact about the
+     photo, not a pick: it knows one basename and nothing about what a valid pick is, so a
+     stale IMG_KEY (a dropped room type, storage cleared half-way) can put a pair on screen
+     that readStored() will not have. The pick of record decides below, and the photo is made
+     to agree with it. */
   let room = byKey(ROOMS, DEFAULT_ROOM);
   let style = byKey(STYLES, DEFAULT_STYLE);
   let showingOriginal = false;
   let originalImg = null;
   let menusBuilt = false;
 
-  /* The static LCP node is the first entry in the cache, so the default pair is never
-     re-fetched and never re-created. Everything else is added on demand. */
-  const cache = { [DEFAULT_STYLE + '-' + DEFAULT_ROOM]: baseImg };
+  /* The static LCP node is the first entry in the cache, so the pair it is showing is never
+     re-fetched and never re-created. Everything else is added on demand.
+     SEEDED UNDER THE PAIR IT REALLY HOLDS, not under the default: with hero-restore.js in
+     front of this, the two differ for a returning visitor, and a key that lied would hand
+     back a coastal living room the next time someone picked Modern bedroom. */
+  const cache = {};
 
   const base = (r, s) => DIR + s.slug + '-' + r.slug;
   const src = (r, s) => base(r, s) + '.webp';
   const pairKey = (r, s) => s.slug + '-' + r.slug;
+
+  const adoptedKey = restored ? pairKey(restored.room, restored.style) : pairKey(room, style);
+  cache[adoptedKey] = baseImg;
 
   /**
    * Point an <img> at a pair, as two candidates rather than one file.
@@ -670,6 +722,21 @@ function initHeroPicker() {
     fitPending = window.requestAnimationFrame(() => { fitPending = 0; fitSentence(); });
   }, { passive: true });
 
+  /**
+   * Tell the rest of the page which furniture style is showing.
+   *
+   * scripts/hero-van.js redraws #hero-upload's street for the style (a different house per
+   * style) and has no way to import this file's state — this file has no imports and must
+   * not be imported into app.js's graph. So the pick is published twice: as `data-hp-style`
+   * on the stage, which hero-van.js reads when it mounts after `load` (long after this ran),
+   * and as a `stagify:hero-style` event on document for every change after that. Room is
+   * not published; the street does not depend on it.
+   */
+  function publishStyle() {
+    stage.setAttribute('data-hp-style', style.key);
+    document.dispatchEvent(new CustomEvent('stagify:hero-style', { detail: { style: style.key } }));
+  }
+
   function pick(which, item) {
     if (which === 'room') room = item; else style = item;
     if (showingOriginal) toggleOriginal(false);
@@ -678,6 +745,7 @@ function initHeroPicker() {
     paintAdded();
     show(room, style);
     buildMenus();
+    publishStyle();
   }
 
   /* ------------------------------------------------------------ open / close / keys */
@@ -868,10 +936,8 @@ function initHeroPicker() {
        in the language it was created under. Walking the cache fixes both, and the key is the
        pair, so nothing has to be looked up. */
     Object.keys(cache).forEach((k) => {
-      const [styleSlug, ...roomParts] = k.split('-');
-      const st = STYLES.find((x) => x.slug === styleSlug);
-      const rm = ROOMS.find((x) => x.slug === roomParts.join('-'));
-      if (st && rm) cache[k].alt = altFor(rm, st);
+      const pair = pairFromKey(k);
+      if (pair) cache[k].alt = altFor(pair.room, pair.style);
     });
     if (originalImg) originalImg.alt = t('hero.originalAlt');
     if (menusBuilt) buildMenus();
@@ -904,10 +970,16 @@ function initHeroPicker() {
   baseImg.classList.add('is-on');
   stage.setAttribute('data-hp-adopted', '');
 
-  /* Restore the last visit's pick, if there was one and it isn't already what the markup
-     shipped. This runs before the prefetch below so the row that gets warmed is the row the
-     visitor is actually looking at, and it goes through show() like any other change, so the
-     default photo stays on screen until the remembered one has decoded.
+  /* Restore the last visit's pick. Usually there is nothing left to do to the PHOTO: if
+     hero-restore.js got there first, the remembered pair is already on screen, painted, and
+     already the cache entry for itself — this only has to agree with it. The work that is
+     always ours is the sentence, because the markup ships the default words.
+
+     Storage is still read here rather than trusted from the node. hero-restore.js knows one
+     basename and nothing about what a valid pick is; readStored() validates both halves
+     against the current lists, and the two can disagree (storage cleared between them, a
+     stale IMG_KEY, a revert after a 404). The pick of record wins, and show() below covers
+     the gap when it does.
 
      On a localized URL the two restored words are written in English for the moment it takes
      the language pack to land, because the pack is fetched in <head> and this runs at the end
@@ -916,18 +988,49 @@ function initHeroPicker() {
      trades available: the alternative is holding the sentence at "bedroom"/"Modern" while the
      photo changes underneath it, which reads as a bug rather than as a page still arriving. */
   const stored = readStored();
-  if (stored && (stored.room !== room || stored.style !== style)) {
+  if (stored) {
     room = stored.room;
     style = stored.style;
+    /* Rewritten on every restore, not only when it is missing: it costs one setItem and it
+       is what gives a visitor who last picked before hero-restore.js shipped their IMG_KEY.
+       They pay the old flash once, on this visit, and never again. */
+    remember(room, style);
+  } else if (restored) {
+    /* A photo with no pick behind it: IMG_KEY outlived STORE_KEY, or the pick it belongs to
+       names a room or style this build no longer offers. The selection stays the default and
+       the photo is put back below, so drop the value rather than restoring it again tomorrow. */
+    try { window.localStorage.removeItem(IMG_KEY); } catch { /* nothing to do about it */ }
+  }
+
+  /* The alt describes the PIXELS, so it follows the node's own pair even when that pair is
+     about to be replaced below — hero-restore.js changes pixels, not prose, so what is there
+     is still the markup's "A bedroom virtually staged in a modern style". */
+  if (restored) baseImg.alt = altFor(restored.room, restored.style);
+
+  if (room !== byKey(ROOMS, DEFAULT_ROOM) || style !== byKey(STYLES, DEFAULT_STYLE)) {
     paintSentence();
     paintAdded();
+  }
+
+  if (pairKey(room, style) !== adoptedKey) {
+    /* Either nothing was pre-restored, or the pick of record disagrees with what was. Either
+       way the photo on screen is not the selected one, so it goes through show() like any
+       other change: what already painted stays up until the right one has decoded. */
     show(room, style, true);
+  } else if (restored) {
+    /* Nothing to fetch — the pre-restored photo IS the selection, which is the whole point
+       of hero-restore.js. Say so, since nothing else in this path will. */
+    announce(baseImg.alt);
   }
 
   /* After the restore, so the one measurement covers the labels actually on screen. The size
      does not depend on the pick, but the `is-fitted` class does have to land before the first
      paint of the adopted hero or the sentence wraps for a frame and the CTA under it jumps. */
   fitSentence();
+
+  /* After the restore, so the stage carries the pick of record (not the markup's default)
+     by the time hero-van.js reads it. */
+  publishStyle();
 
   if ('requestIdleCallback' in window) {
     /** @type {any} */ (window).requestIdleCallback(prefetchRow);

@@ -1,17 +1,33 @@
-      // Black-hole subscribe button — REAL gravitational lensing. A full-viewport
-      // WebGL canvas (just above the background video, below all content) samples
-      // the live background video as a texture and bends it around the button:
-      // radial deflection + frame-dragging swirl + a dark event horizon, photon
-      // ring and accretion shimmer. Because the displacement fades to zero with
-      // distance and the canvas spans the whole viewport, the warp extends well
-      // beyond the card with no clip edge. PC only; off on touch/reduced-motion/
+      // Black-hole subscribe button — REAL gravitational lensing. A WebGL canvas
+      // (just above the background video, below all content) samples the live
+      // background video as a texture and bends it around the button: radial
+      // deflection + frame-dragging swirl + a dark event horizon, photon ring and
+      // accretion shimmer. Because the displacement fades to zero with distance and
+      // the canvas reaches ~600px past the button on every side, the warp extends
+      // well beyond the card with no clip edge. PC only; off on touch/reduced-motion/
       // subscribed. The canvas only renders while the cursor is near the button.
+      //
+      // The canvas is a BAND inside <main>, the scroll container, not a fixed
+      // full-viewport layer, and that is load-bearing. <main> scrolls (styles.css:
+      // `body,main{overflow-y:auto}`), the window never does, and scrolling is applied
+      // by the compositor — so a fixed canvas had to chase the button with a
+      // getBoundingClientRect() read every frame and visibly trailed it whenever a
+      // frame landed late. Inside the scroller, layout carries the canvas and the
+      // button together: u_center is a same-frame rect DIFFERENCE, which is
+      // scroll-invariant, so a late frame can no longer detach the hole. The price is
+      // that the canvas is no longer viewport-aligned, so sampling the (still fixed)
+      // background video needs u_view + u_origin; a stale u_origin merely shifts the
+      // sampled background a few px inside a region that is a distortion of it anyway.
       (function () {
         var stage = document.getElementById('bh-stage');
         var btn = document.getElementById('stagify-plus-checkout-link');
         var canvas = /** @type {HTMLCanvasElement} */ (document.getElementById('bh-canvas'));
         var video = /** @type {HTMLVideoElement} */ (document.getElementById('background-video'));
-        if (!stage || !btn || !canvas) return;
+        // The scrollport the canvas lives in, and the content box used to clamp the
+        // band so it never adds scrollable height past the end of the page.
+        var scroller = /** @type {HTMLElement} */ (document.querySelector('main.sp-page'));
+        var inner = /** @type {HTMLElement} */ (document.querySelector('.sp-page__inner'));
+        if (!stage || !btn || !canvas || !scroller || !inner) return;
         var canHover = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
         var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         var isMobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
@@ -19,30 +35,36 @@
 
         var MAX = 420;            // px from button center where the warp begins
         var BASE_RS = 70;         // event-horizon radius in CSS px
-        var target = 0, cur = 0, running = false, lastPointer = null;
+        var BAND_H = 1300;        // canvas height in CSS px — keep in sync with stagify-plus.css
+        var target = 0, cur = 0, running = false, lastPointer = null, lastTop = -1;
         var dpr = Math.min(window.devicePixelRatio || 1, 2);
         var t0 = performance.now();
 
         var gl = null, prog = null, tex = null;
-        var uRes, uVid, uCenter, uRs, uAmt, uTime, uTex;
+        var uRes, uVid, uView, uOrigin, uCenter, uRs, uAmt, uTime, uTex;
 
         var VERT = 'attribute vec2 a_pos; void main(){ gl_Position = vec4(a_pos, 0.0, 1.0); }';
         var FRAG = [
           'precision highp float;',
-          'uniform vec2 u_res;',     // canvas device px
+          'uniform vec2 u_res;',     // canvas device px (gl_FragCoord space)
           'uniform vec2 u_vid;',     // video intrinsic px
-          'uniform vec2 u_center;',  // hole center, device px, top-left origin
+          'uniform vec2 u_view;',    // viewport device px — the fixed video's box
+          'uniform vec2 u_origin;',  // canvas top-left in viewport device px (can be negative)
+          'uniform vec2 u_center;',  // hole center, canvas device px, top-left origin
           'uniform float u_rs;',     // event-horizon radius, device px
           'uniform float u_amt;',
           'uniform float u_time;',
           'uniform sampler2D u_tex;',
           'const vec3 BG = vec3(0.698, 0.769, 0.965);', // #b2c4f6, matches page bg
-          // object-fit:cover mapping from a top-left viewport pixel to video UV
+          // object-fit:cover mapping from a top-left CANVAS pixel to video UV. The
+          // video is position:fixed at 100%/100% of the viewport, so the canvas-local
+          // coordinate has to be lifted into viewport space first — that is u_origin.
           'vec2 coverUV(vec2 fragTL){',
-          '  float s = max(u_res.x/u_vid.x, u_res.y/u_vid.y);',
+          '  vec2 p = fragTL + u_origin;',
+          '  float s = max(u_view.x/u_vid.x, u_view.y/u_vid.y);',
           '  vec2 disp = u_vid * s;',
-          '  vec2 off = (u_res - disp) * 0.5;',
-          '  return (fragTL - off) / disp;',
+          '  vec2 off = (u_view - disp) * 0.5;',
+          '  return (p - off) / disp;',
           '}',
           'vec3 bgAt(vec2 fragTL){',
           '  vec2 uv = clamp(coverUV(fragTL), 0.0, 1.0);',
@@ -119,6 +141,8 @@
           gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
           uRes = gl.getUniformLocation(prog, 'u_res');
           uVid = gl.getUniformLocation(prog, 'u_vid');
+          uView = gl.getUniformLocation(prog, 'u_view');
+          uOrigin = gl.getUniformLocation(prog, 'u_origin');
           uCenter = gl.getUniformLocation(prog, 'u_center');
           uRs = gl.getUniformLocation(prog, 'u_rs');
           uAmt = gl.getUniformLocation(prog, 'u_amt');
@@ -141,16 +165,37 @@
         }
         function resize() {
           if (!gl) return;
-          var w = Math.max(1, Math.round(window.innerWidth * dpr));
-          var h = Math.max(1, Math.round(window.innerHeight * dpr));
+          // Size from the canvas, not the window — it is a band inside <main> now.
+          // clientWidth is 0 while the element is display:none, which is the case for
+          // the resize() inside initGL(); tick() flips it to block before the first
+          // render(), so the first real frame sizes correctly.
+          if (!canvas.clientWidth || !canvas.clientHeight) return;
+          var w = Math.max(1, Math.round(canvas.clientWidth * dpr));
+          var h = Math.max(1, Math.round(canvas.clientHeight * dpr));
           if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
           gl.viewport(0, 0, canvas.width, canvas.height);
+        }
+        // Centre the band on the CTA, in CONTENT space. That coordinate does not change
+        // while scrolling, so the guard below means no style write and no layout
+        // invalidation during a scroll — while a card that moves for other reasons (the
+        // .sp-hint--pending removal after /api/auth/me, a language switch, a font load,
+        // a resize) is picked up on the next frame without any observer.
+        // The clamp is what stops a band hanging past the last content from adding
+        // scrollable height; it only trims reach where the effect's alpha is already 0.
+        function placeBand() {
+          var sr = stage.getBoundingClientRect();
+          var mr = scroller.getBoundingClientRect();
+          var stageMid = (sr.top - mr.top) + scroller.scrollTop + sr.height / 2;
+          var maxTop = Math.max(0, inner.offsetTop + inner.offsetHeight - BAND_H);
+          var top = Math.min(maxTop, Math.max(0, Math.round(stageMid - BAND_H / 2)));
+          if (top !== lastTop) { lastTop = top; canvas.style.top = top + 'px'; }
         }
         function vidReady() {
           return video && video.readyState >= 2 && video.videoWidth > 0;
         }
         function render(amt) {
           if (!gl) return;
+          placeBand();
           resize();
           gl.useProgram(prog);
           gl.activeTexture(gl.TEXTURE0);
@@ -158,10 +203,17 @@
           if (vidReady()) {
             try { gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video); } catch (e) {}
           }
+          // Both rects are read in the same frame and only their DIFFERENCE is used,
+          // which is invariant under scrolling — the fix for the hole trailing the
+          // button. u_origin is the one value that can be a frame stale, and it only
+          // shifts the sampled background inside the lens.
           var rb = btn.getBoundingClientRect();
+          var rc = canvas.getBoundingClientRect();
           gl.uniform2f(uRes, canvas.width, canvas.height);
           gl.uniform2f(uVid, vidReady() ? video.videoWidth : 16, vidReady() ? video.videoHeight : 9);
-          gl.uniform2f(uCenter, (rb.left + rb.width / 2) * dpr, (rb.top + rb.height / 2) * dpr);
+          gl.uniform2f(uView, window.innerWidth * dpr, window.innerHeight * dpr);
+          gl.uniform2f(uOrigin, rc.left * dpr, rc.top * dpr);
+          gl.uniform2f(uCenter, (rb.left + rb.width / 2 - rc.left) * dpr, (rb.top + rb.height / 2 - rc.top) * dpr);
           gl.uniform1f(uRs, BASE_RS * dpr);
           gl.uniform1f(uAmt, amt);
           gl.uniform1f(uTime, (performance.now() - t0) * 0.001);
@@ -205,6 +257,11 @@
           ensure();
         }, { passive: true });
         document.addEventListener('mouseleave', function () { lastPointer = null; target = 0; ensure(); });
+        // <main> is the scroller, so this never fires on window. lastPointer is in
+        // client coordinates and stays valid as the page moves under a still cursor:
+        // without this the effect held whatever intensity it had while the CTA scrolled
+        // away, and a loop that had decayed to zero stayed asleep until the mouse moved.
+        scroller.addEventListener('scroll', function () { updateTarget(); ensure(); }, { passive: true });
         window.addEventListener('resize', function () { if (hasGL && running) { resize(); render(cur); } });
       })();
 

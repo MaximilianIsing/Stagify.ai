@@ -11,7 +11,7 @@ node scripts/build-blog-covers.js --cover=cover-10 --lang=es   # one, while iter
 
 ## What this solves
 
-Eight of the fifteen blog covers have English words burned into the picture. Served unchanged
+Nine of the sixteen blog covers have English words burned into the picture. Served unchanged
 under `/es/blog/…` they put English type on the most widely-seen asset the article has — the
 `og:image` a reader meets in a Slack unfurl or a search result *before* the page itself. The
 script repaints those regions and redraws the type per language.
@@ -42,6 +42,13 @@ repainted. "Text inside the artwork" and "text on a flat plate that happens to s
 artwork" look identical at a glance and are completely different jobs.
 
 Seven covers are pure photography with no text, so there is nothing to localize.
+
+**cover-16** (`which-virtual-staging-style`) was authored for this pipeline rather than
+retro-fitted to it: a white header bar and a dark footer band, with the three photographs
+running edge to edge between them. Every plate is a whole bar, so none of them can touch a
+photograph however long a translation runs. Its three labels are the app's own
+`furnitureStyles.*` names, read out of `public/languages/<lang>.json` rather than written
+here, because they name options the reader has to find in the picker.
 
 ## How a recipe works
 

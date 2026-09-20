@@ -1,10 +1,10 @@
 {
   "_meta": {
-    "sourceHash": "sha256:187d5dafab0a91e44c4a414a091e4e320a4fce84a9f6b037903c6f2438dbdb43",
+    "sourceHash": "sha256:90f67dddc33524db8b141401d836a51d8e94ccab3730616f434ee848cfdf4513",
     "slug": null,
     "lang": "spanish",
     "hreflang": "es",
-    "translatedAt": "2026-09-17",
+    "translatedAt": "2026-09-20",
     "reviewed": false
   },
   "meta": {
@@ -16,6 +16,13 @@
     "body": "Guías prácticas sobre home staging virtual, la divulgación en el MLS y cómo comercializar tus inmuebles más rápido, para agentes, vendedores y fotógrafos."
   },
   "cards": {
+    "which-virtual-staging-style": {
+      "tag": "Guías",
+      "title": "Una habitación, siete estilos. Solo uno de ellos vende la casa.",
+      "excerpt": "Siete preajustes y la mayoría elige el que le gusta. En realidad, la arquitectura, el suelo, la luz y el comprador son quienes lo deciden, y cada uno de los siete tiene una forma específica de salir mal.",
+      "meta": "20 de septiembre de 2026 · 10 min de lectura",
+      "alt": "Tres fotografías del mismo salón vacío, amueblado de tres formas distintas sobre fondo oscuro: una versión Escandinava con un sofá gris pálido y una mesa de roble claro, una versión Cortijo con un sofá de lino, una alfombra de yute y una mesa de madera recuperada, y una versión Lujo con un sofá de terciopelo verde, una alfombra estampada, una mesa de mármol y una lámpara de araña de latón."
+    },
     "remove-furniture-from-listing-photos": {
       "tag": "Guías",
       "title": "Casi toda vivienda está habitada. Fotografíala igual.",

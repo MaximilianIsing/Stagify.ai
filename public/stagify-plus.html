@@ -216,11 +216,6 @@
     <video id="background-video" autoplay muted loop playsinline webkit-playsinline preload="metadata" poster="media-webp/background-poster.webp">
       <source src="background.mp4" type="video/mp4" media="(min-width: 769px)">
     </video>
-    <!-- Full-viewport WebGL gravitational lens: bends the live background video
-         around the subscribe button. Sits just above the video, below all content,
-         so the warp extends beyond the card with no clip edge. PC only. -->
-    <canvas id="bh-canvas" aria-hidden="true"></canvas>
-
     <header class="site-header">
       <nav class="nav">
         <a href="index.html" class="brand"><img src="media-webp/logo/Logo64x64.webp" data-lang-attr="navigation.logoAlt|alt" alt="Stagify.ai logo — go to homepage" class="brand-logo" fetchpriority="high"><span class="brand-strong" data-lang="navigation.brand">Stagify</span><span class="brand-light" data-lang="navigation.brandSuffix">.ai</span></a>
@@ -254,6 +249,23 @@
     </header>
 
     <main class="sp-page">
+      <!-- WebGL gravitational lens: bends the live background video around the
+           subscribe button. It lives HERE, inside <main>, and not next to the
+           <video> where it started, because <main> is the scroll container here
+           (styles.css: `body,main{overflow-y:auto}`) — the window never scrolls. A
+           position:fixed canvas therefore had to chase the button with a
+           getBoundingClientRect() read on every frame while the scroll offset was
+           applied by the compositor, so the hole visibly trailed the button. As an
+           absolutely positioned band inside the scroller it is carried by layout,
+           and the shader center comes from a same-frame rect DIFFERENCE, which is
+           scroll-invariant: a late frame can no longer detach the hole.
+           It cannot go inside .sp-plan.glass, because the backdrop-filter on that card both
+           creates a stacking context (the lens would paint ON TOP of the frosted
+           panel) and becomes the containing block for absolute descendants.
+           Not a flex item (abspos), so it does not disturb the column; before the
+           language picker in tree order so the z-index:5 on the picker still wins. PC only. -->
+      <canvas id="bh-canvas" aria-hidden="true"></canvas>
+
       <!-- Language Picker -->
       <div class="language-picker-container">
         <div class="language-selector">

@@ -4,6 +4,11 @@
       */
       body.page-stagify-plus main.sp-page {
         overflow-x: hidden;
+        /* Containing block for #bh-canvas, which is an absolutely positioned band
+           inside this scrollport so the lens is carried by layout instead of being
+           chased per frame. z-index stays auto, so this creates NO stacking context
+           and the canvas's z-index:-1 still joins the root's negative layer. */
+        position: relative;
       }
       /* The page palette. Declared on <body> rather than on .sp-page (which is <main>)
          because scripts/stagify-plus-tips.js portals its tooltip bubble out to
@@ -198,7 +203,7 @@
         position: relative;
         margin-top: 0.65rem;
         /* Was 30px, which read as a hole in the card. Nothing needed that much: the
-           lensing canvas is position:fixed over the whole viewport, and the proximity
+           lensing canvas is its own band inside the scroll container, and the proximity
            glow is a box-shadow this box never clips. What the padding IS for is the
            bh-shake keyframes, which scale the button to 1.07 — about 1.9px per side on
            a 53px button — plus a pixel of jitter. 4px is the floor that still covers
@@ -207,15 +212,22 @@
         display: flex;
         justify-content: center;
       }
-      /* Full-viewport WebGL gravitational lens. Fixed, just above the background
-         video (z-index -1) and below all page content, so the warp bends the live
-         background around the button and extends beyond the card with no clip. */
+      /* WebGL gravitational lens: a tall band inside the scroll container (<main>),
+         vertically centred on the CTA, so it scrolls natively with the button — see
+         the comment on the element in stagify-plus.html for why it is not fixed.
+         z-index:-1 puts it just above the background video and below all page
+         content, exactly as the fixed version did: <main> is not a stacking context,
+         so this joins the root's negative layer and the video, being an earlier child
+         of <body>, paints beneath it. width is 100% of <main>'s padding box, so the
+         band can never add horizontal overflow; `top` is written by the script every
+         time the CTA moves in content space, and is clamped there so the band cannot
+         add scrollable height at the bottom of the page either. */
       #bh-canvas {
-        position: fixed;
-        top: 0;
+        position: absolute;
+        top: 0; /* overwritten by placeBand() in scripts/stagify-plus-blackhole.js */
         left: 0;
         width: 100%;
-        height: 100%;
+        height: 1300px; /* BAND_H in scripts/stagify-plus-blackhole.js — keep in sync */
         z-index: -1;
         pointer-events: none;
         display: none;
@@ -329,6 +341,15 @@
         opacity: var(--bh, 0);
         transition: opacity 0.2s ease;
         z-index: 0;
+      }
+      /* Dead button that still looks and behaves alive: the staging site, where there
+         is no Stripe checkout to send anyone to. Deliberately NOT --subscribed, which
+         kills the animation, the glow and the ::after core — staging is meant to be a
+         faithful preview of the page, black hole included. Clicking is already a no-op
+         (no href, and needsAccount is false), and pointer-events must stay on because
+         the lens is cursor-driven. */
+      .sp-gradient-checkout-btn--inert {
+        cursor: default;
       }
       .sp-gradient-checkout-btn--subscribed,
       .sp-gradient-checkout-btn--subscribed:hover {

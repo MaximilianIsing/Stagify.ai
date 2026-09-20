@@ -80,5 +80,14 @@
     "headline": "Hun meubels gaan er eerst uit.",
     "captionLeft": "Originele foto",
     "captionRight": "Leeg, klaar om te stylen"
+  },
+  "cover-16": {
+    "eyebrow": "Meubelstijlen",
+    "headline": "Eén kamer. Drie stijlen. Drie verschillende kopers.",
+    "labels": [
+      "Scandinavisch",
+      "Boerderij",
+      "Luxe"
+    ]
   }
 }

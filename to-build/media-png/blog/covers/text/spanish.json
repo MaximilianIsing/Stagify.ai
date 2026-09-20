@@ -80,5 +80,14 @@
     "headline": "Sus muebles salen primero.",
     "captionLeft": "Tal como se fotografió",
     "captionRight": "Vaciada, lista para amueblar"
+  },
+  "cover-16": {
+    "eyebrow": "Estilos de muebles",
+    "headline": "Una habitación. Tres estilos. Tres compradores diferentes.",
+    "labels": [
+      "Escandinava",
+      "Cortijo",
+      "Lujo"
+    ]
   }
 }

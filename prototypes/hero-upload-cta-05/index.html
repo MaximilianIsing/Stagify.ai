@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hero CTA — Moving Day, ten refinements</title>
+<style>
+:root{
+  --bg:#ddeeff; --fg:#1f2937; --muted:#6b7280; --border:#e5e7eb; --slate:#64748b;
+  --primary:#1e40af; --primary-light:#3b82f6;
+  --brand:#2563eb; --brand-strong:#1d4ed8; --brand-deep:#1e3a8a; --brand-soft:#60a5fa;
+  --brand-tint:#dbeafe; --brand-wash:#eff6ff;
+  --cta-gradient:
+    radial-gradient(circle at 20% 50%, var(--primary-light) 0, transparent 50%),
+    radial-gradient(circle at 80% 20%, var(--brand-strong) 0, transparent 50%),
+    radial-gradient(circle at 40% 80%, var(--brand) 0, transparent 50%),
+    radial-gradient(circle at 0 100%, var(--primary) 0, transparent 50%),
+    radial-gradient(circle at 100% 0, var(--brand-soft) 0, transparent 50%),
+    var(--brand-deep);
+  --cta-gradient-hover:
+    radial-gradient(circle at 30% 40%, var(--primary-light) 0, transparent 60%),
+    radial-gradient(circle at 70% 30%, var(--brand-strong) 0, transparent 60%),
+    radial-gradient(circle at 50% 70%, var(--brand) 0, transparent 60%),
+    radial-gradient(circle at 10% 90%, var(--primary) 0, transparent 60%),
+    radial-gradient(circle at 90% 10%, var(--brand-soft) 0, transparent 60%),
+    var(--brand-deep);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+a{color:var(--brand-strong)}
+.page{max-width:1180px;margin:0 auto;padding:0 20px 120px}
+header.top{padding:40px 0 20px}
+header.top h1{margin:0 0 6px;font-size:26px;letter-spacing:-.4px}
+header.top .req{margin:0;font-size:15px;color:var(--brand-deep);font-weight:600;max-width:92ch}
+header.top .meta{margin:10px 0 0;font-size:13px;color:var(--muted);max-width:94ch;line-height:1.6}
+.zones{margin:14px 0 0;font-size:12px;color:var(--slate);background:#f8fbff;border:1px solid var(--brand-tint);
+  border-radius:10px;padding:10px 14px;max-width:760px;line-height:1.6}
+.zones code{background:#fff;border:1px solid var(--border);border-radius:4px;padding:1px 5px}
+nav.jump{position:sticky;top:0;z-index:50;display:flex;gap:6px;overflow-x:auto;padding:10px 0;margin-bottom:22px;
+  background:rgba(221,238,255,.93);backdrop-filter:blur(8px);border-bottom:1px solid rgba(30,58,138,.12)}
+nav.jump a{flex:none;font-size:12.5px;font-weight:700;text-decoration:none;color:var(--brand-deep);
+  background:#fff;border:1px solid var(--brand-tint);border-radius:999px;padding:6px 12px}
+nav.jump a:hover{background:var(--brand-wash);border-color:var(--brand-soft)}
+.canvas{background:#fff;border:1px solid rgba(30,58,138,.16);border-radius:18px;
+  box-shadow:0 10px 30px rgba(30,58,138,.07);margin:0 0 34px;overflow:hidden}
+.cap{padding:16px 20px 18px;border-bottom:1px solid var(--border)}
+.cap .n{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;
+  color:#fff;background:var(--brand-deep);border-radius:6px;padding:3px 8px;margin-right:10px}
+.cap h2{display:inline;font-size:17px;margin:0;letter-spacing:-.2px}
+.cap .tech{display:inline-block;margin-left:10px;font-size:11px;font-weight:700;color:var(--slate);
+  background:#f1f5f9;border-radius:5px;padding:3px 7px}
+.cap .lede{margin:9px 0 0;font-size:13.5px;color:var(--slate);line-height:1.55;max-width:82ch}
+.pc{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;max-width:920px}
+.pc ul{margin:0;padding:10px 14px 12px 30px;border-radius:12px;font-size:12.8px;line-height:1.55}
+.pc .pro{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+.pc .con{background:#fef2f2;border:1px solid #fecaca;color:#7f1d1d}
+.pc h4{margin:0 0 4px;font-size:11px;letter-spacing:.7px;text-transform:uppercase}
+@media(max-width:720px){.pc{grid-template-columns:1fr}}
+
+.hero{position:relative;height:420px;overflow:hidden}
+.hero .shot{position:absolute;inset:0;background:
+  radial-gradient(circle at 78% 22%, rgba(255,244,222,.9) 0 6%, transparent 40%),
+  linear-gradient(105deg, rgba(255,255,255,.35) 0 22%, transparent 55%),
+  linear-gradient(180deg,#efe3d2 0 44%, #d3bfa6 44% 56%, #93795c 56% 100%)}
+.hero .scrim{position:absolute;left:0;right:0;bottom:0;padding:70px 30px 26px;
+  display:grid;grid-template-columns:minmax(0,1fr) auto;gap:30px;align-items:end;
+  background:linear-gradient(180deg,rgba(9,17,45,0) 0,rgba(9,17,45,.22) 20px,
+    rgba(9,17,45,.7) 70px,rgba(9,17,45,.88) 170px,rgba(9,17,45,.95) 100%)}
+.eyebrow{margin:0 0 8px;font-size:1rem;font-weight:700;color:#fff;text-shadow:0 1px 10px rgba(9,17,45,.5)}
+.sentence{margin:0 0 18px;font-size:clamp(22px,3.2vw,34px);font-weight:800;color:#fff;line-height:1.15;
+  text-shadow:0 2px 14px rgba(9,17,45,.55)}
+.sentence u{text-decoration:none;border-bottom:2px dashed rgba(147,197,253,.75)}
+.freeline{margin:13px 0 0;font-size:13px;color:rgba(255,255,255,.9);text-shadow:0 1px 8px rgba(9,17,45,.6)}
+.freeline a{color:inherit}
+.side{display:flex;flex-direction:column;align-items:flex-end;gap:14px;text-align:right;color:#fff}
+.side .stat b{display:block;font-size:24px;font-weight:800;line-height:1}
+.side .stat span{font-size:12px;color:rgba(255,255,255,.72)}
+@media(max-width:760px){.hero{height:auto;min-height:440px}.hero .scrim{grid-template-columns:1fr}.side{display:none}}
+
+/* ---------- plate shell (frozen) ---------- */
+.plate{position:relative;overflow:hidden;isolation:isolate;display:flex;align-items:center;
+  justify-content:space-between;gap:20px;width:376px;max-width:100%;padding:17px 18px;border-radius:14px;
+  cursor:pointer;border:1px solid rgba(190,214,255,.45);
+  box-shadow:0 12px 30px rgba(30,58,138,.35),inset 0 1px 0 rgba(255,255,255,.14);
+  background:linear-gradient(180deg,#22305a 0%,#141e3a 52%,#0a1120 100%);
+  transition:transform .22s cubic-bezier(.22,.8,.3,1),box-shadow .25s ease}
+.plate:hover{transform:translateY(-2px);box-shadow:0 18px 40px rgba(30,58,138,.42)}
+.plate:active{transform:translateY(0) scale(.988);transition-duration:.06s}
+.plate:focus-visible{outline:3px solid var(--brand-soft);outline-offset:3px}
+.plate.brandfill{background:var(--cta-gradient)}
+.plate.brandfill:hover{background:var(--cta-gradient-hover)}
+.plate .lbl{position:relative;z-index:6;font-size:17px;font-weight:800;color:#fff;letter-spacing:-.1px;
+  text-shadow:0 1px 10px rgba(6,12,28,.8)}
+.plate .arrow{position:relative;z-index:6;flex:none;width:38px;height:38px;border-radius:10px;display:grid;
+  place-items:center;color:#fff;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);
+  backdrop-filter:blur(3px);transition:transform .2s ease,background .2s ease}
+.plate:hover .arrow{transform:translateY(-2px);background:rgba(255,255,255,.36)}
+.plate:active .arrow{transform:translateY(1px) scale(.94)}
+.sc{position:absolute;inset:0;z-index:0;pointer-events:none}
+.sc svg{width:100%;height:100%;display:block}
+/* label scrim — only over the LABEL half, so the parked van stays clean */
+.veil{position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(90deg,
+  rgba(12,19,40,.66) 0%, rgba(12,19,40,.5) 34%, rgba(12,19,40,.12) 56%, rgba(12,19,40,0) 68%)}
+
+/* parallax bands */
+.sc .far,.sc .mid,.sc .near{transition:transform .95s cubic-bezier(.22,.8,.3,1)}
+.plate:hover .far{transform:translateX(-4px)}
+.plate:hover .mid{transform:translateX(-10px)}
+.plate:hover .near{transform:translateX(-18px)}
+
+/* ---- the drive. Van is authored at x 0..108 and parks at 212 ---- */
+.van{transform:translateX(-150px);
+  transition:transform 1.25s cubic-bezier(.32,.06,.2,1)}
+.plate:hover .van{transform:translateX(212px)}
+.plate.rev .van{transform:translateX(430px) scaleX(-1);transform-origin:54px 50%}
+.plate.rev:hover .van{transform:translateX(212px) scaleX(-1)}
+.wheelspin{transform-box:fill-box;transform-origin:center}
+.plate:hover .wheelspin{animation:roll 1.25s linear}
+@keyframes roll{to{transform:rotate(1440deg)}}
+.bounce{transition:transform .2s ease}
+.plate:hover .bounce{animation:bump 1.25s ease-in-out}
+@keyframes bump{0%,100%{transform:translateY(0)}18%{transform:translateY(-.7px)}42%{transform:translateY(.6px)}70%{transform:translateY(-.5px)}}
+.beam{opacity:0;transition:opacity .4s}
+.plate:hover .beam{opacity:1}
+.puff{opacity:0}
+.plate:hover .puff{animation:puff 1.25s ease-out}
+@keyframes puff{0%{opacity:.5;transform:translate(0,0) scale(.5)}100%{opacity:0;transform:translate(-26px,-10px) scale(2.1)}}
+.lit{opacity:.18;transition:opacity .6s .75s}
+.plate:hover .lit{opacity:1}
+.after{opacity:0;transition:opacity .5s .85s}
+.plate:hover .after{opacity:1}
+.ramp{transform:scaleY(0);transform-box:fill-box;transform-origin:left center;transition:transform .35s .95s}
+.plate:hover .ramp{transform:none}
+.slideout{transform:translateX(0);opacity:0;transition:transform .6s 1.05s cubic-bezier(.2,.8,.3,1),opacity .2s 1.05s}
+.plate:hover .slideout{transform:translateX(-46px);opacity:1}
+.walker{transform:translateX(0);opacity:0;transition:transform .9s 1.05s linear,opacity .2s 1.05s}
+.plate:hover .walker{transform:translateX(-62px);opacity:1}
+.wipe{transition:clip-path 1.25s cubic-bezier(.32,.06,.2,1)}
+.plate .wipe{clip-path:inset(0 100% 0 0)}
+.plate:hover .wipe{clip-path:inset(0 0 0 0)}
+.sold{transform:translateY(-14px);opacity:0;
+  transition:transform .5s cubic-bezier(.2,1.6,.4,1) 1.15s,opacity .3s 1.15s}
+.plate:hover .sold{transform:none;opacity:1}
+.rainfall{animation:rain 1.1s linear infinite}
+@keyframes rain{to{transform:translate(-9px,26px)}}
+
+.ripple{position:absolute;z-index:5;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,rgba(255,255,255,.45),rgba(255,255,255,0) 68%);
+  transform:translate(-50%,-50%) scale(0);animation:rip .6s cubic-bezier(.2,.7,.3,1) forwards}
+@keyframes rip{to{transform:translate(-50%,-50%) scale(1);opacity:0}}
+@media (prefers-reduced-motion: reduce){
+  .van,.plate:hover .van{transform:translateX(212px);transition:none}
+  .wheelspin,.bounce,.puff{animation:none!important}
+}
+.note{font-size:12px;color:var(--muted);padding:12px 20px 16px;border-top:1px solid var(--border);background:#fafcff}
+</style>
+</head>
+<body>
+<div class="page">
+<header class="top">
+  <h1>Hero CTA — round 5: Moving Day, ten refinements</h1>
+  <p class="req">“01 is amazing. Make the van move further right so it doesn’t overlap the text and occupies the empty space between ‘Upload image for free’ and the up-arrow icon. Also increase the definition and quality of the little drawing.”</p>
+  <p class="meta">
+    All ten are the same idea now — a vehicle arriving at a property — redrawn at roughly four times the detail of round 4 and re-blocked so the van <b>parks in the gap</b>. The van is authored 108 units wide and lands at x 212, i.e. between the end of the label and the arrow well, and the label scrim now fades out at 68% so the parked van sits on clean sky rather than under a wash. Wheels spin, the body takes the bumps, the exhaust puffs, the headlight throws a cone — every drive is the same 1.25s ease.
+  </p>
+  <p class="zones"><b>Plate zones</b> (376 × 62 inner): label <code>18 → ~205</code> · <b>van parks <code>212 → 320</code></b> · arrow well <code>320 → 358</code>. The van clears the label by 7px and stops flush with the arrow.</p>
+</header>
+<nav class="jump" id="jump"></nav>
+<div id="variants"></div>
+</div>
+
+<script>
+const LBL = `<span class="lbl">Upload image for free</span>
+<span class="arrow" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></span>`;
+const GOLD='#ffd48a';
+
+/* =========================================================================
+   THE VAN — one high-definition drawing, re-skinned per variant.
+   Authored on a 0..108 × 22..70 box, baseline (road) at y = 66.
+   ========================================================================= */
+function VAN(o={}){
+  const p = Object.assign({
+    body:'#f2f6ff', bodyShade:'#cfdcf4', roof:'#ffffff', panel:'#e2eaf9',
+    cab:'#dbe5f8', glass:'#7f97c7', glassHi:'#a9bde4', trim:'#9fb2dc',
+    tyre:'#0c1324', rim:'#6b83b8', rimHub:'#2b3a63', mark:'#2f4c8c',
+    beam:GOLD, roofCargo:false, brand:'#1d4ed8', tail:'#ef4444'
+  }, o);
+  return `
+  <g class="bounce">
+    <!-- ground shadow -->
+    <ellipse cx="54" cy="67.5" rx="52" ry="4.2" fill="#000" opacity=".3"/>
+    <!-- box body -->
+    <path d="M2 30.5a2 2 0 0 1 2-2h62v33H4a2 2 0 0 1-2-2z" fill="${p.body}"/>
+    <path d="M2 55h64v6.5H4a2 2 0 0 1-2-2z" fill="${p.bodyShade}"/>
+    <rect x="2" y="28.5" width="64" height="2.6" rx="1.3" fill="${p.roof}"/>
+    <!-- corrugation / ribs -->
+    <g stroke="${p.trim}" stroke-width=".7" opacity=".9">
+      <path d="M8 31.6v29.4M20 31.6v29.4M32 31.6v29.4M44 31.6v29.4M56 31.6v29.4"/>
+    </g>
+    <path d="M2 41.5h64" stroke="${p.trim}" stroke-width=".8" opacity=".55"/>
+    <!-- livery panel: little house + wordmark bars -->
+    <rect x="12" y="34" width="42" height="14" rx="2.5" fill="${p.brand}" opacity=".92"/>
+    <path d="M18 44.5v-5.2l4-3.1 4 3.1v5.2z" fill="#fff"/>
+    <rect x="20.2" y="41" width="3.6" height="3.5" fill="${p.brand}"/>
+    <g fill="#fff" opacity=".92">
+      <rect x="29" y="38.2" width="21" height="2.1" rx="1"/>
+      <rect x="29" y="42" width="14" height="1.7" rx=".85" opacity=".7"/>
+    </g>
+    <!-- rear door seam + handle + hinges -->
+    <path d="M4 30v31" stroke="${p.trim}" stroke-width="1"/>
+    <rect x="5.4" y="44" width="1.6" height="5" rx=".8" fill="${p.trim}"/>
+    <g fill="${p.trim}" opacity=".8"><rect x="2.6" y="34" width="1.6" height="2.4"/><rect x="2.6" y="54" width="1.6" height="2.4"/></g>
+    <!-- cab -->
+    <path d="M66 34h13.5l10.4 9.2a4 4 0 0 1 1.3 3v9.3H66z" fill="${p.cab}"/>
+    <path d="M66 55h25.2v6.5H66z" fill="${p.bodyShade}"/>
+    <!-- windscreen + door window -->
+    <path d="M68.6 36.4h10.2l8.6 7.6h-18.8z" fill="${p.glass}"/>
+    <path d="M68.6 36.4h4.4l1.1 7.6h-5.5z" fill="${p.glassHi}" opacity=".75"/>
+    <path d="M79 36.6l8.2 7.3" stroke="${p.trim}" stroke-width=".7" opacity=".7"/>
+    <!-- cab door -->
+    <path d="M66 36v25" stroke="${p.trim}" stroke-width=".9"/>
+    <rect x="69.5" y="47.5" width="5" height="1.6" rx=".8" fill="${p.trim}"/>
+    <!-- wing mirror -->
+    <path d="M88.2 39.5l4.6-1.4v3.1l-4.6 1z" fill="${p.trim}"/>
+    <!-- grille, bumper, headlight -->
+    <rect x="88.5" y="47" width="3.2" height="7.5" rx="1" fill="${p.trim}" opacity=".85"/>
+    <rect x="86" y="55.5" width="6" height="4" rx="1.2" fill="${p.bodyShade}"/>
+    <rect x="86.4" y="59" width="5.6" height="2.6" rx="1" fill="${p.rimHub}" opacity=".7"/>
+    <circle cx="90.4" cy="50" r="2.3" fill="${p.beam}"/>
+    <circle cx="90.4" cy="50" r="1.1" fill="#fff8e8"/>
+    <!-- tail light -->
+    <rect x="2.2" y="47" width="2" height="4" rx=".8" fill="${p.tail}" opacity=".9"/>
+    <!-- wheel arches -->
+    <g fill="${p.bodyShade}" opacity=".9">
+      <path d="M14 61.5a9 9 0 0 1 18 0z"/><path d="M68 61.5a9 9 0 0 1 18 0z"/>
+    </g>
+    <!-- wheels -->
+    <g>
+      <circle cx="23" cy="62" r="7.4" fill="${p.tyre}"/>
+      <g class="wheelspin"><circle cx="23" cy="62" r="3.6" fill="${p.rim}"/>
+        <circle cx="23" cy="62" r="1.3" fill="${p.rimHub}"/>
+        <g stroke="${p.rimHub}" stroke-width=".8"><path d="M23 58.6v6.8M19.6 62h6.8M20.6 59.6l4.8 4.8M25.4 59.6l-4.8 4.8"/></g></g>
+      <circle cx="77" cy="62" r="7.4" fill="${p.tyre}"/>
+      <g class="wheelspin"><circle cx="77" cy="62" r="3.6" fill="${p.rim}"/>
+        <circle cx="77" cy="62" r="1.3" fill="${p.rimHub}"/>
+        <g stroke="${p.rimHub}" stroke-width=".8"><path d="M77 58.6v6.8M73.6 62h6.8M74.6 59.6l4.8 4.8M79.4 59.6l-4.8 4.8"/></g></g>
+    </g>
+    ${p.roofCargo?`
+    <!-- roof load: a sofa and a rolled rug, strapped -->
+    <rect x="16" y="20.5" width="26" height="8" rx="2" fill="${p.body}"/>
+    <rect x="13" y="23.5" width="4.5" height="5" rx="1.6" fill="${p.bodyShade}"/>
+    <rect x="40.5" y="23.5" width="4.5" height="5" rx="1.6" fill="${p.bodyShade}"/>
+    <rect x="47" y="23" width="14" height="5.5" rx="2.7" fill="${p.mark}" opacity=".7"/>
+    <g stroke="${p.trim}" stroke-width=".8"><path d="M22 20.5v8M36 20.5v8M52 23v5.5"/></g>`:''}
+    <!-- exhaust puff -->
+    <circle class="puff" cx="0" cy="58" r="3.4" fill="#fff" opacity=".0"/>
+  </g>`;
+}
+/* headlight cone, drawn separately so it can sit under the van */
+const BEAM = (c=GOLD)=>`<path class="beam" d="M93 49l44-13v28z" fill="${c}" opacity=".22"/>`;
+
+const V=[
+{
+ id:'m1', name:'Night Delivery', tech:'the original, redrawn', night:true,
+ lede:'Round 4’s scene at four times the resolution: corrugated box sides, a liveried panel with the Stagify house on it, a real cab with a windscreen mullion and a wing mirror, spoked wheels that actually spin, a bumper, a tail light and an exhaust puff. The van now parks dead centre in the gap and the house lights come on behind it.',
+ pros:['The detail survives the 62px height because every part is a shape, not a line — ribs, arches and glass all read.',
+       'Parking position is deliberate: the van sits in the dead space the layout already had.',
+       'Wheel spin + body bump + puff make the arrival feel weighted instead of slid.',
+       'Same night palette and gold windows as the Enterprise plate — the three CTAs are now a set.'],
+ cons:['It is still a one-shot: the reward is spent on first hover.',
+       'On touch, the van is parked from the start and the drive never happens.',
+       'The livery panel is a brand mark at 42×14 units — it will look like a smudge on a low-DPI screen.'],
+ scene:(id)=>`
+  <defs><linearGradient id="sky${id}" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#2a3a68"/><stop offset=".55" stop-color="#16203d"/><stop offset="1" stop-color="#0a1120"/></linearGradient></defs>
+  <rect width="376" height="74" fill="url(#sky${id})"/>
+  <g class="far" fill="#fff" fill-opacity=".45">
+    <circle cx="44" cy="10" r=".9"/><circle cx="92" cy="18" r=".7"/><circle cx="140" cy="8" r="1"/>
+    <circle cx="196" cy="14" r=".8"/><circle cx="262" cy="7" r=".9"/><circle cx="330" cy="15" r=".8"/>
+  </g>
+  <g class="far" opacity=".5" fill="#22305a">
+    <path d="M0 44h34v30H0zM44 38h26v36H44zM86 48h30v26H86z"/>
+  </g>
+  <g class="mid">
+    <path d="M300 30l38-17 38 17v44h-76z" fill="#16203d"/>
+    <path d="M300 30l38-17 38 17z" fill="#26356a"/>
+    <path d="M296 30h84" stroke="#33436f" stroke-width="2"/>
+    <rect x="330" y="56" width="16" height="18" rx="1" fill="#0f1830"/>
+    <g class="lit" fill="${GOLD}">
+      <rect x="310" y="36" width="12" height="10" rx="1.4" opacity=".9"/>
+      <rect x="330" y="36" width="12" height="10" rx="1.4" opacity=".7"/>
+      <rect x="352" y="36" width="12" height="10" rx="1.4" opacity=".8"/>
+      <rect x="308" y="56" width="14" height="12" rx="1.4" opacity=".75"/>
+      <rect x="352" y="56" width="14" height="12" rx="1.4" opacity=".6"/>
+      <path d="M330 56h16v18h-16z" opacity=".22"/>
+    </g>
+  </g>
+  <g class="near">
+    <rect y="66" width="376" height="8" fill="#080d1c"/>
+    <rect y="65" width="376" height="1.4" fill="#2a3a63"/>
+    <path d="M286 22v44" stroke="#33436f" stroke-width="2.4"/>
+    <path d="M281 22h10l-2-6h-6z" fill="${GOLD}" opacity=".9"/>
+    <ellipse cx="286" cy="66" rx="24" ry="5" fill="${GOLD}" opacity=".12"/>
+    <path d="M118 66c-10-14-10-25 0-38 10 13 10 24 0 38z" fill="#1c3550" opacity=".8"/>
+  </g>`
+},
+{
+ id:'m2', name:'Dawn Run', tech:'sunrise palette · long shadow', night:false,
+ lede:'The same arrival, but at 6am: a peach-to-blue sky, the sun just clearing the rooftops, the van lit warm down one side and throwing a long shadow back across the road. Windows go from dark to lit as it parks.',
+ pros:['Warm-lit metal at low sun gives the drawing far more form than flat night does.',
+       'Dawn is the shooting hour — it flatters the photograph the hero is already showing.',
+       'The long shadow anchors the van to the road; it stops looking like a sticker.',
+       'Brighter plate overall, so it holds up better against a pale render behind the scrim.'],
+ cons:['A warm sky fights the brand blue; this plate is the least “primary CTA”-coloured of the set.',
+       'Sunrise and the hero photo’s own light can disagree, which looks like a mistake rather than a choice.',
+       'More colours in the van means more to maintain if the brand ramp ever changes.'],
+ scene:(id)=>`
+  <defs><linearGradient id="sky${id}" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#2d4a86"/><stop offset=".5" stop-color="#6b6fa0"/>
+    <stop offset=".78" stop-color="#d59a78"/><stop offset="1" stop-color="#f3b98a"/></linearGradient></defs>
+  <rect width="376" height="74" fill="url(#sky${id})"/>
+  <g class="far">
+    <circle cx="338" cy="50" r="16" fill="#ffe0ad" opacity=".55"/>
+    <circle cx="338" cy="50" r="9" fill="#fff1d2"/>
+    <g fill="#3d4570" opacity=".55"><path d="M0 46h30v28H0zM40 40h24v34H40z"/></g>
+  </g>
+  <g class="mid">
+    <path d="M286 32l34-15 34 15v42h-68z" fill="#2f3560" opacity=".92"/>
+    <path d="M286 32l34-15 34 15z" fill="#464e80" opacity=".95"/>
+    <g class="lit" fill="${GOLD}">
+      <rect x="296" y="38" width="12" height="9" rx="1.4" opacity=".85"/>
+      <rect x="316" y="38" width="12" height="9" rx="1.4" opacity=".6"/>
+      <rect x="336" y="38" width="12" height="9" rx="1.4" opacity=".75"/>
+      <rect x="306" y="56" width="14" height="12" rx="1.4" opacity=".7"/>
+    </g>
+  </g>
+  <g class="near">
+    <rect y="66" width="376" height="8" fill="#5b4a52"/>
+    <rect y="65" width="376" height="1.4" fill="#8c7a7d" opacity=".7"/>
+    <path d="M104 66c-9-12-9-22 0-34 9 12 9 22 0 34z" fill="#3b4a62" opacity=".75"/>
+  </g>`,
+ van:{body:'#fff7ec',bodyShade:'#e2c7ad',roof:'#fffaf2',panel:'#f7e7d4',cab:'#f6e3cf',
+      glass:'#8a7fa6',glassHi:'#c8b9d6',trim:'#b89b82',rim:'#d8b48f',rimHub:'#6b4f3b',brand:'#1d4ed8'},
+ longShadow:true
+},
+{
+ id:'m3', name:'Unload', tech:'rear door rolls up · sofa slides out', night:true,
+ lede:'The van parks, then the roller door goes up, a ramp drops and a sofa slides out onto the pavement. Three beats instead of one, all in the gap between the label and the arrow.',
+ pros:['The only version where the <em>cargo</em> is visible — the button literally delivers furniture.',
+       'A three-beat sequence gives the hover somewhere to go after the drive lands.',
+       'The sofa emerging left-to-right points back at the label, tying picture and copy together.',
+       'Each beat is a separate transform, so any one of them can be dropped for reduced-motion.'],
+ cons:['1.25s drive + 0.35s ramp + 0.6s slide is over two seconds; most hovers will not last that long.',
+       'The sofa slides out over the label zone and needs the scrim to stay dark there.',
+       'Busiest of the ten — three moving groups in a 108-unit-wide space.'],
+ scene:(id)=>`
+  <defs><linearGradient id="sky${id}" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#28376a"/><stop offset="1" stop-color="#0a1120"/></linearGradient></defs>
+  <rect width="376" height="74" fill="url(#sky${id})"/>
+  <g class="far" fill="#22305a" opacity=".55"><path d="M0 42h36v32H0zM48 36h28v38H48z"/></g>
+  <g class="mid">
+    <path d="M310 28l34-16 34 16v46h-68z" fill="#16203d"/>
+    <path d="M310 28l34-16 34 16z" fill="#26356a"/>
+    <g class="lit" fill="${GOLD}">
+      <rect x="320" y="34" width="13" height="10" rx="1.4" opacity=".85"/>
+      <rect x="342" y="34" width="13" height="10" rx="1.4" opacity=".6"/>
+      <rect x="330" y="54" width="16" height="14" rx="1.4" opacity=".75"/>
+    </g>
+  </g>
+  <g class="near"><rect y="66" width="376" height="8" fill="#080d1c"/><rect y="65" width="376" height="1.4" fill="#2a3a63"/></g>`,
+ extras:`
+  <g class="ramp"><path d="M-2 62l-22 5v3h24z" fill="#cfdcf4" opacity=".9"/></g>
+  <g class="slideout">
+    <rect x="-6" y="50" width="34" height="11" rx="3" fill="#eef3ff" fill-opacity=".95"/>
+    <rect x="-11" y="53" width="6" height="9" rx="2.5" fill="#d3ddf4"/>
+    <rect x="27" y="53" width="6" height="9" rx="2.5" fill="#d3ddf4"/>
+    <rect x="0" y="46" width="10" height="6" rx="2" fill="#fff"/>
+    <rect x="13" y="46" width="10" height="6" rx="2" fill="#fff"/>
+  </g>`,
+ doorUp:true
+},
+{
+ id:'m4', name:'Hand Truck', tech:'a mover walks the boxes in', night:true,
+ lede:'The van parks and a mover steps out with a stacked hand-truck and walks it toward the house, crossing in front of the streetlamp. Human scale, which is what makes a drawing feel alive.',
+ pros:['A figure gives the scene scale and a protagonist — the most alive of all ten.',
+       'Walking right-to-left carries the eye back to the label after the van has taken it right.',
+       'Boxes on a dolly are a universally legible “stuff arriving” symbol in any of your 11 markets.',
+       'The figure is eight shapes; it costs almost nothing to draw.'],
+ cons:['A human silhouette at 20px tall is the single hardest thing here to draw well — it reads as a blob at small sizes.',
+       'It plays after the van lands, so the whole sequence runs past 2s again.',
+       'People imply a service business; you sell software with no one coming to the door.'],
+ scene:(id)=>`
+  <defs><linearGradient id="sky${id}" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#293a6c"/><stop offset="1" stop-color="#0a1120"/></linearGradient></defs>
+  <rect width="376" height="74" fill="url(#sky${id})"/>
+  <g class="mid">
+    <path d="M304 30l36-16 36 16v44h-72z" fill="#16203d"/><path d="M304 30l36-16 36 16z" fill="#26356a"/>
+    <rect x="332" y="54" width="16" height="20" rx="1" fill="#0d1526"/>
+    <g class="lit" fill="${GOLD}">
+      <rect x="312" y="36" width="13" height="10" rx="1.4" opacity=".9"/>
+      <rect x="355" y="36" width="13" height="10" rx="1.4" opacity=".65"/>
+      <path d="M332 54h16v20h-16z" opacity=".3"/>
+    </g>
+  </g>
+  <g class="near">
+    <rect y="66" width="376" height="8" fill="#080d1c"/>
+    <path d="M292 20v46" stroke="#33436f" stroke-width="2.4"/>
+    <path d="M287 20h10l-2-6h-6z" fill="${GOLD}" opacity=".9"/>
+    <ellipse cx="292" cy="66" rx="26" ry="5" fill="${GOLD}" opacity=".13"/>
+  </g>`,
+ extras:`
+  <g class="walker">
+    <g transform="translate(-4,0)">
+      <rect x="-14" y="42" width="13" height="18" rx="1.6" fill="#e7eefc" opacity=".95"/>
+      <rect x="-13" y="36" width="11" height="6" rx="1.2" fill="#cfdcf4"/>
+      <path d="M-1 40v20M-14 60h14" stroke="#aebdde" stroke-width="1.4" stroke-linecap="round"/>
+      <circle cx="-12" cy="62" r="2.6" fill="#0c1324"/>
+      <circle cx="4" cy="40" r="3.4" fill="#f0d7bd"/>
+      <path d="M4 44v9l-3 8M4 53l4 8" stroke="#2f4c8c" stroke-width="3" stroke-linecap="round"/>
+      <path d="M4 46l-4-4" stroke="#f0d7bd" stroke-width="2.4" stroke-linecap="round"/>
+    </g>
+  </g>`
+},
+{
+ id:'m5', name:'Reverse In', tech:'backs into the gap from the right', night:true,
+ lede:'Flipped: the van comes in from the <em>right</em>, past the arrow, and reverses into the gap with its white reversing lamps on. It arrives where it belongs instead of driving through the whole label first.',
+ pros:['Never crosses the label at all — the only variant that leaves the copy completely untouched during the animation.',
+       'Reversing is a smaller, more precise motion; it reads as parking rather than passing.',
+       'Reverse lamps give a second light source, which adds depth on the dark side of the van.',
+       'Entering from the arrow side draws the eye toward the thing you want clicked.'],
+ cons:['Shorter travel means less spectacle — the drive is over almost before you notice it.',
+       'A mirrored van needs the cab detail to survive a scaleX(-1), which flips the livery too.',
+       'Backwards motion is subtly unsatisfying; things arriving usually move with the reading direction.'],
+ rev:true,
+ scene:(id)=>`
+  <defs><linearGradient id="sky${id}" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#2a3a68"/><stop offset="1" stop-color="#0a1120"/></linearGradient></defs>
+  <rect width="376" height="74" fill="url(#sky${id})"/>
+  <g class="mid">
+    <path d="M132 32l32-15 32 15v42h-64z" fill="#16203d"/><path d="M132 32l32-15 32 15z" fill="#26356a"/>
+    <g class="lit" fill="${GOLD}">
+      <rect x="141" y="38" width="12" height="9" rx="1.4" opacity=".85"/>
+      <rect x="175" y="38" width="12" height="9" rx="1.4" opacity=".6"/>
+      <rect x="152" y="57" width="15" height="12" rx="1.4" opacity=".7"/>
+    </g>
+  </g>
+  <g class="near">
+    <rect y="66" width="376" height="8" fill="#080d1c"/><rect y="65" width="376" height="1.4" fill="#2a3a63"/>
+    <path d="M214 24v42" stroke="#33436f" stroke-width="2.2"/>
+    <path d="M209 24h10l-2-6h-6z" fill="${GOLD}" opacity=".85"/>
+  </g>`
+},
+{
+ id:'m6', name:'Isometric Move', tech:'3/4 view · matches the Pro plate', night:false, brandfill:true,
+ lede:'Drawn in the same isometric projection as the three rooms on the Stagify+ plate, on the same brand-blue fill: a 3/4-view box truck rolling along an iso kerb toward an open unit, in white line and fill rather than full colour.',
+ pros:['Projection, palette and fill all match the Stagify+ plate exactly — the tightest family fit of the ten.',
+       'Stays on <code>--cta-gradient</code>, so it keeps the full weight of the primary action.',
+       'White-on-blue linework is the most legible combination here at small sizes.',
+       'An iso truck is a more interesting silhouette than a flat side elevation.'],
+ cons:['Isometric drawing is unforgiving: any wrong angle is instantly visible and this is a lot of angles.',
+       'Loses the gold window light, so the Enterprise kinship is weaker than in the night versions.',
+       'The 3/4 view makes the van read as slightly toy-like next to the site’s photographic hero.'],
+ scene:(id)=>`
+  <g class="far" opacity=".55" fill="#fff" fill-opacity=".14">
+    <path d="M20 46l26-14 26 14-26 14zM86 40l22-12 22 12-22 12z"/>
+  </g>
+  <g class="mid">
+    <path d="M286 44l40-22 40 22-40 22z" fill="#fff" fill-opacity=".18"/>
+    <path d="M286 44v10l40 22V66z" fill="#fff" fill-opacity=".1"/>
+    <path d="M366 44v10l-40 22V66z" fill="#000" fill-opacity=".12"/>
+    <path d="M296 40l16-9 16 9-16 9z" fill="#fff" fill-opacity=".32"/>
+    <path d="M296 40v12l16 9V49z" fill="#fff" fill-opacity=".2"/>
+    <path d="M328 40v12l-16 9V49z" fill="#000" fill-opacity=".1"/>
+    <path d="M340 48l12-7 12 7-12 7z" fill="${GOLD}" fill-opacity=".45"/>
+  </g>
+  <g class="near">
+    <path d="M-10 60L376 44" stroke="#fff" stroke-opacity=".22" stroke-width="1.4"/>
+  </g>`,
+ iso:true
+},
+{
+ id:'m7', name:'Van Wipe', tech:'the van carries the transformation', night:false, brandfill:true,
+ lede:'The van is the wipe: everything to the left of it is a bare grey street, everything behind it is the staged blue version with lit windows and furniture in the rooms. Drive it across and the whole plate transforms in its wake.',
+ pros:['Before <b>and</b> after in one frame, with the van as the cause — the strongest single idea in the whole exploration.',
+       'The transformation is proportional to the drive, so a half-hover gives a half-transformed plate. Nothing else here is scrubbable.',
+       'Makes the drive matter: without it the plate never becomes the finished version.',
+       'Reads at any width because the wipe edge is the van itself.'],
+ cons:['The resting half is deliberately grey and drab — the primary CTA starts life looking unfinished.',
+       'Two full scenes must be drawn and kept in register; twice the artwork to maintain.',
+       'If the pointer leaves mid-drive the plate is stranded half grey, half blue.'],
+ scene:(id)=>`
+  <rect width="376" height="74" fill="#6b7590"/>
+  <g class="far" opacity=".5" fill="#59627a"><path d="M0 44h34v30H0zM46 38h26v36H46z"/></g>
+  <g class="mid">
+    <path d="M292 30l38-17 38 17v44h-76z" fill="#545d75"/><path d="M292 30l38-17 38 17z" fill="#6a748e"/>
+    <g fill="#3f4759"><rect x="302" y="38" width="13" height="10" rx="1.4"/><rect x="324" y="38" width="13" height="10" rx="1.4"/>
+      <rect x="346" y="38" width="13" height="10" rx="1.4"/><rect x="300" y="56" width="15" height="13" rx="1.4"/></g>
+  </g>
+  <g class="near"><rect y="66" width="376" height="8" fill="#3e4557"/></g>
+  <g class="wipe">
+    <rect width="376" height="74" fill="#16265c"/>
+    <g fill="#1d3480"><path d="M0 44h34v30H0zM46 38h26v36H46z"/></g>
+    <path d="M292 30l38-17 38 17v44h-76z" fill="#15224a"/><path d="M292 30l38-17 38 17z" fill="#27407f"/>
+    <g fill="${GOLD}"><rect x="302" y="38" width="13" height="10" rx="1.4" opacity=".9"/>
+      <rect x="324" y="38" width="13" height="10" rx="1.4" opacity=".65"/>
+      <rect x="346" y="38" width="13" height="10" rx="1.4" opacity=".8"/>
+      <rect x="300" y="56" width="15" height="13" rx="1.4" opacity=".7"/></g>
+    <rect y="66" width="376" height="8" fill="#0a1226"/>
+    <g fill="#fff" fill-opacity=".3"><rect x="120" y="54" width="34" height="9" rx="3"/><rect x="163" y="50" width="8" height="13" rx="2.5"/></g>
+  </g>`
+},
+{
+ id:'m8', name:'Rain & Headlights', tech:'wet road · reflections', night:true,
+ lede:'A wet evening: rain falling in fine diagonal strokes, the road reflecting the house’s gold windows and the van’s own headlight in soft vertical smears, wipers implied by the glare on the windscreen.',
+ pros:['Reflections double the amount of light in the scene, which is what makes the drawing feel finished.',
+       'Rain is continuous motion, so the plate is alive before any hover and on touch devices too.',
+       'Warm interior light against a cold wet street is exactly the “come home” feeling the product trades on.',
+       'The most atmospheric of the ten by a clear margin.'],
+ cons:['Perpetual rain animation above the fold costs frames forever, unlike the one-shot drives.',
+       'Bad weather is an odd mood for a listing photo; it sells cosiness but not clarity.',
+       'Reflections have to be redrawn by hand for every object — the least maintainable scene here.'],
+ scene:(id)=>`
+  <defs><linearGradient id="sky${id}" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#1d2749"/><stop offset="1" stop-color="#070c1a"/></linearGradient></defs>
+  <rect width="376" height="74" fill="url(#sky${id})"/>
+  <g class="mid">
+    <path d="M298 30l38-16 38 16v40h-76z" fill="#141d38"/><path d="M298 30l38-16 38 16z" fill="#232f58"/>
+    <g fill="${GOLD}"><rect x="308" y="36" width="13" height="10" rx="1.4" opacity=".92"/>
+      <rect x="330" y="36" width="13" height="10" rx="1.4" opacity=".7"/>
+      <rect x="352" y="36" width="13" height="10" rx="1.4" opacity=".85"/></g>
+  </g>
+  <g class="near">
+    <rect y="62" width="376" height="12" fill="#0b1224"/>
+    <g fill="${GOLD}" opacity=".25">
+      <rect x="308" y="62" width="13" height="12"/><rect x="330" y="62" width="13" height="12"/><rect x="352" y="62" width="13" height="12"/>
+    </g>
+    <rect y="62" width="376" height="12" fill="#0b1224" opacity=".45"/>
+    <path d="M0 63h376" stroke="#3a4a73" stroke-width=".8" opacity=".6"/>
+  </g>
+  <g class="rainfall" stroke="#cfe0ff" stroke-opacity=".38" stroke-width=".9">
+    <path d="M10 -8l-6 18M48 -14l-6 18M86 -4l-6 18M124 -18l-6 18M162 -6l-6 18M200 -16l-6 18
+             M238 -2l-6 18M276 -12l-6 18M314 -8l-6 18M352 -16l-6 18
+             M28 18l-6 18M66 14l-6 18M104 22l-6 18M142 12l-6 18M180 20l-6 18M218 14l-6 18
+             M256 22l-6 18M294 16l-6 18M332 20l-6 18M368 12l-6 18
+             M18 42l-6 18M56 38l-6 18M94 44l-6 18M132 40l-6 18M170 46l-6 18M208 38l-6 18
+             M246 44l-6 18M284 40l-6 18M322 46l-6 18M360 38l-6 18"/>
+  </g>`
+},
+{
+ id:'m9', name:'Sold in a Day', tech:'van arrives · board gets its rider', night:true,
+ lede:'The van pulls up and, a beat later, the SOLD rider drops onto the FOR SALE board planted in the foreground. The button’s whole arc is: photo in, furniture arrives, property sells.',
+ pros:['Ends on the outcome your customer actually cares about, not on the feature.',
+       'Two-stage payoff with a spring on the second beat — the most rewarding repeat hover of the ten.',
+       'The board occupies the left third, which is otherwise dead space behind the scrim.',
+       'Reads instantly: everyone knows what a SOLD rider means.'],
+ cons:['It is a results claim on a free-upload button; worth a second opinion before it ships.',
+       'A yard sign is a North American convention and lands weakly in most of your 11 languages.',
+       'Two independent timelines (drive, then rider) make the reduced-motion fallback fiddlier.'],
+ scene:(id)=>`
+  <defs><linearGradient id="sky${id}" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#2a3a68"/><stop offset="1" stop-color="#0a1120"/></linearGradient></defs>
+  <rect width="376" height="74" fill="url(#sky${id})"/>
+  <g class="mid">
+    <path d="M296 28l40-17 40 17v46h-80z" fill="#16203d"/><path d="M296 28l40-17 40 17z" fill="#26356a"/>
+    <g class="lit" fill="${GOLD}">
+      <rect x="306" y="34" width="14" height="10" rx="1.4" opacity=".9"/>
+      <rect x="330" y="34" width="14" height="10" rx="1.4" opacity=".65"/>
+      <rect x="354" y="34" width="14" height="10" rx="1.4" opacity=".8"/>
+      <rect x="318" y="54" width="17" height="14" rx="1.4" opacity=".7"/>
+    </g>
+  </g>
+  <g class="near">
+    <rect y="66" width="376" height="8" fill="#080d1c"/>
+    <g transform="translate(150,0)">
+      <path d="M8 26v42" stroke="#c9d6f2" stroke-width="3" stroke-linecap="round"/>
+      <rect x="8" y="24" width="46" height="20" rx="2.5" fill="#f4f8ff"/>
+      <rect x="12" y="28" width="38" height="5" rx="1" fill="#2f4c8c"/>
+      <rect x="12" y="35.5" width="22" height="3.6" rx="1" fill="#8ea6d8"/>
+      <g class="sold"><rect x="14" y="10" width="40" height="13" rx="2.5" fill="#b91c1c"/>
+        <rect x="19" y="14.6" width="30" height="4" rx="1" fill="#ffe4e4"/></g>
+    </g>
+  </g>`
+},
+{
+ id:'m10', name:'Loaded Roof', tech:'cargo on top · daylight', night:false, brandfill:true,
+ lede:'Brand-blue fill, bright flat daylight, and the van comes in <em>loaded</em> — a sofa and a rolled rug strapped to the roof rack, boxes visible through the cab. Cheerful rather than cinematic.',
+ pros:['The roof load says “furniture” without needing the doors to open — one frame, no sequence.',
+       'Keeps the full <code>--cta-gradient</code>, so this is the loudest, most CTA-like plate of the ten.',
+       'Daylight flat art is the cheapest to keep looking right across every render behind the scrim.',
+       'The tallest silhouette in the set, so it holds the gap better than the plain van.'],
+ cons:['Roof cargo pushes the van to 46 units tall; it crowds the 62px plate and sits close to the top edge.',
+       'Loses the gold-window motif entirely — least visual kinship with the Enterprise plate.',
+       'Flat daylight has no light source, so the drawing has less depth than 02 or 08.'],
+ scene:(id)=>`
+  <g class="far" opacity=".5" fill="#fff" fill-opacity=".14">
+    <path d="M0 42h32v32H0zM44 36h26v38H44zM82 46h28v28H82z"/>
+  </g>
+  <g class="mid">
+    <path d="M300 30l38-16 38 16v44h-76z" fill="#fff" fill-opacity=".2"/>
+    <path d="M300 30l38-16 38 16z" fill="#fff" fill-opacity=".34"/>
+    <g fill="#fff" fill-opacity=".5"><rect x="310" y="36" width="13" height="10" rx="1.4"/>
+      <rect x="332" y="36" width="13" height="10" rx="1.4"/><rect x="354" y="36" width="13" height="10" rx="1.4"/></g>
+    <rect x="328" y="56" width="18" height="18" rx="1.5" fill="#fff" fill-opacity=".34"/>
+  </g>
+  <g class="near">
+    <rect y="66" width="376" height="8" fill="#0d1a3f" opacity=".55"/>
+    <path d="M132 66c-9-13-9-24 0-36 9 12 9 23 0 36z" fill="#bfe6c8" fill-opacity=".5"/>
+    <rect x="128" y="64" width="8" height="4" fill="#fff" fill-opacity=".3"/>
+  </g>`,
+ van:{roofCargo:true}
+}
+];
+
+const jump=document.getElementById('jump'), wrap=document.getElementById('variants');
+V.forEach((v,i)=>{
+  const n=String(i+1).padStart(2,'0');
+  const vanArt = v.iso ? ISOVAN() : VAN(v.van||{});
+  const extras = v.extras||'';
+  const doorUp = v.doorUp?`<rect x="2" y="30" width="64" height="0" fill="#0b1224"/>`:'';
+  jump.insertAdjacentHTML('beforeend',`<a href="#${v.id}">${n} ${v.name}</a>`);
+  wrap.insertAdjacentHTML('beforeend',`
+  <section class="canvas" id="${v.id}">
+    <div class="cap">
+      <span class="n">${n}</span><h2>${v.name}</h2><span class="tech">${v.tech}</span>
+      <p class="lede">${v.lede}</p>
+      <div class="pc">
+        <ul class="pro"><h4>Pros</h4>${v.pros.map(p=>`<li>${p}</li>`).join('')}</ul>
+        <ul class="con"><h4>Cons</h4>${v.cons.map(p=>`<li>${p}</li>`).join('')}</ul>
+      </div>
+    </div>
+    <div class="hero">
+      <div class="shot"></div>
+      <div class="scrim">
+        <div>
+          <p class="eyebrow">Free virtual staging</p>
+          <h3 class="sentence">Stage this <u>bedroom</u> in <u>Modern</u></h3>
+          <button class="plate ${v.id}${v.brandfill?' brandfill':''}${v.rev?' rev':''}" type="button">
+            <span class="sc"><svg viewBox="0 0 376 74" preserveAspectRatio="xMidYMax slice">
+              ${v.scene(v.id)}
+              <g class="van">${BEAM(v.night===false?'#ffe9bd':undefined)}${vanArt}${extras}${doorUp}</g>
+            </svg></span>
+            <span class="veil"></span>
+            ${LBL}
+          </button>
+          <p class="freeline">3 free generations left today · <a href="#${v.id}">Try Stagify+</a></p>
+        </div>
+        <div class="side">
+          <div class="stat"><b>36</b><span>room × style pairs</span></div>
+          <div class="stat"><b>11</b><span>languages</span></div>
+        </div>
+      </div>
+    </div>
+    <p class="note">Van parks at x 212 – 320: clear of the label, flush with the arrow well.</p>
+  </section>`);
+});
+
+/* isometric 3/4 truck for variant 06 */
+function ISOVAN(){
+  return `
+  <g class="bounce">
+    <ellipse cx="54" cy="66" rx="50" ry="4" fill="#000" opacity=".25"/>
+    <!-- box, iso -->
+    <path d="M4 44L44 24l30 15-40 20z" fill="#fff" fill-opacity=".9"/>
+    <path d="M4 44v14l30 15V59z" fill="#fff" fill-opacity=".55"/>
+    <path d="M74 39v14L34 73V59z" fill="#0b1c46" fill-opacity=".35"/>
+    <g stroke="#1d3a80" stroke-opacity=".35" stroke-width=".8">
+      <path d="M12 48v14M20 52v14M28 56v14M44 60v13M54 55v13M64 50v13"/>
+    </g>
+    <path d="M14 42l22-11 10 5-22 11z" fill="#1d4ed8" fill-opacity=".8"/>
+    <path d="M22 40l6-3 6 3-6 3z" fill="#fff"/>
+    <!-- cab, iso -->
+    <path d="M74 39l14 7 12-6-14-7z" fill="#fff" fill-opacity=".85"/>
+    <path d="M74 39v14l14 7V46z" fill="#fff" fill-opacity=".5"/>
+    <path d="M100 40v12l-12 8V46z" fill="#0b1c46" fill-opacity=".3"/>
+    <path d="M90 45l8-4v6l-8 4z" fill="#8fb2f0" fill-opacity=".85"/>
+    <path d="M76 42l10 5v6l-10-5z" fill="#8fb2f0" fill-opacity=".6"/>
+    <circle cx="99" cy="50" r="2" fill="${GOLD}"/>
+    <!-- wheels, iso ellipses -->
+    <g class="wheelspin"><ellipse cx="26" cy="68" rx="6.5" ry="3.4" fill="#0c1324"/>
+      <ellipse cx="26" cy="67" rx="3" ry="1.6" fill="#6b83b8"/></g>
+    <g class="wheelspin"><ellipse cx="78" cy="61" rx="6.5" ry="3.4" fill="#0c1324"/>
+      <ellipse cx="78" cy="60" rx="3" ry="1.6" fill="#6b83b8"/></g>
+    <circle class="puff" cx="2" cy="56" r="3" fill="#fff" opacity="0"/>
+  </g>`;
+}
+
+/* click ripple */
+document.querySelectorAll('.plate').forEach(b=>{
+  b.addEventListener('pointerdown',e=>{
+    const r=b.getBoundingClientRect(), d=Math.max(r.width,r.height)*2.1;
+    const s=document.createElement('span'); s.className='ripple';
+    s.style.width=s.style.height=d+'px';
+    s.style.left=(e.clientX-r.left)+'px'; s.style.top=(e.clientY-r.top)+'px';
+    b.appendChild(s); setTimeout(()=>s.remove(),620);
+  });
+});
+</script>
+</body>
+</html>

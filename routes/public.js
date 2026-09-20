@@ -219,6 +219,10 @@ router.get('/blog/remove-furniture-from-listing-photos', (req, res) => {
   sendPost(req, res, 'remove-furniture-from-listing-photos');
 });
 
+router.get('/blog/which-virtual-staging-style', (req, res) => {
+  sendPost(req, res, 'which-virtual-staging-style');
+});
+
 router.get('/bimi-logo.svg', (req, res) => {
   res.setHeader('Content-Type', 'image/svg+xml');
   res.sendFile(path.join(__dirname, 'public', 'bimi-logo.svg'));

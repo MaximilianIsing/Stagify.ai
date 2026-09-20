@@ -80,5 +80,14 @@
     "headline": "Os móveis deles saem primeiro.",
     "captionLeft": "Como fotografado",
     "captionRight": "Vazio, pronto para mobiliar"
+  },
+  "cover-16": {
+    "eyebrow": "Estilos de móveis",
+    "headline": "Um ambiente. Três estilos. Três compradores diferentes.",
+    "labels": [
+      "Escandinavo",
+      "Rústico",
+      "Luxo"
+    ]
   }
 }

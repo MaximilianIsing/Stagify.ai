@@ -1,10 +1,10 @@
 {
   "_meta": {
-    "sourceHash": "sha256:187d5dafab0a91e44c4a414a091e4e320a4fce84a9f6b037903c6f2438dbdb43",
+    "sourceHash": "sha256:90f67dddc33524db8b141401d836a51d8e94ccab3730616f434ee848cfdf4513",
     "slug": null,
     "lang": "chinese",
     "hreflang": "zh-Hans",
-    "translatedAt": "2026-09-17",
+    "translatedAt": "2026-09-20",
     "reviewed": false
   },
   "meta": {
@@ -16,6 +16,13 @@
     "body": "关于虚拟软装、MLS 披露以及如何更快推广房源的实用指南，写给经纪人、卖家和摄影师。"
   },
   "cards": {
+    "which-virtual-staging-style": {
+      "tag": "指南",
+      "title": "一个房间，七种风格。只有一种能卖掉房子。",
+      "excerpt": "七种预设，大多数人只选自己喜欢的。但其实应该由建筑、地板、光线和买家来决定，而且这七种风格，每一种都有特定的翻车方式。",
+      "meta": "2026年9月20日 · 阅读时长 10 分钟",
+      "alt": "深色背景上同一间空客厅的三张照片，呈现三种不同的布置：斯堪的纳维亚版本配有浅灰色沙发和浅色橡木桌，农舍版本配有亚麻沙发、黄麻地毯和再生木桌，奢华版本配有绿色天鹅绒沙发、印花地毯、大理石桌和黄铜吊灯"
+    },
     "remove-furniture-from-listing-photos": {
       "tag": "指南",
       "title": "大多数房子都住着人。照样拍。",

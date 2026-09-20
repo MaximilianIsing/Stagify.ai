@@ -24,6 +24,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { LOCALIZED_ARTICLES } from '../../lib/i18n/locales.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const BLOG = path.join(ROOT, 'public', 'blog');
@@ -57,7 +58,14 @@ function resolve(pack, key) {
 
 test('every blog page carries the identical footer', () => {
   const footers = blogFooters();
-  assert.equal(footers.length, 16, 'expected the hub plus fifteen articles');
+  // The hub plus every article. Counted from LOCALIZED_ARTICLES rather than a literal so
+  // that publishing a post does not fail a test about footers; what is being guarded is
+  // that no page under public/blog/ escapes the scan, not how many there are.
+  assert.equal(
+    footers.length,
+    LOCALIZED_ARTICLES.length + 1,
+    `expected the hub plus ${LOCALIZED_ARTICLES.length} articles`,
+  );
 
   const [first, ...rest] = footers;
   for (const { name, footer } of rest) {
