@@ -27,7 +27,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { offsetOf, geometryFor, indexForHash, stageHeightFor } from '../../public/scripts/studio-showcase.js';
+import { offsetOf, geometryFor, indexForHash, stageHeightFor, wireDrag } from '../../public/scripts/studio-showcase.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const INDEX = fs.readFileSync(path.join(ROOT, 'public', 'index.html'), 'utf8');
@@ -1087,4 +1087,160 @@ test('the stepper switches on at the same width as the flat carousel', () => {
     normalise(flatQuery[1]),
     'the stepper breakpoint and FLAT_QUERY must move together'
   );
+});
+
+// ── the drag, and the click it must not eat ──────────────────────────────────
+//
+// THE REGRESSION THIS PINS. wireDrag() used to call setPointerCapture() on the stage on
+// every pointerdown. While a capture override is set the compat mouse events — and so
+// the synthesized click — are dispatched at the CAPTURE element, and the stage is an
+// ancestor of every panel: the click's path became stage -> .shw and never passed
+// through .shw__panel, which is where init() listens for "click a neighbour to bring it
+// forward". That shipped green, because nothing in this repo drives the carousel's DOM.
+// The tabs and arrows kept working throughout (they are buttons, which pointerdown bails
+// out on), which is exactly why the bug read as "only the side cards are dead".
+//
+// There is no jsdom here (see test/helpers/guides-dom.js), so the nodes are hand-rolled
+// the way test/frontend/immersive-view.test.js does it. The fake records every capture
+// call, which a real DOM would not tell us.
+
+/** A node with just enough surface for wireDrag() and the select() path behind it. */
+class FakeEl {
+  constructor() {
+    this.style = {};
+    this.dataset = {};
+    this.attrs = {};
+    this.offsetHeight = 400;
+    this.handlers = new Map();
+    this.classes = new Set();
+    this.classList = {
+      add: (c) => this.classes.add(c),
+      remove: (c) => this.classes.delete(c),
+      contains: (c) => this.classes.has(c),
+      toggle: (c, on) => (on ? this.classes.add(c) : this.classes.delete(c)),
+    };
+  }
+
+  addEventListener(type, fn) {
+    if (!this.handlers.has(type)) this.handlers.set(type, []);
+    this.handlers.get(type).push(fn);
+  }
+
+  fire(type, event) {
+    (this.handlers.get(type) || []).forEach((fn) => fn(event));
+  }
+
+  setAttribute(k, v) { this.attrs[k] = String(v); }
+  removeAttribute(k) { delete this.attrs[k]; }
+  getAttribute(k) { return k in this.attrs ? this.attrs[k] : null; }
+  hasAttribute(k) { return k in this.attrs; }
+  querySelector() { return null; }
+  querySelectorAll() { return []; }
+  focus() {}
+}
+
+/** A stage that logs the capture calls instead of performing them. */
+class FakeStage extends FakeEl {
+  constructor() {
+    super();
+    this.captures = [];
+    this.releases = [];
+  }
+
+  setPointerCapture(pointerId) { this.captures.push(pointerId); }
+  releasePointerCapture(pointerId) { this.releases.push(pointerId); }
+}
+
+/**
+ * Drive wireDrag() against a fake showcase. `expanded()` reads document.fullscreenElement
+ * and isFlat() reads window.matchMedia, so both globals are stood up for the call and put
+ * back afterwards — this module is imported for its pure helpers everywhere else.
+ *
+ * @param {(stage: FakeStage, sc: any) => void} body
+ */
+function withDrag(body) {
+  const hadDoc = 'document' in globalThis;
+  const hadWin = 'window' in globalThis;
+  const prevDoc = globalThis.document;
+  const prevWin = globalThis.window;
+  globalThis.document = { fullscreenElement: null };
+  globalThis.window = { matchMedia: () => ({ matches: false }) };
+  try {
+    const stage = new FakeStage();
+    const sc = {
+      root: new FakeEl(),
+      stage,
+      panels: [new FakeEl(), new FakeEl(), new FakeEl()],
+      tabs: [new FakeEl(), new FakeEl(), new FakeEl()],
+      dots: [],
+      active: 0,
+      sized: true,
+    };
+    wireDrag(sc);
+    body(stage, sc);
+  } finally {
+    if (hadDoc) globalThis.document = prevDoc; else delete globalThis.document;
+    if (hadWin) globalThis.window = prevWin; else delete globalThis.window;
+  }
+}
+
+/** A pointerdown on the stage background — nothing in wireDrag()'s bail-out list. */
+function down(stage, x = 200, y = 200) {
+  stage.fire('pointerdown', {
+    isPrimary: true, button: 0, pointerId: 7, clientX: x, clientY: y, target: { closest: () => null },
+  });
+}
+
+/** @param {FakeStage} stage */
+function move(stage, x, y, extra = {}) {
+  stage.fire('pointermove', { pointerId: 7, clientX: x, clientY: y, pointerType: 'mouse', buttons: 1, ...extra });
+}
+
+test('a press that is only a click never captures the pointer', () => {
+  // THE BUG. Capture on pointerdown retargets the click to the stage, and the
+  // click-a-side-panel-to-bring-it-forward handler lives on the panel.
+  withDrag((stage) => {
+    down(stage);
+    stage.fire('pointerup', { pointerId: 7 });
+    assert.deepEqual(stage.captures, [], 'a click must leave the pointer uncaptured');
+  });
+});
+
+test('a drag captures the pointer once it commits to the x axis', () => {
+  // Capture is still what keeps a drag alive when the pointer leaves the ~520px stage,
+  // so deferring it must not amount to dropping it.
+  withDrag((stage, sc) => {
+    down(stage);
+    move(stage, 230, 202); // past the 12px noise floor, clearly horizontal
+    assert.deepEqual(stage.captures, [7], 'the axis lock takes the pointer');
+    move(stage, 120, 202); // now past DRAG_THRESHOLD
+    assert.equal(sc.active, 1, 'a committed drag still steps the carousel');
+    stage.fire('pointerup', { pointerId: 7 });
+    assert.deepEqual(stage.releases, [7], 'and gives it back on the way out');
+  });
+});
+
+test('a vertical drag neither captures nor steps', () => {
+  // The page has to keep scrolling over the carousel: that is what the axis lock is for.
+  withDrag((stage, sc) => {
+    down(stage);
+    move(stage, 202, 260);
+    move(stage, 202, 400);
+    assert.deepEqual(stage.captures, [], 'a page scroll must not take the pointer');
+    assert.equal(sc.active, 0, 'and must not change the panel');
+  });
+});
+
+test('a mouse moving with no button held is not the drag we started', () => {
+  // A mouse keeps its pointerId for the whole session, so a pointerup missed outside the
+  // stage used to leave a stale origin that the next idle move measured against and
+  // flicked the carousel with no button down. Capture used to be the only guard; with it
+  // deferred, this is.
+  withDrag((stage, sc) => {
+    down(stage);
+    move(stage, 600, 200, { buttons: 0 });
+    move(stage, 900, 200); // would clear the threshold against the stale origin
+    assert.equal(sc.active, 0, 'the carousel stays put');
+    assert.deepEqual(stage.captures, [], 'and nothing was captured');
+  });
 });

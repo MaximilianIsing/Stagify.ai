@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hero CTA — eight styles, scaled houses</title>
+<style>
+:root{--bg:#ddeeff;--fg:#1f2937;--muted:#6b7280;--border:#e5e7eb;--slate:#64748b;--brand:#2563eb;--brand-strong:#1d4ed8;--brand-deep:#1e3a8a;--brand-soft:#60a5fa;--brand-tint:#dbeafe;--brand-wash:#eff6ff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+a{color:var(--brand-strong)}
+.page{max-width:1180px;margin:0 auto;padding:0 20px 120px}
+header.top{padding:40px 0 20px}
+header.top h1{margin:0 0 6px;font-size:26px;letter-spacing:-.4px}
+header.top .req{margin:0;font-size:15px;color:var(--brand-deep);font-weight:600;max-width:92ch}
+header.top .meta{margin:10px 0 0;font-size:13px;color:var(--muted);max-width:94ch;line-height:1.6}
+header.top ul{margin:8px 0 0;padding-left:18px;font-size:13px;color:var(--slate);line-height:1.6;max-width:94ch}
+.canvas{background:#fff;border:1px solid rgba(30,58,138,.16);border-radius:18px;box-shadow:0 10px 30px rgba(30,58,138,.07);margin:0 0 34px;overflow:hidden}
+.cap{padding:16px 20px 18px;border-bottom:1px solid var(--border)}
+.cap .n{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:#fff;background:var(--brand-deep);border-radius:6px;padding:3px 8px;margin-right:10px}
+.cap h2{display:inline;font-size:17px;margin:0;letter-spacing:-.2px}
+.cap .lede{margin:9px 0 0;font-size:13.5px;color:var(--slate);line-height:1.55;max-width:82ch}
+.map{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px;max-width:900px}
+.map div{font-size:12px;background:#f8fbff;border:1px solid var(--brand-tint);border-radius:8px;padding:7px 10px}
+.map b{display:block;color:var(--brand-deep)}
+@media(max-width:720px){.map{grid-template-columns:repeat(2,1fr)}}
+.hero{position:relative;height:420px;overflow:hidden}
+.hero .shot{position:absolute;inset:0;background:radial-gradient(circle at 78% 22%,rgba(255,244,222,.9) 0 6%,transparent 40%),linear-gradient(105deg,rgba(255,255,255,.35) 0 22%,transparent 55%),linear-gradient(180deg,#efe3d2 0 44%,#d3bfa6 44% 56%,#93795c 56% 100%)}
+.hero .scrim{position:absolute;left:0;right:0;bottom:0;padding:70px 30px 26px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:30px;align-items:end;
+  background:linear-gradient(180deg,rgba(9,17,45,0) 0,rgba(9,17,45,.22) 20px,rgba(9,17,45,.7) 70px,rgba(9,17,45,.88) 170px,rgba(9,17,45,.95) 100%)}
+.eyebrow{margin:0 0 8px;font-size:1rem;font-weight:700;color:#fff;text-shadow:0 1px 10px rgba(9,17,45,.5)}
+.sentence{margin:0 0 18px;font-size:clamp(22px,3.2vw,34px);font-weight:800;color:#fff;line-height:1.15;text-shadow:0 2px 14px rgba(9,17,45,.55)}
+.sentence u{text-decoration:none;border-bottom:2px dashed rgba(147,197,253,.75)}
+.freeline{margin:13px 0 0;font-size:13px;color:rgba(255,255,255,.9);text-shadow:0 1px 8px rgba(9,17,45,.6)}
+.freeline a{color:inherit}
+.side{display:flex;flex-direction:column;align-items:flex-end;gap:14px;text-align:right;color:#fff}
+.side .stat b{display:block;font-size:24px;font-weight:800;line-height:1}
+.side .stat span{font-size:12px;color:rgba(255,255,255,.72)}
+@media(max-width:760px){.hero{height:auto;min-height:440px}.hero .scrim{grid-template-columns:1fr}.side{display:none}}
+
+.plate{position:relative;overflow:hidden;isolation:isolate;display:flex;align-items:center;justify-content:space-between;gap:18px;
+  width:376px;max-width:100%;padding:16px 80px 16px 18px;border-radius:14px;cursor:pointer;border:1px solid rgba(190,214,255,.45);
+  box-shadow:0 12px 30px rgba(30,58,138,.35),inset 0 1px 0 rgba(255,255,255,.14);
+  background:linear-gradient(180deg,#22305a 0%,#141e3a 52%,#0a1120 100%);transition:transform .22s cubic-bezier(.22,.8,.3,1),box-shadow .25s ease}
+.plate:hover{transform:translateY(-2px);box-shadow:0 18px 40px rgba(30,58,138,.42)}
+.plate:active{transform:translateY(0) scale(.988);transition-duration:.06s}
+.plate:focus-visible{outline:3px solid var(--brand-soft);outline-offset:3px}
+.plate .lbl{position:relative;z-index:6;font-size:17px;font-weight:800;color:#fff;letter-spacing:-.1px;text-shadow:0 1px 10px rgba(6,12,28,.8)}
+.sc{position:absolute;inset:0;z-index:0;pointer-events:none}
+.sc svg{width:100%;height:100%;display:block}
+.veil{position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(90deg,rgba(12,19,40,.66) 0%,rgba(12,19,40,.5) 34%,rgba(12,19,40,.12) 56%,rgba(12,19,40,0) 66%)}
+.sc .far,.sc .mid,.sc .near{transition:transform .95s cubic-bezier(.22,.8,.3,1)}
+.sc .home{transition:transform .95s cubic-bezier(.22,.8,.3,1)}
+.plate:hover .far{transform:translateX(-4px)}
+.plate:hover .mid{transform:translateX(-8px)}
+.plate:hover .home{transform:translateX(-8px)}
+.plate:hover .near{transform:translateX(-14px)}
+.van{transform:translateX(-150px);transition:transform 1.25s cubic-bezier(.32,.06,.2,1)}
+.plate:hover .van{transform:translateX(210px)}
+.wheelspin{transform-box:fill-box;transform-origin:center}
+.plate:hover .wheelspin{animation:roll 1.25s linear}
+@keyframes roll{to{transform:rotate(1440deg)}}
+.plate:hover .bounce{animation:bump 1.25s ease-in-out}
+@keyframes bump{0%,100%{transform:translateY(0)}18%{transform:translateY(-.7px)}42%{transform:translateY(.6px)}70%{transform:translateY(-.5px)}}
+.beam{opacity:0;transition:opacity .5s .2s}
+.plate:hover .beam{opacity:1}
+.puff{opacity:0}
+.plate:hover .puff{animation:puff 1.25s ease-out}
+@keyframes puff{0%{opacity:.5;transform:translate(0,0) scale(.5)}100%{opacity:0;transform:translate(-26px,-10px) scale(2.1)}}
+.lit{opacity:.14;transition:opacity .6s .8s}
+.plate:hover .lit{opacity:1}
+.sc .mid .lit,.plate:hover .sc .mid .lit{opacity:.7;transition:none}
+.twinkle{animation:tw 3.2s ease-in-out infinite}
+.twinkle:nth-child(2n){animation-delay:1.1s}.twinkle:nth-child(3n){animation-delay:2.2s}
+@keyframes tw{0%,100%{opacity:.35}50%{opacity:1}}
+
+/* affordance: the entrance */
+.ent .leaf{transform-box:fill-box;transform-origin:left center;transition:transform .65s 1s cubic-bezier(.3,.8,.3,1)}
+.plate:hover .ent .leaf{transform:perspective(70px) rotateY(-72deg)}
+.ent .spill{opacity:0;transition:opacity .5s 1.05s}
+.plate:hover .ent .spill{opacity:1}
+.ent .lantern{opacity:.35;transition:opacity .4s .9s}
+.plate:hover .ent .lantern{opacity:1}
+.ripple{position:absolute;z-index:5;border-radius:50%;pointer-events:none;background:radial-gradient(circle,rgba(255,255,255,.45),rgba(255,255,255,0) 68%);transform:translate(-50%,-50%) scale(0);animation:rip .6s cubic-bezier(.2,.7,.3,1) forwards}
+@keyframes rip{to{transform:translate(-50%,-50%) scale(1);opacity:0}}
+@media (prefers-reduced-motion:reduce){.van,.plate:hover .van{transform:translateX(210px);transition:none}.wheelspin,.bounce,.puff,.twinkle{animation:none!important}}
+.note{font-size:12px;color:var(--muted);padding:12px 20px 16px;border-top:1px solid var(--border);background:#fafcff}
+/* ---- the working picker ---- */
+.hp-slot{position:relative;display:inline-block}
+.hp-slot__btn{appearance:none;background:none;border:0;padding:0 18px 0 0;margin:0;font:inherit;color:inherit;cursor:pointer;
+  border-bottom:2px dashed rgba(147,197,253,.75);position:relative}
+.hp-slot__btn::after{content:"";position:absolute;right:2px;top:50%;width:8px;height:8px;border-right:2.5px solid rgba(147,197,253,.9);border-bottom:2.5px solid rgba(147,197,253,.9);transform:translateY(-70%) rotate(45deg)}
+.hp-menu{position:absolute;left:0;top:calc(100% + 10px);z-index:30;min-width:190px;background:#fff;border-radius:12px;padding:6px;
+  box-shadow:0 18px 40px rgba(9,17,45,.35);display:none}
+.hp-menu.open{display:block}
+.hp-menu button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;cursor:pointer;padding:8px 10px;border-radius:8px;
+  font:600 14px Inter,sans-serif;color:var(--fg);text-align:left;text-shadow:none}
+.hp-menu button:hover,.hp-menu button.on{background:var(--brand-wash);color:var(--brand-deep)}
+.hp-menu .sw{width:26px;height:18px;border-radius:4px;flex:none;border:1px solid rgba(0,0,0,.12)}
+/* crossfade between plates */
+.stack{position:relative;width:376px;max-width:100%;height:62px}
+.stack .plate{position:absolute;inset:0;width:100%;opacity:0;pointer-events:none;transition:opacity .35s ease,transform .22s cubic-bezier(.22,.8,.3,1),box-shadow .25s ease}
+.stack .plate.on{opacity:1;pointer-events:auto}
+.stack .plate.on:hover{transform:translateY(-2px)}
+/* gallery */
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;padding:22px}
+.tile{background:linear-gradient(180deg,rgba(9,17,45,.82),rgba(9,17,45,.95));border-radius:16px;padding:18px;display:grid;gap:10px;justify-items:start}
+.tile .t{font-size:12px;font-weight:700;color:rgba(255,255,255,.8);letter-spacing:.3px}
+.tile .t b{color:#fff;font-size:13.5px;margin-right:8px}
+@media(max-width:820px){.grid{grid-template-columns:1fr}}
+.note{font-size:12px;color:var(--muted);padding:12px 20px 16px;border-top:1px solid var(--border);background:#fafcff}
+
+.note{font-size:12px;color:var(--muted);padding:12px 20px 16px;border-top:1px solid var(--border);background:#fafcff}
+</style>
+</head>
+<body>
+<div class="page">
+<header class="top">
+  <h1>Hero CTA — eight styles, houses scaled to the door</h1>
+  <p class="req">Fix list from review: door too big on Luxury / Scandinavian / Standard · Standard’s lamp covered · too many windows on Custom · a door is one storey, scale houses to it · the right-hand house must move with the rest of the parallax · Farmhouse doesn’t look like a farmhouse · far backgrounds should differ per style.</p>
+  <ul>
+    <li><b>Scale.</b> The entrance is rendered at 38 × 36 (was 46 × 44) and every house is rebuilt on a 22-unit storey grid: ground floor y 44–66, upper floor y 22–44, roof above. The door leaf is ≈ 19 units tall — one storey. Windows are 8 × 10.</li>
+    <li><b>Parallax.</b> The entrance is now drawn <em>inside</em> the scene SVG as part of the house, so the whole house — door included — pans in the mid band with the street. Nothing is static any more.</li>
+    <li><b>Custom.</b> Brownstone cut to two upper windows and one ground-floor window either side of the stoop.</li>
+    <li><b>Standard.</b> Coach lamp moved to the top-left of the porch, clear of the door and the flanking window.</li>
+    <li><b>Farmhouse.</b> Redrawn: white board-and-batten, standing-seam metal porch roof on square posts, cross-buck door with four lights, hanging lantern, planter — and a red barn, silo and treeline behind it.</li>
+    <li><b>Far backgrounds.</b> Each style has its own: UK terrace roofline (Standard), city skyline (Modern), pine forest and a mountain (Scandinavian), sea, lighthouse and boats (Coastal), fields, barn and silo (Farmhouse), the Enterprise city with a dome (Luxury), desert hills and palms (Midcentury), a bridge and towers (Custom).</li>
+  </ul>
+</header>
+
+<section class="canvas" id="live">
+  <div class="cap"><span class="n">live</span><h2>The hero, picker wired to the button</h2>
+    <p class="lede">Open the style slot. Rooms do not change the button.</p>
+    <div class="map" id="map"></div>
+  </div>
+  <div class="hero"><div class="shot"></div><div class="scrim"><div>
+    <p class="eyebrow">Free virtual staging</p>
+    <h3 class="sentence">Stage this
+      <span class="hp-slot"><button type="button" class="hp-slot__btn" id="roomBtn">bedroom</button><span class="hp-menu" id="roomMenu"></span></span>
+      in
+      <span class="hp-slot"><button type="button" class="hp-slot__btn" id="styleBtn">Modern</button><span class="hp-menu" id="styleMenu"></span></span>
+    </h3>
+    <div class="stack" id="stack"></div>
+    <p class="freeline">3 free generations left today · <a href="#live">Try Stagify+</a></p>
+  </div>
+  <div class="side"><div class="stat"><b>36</b><span>room × style pairs</span></div><div class="stat"><b>11</b><span>languages</span></div></div>
+  </div></div>
+  <p class="note">Entrance at svg x 322–360, y 30–66 (steps on the kerb). Van parks at x 210–318. Whole house pans −8px with the mid band on hover; the van’s parking spot is in plate space so the bumper ends 4px short of the steps at rest and 12px after the pan.</p>
+</section>
+
+<section class="canvas" id="all">
+  <div class="cap"><span class="n">gallery</span><h2>All eight</h2><p class="lede">Hover any plate to run its drive.</p></div>
+  <div class="grid" id="grid"></div>
+</section>
+</div>
+
+<script>
+const GOLD='#ffd48a';
+function VAN(){
+  const p={body:'#f2f6ff',bodyShade:'#cfdcf4',roof:'#ffffff',cab:'#dbe5f8',glass:'#7f97c7',glassHi:'#a9bde4',trim:'#9fb2dc',tyre:'#0c1324',rim:'#6b83b8',rimHub:'#2b3a63',brand:'#1d4ed8',tail:'#ef4444'};
+  return `<g class="bounce">
+    <ellipse cx="54" cy="67.5" rx="52" ry="4.2" fill="#000" opacity=".3"/>
+    <path d="M2 30.5a2 2 0 0 1 2-2h62v33H4a2 2 0 0 1-2-2z" fill="${p.body}"/><path d="M2 55h64v6.5H4a2 2 0 0 1-2-2z" fill="${p.bodyShade}"/>
+    <rect x="2" y="28.5" width="64" height="2.6" rx="1.3" fill="${p.roof}"/>
+    <g stroke="${p.trim}" stroke-width=".7" opacity=".9"><path d="M8 31.6v29.4M20 31.6v29.4M32 31.6v29.4M44 31.6v29.4M56 31.6v29.4"/></g>
+    <path d="M2 41.5h64" stroke="${p.trim}" stroke-width=".8" opacity=".55"/>
+    <rect x="12" y="34" width="42" height="14" rx="2.5" fill="${p.brand}" opacity=".92"/>
+    <path d="M18 44.5v-5.2l4-3.1 4 3.1v5.2z" fill="#fff"/><rect x="20.2" y="41" width="3.6" height="3.5" fill="${p.brand}"/>
+    <g fill="#fff" opacity=".92"><rect x="29" y="38.2" width="21" height="2.1" rx="1"/><rect x="29" y="42" width="14" height="1.7" rx=".85" opacity=".7"/></g>
+    <path d="M4 30v31" stroke="${p.trim}" stroke-width="1"/><rect x="5.4" y="44" width="1.6" height="5" rx=".8" fill="${p.trim}"/>
+    <g fill="${p.trim}" opacity=".8"><rect x="2.6" y="34" width="1.6" height="2.4"/><rect x="2.6" y="54" width="1.6" height="2.4"/></g>
+    <path d="M66 34h13.5l10.4 9.2a4 4 0 0 1 1.3 3v9.3H66z" fill="${p.cab}"/><path d="M66 55h25.2v6.5H66z" fill="${p.bodyShade}"/>
+    <path d="M68.6 36.4h10.2l8.6 7.6h-18.8z" fill="${p.glass}"/><path d="M68.6 36.4h4.4l1.1 7.6h-5.5z" fill="${p.glassHi}" opacity=".75"/>
+    <path d="M79 36.6l8.2 7.3" stroke="${p.trim}" stroke-width=".7" opacity=".7"/><path d="M66 36v25" stroke="${p.trim}" stroke-width=".9"/>
+    <rect x="69.5" y="47.5" width="5" height="1.6" rx=".8" fill="${p.trim}"/><path d="M88.2 39.5l4.6-1.4v3.1l-4.6 1z" fill="${p.trim}"/>
+    <rect x="88.5" y="47" width="3.2" height="7.5" rx="1" fill="${p.trim}" opacity=".85"/><rect x="86" y="55.5" width="6" height="4" rx="1.2" fill="${p.bodyShade}"/>
+    <rect x="86.4" y="59" width="5.6" height="2.6" rx="1" fill="${p.rimHub}" opacity=".7"/>
+    <circle cx="90.4" cy="50" r="2.3" fill="#fff3d6"/><circle cx="90.4" cy="50" r="1.1" fill="#fff"/>
+    <rect x="2.2" y="47" width="2" height="4" rx=".8" fill="${p.tail}" opacity=".9"/>
+    <g fill="${p.bodyShade}" opacity=".9"><path d="M14 61.5a9 9 0 0 1 18 0z"/><path d="M68 61.5a9 9 0 0 1 18 0z"/></g>
+    <circle cx="23" cy="62" r="7.4" fill="${p.tyre}"/><g class="wheelspin"><circle cx="23" cy="62" r="3.6" fill="${p.rim}"/><circle cx="23" cy="62" r="1.3" fill="${p.rimHub}"/><g stroke="${p.rimHub}" stroke-width=".8"><path d="M23 58.6v6.8M19.6 62h6.8M20.6 59.6l4.8 4.8M25.4 59.6l-4.8 4.8"/></g></g>
+    <circle cx="77" cy="62" r="7.4" fill="${p.tyre}"/><g class="wheelspin"><circle cx="77" cy="62" r="3.6" fill="${p.rim}"/><circle cx="77" cy="62" r="1.3" fill="${p.rimHub}"/><g stroke="${p.rimHub}" stroke-width=".8"><path d="M77 58.6v6.8M73.6 62h6.8M74.6 59.6l4.8 4.8M79.4 59.6l-4.8 4.8"/></g></g>
+    <circle class="puff" cx="0" cy="58" r="3.4" fill="#fff" opacity="0"/></g>`;
+}
+/* the fixed headlight: short, soft, fades radially, hugs the ground, ends before the entrance */
+const BEAM=`<defs><radialGradient id="hl" cx="0" cy=".5" r="1"><stop offset="0" stop-color="#fff0cf" stop-opacity=".42"/><stop offset=".55" stop-color="#ffe4a8" stop-opacity=".12"/><stop offset="1" stop-color="#ffe4a8" stop-opacity="0"/></radialGradient></defs>
+  <g class="beam"><path d="M92 48.5L110 44v22L92 52z" fill="url(#hl)"/><ellipse cx="103" cy="66" rx="11" ry="2" fill="#ffe4a8" opacity=".18"/></g>`;
+const SKY=(id)=>`<defs><linearGradient id="sky${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1e2c58"/><stop offset=".55" stop-color="#14203f"/><stop offset="1" stop-color="#0a1120"/></linearGradient></defs><rect width="376" height="74" fill="url(#sky${id})"/>`;
+const STARS=`<g class="far" fill="#fff"><circle class="twinkle" cx="44" cy="10" r=".9"/><circle class="twinkle" cx="92" cy="18" r=".7"/><circle class="twinkle" cx="140" cy="8" r="1"/><circle class="twinkle" cx="196" cy="14" r=".8"/><circle class="twinkle" cx="262" cy="7" r=".9"/><circle class="twinkle" cx="330" cy="15" r=".8"/><circle class="twinkle" cx="300" cy="5" r=".6"/><circle class="twinkle" cx="232" cy="20" r=".6"/></g>`;
+const CITY=`<g class="far">
+  <g fill="#1a2650"><path d="M0 50h10v24H0zM14 44h8v30h-8zM26 40h6v34h-6zM36 46h12v28H36zM52 38h6v36h-6zM62 48h10v26H62zM76 42h8v32h-8zM88 36h5v38h-5zM96 46h12v28H96zM112 52h60v22h-60zM176 44h9v30h-9zM188 38h6v36h-6zM198 48h10v26h-10zM214 52h8v22h-8z"/>
+    <path d="M116 52c10-10 20-10 30 0M146 52c8-8 16-8 26 0" fill="none" stroke="#2b3d72" stroke-width="1.2"/></g>
+  <g fill="${GOLD}" opacity=".45"><rect x="16" y="48" width="2" height="2"/><rect x="19" y="52" width="2" height="2"/><rect x="38" y="50" width="2" height="2"/><rect x="44" y="54" width="2" height="2"/><rect x="64" y="52" width="2" height="2"/><rect x="78" y="46" width="2" height="2"/><rect x="98" y="50" width="2" height="2"/><rect x="104" y="56" width="2" height="2"/><rect x="180" y="48" width="2" height="2"/><rect x="200" y="52" width="2" height="2"/></g>
+  <circle class="twinkle" cx="54" cy="37" r="1" fill="#ff6b6b"/><circle class="twinkle" cx="90.5" cy="35" r="1" fill="#ff6b6b"/><circle class="twinkle" cx="191" cy="37" r="1" fill="#ff6b6b"/>
+  <g fill="#c8d8ff" opacity=".25"><circle cx="120" cy="52" r=".8"/><circle cx="130" cy="47" r=".8"/><circle cx="140" cy="47" r=".8"/><circle cx="150" cy="52" r=".8"/></g></g>`;
+const ROAD=`<g class="near"><rect y="66" width="376" height="8" fill="#080d1c"/><rect y="65" width="376" height="1.4" fill="#2a3a63"/><path d="M0 70h376" stroke="#1a2547" stroke-width=".8" stroke-dasharray="6 8"/></g>`;
+const LAMP=(x)=>`<path d="M${x} 22v44" stroke="#33436f" stroke-width="2.4"/><path d="M${x-5} 22h10l-2-6h-6z" fill="${GOLD}" opacity=".9"/><ellipse cx="${x}" cy="66" rx="22" ry="4.5" fill="${GOLD}" opacity=".1"/>`;
+const TREE=(x)=>`<path d="M${x} 66c-9-13-9-24 0-36 9 12 9 23 0 36z" fill="#1c3550" opacity=".85"/>`;
+/* a lit window with a frame, sill and curtains. cls lets it be lit-on-hover or always on */
+const WIN=(x,y,w,h,cls='lit',op=.85)=>`<rect x="${x-1}" y="${y-1}" width="${w+2}" height="${h+2}" fill="#3b4a78"/><rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#0b1224"/>
+  <g class="${cls}"><rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${GOLD}" opacity="${op}"/><rect x="${x}" y="${y}" width="${w*.28}" height="${h}" fill="#b98a4c" opacity=".55"/><rect x="${x+w*.72}" y="${y}" width="${w*.28}" height="${h}" fill="#b98a4c" opacity=".55"/></g>
+  <path d="M${x+w/2} ${y}v${h}M${x} ${y+h/2}h${w}" stroke="#3b4a78" stroke-width=".9"/><rect x="${x-2}" y="${y+h}" width="${w+4}" height="1.4" fill="#4a5a8a"/>`;
+
+/* ---------------- styles: each = {door(affordance svg), house(x, w) } ---------------- */
+
+const DOOR={"georgian": "<svg viewBox=\"0 0 46 44\">\n  <rect x=\"3\" y=\"2\" width=\"40\" height=\"40\" fill=\"#5a3a2e\"/><rect x=\"3\" y=\"2\" width=\"40\" height=\"40\" fill=\"none\" stroke=\"#7d5442\" stroke-width=\"1\"/>\n  <g stroke=\"#6d4536\" stroke-width=\".6\" opacity=\".7\"><path d=\"M3 8h40M3 14h40M3 20h40M3 26h40M3 32h40M3 38h40\"/></g>\n  <rect x=\"8\" y=\"4\" width=\"30\" height=\"36\" fill=\"#eef2fb\"/>\n  <path d=\"M11 14a12 12 0 0 1 24 0z\" fill=\"#0b1224\"/><g class=\"spill\"><path d=\"M11 14a12 12 0 0 1 24 0z\" fill=\"#ffd48a\" opacity=\".75\"/></g>\n  <path d=\"M23 2v12M15 6.5l8 7.5 8-7.5M13 10l10 4 10-4\" stroke=\"#eef2fb\" stroke-width=\"1\" fill=\"none\"/>\n  <rect x=\"9\" y=\"14\" width=\"3\" height=\"24\" fill=\"#dfe6f5\"/><rect x=\"34\" y=\"14\" width=\"3\" height=\"24\" fill=\"#dfe6f5\"/>\n  <rect x=\"12\" y=\"15\" width=\"22\" height=\"23\" fill=\"#0b1224\"/>\n  <g class=\"spill\"><rect x=\"12\" y=\"15\" width=\"22\" height=\"23\" fill=\"#ffd48a\" opacity=\".55\"/><path d=\"M23 33V23M18 28l5-5 5 5\" stroke=\"#fff\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" fill=\"none\"/><path d=\"M8 38h30l10 6H-2z\" fill=\"#ffd48a\" opacity=\".2\"/></g>\n  <g class=\"leaf\"><rect x=\"12\" y=\"15\" width=\"22\" height=\"23\" fill=\"#151a26\"/><g fill=\"none\" stroke=\"#2e3546\" stroke-width=\".9\"><rect x=\"14.5\" y=\"17.5\" width=\"7\" height=\"6\"/><rect x=\"24.5\" y=\"17.5\" width=\"7\" height=\"6\"/><rect x=\"14.5\" y=\"26\" width=\"7\" height=\"4\"/><rect x=\"24.5\" y=\"26\" width=\"7\" height=\"4\"/><rect x=\"14.5\" y=\"32\" width=\"7\" height=\"4\"/><rect x=\"24.5\" y=\"32\" width=\"7\" height=\"4\"/></g>\n    <circle cx=\"23\" cy=\"24.5\" r=\"1.6\" fill=\"none\" stroke=\"#d9b45a\" stroke-width=\".9\"/><rect x=\"20\" y=\"31\" width=\"6\" height=\"1.4\" rx=\".7\" fill=\"#d9b45a\"/><circle cx=\"31.5\" cy=\"28.5\" r=\"1\" fill=\"#d9b45a\"/></g>\n  <rect x=\"6\" y=\"38\" width=\"34\" height=\"2.5\" fill=\"#c9d0de\"/><rect x=\"4\" y=\"40.5\" width=\"38\" height=\"2.5\" fill=\"#aab3c6\"/>\n  <g stroke=\"#0e162e\" stroke-width=\"1.2\"><path d=\"M4 30v10M6 30v10M40 30v10M42 30v10\"/><path d=\"M3 30h5M39 30h5\"/></g>\n  <g class=\"lantern\"><rect x=\"38\" y=\"6\" width=\"5\" height=\"7\" rx=\"1\" fill=\"#ffd48a\"/><path d=\"M40.5 6V3h2\" stroke=\"#0e162e\" stroke-width=\"1\" fill=\"none\"/><circle cx=\"40.5\" cy=\"9.5\" r=\"6\" fill=\"#ffd48a\" opacity=\".3\"/></g>\n  <rect x=\"4\" y=\"9\" width=\"5\" height=\"3.2\" rx=\".6\" fill=\"#d9b45a\"/><g fill=\"#5a3a2e\"><rect x=\"5\" y=\"10.2\" width=\"1\" height=\"1\"/><rect x=\"7.2\" y=\"10.2\" width=\"1\" height=\"1\"/></g>\n </svg>", "victorian": "<svg viewBox=\"0 0 46 44\">\n  <rect x=\"2\" y=\"2\" width=\"42\" height=\"40\" fill=\"#4a2f28\"/><g stroke=\"#5c3b32\" stroke-width=\".6\" opacity=\".7\"><path d=\"M2 8h42M2 14h42M2 20h42M2 26h42M2 32h42M2 38h42\"/></g>\n  <path d=\"M6 12a17 12 0 0 1 34 0v28H6z\" fill=\"#e8ecf4\"/><path d=\"M8 13a15 10 0 0 1 30 0v26H8z\" fill=\"#0b1224\"/>\n  <g class=\"spill\"><path d=\"M8 13a15 10 0 0 1 30 0v26H8z\" fill=\"#ffd48a\" opacity=\".5\"/><path d=\"M23 33V23M18 28l5-5 5 5\" stroke=\"#fff\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" fill=\"none\"/><path d=\"M6 40h34l10 4H-2z\" fill=\"#ffd48a\" opacity=\".2\"/></g>\n  <rect x=\"11\" y=\"8\" width=\"24\" height=\"5\" fill=\"#0b1224\"/><g class=\"spill\"><rect x=\"11\" y=\"8\" width=\"24\" height=\"5\" fill=\"#9fc7ff\" opacity=\".7\"/></g><g stroke=\"#e8ecf4\" stroke-width=\".7\"><path d=\"M17 8v5M23 8v5M29 8v5\"/></g>\n  <g class=\"leaf\"><rect x=\"11\" y=\"14\" width=\"24\" height=\"25\" fill=\"#7a2f2a\"/>\n    <g fill=\"#2f5aa8\"><rect x=\"13.5\" y=\"16\" width=\"8\" height=\"8\"/><rect x=\"24.5\" y=\"16\" width=\"8\" height=\"8\"/></g>\n    <g fill=\"#d9a441\" opacity=\".8\"><path d=\"M13.5 16h8v3h-8zM24.5 16h8v3h-8z\"/><circle cx=\"17.5\" cy=\"21.5\" r=\"1.4\"/><circle cx=\"28.5\" cy=\"21.5\" r=\"1.4\"/></g>\n    <g fill=\"none\" stroke=\"#5a2420\" stroke-width=\".8\"><rect x=\"13.5\" y=\"27\" width=\"8\" height=\"9\"/><rect x=\"24.5\" y=\"27\" width=\"8\" height=\"9\"/></g>\n    <circle cx=\"23\" cy=\"26.5\" r=\"1.4\" fill=\"none\" stroke=\"#d9b45a\" stroke-width=\".9\"/><circle cx=\"32\" cy=\"31\" r=\"1\" fill=\"#d9b45a\"/></g>\n  <g fill=\"#c9c2b6\"><rect x=\"6\" y=\"40\" width=\"34\" height=\"2.5\"/></g><g fill=\"#7a4a3a\" opacity=\".9\"><rect x=\"8\" y=\"40.4\" width=\"3\" height=\"1.8\"/><rect x=\"14\" y=\"40.4\" width=\"3\" height=\"1.8\"/><rect x=\"20\" y=\"40.4\" width=\"3\" height=\"1.8\"/><rect x=\"26\" y=\"40.4\" width=\"3\" height=\"1.8\"/><rect x=\"32\" y=\"40.4\" width=\"3\" height=\"1.8\"/></g>\n  <g class=\"lantern\"><path d=\"M2 12h4l-1 5H3z\" fill=\"#ffd48a\"/><path d=\"M4 12V9h3\" stroke=\"#0e162e\" stroke-width=\"1\" fill=\"none\"/><circle cx=\"4\" cy=\"14.5\" r=\"6\" fill=\"#ffd48a\" opacity=\".3\"/></g>\n </svg>", "craftsman": "<svg viewBox=\"0 0 46 44\">\n  <path d=\"M0 12l23-9 23 9v3H0z\" fill=\"#2a3448\"/><path d=\"M2 15h42v3H2z\" fill=\"#3b3128\"/><g stroke=\"#3b3128\" stroke-width=\"1.4\"><path d=\"M4 18v4M10 18v4M16 18v4M30 18v4M36 18v4M42 18v4\"/></g>\n  <rect x=\"4\" y=\"18\" width=\"38\" height=\"24\" fill=\"#6b4a3a\"/><g stroke=\"#7d5847\" stroke-width=\".7\" opacity=\".7\"><path d=\"M4 24h38M4 30h38M4 36h38\"/></g>\n  <path d=\"M4 20l4 0v14a3 3 0 0 1-4 4zM42 20h-4v14a3 3 0 0 0 4 4z\" fill=\"#8a7263\"/><rect x=\"2\" y=\"36\" width=\"8\" height=\"6\" fill=\"#5c6b7a\"/><rect x=\"36\" y=\"36\" width=\"8\" height=\"6\" fill=\"#5c6b7a\"/>\n  <rect x=\"13\" y=\"19\" width=\"20\" height=\"21\" fill=\"#0b1224\"/><rect x=\"12\" y=\"18\" width=\"22\" height=\"23\" fill=\"none\" stroke=\"#3b3128\" stroke-width=\"1.2\"/>\n  <g class=\"spill\"><rect x=\"13\" y=\"19\" width=\"20\" height=\"21\" fill=\"#ffd48a\" opacity=\".55\"/><path d=\"M23 35V25M18 30l5-5 5 5\" stroke=\"#fff\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" fill=\"none\"/><path d=\"M8 40h30l10 4H-2z\" fill=\"#ffd48a\" opacity=\".2\"/></g>\n  <g class=\"leaf\"><rect x=\"13\" y=\"19\" width=\"20\" height=\"21\" fill=\"#9a5f3a\"/><g fill=\"#0b1224\"><rect x=\"14.5\" y=\"20.5\" width=\"5\" height=\"4\"/><rect x=\"20.5\" y=\"20.5\" width=\"5\" height=\"4\"/><rect x=\"26.5\" y=\"20.5\" width=\"5\" height=\"4\"/></g><g class=\"spill\" fill=\"#ffd48a\" opacity=\".6\"><rect x=\"14.5\" y=\"20.5\" width=\"5\" height=\"4\"/><rect x=\"20.5\" y=\"20.5\" width=\"5\" height=\"4\"/><rect x=\"26.5\" y=\"20.5\" width=\"5\" height=\"4\"/></g>\n    <rect x=\"15\" y=\"27\" width=\"16\" height=\"11\" fill=\"none\" stroke=\"#6e4128\" stroke-width=\".9\"/><circle cx=\"30\" cy=\"32\" r=\"1\" fill=\"#2f2a26\"/></g>\n  <rect x=\"10\" y=\"40\" width=\"26\" height=\"2\" fill=\"#8a7263\"/><rect x=\"8\" y=\"42\" width=\"30\" height=\"2\" fill=\"#5c6b7a\"/>\n  <g class=\"lantern\"><path d=\"M23 12v3\" stroke=\"#2f2a26\" stroke-width=\"1\"/><path d=\"M20 15h6l-1 4h-4z\" fill=\"#ffd48a\"/><circle cx=\"23\" cy=\"17.5\" r=\"6\" fill=\"#ffd48a\" opacity=\".3\"/></g>\n </svg>", "brownstone": "<svg viewBox=\"0 0 46 44\">\n  <rect x=\"0\" y=\"0\" width=\"46\" height=\"44\" fill=\"#5a3e34\"/><g stroke=\"#6b4a3e\" stroke-width=\".6\" opacity=\".7\"><path d=\"M0 6h46M0 12h46M0 18h46M0 24h46M0 30h46M0 36h46\"/></g>\n  <path d=\"M8 4h30v3H8z\" fill=\"#8a7263\"/><path d=\"M10 7h26v2H10z\" fill=\"#7a6455\"/>\n  <rect x=\"12\" y=\"9\" width=\"22\" height=\"20\" fill=\"#0b1224\"/><rect x=\"11\" y=\"8\" width=\"24\" height=\"22\" fill=\"none\" stroke=\"#3a2a22\" stroke-width=\"1.4\"/>\n  <g class=\"spill\"><rect x=\"12\" y=\"9\" width=\"22\" height=\"20\" fill=\"#ffd48a\" opacity=\".55\"/><path d=\"M23 26V17M18.5 21.5L23 17l4.5 4.5\" stroke=\"#fff\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" fill=\"none\"/><path d=\"M10 30h26l12 14H-2z\" fill=\"#ffd48a\" opacity=\".16\"/></g>\n  <g class=\"leaf\"><rect x=\"12\" y=\"9\" width=\"11\" height=\"20\" fill=\"#2e2622\"/><rect x=\"14\" y=\"11\" width=\"7\" height=\"10\" fill=\"#0b1224\"/><g class=\"spill\"><rect x=\"14\" y=\"11\" width=\"7\" height=\"10\" fill=\"#ffd48a\" opacity=\".65\"/></g><rect x=\"14\" y=\"23\" width=\"7\" height=\"4\" fill=\"none\" stroke=\"#4a3e38\" stroke-width=\".8\"/><circle cx=\"21\" cy=\"21.5\" r=\".9\" fill=\"#d9b45a\"/></g>\n  <rect x=\"23\" y=\"9\" width=\"11\" height=\"20\" fill=\"#2e2622\"/><rect x=\"25\" y=\"11\" width=\"7\" height=\"10\" fill=\"#0b1224\"/><g class=\"spill\"><rect x=\"25\" y=\"11\" width=\"7\" height=\"10\" fill=\"#ffd48a\" opacity=\".65\"/></g><rect x=\"25\" y=\"23\" width=\"7\" height=\"4\" fill=\"none\" stroke=\"#4a3e38\" stroke-width=\".8\"/><circle cx=\"25\" cy=\"21.5\" r=\".9\" fill=\"#d9b45a\"/>\n  <g fill=\"#8a7263\"><rect x=\"12\" y=\"30\" width=\"22\" height=\"2.6\"/><rect x=\"10\" y=\"32.6\" width=\"26\" height=\"2.6\"/><rect x=\"8\" y=\"35.2\" width=\"30\" height=\"2.6\"/><rect x=\"6\" y=\"37.8\" width=\"34\" height=\"2.6\"/><rect x=\"4\" y=\"40.4\" width=\"38\" height=\"2.6\"/></g>\n  <g stroke=\"#7a6455\" stroke-width=\".5\"><path d=\"M12 32.6h22M10 35.2h26M8 37.8h30M6 40.4h34\"/></g>\n  <g stroke=\"#0e162e\" stroke-width=\"1.3\" fill=\"none\"><path d=\"M11 30l-8 12M35 30l8 12\"/><path d=\"M11 30l-1-3M35 30l1-3\"/></g>\n  <g class=\"lantern\"><rect x=\"38\" y=\"12\" width=\"4\" height=\"6\" rx=\"1\" fill=\"#ffd48a\"/><path d=\"M40 12V9h-3\" stroke=\"#0e162e\" stroke-width=\"1\" fill=\"none\"/><circle cx=\"40\" cy=\"15\" r=\"6\" fill=\"#ffd48a\" opacity=\".3\"/></g>\n  <rect x=\"3\" y=\"14\" width=\"6\" height=\"3.6\" rx=\".7\" fill=\"#d9b45a\"/><g fill=\"#5a3e34\"><rect x=\"4.2\" y=\"15.3\" width=\"1.2\" height=\"1.2\"/><rect x=\"6.6\" y=\"15.3\" width=\"1.2\" height=\"1.2\"/></g>\n </svg>", "modern": "<svg viewBox=\"0 0 46 44\">\n  <rect x=\"0\" y=\"0\" width=\"46\" height=\"44\" fill=\"#d9d4c9\"/><rect x=\"0\" y=\"0\" width=\"16\" height=\"44\" fill=\"#6b4a3a\"/><g stroke=\"#7d5847\" stroke-width=\".8\"><path d=\"M4 0v44M8 0v44M12 0v44\"/></g>\n  <rect x=\"16\" y=\"2\" width=\"30\" height=\"5\" fill=\"#2a2f3a\"/><g class=\"lantern\"><rect x=\"20\" y=\"5.5\" width=\"22\" height=\"1.4\" fill=\"#ffd48a\"/><path d=\"M18 7h26l4 8H14z\" fill=\"#ffd48a\" opacity=\".22\"/></g>\n  <rect x=\"19\" y=\"8\" width=\"20\" height=\"32\" fill=\"#0b1224\"/>\n  <g class=\"spill\"><rect x=\"19\" y=\"8\" width=\"20\" height=\"32\" fill=\"#ffd48a\" opacity=\".55\"/><path d=\"M29 32V22M24.5 26.5L29 22l4.5 4.5\" stroke=\"#fff\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" fill=\"none\"/><path d=\"M16 40h24l10 4H6z\" fill=\"#ffd48a\" opacity=\".2\"/></g>\n  <g class=\"leaf\"><rect x=\"19\" y=\"8\" width=\"20\" height=\"32\" fill=\"#2a2320\"/><rect x=\"33\" y=\"10\" width=\"3\" height=\"28\" fill=\"#0b1224\"/><g class=\"spill\"><rect x=\"33\" y=\"10\" width=\"3\" height=\"28\" fill=\"#ffd48a\" opacity=\".75\"/></g>\n    <rect x=\"21.5\" y=\"20\" width=\"1.4\" height=\"9\" rx=\".7\" fill=\"#b8bcc4\"/><g stroke=\"#3a312c\" stroke-width=\".6\"><path d=\"M19 16h14M19 24h14M19 32h14\"/></g></g>\n  <rect x=\"40\" y=\"14\" width=\"4\" height=\"5\" fill=\"#9aa0aa\"/><text x=\"40.4\" y=\"18.2\" font-family=\"Inter,Arial\" font-size=\"3.6\" font-weight=\"800\" fill=\"#1d2330\">7</text>\n  <rect x=\"16\" y=\"40\" width=\"30\" height=\"2.4\" fill=\"#9aa0aa\"/><rect x=\"14\" y=\"42.4\" width=\"32\" height=\"1.6\" fill=\"#7a808a\"/>\n  <rect x=\"2\" y=\"34\" width=\"10\" height=\"8\" fill=\"#3a3f4a\"/><path d=\"M7 34c-4-4-4-8 0-11 4 3 4 7 0 11z\" fill=\"#3f7a4f\"/><path d=\"M4 33c-1-3 0-5 3-6M10 33c1-3 0-5-3-6\" stroke=\"#3f7a4f\" stroke-width=\"1.2\" fill=\"none\"/>\n </svg>", "cottage": "<svg viewBox=\"0 0 46 44\">\n  <rect x=\"0\" y=\"0\" width=\"46\" height=\"44\" fill=\"#6f665a\"/>\n  <g fill=\"#7d7467\" opacity=\".9\"><rect x=\"1\" y=\"2\" width=\"8\" height=\"5\" rx=\"1\"/><rect x=\"11\" y=\"1\" width=\"10\" height=\"6\" rx=\"1\"/><rect x=\"23\" y=\"2\" width=\"7\" height=\"5\" rx=\"1\"/><rect x=\"32\" y=\"1\" width=\"12\" height=\"6\" rx=\"1\"/><rect x=\"2\" y=\"9\" width=\"11\" height=\"5\" rx=\"1\"/><rect x=\"33\" y=\"9\" width=\"11\" height=\"5\" rx=\"1\"/><rect x=\"1\" y=\"16\" width=\"9\" height=\"6\" rx=\"1\"/><rect x=\"36\" y=\"16\" width=\"9\" height=\"6\" rx=\"1\"/><rect x=\"2\" y=\"24\" width=\"10\" height=\"5\" rx=\"1\"/><rect x=\"34\" y=\"24\" width=\"10\" height=\"5\" rx=\"1\"/><rect x=\"1\" y=\"31\" width=\"8\" height=\"6\" rx=\"1\"/><rect x=\"37\" y=\"31\" width=\"8\" height=\"6\" rx=\"1\"/></g>\n  <path d=\"M12 40V19a11 11 0 0 1 22 0v21z\" fill=\"#3a332c\"/>\n  <path d=\"M14 40V19a9 9 0 0 1 18 0v21z\" fill=\"#0b1224\"/>\n  <g class=\"spill\"><path d=\"M14 40V19a9 9 0 0 1 18 0v21z\" fill=\"#ffd48a\" opacity=\".55\"/><path d=\"M23 34V24M18.5 28.5L23 24l4.5 4.5\" stroke=\"#fff\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" fill=\"none\"/><path d=\"M12 40h22l10 4H2z\" fill=\"#ffd48a\" opacity=\".2\"/></g>\n  <g class=\"leaf\"><path d=\"M14 40V19a9 9 0 0 1 18 0v21z\" fill=\"#8a5a34\"/><g stroke=\"#6e4426\" stroke-width=\".8\"><path d=\"M18 12.5v27.5M22 10.5v29.5M26 10.5v29.5M30 13v27\"/></g>\n    <g fill=\"#1a1a1a\"><path d=\"M15 21h12l-2 1.5H15zM15 32h12l-2 1.5H15z\"/></g><circle cx=\"29\" cy=\"27\" r=\"1.8\" fill=\"none\" stroke=\"#1a1a1a\" stroke-width=\"1\"/></g>\n  <g stroke=\"#3f7a4f\" stroke-width=\"1.2\" fill=\"none\"><path d=\"M6 20c4-8 10-12 18-13 6 0 10 3 12 8\"/><path d=\"M10 14c2-2 4-3 6-3M28 8c2 0 4 1 5 3\"/></g>\n  <g fill=\"#d6506a\"><circle cx=\"9\" cy=\"17\" r=\"1.5\"/><circle cx=\"16\" cy=\"9.5\" r=\"1.5\"/><circle cx=\"24\" cy=\"6.5\" r=\"1.5\"/><circle cx=\"33\" cy=\"9\" r=\"1.5\"/><circle cx=\"36\" cy=\"15\" r=\"1.3\"/></g>\n  <rect x=\"3\" y=\"30\" width=\"6\" height=\"7\" fill=\"#0b1224\"/><g class=\"spill\"><rect x=\"3\" y=\"30\" width=\"6\" height=\"7\" fill=\"#ffd48a\" opacity=\".6\"/></g><path d=\"M6 30v7M3 33.5h6\" stroke=\"#3a332c\" stroke-width=\".7\"/>\n  <g class=\"lantern\"><path d=\"M38 24h5l-1 6h-3z\" fill=\"#ffd48a\"/><path d=\"M40.5 24v-3h-3\" stroke=\"#1a1a1a\" stroke-width=\"1\" fill=\"none\"/><circle cx=\"40.5\" cy=\"27\" r=\"6\" fill=\"#ffd48a\" opacity=\".3\"/></g>\n  <rect x=\"10\" y=\"40\" width=\"26\" height=\"2.5\" fill=\"#8f8779\"/><rect x=\"8\" y=\"42.5\" width=\"30\" height=\"1.5\" fill=\"#6f665a\"/>\n </svg>", "colonial": "<svg viewBox=\"0 0 46 44\">\n  <rect x=\"0\" y=\"0\" width=\"46\" height=\"44\" fill=\"#c9c3b8\"/><rect x=\"0\" y=\"0\" width=\"46\" height=\"44\" fill=\"#0b1224\" opacity=\".45\"/>\n  <g stroke=\"#0b1224\" stroke-width=\".6\" opacity=\".5\"><path d=\"M0 6h46M0 12h46M0 18h46M0 24h46M0 30h46M0 36h46\"/></g>\n  <path d=\"M6 8l17-6 17 6z\" fill=\"#eef2fb\"/><rect x=\"6\" y=\"8\" width=\"34\" height=\"2.5\" fill=\"#eef2fb\"/>\n  <rect x=\"9\" y=\"10.5\" width=\"3\" height=\"28\" fill=\"#eef2fb\"/><rect x=\"34\" y=\"10.5\" width=\"3\" height=\"28\" fill=\"#eef2fb\"/>\n  <rect x=\"12\" y=\"11\" width=\"22\" height=\"4\" fill=\"#0b1224\"/><g class=\"spill\"><rect x=\"12\" y=\"11\" width=\"22\" height=\"4\" fill=\"#ffd48a\" opacity=\".7\"/></g><g stroke=\"#eef2fb\" stroke-width=\".7\"><path d=\"M15.7 11v4M19.3 11v4M23 11v4M26.7 11v4M30.3 11v4\"/></g>\n  <g fill=\"#2f5a3a\"><rect x=\"2\" y=\"12\" width=\"6\" height=\"26\"/><rect x=\"38\" y=\"12\" width=\"6\" height=\"26\"/></g><g stroke=\"#24472e\" stroke-width=\".6\"><path d=\"M2 15h6M2 18h6M2 21h6M2 24h6M2 27h6M2 30h6M2 33h6M38 15h6M38 18h6M38 21h6M38 24h6M38 27h6M38 30h6M38 33h6\"/></g>\n  <rect x=\"12\" y=\"15\" width=\"22\" height=\"23\" fill=\"#0b1224\"/>\n  <g class=\"spill\"><rect x=\"12\" y=\"15\" width=\"22\" height=\"23\" fill=\"#ffd48a\" opacity=\".55\"/><path d=\"M23 33V23M18 28l5-5 5 5\" stroke=\"#fff\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" fill=\"none\"/><path d=\"M8 38h30l10 6H-2z\" fill=\"#ffd48a\" opacity=\".2\"/></g>\n  <g class=\"leaf\"><rect x=\"12\" y=\"15\" width=\"22\" height=\"23\" fill=\"#f4f6fa\"/><g fill=\"none\" stroke=\"#c5ccd8\" stroke-width=\".9\"><rect x=\"14.5\" y=\"17.5\" width=\"7\" height=\"6\"/><rect x=\"24.5\" y=\"17.5\" width=\"7\" height=\"6\"/><rect x=\"14.5\" y=\"26\" width=\"7\" height=\"4\"/><rect x=\"24.5\" y=\"26\" width=\"7\" height=\"4\"/><rect x=\"14.5\" y=\"32\" width=\"7\" height=\"4\"/><rect x=\"24.5\" y=\"32\" width=\"7\" height=\"4\"/></g><circle cx=\"31\" cy=\"28.5\" r=\"1\" fill=\"#d9b45a\"/></g>\n  <g fill=\"#8a4a3a\"><rect x=\"8\" y=\"38\" width=\"30\" height=\"2.6\"/><rect x=\"6\" y=\"40.6\" width=\"34\" height=\"2.6\"/></g>\n  <g class=\"lantern\"><rect x=\"3.5\" y=\"4\" width=\"3\" height=\"5\" rx=\".8\" fill=\"#ffd48a\"/><rect x=\"39.5\" y=\"4\" width=\"3\" height=\"5\" rx=\".8\" fill=\"#ffd48a\"/><circle cx=\"5\" cy=\"6.5\" r=\"5\" fill=\"#ffd48a\" opacity=\".3\"/><circle cx=\"41\" cy=\"6.5\" r=\"5\" fill=\"#ffd48a\" opacity=\".3\"/></g>\n </svg>", "mediterranean": "<svg viewBox=\"0 0 46 44\">\n  <rect x=\"0\" y=\"0\" width=\"46\" height=\"44\" fill=\"#c99b6b\"/><rect x=\"0\" y=\"0\" width=\"46\" height=\"44\" fill=\"#0b1224\" opacity=\".35\"/>\n  <g fill=\"#a3492f\"><path d=\"M0 4h46v5H0z\"/><path d=\"M2 9h4v2H2zM8 9h4v2H8zM14 9h4v2h-4zM20 9h4v2h-4zM26 9h4v2h-4zM32 9h4v2h-4zM38 9h4v2h-4z\"/></g><g stroke=\"#6b4a3a\" stroke-width=\"1.4\"><path d=\"M6 11v4M40 11v4\"/></g>\n  <path d=\"M11 40V23a12 12 0 0 1 24 0v17z\" fill=\"#d9c7ad\"/><path d=\"M13 40V23a10 10 0 0 1 20 0v17z\" fill=\"#0b1224\"/>\n  <g class=\"spill\"><path d=\"M13 40V23a10 10 0 0 1 20 0v17z\" fill=\"#ffd48a\" opacity=\".55\"/><path d=\"M23 34V24M18.5 28.5L23 24l4.5 4.5\" stroke=\"#fff\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" fill=\"none\"/><path d=\"M11 40h24l10 4H1z\" fill=\"#ffd48a\" opacity=\".2\"/></g>\n  <g class=\"leaf\"><path d=\"M13 40V23a10 10 0 0 1 20 0v17z\" fill=\"#4a2e22\"/><path d=\"M23 13v27\" stroke=\"#3a2118\" stroke-width=\".8\"/>\n    <g fill=\"#8a8a8a\"><circle cx=\"16\" cy=\"24\" r=\".8\"/><circle cx=\"16\" cy=\"30\" r=\".8\"/><circle cx=\"16\" cy=\"36\" r=\".8\"/><circle cx=\"30\" cy=\"24\" r=\".8\"/><circle cx=\"30\" cy=\"30\" r=\".8\"/><circle cx=\"30\" cy=\"36\" r=\".8\"/></g>\n    <rect x=\"19\" y=\"19\" width=\"8\" height=\"5\" rx=\"1\" fill=\"#0b1224\"/><g class=\"spill\"><rect x=\"19\" y=\"19\" width=\"8\" height=\"5\" rx=\"1\" fill=\"#ffd48a\" opacity=\".6\"/></g><g stroke=\"#8a8a8a\" stroke-width=\".6\"><path d=\"M21 19v5M23 19v5M25 19v5\"/></g>\n    <circle cx=\"27.5\" cy=\"31\" r=\"1.5\" fill=\"none\" stroke=\"#8a8a8a\" stroke-width=\"1\"/></g>\n  <g class=\"lantern\"><path d=\"M40 20h4l-1 5h-2z\" fill=\"#ffd48a\"/><path d=\"M42 20v-3h-3\" stroke=\"#1a1a1a\" stroke-width=\"1\" fill=\"none\"/><circle cx=\"42\" cy=\"22.5\" r=\"6\" fill=\"#ffd48a\" opacity=\".3\"/></g>\n  <path d=\"M4 42c-3-8-3-16 0-24 3 8 3 16 0 24z\" fill=\"#1f4a3a\"/>\n  <rect x=\"9\" y=\"40\" width=\"28\" height=\"2.5\" fill=\"#d9c7ad\"/><rect x=\"7\" y=\"42.5\" width=\"32\" height=\"1.5\" fill=\"#b8a78d\"/>\n </svg>", "farmhouse": "<svg viewBox=\"0 0 46 44\">\n  <rect x=\"0\" y=\"0\" width=\"46\" height=\"44\" fill=\"#e9e6df\"/><rect x=\"0\" y=\"0\" width=\"46\" height=\"44\" fill=\"#0b1224\" opacity=\".42\"/>\n  <g stroke=\"#0b1224\" stroke-width=\".8\" opacity=\".35\"><path d=\"M6 10v34M12 10v34M18 10v34M28 10v34M34 10v34M40 10v34\"/></g>\n  <path d=\"M-2 10h50v-2l-4-6H2L-2 8z\" fill=\"#2b2f3a\"/><path d=\"M-2 10h50\" stroke=\"#4a5060\" stroke-width=\"1.2\"/>\n  <g stroke=\"#3a3128\" stroke-width=\".6\" opacity=\".6\"><path d=\"M4 2v6M12 2v6M20 2v6M28 2v6M36 2v6M44 2v6\"/></g>\n  <rect x=\"2\" y=\"10\" width=\"3\" height=\"30\" fill=\"#f4f2ec\"/><rect x=\"41\" y=\"10\" width=\"3\" height=\"30\" fill=\"#f4f2ec\"/>\n  <rect x=\"12\" y=\"15\" width=\"22\" height=\"25\" fill=\"#0b1224\"/><rect x=\"11\" y=\"14\" width=\"24\" height=\"27\" fill=\"none\" stroke=\"#f4f2ec\" stroke-width=\"1.4\"/>\n  <g class=\"spill\"><rect x=\"12\" y=\"15\" width=\"22\" height=\"25\" fill=\"#ffd48a\" opacity=\".55\"/><path d=\"M23 35V25M18 30l5-5 5 5\" stroke=\"#fff\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" fill=\"none\"/><path d=\"M8 40h30l10 4H-2z\" fill=\"#ffd48a\" opacity=\".2\"/></g>\n  <g class=\"leaf\"><rect x=\"12\" y=\"15\" width=\"22\" height=\"25\" fill=\"#3f4a46\"/>\n    <g fill=\"#0b1224\"><rect x=\"14.5\" y=\"17\" width=\"8\" height=\"5\"/><rect x=\"23.5\" y=\"17\" width=\"8\" height=\"5\"/><rect x=\"14.5\" y=\"23\" width=\"8\" height=\"5\"/><rect x=\"23.5\" y=\"23\" width=\"8\" height=\"5\"/></g>\n    <g class=\"spill\" fill=\"#ffd48a\" opacity=\".6\"><rect x=\"14.5\" y=\"17\" width=\"8\" height=\"5\"/><rect x=\"23.5\" y=\"17\" width=\"8\" height=\"5\"/><rect x=\"14.5\" y=\"23\" width=\"8\" height=\"5\"/><rect x=\"23.5\" y=\"23\" width=\"8\" height=\"5\"/></g>\n    <rect x=\"14.5\" y=\"30\" width=\"17\" height=\"8\" fill=\"none\" stroke=\"#2c3532\" stroke-width=\".9\"/><path d=\"M14.5 30l17 8M31.5 30l-17 8\" stroke=\"#2c3532\" stroke-width=\".9\"/>\n    <circle cx=\"30\" cy=\"27.5\" r=\"1\" fill=\"#1a1a1a\"/></g>\n  <g class=\"lantern\"><path d=\"M23 10v3\" stroke=\"#1a1a1a\" stroke-width=\"1\"/><path d=\"M20 13h6l-1 4h-4z\" fill=\"#ffd48a\"/><circle cx=\"23\" cy=\"15.5\" r=\"6\" fill=\"#ffd48a\" opacity=\".3\"/></g>\n  <rect x=\"7\" y=\"35\" width=\"4\" height=\"6\" rx=\"1\" fill=\"#7a5a3a\"/><path d=\"M9 35c-3-3-3-6 0-8 3 2 3 5 0 8z\" fill=\"#3f7a4f\"/>\n  <rect x=\"8\" y=\"40\" width=\"30\" height=\"2\" fill=\"#c9c2b6\"/><rect x=\"6\" y=\"42\" width=\"34\" height=\"2\" fill=\"#9a948a\"/>\n </svg>"};
+
+/* ------------------------------------------------------------------
+   STOREY GRID. Ground floor 44–66, upper 22–44, roof above 22.
+   The entrance (46×44 art) renders at 38×36 → x 322–360, y 30–66.
+   ------------------------------------------------------------------ */
+const EX=322, EY=30, ES=38/46;           // entrance origin + scale
+const ENT=(k)=>`<svg class="ent" overflow="visible" x="${EX}" y="${EY}" width="38" height="36" viewBox="0 0 46 44">${DOOR[k].replace(/^<svg[^>]*>/,'').replace(/<\/svg>\s*$/,'')}</svg>`;
+/* brick / clapboard courses aligned to the entrance art's own courses (local start+6k, scaled) */
+const COURSES=(x,w,y0,y1,localStart,stroke,op=.7)=>{let d='';for(let l=localStart;l<200;l+=6){const y=EY+l*ES;if(y>y1)break;if(y>=y0)d+=`M${x} ${y.toFixed(1)}h${w}`;}for(let l=localStart-6;l>-200;l-=6){const y=EY+l*ES;if(y<y0)break;if(y<=y1)d+=`M${x} ${y.toFixed(1)}h${w}`;}return `<path d="${d}" stroke="${stroke}" stroke-width=".6" opacity="${op}"/>`;};
+const W=(x,y,op=.8)=>WIN(x,y,8,10,'lit',op);
+/* small door for the second house, one storey tall */
+const SDOOR=(x,fill,frame)=>`<rect x="${x-1}" y="49" width="10" height="17" fill="${frame}"/><rect x="${x}" y="50" width="8" height="16" fill="${fill}"/><g class="lit"><rect x="${x+1}" y="51" width="6" height="4" fill="${GOLD}" opacity=".7"/></g><circle cx="${x+6.5}" cy="59" r=".7" fill="#d9b45a"/>`;
+
+const H={};   // H[style](x,w,entrance) → façade. entrance=true leaves the door zone to ENT()
+H.georgian=(x,w,e)=>`<rect x="${x}" y="22" width="${w}" height="44" fill="#5a3a2e"/>${COURSES(x,w,22,66,8,'#6d4536')}
+  <rect x="${x-2}" y="19" width="${w+4}" height="3" fill="#c9d0de"/><rect x="${x}" y="15" width="${w}" height="4" fill="#3a2a27"/>
+  <rect x="${x+6}" y="8" width="5" height="8" fill="#2f2421"/><rect x="${x+5}" y="7" width="7" height="1.6" fill="#c9d0de"/><rect x="${x+w-11}" y="9" width="5" height="7" fill="#2f2421"/><rect x="${x+w-12}" y="8" width="7" height="1.6" fill="#c9d0de"/>
+  ${W(x+6,26)}${W(x+22,26,.6)}${e?W(x+88,26,.7):''}${e?'':W(x+w-14,26,.65)}
+  ${W(x+6,47,.7)}${e?W(x+22,47,.5):''}${e?'':SDOOR(x+w/2-4,'#151a26','#eef2fb')}${e?'':W(x+w-14,47,.55)}
+  <g stroke="#0e162e" stroke-width="1"><path d="M${x+2} 60v6M${x+w-2} 60v6"/></g>`;
+H.victorian=(x,w,e)=>`<rect x="${x}" y="22" width="${w}" height="44" fill="#4a2f28"/>${COURSES(x,w,22,66,8,'#5c3b32')}
+  <path d="M${x-3} 22h${w+6}l-4-7H${x+1}z" fill="#2a3448"/><path d="M${x-3} 22h${w+6}" stroke="#4a5a8a" stroke-width="1.4"/><rect x="${x+w-14}" y="8" width="5" height="8" fill="#2f2421"/><rect x="${x+w-15}" y="7" width="7" height="1.6" fill="#c9d0de"/>
+  <path d="M${x+5} 25h20v41h-20z" fill="#2f2421"/><path d="M${x+5} 25l-3 3v38h3zM${x+25} 25l3 3v38h-3z" fill="#241b19"/><rect x="${x+2}" y="24" width="26" height="1.8" fill="#c9d0de"/>
+  ${WIN(x+8,27,14,10,'lit',.8)}${WIN(x+8,48,14,11,'lit',.6)}
+  ${e?W(x+88,26,.6):W(x+w-14,26,.6)}${e?'':SDOOR(x+w-14,'#7a2f2a','#e8ecf4')}`;
+H.craftsman=(x,w,e)=>`<path d="M${x-8} 44l${w/2+8}-24 ${w/2+8} 24z" fill="#2a3448"/><path d="M${x-8} 44h${w+16}" stroke="#4a5a8a" stroke-width="1.4"/>
+  <g stroke="#3b3128" stroke-width="1"><path d="M${x-6} 45v3M${x+2} 45v3M${x+10} 45v3M${x+18} 45v3M${x+26} 45v3M${x+w-10} 45v3M${x+w-2} 45v3M${x+w+6} 45v3"/></g>
+  <rect x="${x}" y="44" width="${w}" height="22" fill="#6b4a3a"/>${COURSES(x,w,44,66,24,'#7d5847')}
+  <rect x="${x+w-16}" y="14" width="4" height="8" fill="#3b3128"/>
+  
+  ${W(x+6,48)}${W(x+22,48,.6)}${e?W(x+88,48,.55):''}${e?'':SDOOR(x+w-14,'#9a5f3a','#3b3128')}`;
+H.brownstone=(x,w,e)=>`<rect x="${x}" y="22" width="${w}" height="44" fill="#5a3e34"/>${COURSES(x,w,22,44,6,'#6b4a3e')}
+  <rect x="${x}" y="44" width="${w}" height="22" fill="#6a4d42"/><g stroke="#55392f" stroke-width=".9"><path d="M${x} 49h${w}M${x} 55h${w}M${x} 61h${w}"/><path d="${Array.from({length:Math.ceil(w/12)+1},(_,i)=>`M${x+i*12} 44v5M${x+6+i*12} 49v6M${x+i*12} 55v6M${x+6+i*12} 61v5`).join('')}"/></g>
+  <rect x="${x-1}" y="43" width="${w+2}" height="1.8" fill="#8a7263"/>
+  <g fill="#8a7263">${[8,30,e?0:w-16].filter(v=>v).map(v=>`<rect x="${x+v-2}" y="23.6" width="12" height="2"/>`).join('')}${e?`<rect x="${x+6}" y="44.6" width="12" height="2"/>`:''}</g>
+  <g fill="#8a7263">${Array.from({length:Math.floor(w/6)},(_,i)=>`<rect x="${x+2+i*6}" y="20.4" width="2" height="1.6"/>`).join('')}</g>
+  <rect x="${x}" y="12" width="${w}" height="10" fill="#5a3e34"/>${COURSES(x,w,12,22,6,'#6b4a3e')}<rect x="${x-2}" y="10" width="${w+4}" height="2.6" fill="#8a7263"/><g fill="#8a7263"><rect x="${x+2}" y="12.6" width="2" height="1.6"/><rect x="${x+w/2-1}" y="12.6" width="2" height="1.6"/><rect x="${x+w-4}" y="12.6" width="2" height="1.6"/></g>
+  ${W(x+8,26,.7)}${e?W(x+30,26,.5):W(x+w-16,26,.5)}
+  ${e?W(x+8,47,.6):''}${e?`<g stroke="#0e162e" stroke-width="1"><path d="M${x+2} 58v8M${x+6} 58v8M${x+10} 58v8M${x+14} 58v8M${x+18} 58v8M${x+22} 58v8M${x+1} 58h22"/></g>`:''}${e?'':`<g fill="#8a7263"><rect x="${x+w/2-6}" y="60" width="12" height="1.6"/><rect x="${x+w/2-8}" y="61.6" width="16" height="1.6"/><rect x="${x+w/2-10}" y="63.2" width="20" height="1.6"/><rect x="${x+w/2-12}" y="64.8" width="24" height="1.4"/></g><rect x="${x+w/2-5}" y="46" width="10" height="14" fill="#2e2622"/><rect x="${x+w/2-4}" y="48" width="8" height="6" fill="#0b1224"/><g class="lit"><rect x="${x+w/2-4}" y="48" width="8" height="6" fill="${GOLD}" opacity=".7"/></g>`}`;
+H.modern=(x,w,e)=>`<rect x="${x}" y="22" width="${w}" height="44" fill="#d9d4c9"/>
+  <rect x="${x+w-(e?24:16)}" y="22" width="${e?18:16}" height="44" fill="#6b4a3a"/><g stroke="#7d5847" stroke-width=".8"><path d="M${x+w-(e?20:12)} 22v44M${x+w-(e?16:8)} 22v44M${x+w-(e?12:4)} 22v44"/></g>
+  <rect x="${x-2}" y="20" width="${w+4}" height="2.4" fill="#2a2f3a"/><rect x="${x}" y="13" width="${w-22}" height="7" fill="#d9d4c9"/><rect x="${x}" y="13" width="${w-22}" height="7" fill="#0b1224" opacity=".45"/><rect x="${x-2}" y="11" width="${w-18}" height="2.2" fill="#2a2f3a"/>
+  <rect x="${x+4}" y="26" width="${e?30:w-24}" height="9" fill="#0b1224"/><g class="lit"><rect x="${x+4}" y="26" width="${e?30:w-24}" height="9" fill="${GOLD}" opacity=".75"/></g><rect x="${x+3}" y="25" width="${e?32:w-22}" height="11" fill="none" stroke="#2a2f3a" stroke-width="1.2"/>
+  <rect x="${x+4}" y="47" width="${e?18:w-40}" height="9" fill="#0b1224"/><g class="lit"><rect x="${x+4}" y="47" width="${e?18:w-40}" height="9" fill="${GOLD}" opacity=".5"/></g><rect x="${x+3}" y="46" width="${e?20:w-38}" height="11" fill="none" stroke="#2a2f3a" stroke-width="1.2"/>
+  ${e?'':`<rect x="${x+w-12}" y="48" width="8" height="18" fill="#2a2320"/><rect x="${x+w-6}" y="49" width="1.4" height="16" fill="#0b1224"/><g class="lit"><rect x="${x+w-6}" y="49" width="1.4" height="16" fill="${GOLD}" opacity=".8"/></g>`}`;
+H.farmhouse=(x,w,e)=>`<path d="M${x-6} 30l${w/2+6}-20 ${w/2+6} 20z" fill="#2b2f3a"/><path d="M${x-6} 30h${w+12}" stroke="#4a5060" stroke-width="1.4"/>
+  
+  <rect x="${x+w/2+4}" y="8" width="4" height="8" fill="#3a3128"/>
+  <rect x="${x}" y="30" width="${w}" height="36" fill="#e9e6df"/><rect x="${x}" y="30" width="${w}" height="36" fill="#0b1224" opacity=".42"/>
+  <g stroke="#0b1224" stroke-width=".8" opacity=".35"><path d="M${x+6} 30v36M${x+12} 30v36M${x+18} 30v36M${x+24} 30v36M${x+30} 30v36M${x+36} 30v36M${x+42} 30v36M${x+48} 30v36M${x+54} 30v36M${x+60} 30v36"/></g>
+  
+  ${W(x+6,34)}${W(x+22,34,.6)}${e?W(x+88,34,.55):''}
+  ${e?'':`<path d="M${x-4} 46h${w+8}v-2l-3-4H${x-1}z" fill="#2b2f3a"/><path d="M${x-4} 46h${w+8}" stroke="#4a5060" stroke-width="1"/><rect x="${x-2}" y="46" width="2.4" height="20" fill="#f4f2ec"/><rect x="${x+w-.4}" y="46" width="2.4" height="20" fill="#f4f2ec"/><rect x="${x+w/2-1}" y="46" width="2.4" height="20" fill="#f4f2ec"/>`}
+  ${W(x+6,50,.7)}${e?'':SDOOR(x+w-16,'#3f4a46','#f4f2ec')}${e?'':`<rect x="${x-3}" y="63" width="${w+6}" height="1.6" fill="#c9c2b6"/>`}`;
+H.colonial=(x,w,e)=>`<path d="M${x-4} 22l5-9 ${w/2-1}-6 ${w/2-1} 6 5 9z" fill="#2b3446"/><path d="M${x+1} 13h${w-2}" stroke="#3a4560" stroke-width=".8"/><path d="M${x-4} 22h${w+8}" stroke="#4a5a8a" stroke-width="1.4"/>
+  <rect x="${x+w/2+8}" y="3" width="4" height="7" fill="#8a4a3a"/>
+  <path d="M${x+7} 18l4-5 4 5z" fill="#2b3446"/><rect x="${x+9}" y="15" width="4" height="3" fill="#0b1224"/><g class="lit"><rect x="${x+9}" y="15" width="4" height="3" fill="${GOLD}" opacity=".7"/></g>
+  <path d="M${x+w-15} 18l4-5 4 5z" fill="#2b3446"/><rect x="${x+w-13}" y="15" width="4" height="3" fill="#0b1224"/><g class="lit"><rect x="${x+w-13}" y="15" width="4" height="3" fill="${GOLD}" opacity=".5"/></g>
+  <rect x="${x}" y="22" width="${w}" height="44" fill="#c9c3b8"/><rect x="${x}" y="22" width="${w}" height="44" fill="#0b1224" opacity=".45"/>${COURSES(x,w,22,66,6,'#0b1224',.5)}
+  ${W(x+8,26)}<g fill="#2f5a3a"><rect x="${x+5}" y="25" width="2.4" height="12"/><rect x="${x+16.6}" y="25" width="2.4" height="12"/></g>
+  ${W(x+26,26,.6)}<g fill="#2f5a3a"><rect x="${x+23}" y="25" width="2.4" height="12"/><rect x="${x+34.6}" y="25" width="2.4" height="12"/></g>
+  ${e?`${W(x+88,26,.55)}<g fill="#2f5a3a"><rect x="${x+85}" y="25" width="2.4" height="12"/><rect x="${x+96.6}" y="25" width="2.4" height="12"/></g>`:''}
+  ${W(x+8,47,.7)}<g fill="#2f5a3a"><rect x="${x+5}" y="46" width="2.4" height="12"/><rect x="${x+16.6}" y="46" width="2.4" height="12"/></g>
+  ${e?`${W(x+26,47,.5)}<g fill="#2f5a3a"><rect x="${x+23}" y="46" width="2.4" height="12"/><rect x="${x+34.6}" y="46" width="2.4" height="12"/></g>`:''}
+  ${e?'':`<path d="M${x+w-19} 49l6-2.5 6 2.5z" fill="#eef2fb"/>${SDOOR(x+w-17,'#f4f6fa','#eef2fb')}`}`;
+H.mediterranean=(x,w,e)=>`<rect x="${x}" y="22" width="${w}" height="44" fill="#c99b6b"/><rect x="${x}" y="22" width="${w}" height="44" fill="#0b1224" opacity=".35"/>
+  <g fill="#a3492f"><path d="M${x-3} 17h${w+6}v5H${x-3}z"/></g><g fill="#8a3a24" opacity=".8">${Array.from({length:Math.ceil(w/8)+1},(_,i)=>`<path d="M${x-1+i*8} 17h3v5h-3z"/>`).join('')}</g>
+  ${[[x+8,26,.75],[x+26,26,.55],[x+8,47,.6]].concat(e?[[x+88,26,.5]]:[[x+w-16,26,.6]]).map(([a,b,o])=>`<path d="M${a} ${b+4}a4 4 0 0 1 8 0v6h-8z" fill="#0b1224"/><g class="lit"><path d="M${a} ${b+4}a4 4 0 0 1 8 0v6h-8z" fill="${GOLD}" opacity="${o}"/></g><path d="M${a-1} ${b+4}a5 5 0 0 1 10 0" fill="none" stroke="#d9c7ad" stroke-width="1"/>`).join('')}
+  <g stroke="#1a1a1a" stroke-width=".8"><path d="M${x+6} 36h12M${x+8} 36v3M${x+11} 36v3M${x+14} 36v3M${x+24} 36h12M${x+26} 36v3M${x+29} 36v3M${x+32} 36v3"/></g>
+  ${e?'':`<path d="M${x+w/2-5} 66V54a5 5 0 0 1 10 0v12z" fill="#d9c7ad"/><path d="M${x+w/2-4} 66V54a4 4 0 0 1 8 0v12z" fill="#4a2e22"/><g class="lit"><path d="M${x+w/2-4} 66V54a4 4 0 0 1 8 0v12z" fill="${GOLD}" opacity=".16"/></g>`}
+  <path d="M${x+w+2} 66c-3-8-3-16 0-24 3 8 3 16 0 24z" fill="#1f4a3a"/>`;
+
+/* ------------------------------------------------------------------ far backgrounds per style */
+const FAR={};
+FAR.victorian=`<g class="far"><g fill="#18213f"><path d="M0 36l10-6 10 6v30H0zM20 36l10-6 10 6v30H20zM40 36l10-6 10 6v30H40zM60 36l10-6 10 6v30H60zM80 36l10-6 10 6v30H80zM100 36l10-6 10 6v30h-20zM120 36l10-6 10 6v30h-20zM140 36l10-6 10 6v30h-20zM160 36l10-6 10 6v30h-20zM180 36l10-6 10 6v30h-20zM200 36l10-6 10 6v30h-20z"/></g>
+  <g fill="#1f2a4c"><rect x="12" y="26" width="3" height="6"/><rect x="52" y="26" width="3" height="6"/><rect x="92" y="26" width="3" height="6"/><rect x="132" y="26" width="3" height="6"/><rect x="172" y="26" width="3" height="6"/><rect x="212" y="26" width="3" height="6"/></g>
+  <g fill="${GOLD}" opacity=".4"><rect x="6" y="40" width="3" height="3"/><rect x="34" y="42" width="3" height="3"/><rect x="66" y="40" width="3" height="3"/><rect x="86" y="44" width="3" height="3"/><rect x="126" y="41" width="3" height="3"/><rect x="154" y="43" width="3" height="3"/><rect x="186" y="40" width="3" height="3"/></g></g>`;
+FAR.modern=CITY;
+FAR.colonial=`<g class="far"><path d="M0 46L40 22l30 14 26-18 40 22 30-14 40 20 40-16 30 12 32-10 40 14v40H0z" fill="#182541"/>
+  <path d="M40 22l6 4-6-1zM96 18l8 5-8-2zM136 30l5 3-5-1zM176 24l6 3-6-1zM236 20l7 4-7-2zM322 20l6 3-6-1z" fill="#dfe7f7" opacity=".7"/>
+  <g fill="#0f1a33">${Array.from({length:26},(_,i)=>`<path d="M${i*14+2} 66l6-18 6 18z"/>`).join('')}</g><g fill="#132040">${Array.from({length:25},(_,i)=>`<path d="M${i*14+9} 66l6-14 6 14z"/>`).join('')}</g></g>`;
+FAR.mediterranean=`<g class="far"><rect y="40" width="376" height="26" fill="#0f2a4a"/><path d="M0 40h376" stroke="#2a4a7a" stroke-width="1"/>
+  <g stroke="#2a4a7a" stroke-width=".7" opacity=".7"><path d="M20 46h30M70 50h20M120 44h40M180 52h26M230 46h30M300 50h20"/></g>
+  <path d="M60 40v-14h6v14z" fill="#1c2748"/><path d="M58 26h10l-1-3h-8z" fill="#1c2748"/><circle class="twinkle" cx="63" cy="24" r="1.6" fill="#fff"/><circle class="twinkle" cx="63" cy="24" r="5" fill="#fff" opacity=".14"/>
+  <g fill="#1c2748"><path d="M140 40h24l-3 4h-18zM150 40V24l6 16zM300 42h18l-2 3h-14zM308 42V30l4 12z"/></g>
+  <circle cx="230" cy="14" r="6" fill="#fff4de" opacity=".85"/><circle cx="230" cy="14" r="10" fill="#fff4de" opacity=".12"/>
+  <path d="M226 40c2 4 6 4 8 0M270 46c2 4 6 4 8 0M186 44c2 4 6 4 8 0" stroke="#fff" stroke-opacity=".25" stroke-width=".8" fill="none"/></g>`;
+FAR.farmhouse=`<g class="far"><path d="M0 44C60 36 120 38 190 34s120 2 186 4v30H0z" fill="#16243a"/>
+  <path d="M0 52C70 46 140 50 210 44s110 4 166 2v22H0z" fill="#12203a"/>
+  <g fill="#0f1a2e">${Array.from({length:14},(_,i)=>`<circle cx="${i*15+12}" cy="${42-(i%3)*2}" r="${5+(i%2)*2}"/>`).join('')}</g>
+  <g transform="translate(110,0)"><path d="M0 52V38l10-8 10 8v14z" fill="#7a2a24"/><path d="M0 38l10-8 10 8z" fill="#2b2f3a"/><rect x="7" y="44" width="6" height="8" fill="#3a1a16"/><path d="M7 44l6 8M13 44l-6 8" stroke="#c9a" stroke-width=".6" opacity=".6"/><rect x="24" y="30" width="7" height="22" rx="1" fill="#8a8f9a"/><path d="M23 30a4.5 3 0 0 1 9 0z" fill="#9aa0aa"/></g>
+  <g stroke="#3a4a63" stroke-width=".8"><path d="M0 60h376"/><path d="${Array.from({length:32},(_,i)=>`M${i*12} 58v4`).join('')}"/></g></g>`;
+FAR.georgian=`<g class="far"><g fill="#1a2650"><path d="M0 50h10v24H0zM14 44h8v30h-8zM26 40h6v34h-6zM36 46h12v28H36zM52 38h6v36h-6zM62 48h10v26H62zM76 42h8v32h-8zM88 36h5v38h-5zM96 46h12v28H96zM114 44h9v30h-9zM128 38h6v36h-6zM138 48h10v26h-10z"/>
+  <path d="M160 52h36v22h-36z"/><path d="M160 52a18 14 0 0 1 36 0z" fill="#22305f"/><rect x="176" y="26" width="4" height="12"/><path d="M178 26l-4 4h8z" fill="#22305f"/><circle cx="178" cy="24" r="1.5" fill="${GOLD}" opacity=".9"/>
+  <path d="M204 48h6v26h-6zM214 42h8v32h-8zM226 50h10v24h-10z"/></g>
+  <g fill="${GOLD}" opacity=".45"><rect x="16" y="48" width="2" height="2"/><rect x="38" y="50" width="2" height="2"/><rect x="64" y="52" width="2" height="2"/><rect x="78" y="46" width="2" height="2"/><rect x="98" y="50" width="2" height="2"/><rect x="116" y="48" width="2" height="2"/><rect x="130" y="44" width="2" height="2"/><rect x="216" y="46" width="2" height="2"/><rect x="228" y="54" width="2" height="2"/></g>
+  <circle class="twinkle" cx="54" cy="37" r="1" fill="#ff6b6b"/><circle class="twinkle" cx="90.5" cy="35" r="1" fill="#ff6b6b"/></g>`;
+FAR.craftsman=`<g class="far"><path d="M0 50C40 30 90 28 130 40s90 8 130-6 80-4 116 4v30H0z" fill="#1a2140"/><path d="M0 56C60 46 120 48 180 44s120 0 196 6v20H0z" fill="#151c38"/>
+  ${[30,70,150,200,250].map(x=>`<path d="M${x} 66V40" stroke="#1c3550" stroke-width="2"/><g fill="#1c3550"><path d="M${x} 40c-8-2-12-8-10-14 6 2 10 8 10 14zM${x} 40c8-2 12-8 10-14-6 2-10 8-10 14zM${x} 40c-2-8 0-14 6-18-2 6-2 12-6 18zM${x} 40c2-8 0-14-6-18 2 6 2 12 6 18z"/></g>`).join('')}
+  <circle cx="330" cy="14" r="7" fill="#fff4de" opacity=".85"/><circle cx="330" cy="14" r="12" fill="#fff4de" opacity=".12"/></g>`;
+FAR.brownstone=`<g class="far"><g fill="#1a2650"><path d="M0 44h14v30H0zM18 34h10v40H18zM32 48h12v26H32zM48 30h8v44h-8zM60 40h14v34H60zM78 26h6v48h-6zM88 46h12v28H88zM104 36h10v38h-10z"/><path d="M118 52h100v22H118z"/><path d="M230 40h10v34h-10zM244 32h8v42h-8zM256 46h14v28h-14z"/></g>
+  <path d="M130 52V30M206 52V30" stroke="#2b3d72" stroke-width="2.2"/><path d="M118 52c12-18 24-22 44-22h12c20 0 32 4 44 22" fill="none" stroke="#2b3d72" stroke-width="1.2"/>
+  <g stroke="#2b3d72" stroke-width=".6" opacity=".8"><path d="M140 52V40M150 52V37M160 52V35M176 52V35M186 52V37M196 52V40"/></g>
+  <g fill="${GOLD}" opacity=".45"><rect x="20" y="40" width="2" height="2"/><rect x="24" y="48" width="2" height="2"/><rect x="50" y="36" width="2" height="2"/><rect x="64" y="46" width="2" height="2"/><rect x="80" y="32" width="2" height="2"/><rect x="106" y="42" width="2" height="2"/><rect x="246" y="38" width="2" height="2"/><rect x="232" y="50" width="2" height="2"/></g>
+  <g fill="#c8d8ff" opacity=".35"><circle cx="130" cy="29" r="1"/><circle cx="206" cy="29" r="1"/><circle cx="150" cy="37" r=".8"/><circle cx="186" cy="37" r=".8"/></g>
+  <circle class="twinkle" cx="80" cy="25" r="1" fill="#ff6b6b"/></g>`;
+
+const MAP=[
+  {key:'standard',     label:'Standard',     house:'victorian',    name:'Victorian terrace'},
+  {key:'modern',       label:'Modern',       house:'modern',       name:'Modern pivot'},
+  {key:'scandinavian', label:'Scandinavian', house:'colonial',     name:'White timber, shutters'},
+  {key:'coastal',      label:'Coastal',      house:'mediterranean',name:'Stucco arch'},
+  {key:'farmhouse',    label:'Farmhouse',    house:'farmhouse',    name:'Board-and-batten farmhouse'},
+  {key:'luxury',       label:'Luxury',       house:'georgian',     name:'Georgian townhouse'},
+  {key:'midcentury',   label:'Midcentury',   house:'craftsman',    name:'Craftsman porch'},
+  {key:'custom',       label:'Custom',       house:'brownstone',   name:'Brownstone stoop'},
+];
+const ROOMS=['bedroom','living room','kitchen','dining room','home office','nursery'];
+const SW={victorian:'#4a2f28',modern:'#d9d4c9',colonial:'#9aa0aa',mediterranean:'#c99b6b',farmhouse:'#e9e6df',georgian:'#5a3a2e',craftsman:'#6b4a3a',brownstone:'#5a3e34'};
+
+function plateHTML(m,id){
+  const k=m.house;
+  return `<button class="plate" type="button" data-style="${m.key}">
+    <span class="sc"><svg viewBox="0 0 376 74" preserveAspectRatio="xMidYMax slice">
+      ${SKY(id)}${STARS}${FAR[k]}
+      <g class="mid">${H[k](140,66,false)}</g>
+      <g class="home">${H[k](276,100,true)}${ENT(k)}</g>
+      ${ROAD}
+      <g class="near">${LAMP(200)}${k==='farmhouse'||k==='craftsman'?'':TREE(118)}</g>
+      <g class="van">${BEAM}${VAN()}</g>
+    </svg></span>
+    <span class="veil"></span>
+    <span class="lbl">Upload image for free</span>
+  </button>`;
+}
+document.getElementById('map').innerHTML=MAP.map(m=>`<div><b>${m.label}</b>${m.name}</div>`).join('');
+const stack=document.getElementById('stack');
+stack.innerHTML=MAP.map((m,i)=>plateHTML(m,'live'+i)).join('');
+const plates=[...stack.children];
+const styleMenu=document.getElementById('styleMenu');
+function setStyle(key){
+  plates.forEach(p=>p.classList.toggle('on',p.dataset.style===key));
+  document.getElementById('styleBtn').textContent=MAP.find(x=>x.key===key).label;
+  [...styleMenu.children].forEach(b=>b.classList.toggle('on',b.dataset.key===key));
+}
+styleMenu.innerHTML=MAP.map(m=>`<button type="button" data-key="${m.key}"><span class="sw" style="background:${SW[m.house]}"></span>${m.label}</button>`).join('');
+styleMenu.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;setStyle(b.dataset.key);styleMenu.classList.remove('open');});
+const roomMenu=document.getElementById('roomMenu');
+roomMenu.innerHTML=ROOMS.map(r=>`<button type="button">${r}</button>`).join('');
+roomMenu.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;document.getElementById('roomBtn').textContent=b.textContent;roomMenu.classList.remove('open');});
+document.getElementById('styleBtn').addEventListener('click',e=>{e.stopPropagation();roomMenu.classList.remove('open');styleMenu.classList.toggle('open');});
+document.getElementById('roomBtn').addEventListener('click',e=>{e.stopPropagation();styleMenu.classList.remove('open');roomMenu.classList.toggle('open');});
+document.addEventListener('click',()=>{styleMenu.classList.remove('open');roomMenu.classList.remove('open');});
+setStyle('modern');
+document.getElementById('grid').innerHTML=MAP.map((m,i)=>`<div class="tile"><div class="t"><b>${m.label}</b>${m.name}</div>${plateHTML(m,'g'+i)}</div>`).join('');
+document.querySelectorAll('.plate').forEach(b=>{b.addEventListener('pointerdown',e=>{const r=b.getBoundingClientRect(),d=Math.max(r.width,r.height)*2.1;const s=document.createElement('span');s.className='ripple';s.style.width=s.style.height=d+'px';s.style.left=(e.clientX-r.left)+'px';s.style.top=(e.clientY-r.top)+'px';b.appendChild(s);setTimeout(()=>s.remove(),620);});});
+</script>
+</body>
+</html>

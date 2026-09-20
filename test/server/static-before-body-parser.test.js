@@ -27,6 +27,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { LOCALIZED_ARTICLES } from '../../lib/i18n/locales.js';
 
 import { stripJsComments as stripComments } from '../helpers/strip-js-comments.js';
 
@@ -77,9 +78,9 @@ test('every HTML/document route in routes/public.js goes through sendPage', () =
   );
 
   // /, /about, /privacy, /status, robots.txt, sitemap.xml, llms.txt and
-  // /.well-known/security.txt call sendPage directly. The fifteen blog articles go
-  // through sendPost, which counts the read and then delegates to sendPage — so it is
-  // the ninth call site, and covers all of them.
+  // /.well-known/security.txt call sendPage directly. Every blog article goes through
+  // sendPost, which counts the read and then delegates to sendPage — so it is the ninth
+  // call site, and covers all of them.
   const sendPageCalls = (publicRoutes.match(/sendPage\(res,/g) || []).length;
   assert.equal(sendPageCalls, 9, `expected 9 sendPage() call sites, found ${sendPageCalls}`);
   assert.match(
@@ -87,8 +88,16 @@ test('every HTML/document route in routes/public.js goes through sendPage', () =
     /const sendPost = \(req, res, slug\) => \{[\s\S]*?sendPage\(res, path\.join\(__dirname, 'public', 'blog'/,
     'sendPost must delegate to sendPage, or the articles lose the no-cache policy',
   );
+  // Counted against LOCALIZED_ARTICLES rather than a literal: publishing an article is a
+  // routine act, and a hard-coded 15 turns every new post into a failing test somewhere
+  // unrelated to the thing this file guards. What matters is that no article is served
+  // by a route that skipped sendPost, whatever the number happens to be.
   const sendPostCalls = (publicRoutes.match(/sendPost\(req, res,/g) || []).length;
-  assert.equal(sendPostCalls, 15, `expected 15 blog routes via sendPost, found ${sendPostCalls}`);
+  assert.equal(
+    sendPostCalls,
+    LOCALIZED_ARTICLES.length,
+    `expected one sendPost route per article (${LOCALIZED_ARTICLES.length}), found ${sendPostCalls}`,
+  );
 
   // The remaining bare res.sendFile calls are deliberate, and each one is a NON-document
   // response that already owns its caching:

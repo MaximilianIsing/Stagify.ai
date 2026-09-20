@@ -1,10 +1,10 @@
 {
   "_meta": {
-    "sourceHash": "sha256:187d5dafab0a91e44c4a414a091e4e320a4fce84a9f6b037903c6f2438dbdb43",
+    "sourceHash": "sha256:be900014fa6d659cf74453ca968cf0ebb47bbce5ce6ac9d47337c8c9de9929b1",
     "slug": null,
     "lang": "german",
     "hreflang": "de",
-    "translatedAt": "2026-09-17",
+    "translatedAt": "2026-09-20",
     "reviewed": false
   },
   "meta": {
@@ -16,6 +16,13 @@
     "body": "Praxisnahe Ratgeber zu virtuellem Home Staging, zur Kennzeichnung im MLS und zur schnelleren Vermarktung Ihrer Objekte – für Makler, Verkäufer und Fotografen."
   },
   "cards": {
+    "which-virtual-staging-style": {
+      "tag": "Ratgeber",
+      "title": "Ein Raum, sieben Stile. Nur einer davon verkauft das Haus.",
+      "excerpt": "Sieben Presets und die meisten wählen das, was ihnen gefällt. Stattdessen entscheiden Architektur, Boden, Licht und der Käufer – und jeder der sieben hat eine ganz bestimmte Art, schiefzugehen.",
+      "meta": "20. September 2026 · 10 Min. Lesezeit",
+      "alt": "Drei Aufnahmen desselben leeren Wohnzimmers, auf drei verschiedene Arten auf dunklem Hintergrund eingerichtet: eine Skandinavisch-Version mit blassgrauem Sofa und hellem Eichentisch, eine Landhaus-Version mit Leinensofa, Juteteppich und Tisch aus Altholz, und eine Luxus-Version mit grünem Samtsofa, gemustertem Teppich, Marmortisch und Messingkronleuchter."
+    },
     "remove-furniture-from-listing-photos": {
       "tag": "Ratgeber",
       "title": "Die meisten Objekte sind bewohnt. Fotografieren Sie trotzdem.",

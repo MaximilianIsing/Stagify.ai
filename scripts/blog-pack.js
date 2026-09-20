@@ -95,6 +95,21 @@ function packPath(slug, lang) {
  */
 const QUOTED_UI_STRINGS = {
   'Label as virtually staged': 'modal.staging.labelVirtuallyStaged',
+  // The furniture-style picker. which-virtual-staging-style walks the reader through the
+  // presets one by one, so every one of these is a control the reader is told to go and
+  // click. A translation that invents its own word for "Farmhouse" sends them looking for
+  // an option the picker does not offer, in the one language nobody here can spot it in.
+  // 'Standard' is deliberately NOT here. The match is a plain substring, and
+  // virtual-staging-disclosure-laws-by-state quotes NAR's "Standard of Practice" — which
+  // is not the picker option and never will be. A check that cries wolf in seven languages
+  // is a check people learn to scroll past, so the one indistinct label is left out.
+  Modern: 'furnitureStyles.modern',
+  Midcentury: 'furnitureStyles.midcentury',
+  Scandinavian: 'furnitureStyles.scandinavian',
+  Luxury: 'furnitureStyles.luxury',
+  Coastal: 'furnitureStyles.coastal',
+  Farmhouse: 'furnitureStyles.farmhouse',
+  Custom: 'furnitureStyles.custom',
 };
 
 /** The value of a dotted key in a language pack, or null. */

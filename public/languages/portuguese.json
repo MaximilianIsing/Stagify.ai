@@ -2172,7 +2172,6 @@
     "plan": {
       "hintAccountFirst": "Crie primeiro uma conta gratuita: é assim que sua assinatura fica vinculada a você.",
       "hintTip": "Dica: entre primeiro pelo menu de perfil para que o pagamento possa ser vinculado à sua conta do Stagify.",
-      "hintStagingDisabled": "As assinaturas estão desativadas no site de staging.",
       "billedMonthly": "Cobrança mensal · Cancele quando quiser",
       "perMonth": "/ mês",
       "trialPill": "Comece com 7 dias grátis",

@@ -1,10 +1,10 @@
 {
   "_meta": {
-    "sourceHash": "sha256:187d5dafab0a91e44c4a414a091e4e320a4fce84a9f6b037903c6f2438dbdb43",
+    "sourceHash": "sha256:be900014fa6d659cf74453ca968cf0ebb47bbce5ce6ac9d47337c8c9de9929b1",
     "slug": null,
     "lang": "portuguese",
     "hreflang": "pt-BR",
-    "translatedAt": "2026-09-17",
+    "translatedAt": "2026-09-20",
     "reviewed": false
   },
   "meta": {
@@ -16,6 +16,13 @@
     "body": "Guias práticos sobre home staging virtual, divulgação no MLS e como anunciar seus imóveis mais rápido, para corretores, vendedores e fotógrafos."
   },
   "cards": {
+    "which-virtual-staging-style": {
+      "tag": "Guias",
+      "title": "Um ambiente, sete estilos. Só um deles vende a casa.",
+      "excerpt": "Sete predefinições e a maioria das pessoas escolhe a que mais gosta. A arquitetura, o piso, a luz e o comprador é que decidem — e cada um dos sete tem um jeito específico de dar errado.",
+      "meta": "20 de setembro de 2026 · 10 min de leitura",
+      "alt": "Três fotografias da mesma sala vazia, mobiliada de três maneiras diferentes sobre fundo escuro: uma versão Escandinavo com sofá cinza-claro e mesa de carvalho claro, uma versão Rústico com sofá de linho, tapete de juta e mesa de madeira de demolição, e uma versão Luxo com sofá de veludo verde, tapete estampado, mesa de mármore e lustre de latão"
+    },
     "remove-furniture-from-listing-photos": {
       "tag": "Guias",
       "title": "Quase todo imóvel está ocupado. Fotografe assim mesmo.",

@@ -80,5 +80,14 @@
     "headline": "Their furniture comes out first.",
     "captionLeft": "As photographed",
     "captionRight": "Emptied, ready to stage"
+  },
+  "cover-16": {
+    "eyebrow": "Furniture styles",
+    "headline": "One room. Three styles. Three different buyers.",
+    "labels": [
+      "Scandinavian",
+      "Farmhouse",
+      "Luxury"
+    ]
   }
 }

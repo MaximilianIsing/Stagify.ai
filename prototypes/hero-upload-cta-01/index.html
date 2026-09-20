@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hero CTA directions — Stagify.ai</title>
+<style>
+:root{
+  --bg:#ddeeff; --bg-elevated:#fff; --fg:#1f2937; --muted:#6b7280; --border:#e5e7eb;
+  --primary:#1e40af; --primary-light:#3b82f6;
+  --brand:#2563eb; --brand-strong:#1d4ed8; --brand-deep:#1e3a8a; --brand-soft:#60a5fa;
+  --brand-pale:#93c5fd; --brand-tint:#dbeafe; --brand-wash:#eff6ff;
+  --slate:#64748b; --danger:#b91c1c;
+  --cta-gradient:
+    radial-gradient(circle at 20% 50%, var(--primary-light) 0, transparent 50%),
+    radial-gradient(circle at 80% 20%, var(--brand-strong) 0, transparent 50%),
+    radial-gradient(circle at 40% 80%, var(--brand) 0, transparent 50%),
+    radial-gradient(circle at 0 100%, var(--primary) 0, transparent 50%),
+    radial-gradient(circle at 100% 0, var(--brand-soft) 0, transparent 50%),
+    var(--brand-deep);
+  --cta-gradient-hover:
+    radial-gradient(circle at 30% 40%, var(--primary-light) 0, transparent 60%),
+    radial-gradient(circle at 70% 30%, var(--brand-strong) 0, transparent 60%),
+    radial-gradient(circle at 50% 70%, var(--brand) 0, transparent 60%),
+    radial-gradient(circle at 10% 90%, var(--primary) 0, transparent 60%),
+    radial-gradient(circle at 90% 10%, var(--brand-soft) 0, transparent 60%),
+    var(--brand-deep);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+a{color:var(--brand-strong)}
+
+/* ---------- page chrome ---------- */
+.page{max-width:1180px;margin:0 auto;padding:0 20px 120px}
+header.top{padding:40px 0 22px}
+header.top h1{margin:0 0 6px;font-size:26px;letter-spacing:-.4px}
+header.top .req{margin:0;font-size:15px;color:var(--brand-deep);font-weight:600}
+header.top .meta{margin:10px 0 0;font-size:13px;color:var(--muted)}
+nav.jump{position:sticky;top:0;z-index:50;display:flex;gap:6px;overflow-x:auto;
+  padding:10px 0;margin-bottom:22px;background:rgba(221,238,255,.92);
+  backdrop-filter:blur(8px);border-bottom:1px solid rgba(30,58,138,.12)}
+nav.jump a{flex:none;font-size:12.5px;font-weight:700;text-decoration:none;color:var(--brand-deep);
+  background:#fff;border:1px solid var(--brand-tint);border-radius:999px;padding:6px 12px}
+nav.jump a:hover{background:var(--brand-wash);border-color:var(--brand-soft)}
+
+.canvas{background:#fff;border:1px solid rgba(30,58,138,.16);border-radius:18px;
+  box-shadow:0 10px 30px rgba(30,58,138,.07);margin:0 0 34px;overflow:hidden}
+.canvas > .cap{padding:16px 20px;border-bottom:1px solid var(--border)}
+.cap .n{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;
+  color:#fff;background:var(--brand-deep);border-radius:6px;padding:3px 8px;margin-right:10px}
+.cap h2{display:inline;font-size:17px;margin:0;letter-spacing:-.2px}
+.cap p{margin:8px 0 0;font-size:13.5px;color:var(--slate);line-height:1.5;max-width:74ch}
+.cap p b{color:var(--brand-deep)}
+
+/* ---------- the simulated hero ---------- */
+.hero{position:relative;height:420px;overflow:hidden}
+.hero .shot{position:absolute;inset:0;}
+.hero .shot{background:
+    radial-gradient(circle at 78% 22%, rgba(255,244,222,.9) 0 6%, transparent 40%),
+    linear-gradient(105deg, rgba(255,255,255,.35) 0 22%, transparent 55%),
+    linear-gradient(180deg,#efe3d2 0 44%, #d3bfa6 44% 56%, #93795c 56% 100%)}
+.hero .shot::after{content:"";position:absolute;inset:0;
+  background:
+    linear-gradient(90deg, rgba(120,95,70,.22) 0 1px, transparent 1px 78px),
+    radial-gradient(ellipse at 30% 70%, rgba(80,60,40,.25), transparent 60%)}
+.hero .scrim{position:absolute;left:0;right:0;bottom:0;padding:70px 30px 26px;
+  display:grid;grid-template-columns:minmax(0,1fr) auto;gap:30px;align-items:end;
+  background:linear-gradient(180deg,rgba(9,17,45,0) 0,rgba(9,17,45,.22) 20px,
+    rgba(9,17,45,.7) 70px,rgba(9,17,45,.88) 170px,rgba(9,17,45,.95) 100%)}
+.eyebrow{margin:0 0 8px;font-size:1rem;font-weight:700;color:#fff;text-shadow:0 1px 10px rgba(9,17,45,.5)}
+.sentence{margin:0 0 18px;font-size:clamp(22px,3.2vw,34px);font-weight:800;color:#fff;line-height:1.15;
+  text-shadow:0 2px 14px rgba(9,17,45,.55)}
+.sentence u{text-decoration:none;border-bottom:2px dashed rgba(147,197,253,.75)}
+.freeline{margin:12px 0 0;font-size:13px;color:rgba(255,255,255,.9);text-shadow:0 1px 8px rgba(9,17,45,.6)}
+.freeline a{color:inherit}
+.side{display:flex;flex-direction:column;align-items:flex-end;gap:14px;text-align:right;color:#fff}
+.side .stat b{display:block;font-size:24px;font-weight:800;line-height:1}
+.side .stat span{font-size:12px;color:rgba(255,255,255,.72)}
+@media(max-width:760px){.hero{height:auto;min-height:440px}.hero .scrim{grid-template-columns:1fr}.side{display:none}}
+
+/* current control, for reference */
+.btn-old{appearance:none;border:1px solid transparent;border-radius:6px;padding:14px 28px;
+  font-weight:500;font-size:22px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;
+  color:#fff;background:var(--cta-gradient);box-shadow:0 4px 15px rgba(0,0,0,.2);
+  position:relative;overflow:hidden;transition:.2s}
+.btn-old strong{position:relative;z-index:2}
+.btn-old::before{content:"";position:absolute;top:0;left:-100%;width:100%;height:100%;
+  background:linear-gradient(60deg,transparent,rgba(255,255,255,.4),transparent);transition:left .5s;opacity:0}
+.btn-old:hover::before{left:100%;opacity:1}
+.btn-old:hover{background:var(--cta-gradient-hover);box-shadow:0 6px 20px rgba(0,0,0,.3)}
+
+/* ======================= V1 — Room Plate ======================= */
+.v1{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;gap:18px;
+  min-width:330px;padding:16px 18px;border-radius:14px;cursor:pointer;
+  border:1px solid rgba(190,214,255,.45);background:var(--cta-gradient);
+  box-shadow:0 12px 30px rgba(30,58,138,.35),inset 0 1px 0 rgba(255,255,255,.14);
+  transition:transform .25s ease,box-shadow .25s ease,background .4s ease}
+.v1::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;opacity:.85;
+  background-image:
+    repeating-linear-gradient(26.57deg, rgba(255,255,255,.08) 0 1px, transparent 1px 30px),
+    repeating-linear-gradient(-26.57deg, rgba(255,255,255,.08) 0 1px, transparent 1px 30px);
+  transition:transform .55s cubic-bezier(.22,.8,.3,1),background-position 1.2s cubic-bezier(.22,.8,.3,1)}
+.v1:hover::before{transform:scale(1.15);background-position:8px -4px,8px 4px}
+.v1 .txt{position:relative;z-index:3;text-align:left}
+.v1 .lbl{display:block;font-size:17px;font-weight:800;color:#fff;text-shadow:0 1px 8px rgba(6,12,28,.6)}
+.v1 .sub{display:block;margin-top:3px;font-size:12.5px;color:rgba(222,236,255,.88)}
+.v1 .arrow{position:relative;z-index:3;flex:none;width:38px;height:38px;border-radius:10px;display:grid;place-items:center;
+  color:#fff;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);
+  transition:transform .2s ease,background .2s ease}
+.v1:hover{transform:translateY(-2px);background:var(--cta-gradient-hover);box-shadow:0 18px 38px rgba(30,58,138,.4)}
+.v1:hover .arrow{transform:translateX(3px);background:rgba(255,255,255,.34)}
+
+/* ======================= V2 — Drop target ======================= */
+.v2{position:relative;display:flex;align-items:center;gap:16px;min-width:360px;padding:14px 18px;
+  border-radius:16px;cursor:pointer;color:#fff;text-align:left;
+  border:2px dashed rgba(147,197,253,.55);background:rgba(11,22,52,.5);
+  backdrop-filter:blur(10px);transition:.25s}
+.v2:hover,.v2.over{border-color:#fff;background:rgba(37,99,235,.55);transform:translateY(-2px)}
+.v2 .ico{flex:none;width:46px;height:46px;border-radius:12px;display:grid;place-items:center;
+  background:var(--cta-gradient);box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.v2 .lbl{font-size:16.5px;font-weight:800;display:block}
+.v2 .sub{font-size:12.5px;color:rgba(255,255,255,.75);display:block;margin-top:2px}
+.v2.over .sub{color:#fff}
+
+/* ======================= V3 — Split action ======================= */
+.v3{display:inline-flex;position:relative;border-radius:12px;overflow:visible;
+  box-shadow:0 12px 28px rgba(0,0,0,.3)}
+.v3 .main{border:0;cursor:pointer;color:#fff;font-size:17px;font-weight:800;padding:16px 24px;
+  background:var(--cta-gradient);border-radius:12px 0 0 12px;transition:.25s}
+.v3 .main:hover{background:var(--cta-gradient-hover)}
+.v3 .split{border:0;border-left:1px solid rgba(255,255,255,.28);cursor:pointer;color:#fff;
+  padding:0 16px;background:var(--cta-gradient);border-radius:0 12px 12px 0;transition:.25s}
+.v3 .split:hover{background:var(--cta-gradient-hover)}
+.v3 .menu{position:absolute;right:0;bottom:calc(100% + 10px);width:270px;background:#fff;color:var(--fg);
+  border-radius:14px;padding:6px;box-shadow:0 18px 40px rgba(9,17,45,.35);display:none;text-align:left}
+.v3 .menu.open{display:block}
+.v3 .menu button{display:flex;gap:10px;align-items:center;width:100%;border:0;background:none;cursor:pointer;
+  padding:10px 12px;border-radius:10px;font-size:13.5px;font-weight:600;color:var(--fg);text-align:left}
+.v3 .menu button:hover{background:var(--brand-wash)}
+.v3 .menu .sw{width:30px;height:24px;border-radius:6px;flex:none;
+  background:linear-gradient(135deg,#e9dcc9,#93795c)}
+
+/* ======================= V4 — Glass pill ======================= */
+.v4{display:inline-flex;align-items:center;gap:12px;padding:12px 14px 12px 20px;border-radius:999px;
+  cursor:pointer;color:#fff;font-size:16px;font-weight:700;border:1px solid rgba(255,255,255,.4);
+  background:rgba(255,255,255,.13);backdrop-filter:blur(14px) saturate(140%);transition:.25s}
+.v4:hover{background:rgba(255,255,255,.24);border-color:#fff;transform:translateY(-1px)}
+.v4 kbd{font:inherit;font-size:11.5px;font-weight:700;padding:4px 8px;border-radius:999px;
+  background:rgba(9,17,45,.42);border:1px solid rgba(255,255,255,.3)}
+
+/* ======================= V5 — Sample rail ======================= */
+.v5{display:flex;flex-direction:column;gap:0;min-width:400px;border-radius:16px;overflow:hidden;
+  box-shadow:0 16px 36px rgba(0,0,0,.35)}
+.v5 .head{display:flex;align-items:center;justify-content:space-between;gap:16px;border:0;cursor:pointer;
+  padding:16px 20px;color:#fff;background:var(--cta-gradient);font-size:17px;font-weight:800;transition:.25s}
+.v5 .head:hover{background:var(--cta-gradient-hover)}
+.v5 .rail{display:flex;gap:2px;background:rgba(11,22,52,.72);padding:8px;backdrop-filter:blur(8px)}
+.v5 .rail span{flex:1;font-size:11px;color:rgba(255,255,255,.8);text-align:center;align-self:center;padding-left:8px}
+.v5 .rail button{flex:none;width:58px;height:40px;border:1px solid rgba(255,255,255,.22);border-radius:8px;
+  cursor:pointer;overflow:hidden;padding:0;transition:.2s;background-size:cover}
+.v5 .rail button:hover{transform:translateY(-3px);border-color:#fff}
+.v5 .rail button.on{outline:2px solid var(--brand-soft);outline-offset:1px}
+.s-a{background:linear-gradient(160deg,#efe3d2,#a98f70)}
+.s-b{background:linear-gradient(160deg,#dfe7f2,#7d8ca3)}
+.s-c{background:linear-gradient(160deg,#f2e6e6,#a5807f)}
+
+/* ======================= V6 — Credit meter ======================= */
+.v6{position:relative;border:0;cursor:pointer;min-width:340px;padding:16px 20px 14px;border-radius:14px;
+  color:#fff;background:var(--cta-gradient);box-shadow:0 14px 30px rgba(0,0,0,.32);text-align:left;transition:.25s}
+.v6:hover{background:var(--cta-gradient-hover);transform:translateY(-2px)}
+.v6 .row{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.v6 .lbl{font-size:17.5px;font-weight:800}
+.v6 .pips{display:flex;gap:5px}
+.v6 .pips i{width:20px;height:6px;border-radius:99px;background:rgba(255,255,255,.28)}
+.v6 .pips i.on{background:#fff;box-shadow:0 0 10px rgba(255,255,255,.7)}
+.v6 .meta{margin-top:9px;font-size:12px;color:rgba(222,236,255,.9)}
+
+/* ======================= V7 — Stage-in-button ======================= */
+.v7{position:relative;overflow:hidden;border:0;cursor:pointer;min-width:360px;height:62px;border-radius:14px;
+  color:#fff;background:var(--cta-gradient);box-shadow:0 14px 30px rgba(0,0,0,.32);
+  font-size:17px;font-weight:800;transition:.25s}
+.v7:hover{background:var(--cta-gradient-hover)}
+.v7 .face{position:absolute;inset:0;display:grid;place-items:center;transition:opacity .3s,transform .3s}
+.v7 .face.hide{opacity:0;transform:translateY(-8px);pointer-events:none}
+.v7 .bar{position:absolute;left:0;bottom:0;height:3px;width:0;background:#fff;transition:width .1s linear}
+.v7 .prev{position:absolute;inset:0;display:flex;align-items:center;gap:12px;padding:0 18px;opacity:0;
+  transition:opacity .3s}
+.v7 .prev.show{opacity:1}
+.v7 .prev .tile{width:44px;height:34px;border-radius:7px;background:linear-gradient(160deg,#efe3d2,#a98f70)}
+.v7 .prev .tile.after{background:linear-gradient(160deg,#dfe7f2,#4b5c78)}
+.v7 .prev small{font-size:12.5px;font-weight:600;color:rgba(255,255,255,.9)}
+
+/* ======================= V8 — Three doors ======================= */
+.v8{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:12px;min-width:460px;
+  border-radius:18px;background:rgba(11,22,52,.55);border:1px solid rgba(147,197,253,.28);
+  backdrop-filter:blur(12px)}
+.v8 button{border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);cursor:pointer;
+  border-radius:12px;padding:14px 10px;color:#fff;display:grid;gap:6px;justify-items:center;transition:.2s}
+.v8 button:hover{background:rgba(37,99,235,.55);border-color:#fff;transform:translateY(-2px)}
+.v8 b{font-size:13.5px}
+.v8 small{font-size:11px;color:rgba(255,255,255,.66)}
+.v8 button.hero-door{background:var(--cta-gradient);border-color:transparent}
+@media(max-width:560px){.v8{grid-template-columns:1fr;min-width:0}}
+
+/* ======================= V9 — Spotlight ======================= */
+.v9wrap{padding:3px;border-radius:20px;display:inline-block;
+  background:conic-gradient(from var(--a,0deg),#60a5fa,#1e3a8a,#93c5fd,#2563eb,#60a5fa);
+  animation:spin 6s linear infinite;box-shadow:0 20px 50px rgba(37,99,235,.45)}
+@keyframes spin{to{--a:360deg}}
+@property --a{syntax:'<angle>';inherits:false;initial-value:0deg}
+.v9{position:relative;overflow:hidden;border:0;cursor:pointer;border-radius:17px;padding:26px 38px;
+  background:#0b1634;color:#fff;font-size:26px;font-weight:900;letter-spacing:-.5px;display:block}
+.v9 .glow{position:absolute;width:260px;height:260px;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,rgba(96,165,250,.55),transparent 65%);
+  transform:translate(-50%,-50%);left:50%;top:120%;transition:opacity .3s;opacity:0}
+.v9:hover .glow{opacity:1}
+.v9 span{position:relative;z-index:2}
+.v9 em{display:block;font-style:normal;font-size:12.5px;font-weight:600;letter-spacing:.4px;
+  color:rgba(147,197,253,.9);margin-top:6px}
+
+/* ======================= V10 — Sticky thumb bar ======================= */
+.phone{width:330px;margin:0 auto;border-radius:30px;overflow:hidden;position:relative;height:420px;
+  border:8px solid #0b1224;box-shadow:0 20px 50px rgba(9,17,45,.35);background:#fff}
+.phone .scroller{height:100%;overflow-y:auto;scroll-behavior:smooth}
+.phone .shot{height:230px;background:linear-gradient(180deg,#efe3d2 0 46%,#d3bfa6 46% 58%,#93795c 58% 100%)}
+.phone .copy{padding:16px;font-size:13.5px;color:var(--slate);line-height:1.6}
+.phone .copy h3{margin:0 0 8px;font-size:16px;color:var(--fg)}
+.dock{position:absolute;left:10px;right:10px;bottom:10px;display:flex;align-items:center;gap:10px;
+  padding:9px 10px 9px 12px;border-radius:16px;color:#fff;background:rgba(11,22,52,.86);
+  backdrop-filter:blur(12px);box-shadow:0 14px 30px rgba(0,0,0,.35);
+  transform:translateY(130%);transition:transform .38s cubic-bezier(.22,.8,.3,1)}
+.dock.up{transform:none}
+.dock .who{flex:1;min-width:0}
+.dock .who b{display:block;font-size:12.5px}
+.dock .who small{font-size:11px;color:rgba(255,255,255,.65)}
+.dock .go{flex:none;border:0;cursor:pointer;border-radius:11px;padding:11px 16px;color:#fff;
+  font-weight:800;font-size:13.5px;background:var(--cta-gradient)}
+
+.note{font-size:12px;color:var(--muted);padding:12px 20px 18px;border-top:1px solid var(--border);background:#fafcff}
+.stagebox{padding:26px 20px;display:flex;justify-content:center}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header class="top">
+  <h1>Hero CTA — 10 directions</h1>
+  <p class="req">Request: “I just redid the view Stagify+ and View Stagify Enterprise buttons, but the UPLOAD IMAGE FOR FREE button at the top of the home page feels kinda dead and outdated now. Use the /prototype skill to give me 10 options for a new button there (like new look)”</p>
+  <p class="meta">Generated 2026-09-20 · Tokens pulled from <code>public/styles/styles.css</code> (<code>--cta-gradient</code>, brand ramp) and the hero scrim from <code>public/styles/hero-picker.css</code>. Every variant is shown in a mock <code>.hp-bar</code> so it is judged where it actually lives: white type over a photo, beside the “free generations” line.</p>
+</header>
+
+<nav class="jump" id="jump"></nav>
+
+<!-- ============ V0 reference ============ -->
+<section class="canvas" id="v0">
+  <div class="cap"><span class="n">now</span><h2>Today’s button, for comparison</h2>
+    <p>Uppercase, 6px radius, five-stop gradient with a shimmer sweep. Next to the new plates it reads as the oldest control on the page: the radius, the letter-spacing and the flat 22px caps all belong to a different era of the site than <b>.plus-plate</b> does.</p></div>
+  <div class="hero">
+    <div class="shot"></div>
+    <div class="scrim">
+      <div>
+        <p class="eyebrow">Free virtual staging</p>
+        <h3 class="sentence">Stage this <u>bedroom</u> in <u>Modern</u></h3>
+        <button class="btn-old"><strong>Upload image for free</strong></button>
+        <p class="freeline">3 free generations left today · <a href="#v0">Try Stagify+</a></p>
+      </div>
+      <div class="side">
+        <div class="stat"><b>36</b><span>room × style pairs</span></div>
+        <div class="stat"><b>11</b><span>languages</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div id="variants"></div>
+
+</div>
+
+<script>
+/* Each variant: id, name, why, and the control markup dropped into the hero scrim. */
+const V = [
+{
+ id:'v1', name:'Room Plate',
+ why:'Speaks the exact language you just shipped on Stagify+ / Enterprise — plate geometry, arrow well, isometric parallax on hover — so the three CTAs read as one family. <b>Tradeoff:</b> the hero stops being visually louder than the plan buttons, which is only right if the plan row is genuinely a peer.',
+ html:`<button class="v1">
+   <span class="txt"><span class="lbl">Upload image for free</span><span class="sub">JPG or PNG · staged in about 20 seconds</span></span>
+   <span class="arrow" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></span>
+ </button>`
+},
+{
+ id:'v2', name:'Live Drop Target',
+ why:'The button <em>is</em> the dropzone — drag a photo anywhere over it and it lights up, so the first interaction costs zero clicks. <b>Tradeoff:</b> a dashed outline reads as “input field”, not “hero CTA”, so it is quieter than anything else here and leans on the hero photo to carry the page.',
+ html:`<div class="v2" id="dz2">
+   <span class="ico" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg></span>
+   <span><span class="lbl" id="dzl">Drop a listing photo here</span><span class="sub" id="dzs">…or click to browse. Free, no account.</span></span>
+ </div>`
+},
+{
+ id:'v3', name:'Split Action',
+ why:'Keeps one loud primary but attaches an escape hatch for the visitor with no photo on this device — “use one of ours” is the single biggest drop-off patch on an upload-first hero. <b>Tradeoff:</b> a caret next to your main CTA always leaks a little intent; some people open the menu instead of uploading.',
+ html:`<div class="v3">
+   <button class="main">Upload image for free</button>
+   <button class="split" id="sp3" aria-label="More ways to start"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+   <div class="menu" id="mn3">
+     <button><span class="sw"></span> Try a sample bedroom</button>
+     <button><span class="sw" style="background:linear-gradient(135deg,#dfe7f2,#7d8ca3)"></span> Try a sample living room</button>
+     <button><span class="sw" style="background:linear-gradient(135deg,#f2e6e6,#a5807f)"></span> Paste an image URL</button>
+   </div>
+ </div>`
+},
+{
+ id:'v4', name:'Quiet Glass',
+ why:'The opposite bet: the render is the hero, so the CTA gets out of its way — frosted glass, sentence case, a paste hint for the MLS-screenshot crowd. <b>Tradeoff:</b> lowest contrast of the ten; on a bright render it needs the scrim behind it to hold up, and it will measurably convert worse on cold traffic.',
+ html:`<button class="v4">Upload a photo <kbd>or ⌘V</kbd></button>`
+},
+{
+ id:'v5', name:'Sample Rail',
+ why:'Sells with evidence: three staged thumbnails sit under the button, and clicking one runs the demo instantly. Best option if most first-time visitors are browsing, not converting. <b>Tradeoff:</b> tallest control here, and it competes with the hero picker sentence directly above it.',
+ html:`<div class="v5">
+   <button class="head">Upload image for free
+     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+   </button>
+   <div class="rail">
+     <button class="s-a on" aria-label="Sample bedroom"></button>
+     <button class="s-b" aria-label="Sample living room"></button>
+     <button class="s-c" aria-label="Sample kitchen"></button>
+     <span>…or start with one of ours</span>
+   </div>
+ </div>`
+},
+{
+ id:'v6', name:'Credit Meter',
+ why:'Folds the “3 free generations left today” line <em>into</em> the button as three pips, killing a line of chrome and making the free tier feel like a resource you are holding. <b>Tradeoff:</b> a logged-out visitor with 3/3 sees a full meter, which is fine — but a returning one at 0/3 sees a dead CTA at the top of the page.',
+ html:`<button class="v6">
+   <span class="row"><span class="lbl">Upload image for free</span>
+     <span class="pips" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i></span></span>
+   <span class="meta">3 of 3 free renders left today · resets at midnight</span>
+ </button>`
+},
+{
+ id:'v7', name:'Stage-In-Button',
+ why:'Click and the button itself becomes the progress bar, then flips to a before/after pair — the product’s whole promise demonstrated inside 900ms without a modal. <b>Tradeoff:</b> it is a promise the real flow has to keep; if staging takes 20s, the in-button preview has to be an honest sample, not a fake of the user’s own photo.',
+ html:`<button class="v7" id="b7">
+   <span class="face" id="f7">Upload image for free</span>
+   <span class="prev" id="p7"><span class="tile"></span>
+     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+     <span class="tile after"></span><small>Modern bedroom · staged in 19s</small></span>
+   <span class="bar" id="r7"></span>
+ </button>`
+},
+{
+ id:'v8', name:'Three Doors',
+ why:'Maximal utility: browse, drag, or paste, each its own target, with the primary door carrying the gradient. Converts the widest range of inputs — realtors paste, agencies drag. <b>Tradeoff:</b> three equal-weight choices is one more decision than a hero should ask for; it reads like an app panel, not a landing CTA.',
+ html:`<div class="v8">
+   <button class="hero-door"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg><b>Upload free</b><small>JPG · PNG · HEIC</small></button>
+   <button><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 12h8M12 8v8"/></svg><b>Drag here</b><small>up to 12 at once</small></button>
+   <button><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1-1"/></svg><b>Paste a link</b><small>Zillow, MLS, Drive</small></button>
+ </div>`
+},
+{
+ id:'v9', name:'Spotlight Swing',
+ why:'The deliberate over-swing: no button box at all, a slowly rotating conic rim and a spotlight that tracks your cursor across a near-black slab. Impossible to miss, and the only variant that would get screenshotted. <b>Tradeoff:</b> an animated rim at the top of the page is a permanent attention tax, and it fights the hero render for the eye.',
+ html:`<span class="v9wrap"><button class="v9" id="b9"><span class="glow" id="g9"></span><span>Upload image for free<em>NO ACCOUNT · NO CARD · 3 RENDERS A DAY</em></span></button></span>`
+},
+{
+ id:'v10', name:'Thumb Dock (mobile-first)',
+ why:'Accepts that on a phone the hero CTA scrolls away in two flicks — so the button detaches and docks above the thumb once you pass the fold, carrying the render you picked with it. <b>Tradeoff:</b> a persistent dock costs vertical space on every screen below the hero and needs a dismiss affordance, or it becomes the thing people scroll to escape. <em>Scroll the phone below to see it arrive.</em>',
+ mobile:true
+}
+];
+
+const wrap = document.getElementById('variants');
+const jump = document.getElementById('jump');
+jump.insertAdjacentHTML('beforeend','<a href="#v0">Current</a>');
+
+V.forEach((v,i)=>{
+  jump.insertAdjacentHTML('beforeend',`<a href="#${v.id}">${i+1}. ${v.name}</a>`);
+  const stage = v.mobile ? `
+    <div class="stagebox">
+      <div class="phone"><div class="scroller" id="sc10">
+        <div class="shot"></div>
+        <div class="copy"><h3>Stage this bedroom in Modern</h3>
+          <p>Upload one listing photo and get a furnished render back in about twenty seconds. Empty rooms photograph badly — buyers can’t read scale, and a bare corner reads as a defect rather than an opportunity.</p>
+          <p>Every render includes a full-resolution download, a watermark-free file, and the original kept untouched beside it. Agents on Stagify+ run whole shoots at once.</p>
+          <p>Pick any of 36 room-and-style pairs from the picker above, or drop in your own photo and let the model read the room’s geometry from the walls and window line.</p>
+          <p>Scroll on — the upload button follows you down the page and parks above your thumb.</p>
+        </div>
+      </div>
+      <div class="dock" id="dk10">
+        <span class="who"><b>Modern bedroom</b><small>ready to stage · 3 free left</small></span>
+        <button class="go">Upload free</button>
+      </div></div>
+    </div>` : `
+    <div class="hero">
+      <div class="shot"></div>
+      <div class="scrim">
+        <div>
+          <p class="eyebrow">Free virtual staging</p>
+          <h3 class="sentence">Stage this <u>bedroom</u> in <u>Modern</u></h3>
+          ${v.html}
+          <p class="freeline">${v.id==='v6'?'Bring a photo of any empty room. <a href="#'+v.id+'">Try Stagify+</a>':'3 free generations left today · <a href="#'+v.id+'">Try Stagify+</a>'}</p>
+        </div>
+        <div class="side">
+          <div class="stat"><b>36</b><span>room × style pairs</span></div>
+          <div class="stat"><b>11</b><span>languages</span></div>
+        </div>
+      </div>
+    </div>`;
+  wrap.insertAdjacentHTML('beforeend',`
+    <section class="canvas" id="${v.id}">
+      <div class="cap"><span class="n">${String(i+1).padStart(2,'0')}</span><h2>${v.name}</h2><p>${v.why}</p></div>
+      ${stage}
+    </section>`);
+});
+
+/* ---- V2 drop target ---- */
+(function(){
+  const dz=document.getElementById('dz2'); if(!dz) return;
+  const l=document.getElementById('dzl'), s=document.getElementById('dzs');
+  ['dragenter','dragover'].forEach(e=>dz.addEventListener(e,ev=>{ev.preventDefault();
+    dz.classList.add('over'); l.textContent='Release to stage it'; s.textContent='bedroom-3.jpg · 2.4 MB';}));
+  ['dragleave','drop'].forEach(e=>dz.addEventListener(e,ev=>{ev.preventDefault();
+    dz.classList.remove('over'); l.textContent='Drop a listing photo here'; s.textContent='…or click to browse. Free, no account.';}));
+})();
+
+/* ---- V3 split menu ---- */
+(function(){
+  const b=document.getElementById('sp3'), m=document.getElementById('mn3'); if(!b) return;
+  b.addEventListener('click',e=>{e.stopPropagation();m.classList.toggle('open');});
+  document.addEventListener('click',()=>m.classList.remove('open'));
+})();
+
+/* ---- V5 rail ---- */
+document.querySelectorAll('#v5 .rail button').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('#v5 .rail button').forEach(x=>x.classList.remove('on'));
+    btn.classList.add('on');
+  });
+});
+
+/* ---- V7 in-button staging ---- */
+(function(){
+  const b=document.getElementById('b7'); if(!b) return;
+  const f=document.getElementById('f7'), p=document.getElementById('p7'), r=document.getElementById('r7');
+  let busy=false;
+  b.addEventListener('click',()=>{
+    if(busy) return; busy=true;
+    f.classList.add('hide'); r.style.width='0';
+    let w=0; const t=setInterval(()=>{ w+=7; r.style.width=Math.min(w,100)+'%';
+      if(w>=100){ clearInterval(t); p.classList.add('show');
+        setTimeout(()=>{ p.classList.remove('show'); f.classList.remove('hide'); r.style.width='0'; busy=false; },2200);} },60);
+  });
+})();
+
+/* ---- V9 spotlight tracking ---- */
+(function(){
+  const b=document.getElementById('b9'), g=document.getElementById('g9'); if(!b) return;
+  b.addEventListener('mousemove',e=>{ const r=b.getBoundingClientRect();
+    g.style.left=(e.clientX-r.left)+'px'; g.style.top=(e.clientY-r.top)+'px'; });
+})();
+
+/* ---- V10 dock on scroll ---- */
+(function(){
+  const sc=document.getElementById('sc10'), dk=document.getElementById('dk10'); if(!sc) return;
+  sc.addEventListener('scroll',()=>dk.classList.toggle('up', sc.scrollTop>120));
+})();
+</script>
+</body>
+</html>

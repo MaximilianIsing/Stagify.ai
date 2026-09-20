@@ -80,5 +80,14 @@
     "headline": "Erst raus mit ihren Möbeln.",
     "captionLeft": "Wie fotografiert",
     "captionRight": "Leer, bereit zum Staging"
+  },
+  "cover-16": {
+    "eyebrow": "Möbelstile",
+    "headline": "Ein Raum. Drei Stile. Drei verschiedene Käufer.",
+    "labels": [
+      "Skandinavisch",
+      "Landhaus",
+      "Luxus"
+    ]
   }
 }

@@ -292,14 +292,29 @@
 }
 
 /* --- Fullscreen control ---------------------------------------------------
-   Sits over the top-right of the player frame. The bottom-right corner is where
-   the frame's progress bar runs and where a "bottom" callout card is clamped, so
-   the top corner is the one that stays clear across all six walkthroughs.
+   BOTTOM-right of the player frame, which is where home.css puts the identical
+   control (.shw__fs). It is the same button doing the same job on both pages — a
+   fullscreen toggle on a desktop, the rotate-to-landscape toggle on a phone — so it
+   has to live in the same corner; home is the one that cannot move, because the
+   exterior panel's own "After" tag owns the top-right of .ba.
+
+   31px, not home's 10px, because the two buttons hang off different boxes. This one
+   is anchored to .guide-demo-panel, which the mount turns into the player ROOT — so
+   its box is the frame PLUS the dot row beneath it (.sdp__dot 9px + its 12px
+   margin-top = the same 21px the skeleton above reserves). 21 + 10 lands it inside
+   the frame at home's inset, clear of the dots and 10px above the 4px .sdp__bar.
+   Home mounts with dots:false and has no row to clear.
+
+   A callout clamped to the frame's bottom-right corner paints OVER it (.sdp__tip is
+   z-index 4 against this button's 2), exactly as it does on the homepage. That is the
+   right way round: lifting the button above the card would float a 44x44 tap target
+   on top of the card's own Next button.
+
    scripts/guides.js hides the button outright when document.fullscreenEnabled is
    false, rather than leaving a control whose only behaviour is a rejected promise. */
 .guide-demo-fs {
   position: absolute;
-  top: 10px;
+  bottom: 31px;
   right: 10px;
   z-index: 2;
   display: inline-flex;
@@ -445,7 +460,7 @@
   background: var(--bg-elevated);
 }
 .guide-demo-panel:fullscreen .guide-demo-fs {
-  top: 24px;
+  bottom: 24px;
   right: 24px;
   opacity: 1;
 }
@@ -509,7 +524,7 @@
   background: var(--bg-elevated);
 }
 .guide-demo-panel.is-immersive .guide-demo-fs {
-  top: 24px;
+  bottom: 24px;
   right: 24px;
   opacity: 1;
 }

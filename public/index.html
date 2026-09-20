@@ -92,6 +92,13 @@
     <link rel="preload" as="image" href="media-webp/example/modern-bedroom.webp" imagesrcset="media-webp/example/modern-bedroom-900.webp 900w, media-webp/example/modern-bedroom.webp 1248w, media-webp/example/modern-bedroom-1872.webp 1872w, media-webp/example/modern-bedroom-2496.webp 2496w" imagesizes="(min-width: 1180px) 1110px, 94vw" fetchpriority="high">
 
 
+    <!-- The hero's remembered pick, applied to the LCP <img> before it paints. Same
+         reasoning as the session-class.js preload below: it is a parser-blocking classic
+         script and it sits low in the body, so without this the scanner discovers it behind
+         everything else and first paint waits on it. It is ~1 KB. See its own header, and
+         the <script> tag inside .hp-canvas. -->
+    <link rel="preload" as="script" href="scripts/hero-restore.js" fetchpriority="high">
+
     <!-- The one script that blocks the parser, fetched at the priority that fact deserves.
          See the note on its <script> tag at the foot of this <head>: it is 2 KB, it gates
          first paint, and without this it was arriving 508 ms in, behind everything else
@@ -421,9 +428,22 @@
                   Renders created later get `hp-canvas__img` WITHOUT `is-on`, so the
                   cross-fade contract is untouched. There is a drift test on both halves.
 
+               5. THE PAIR ABOVE IS NOT ALWAYS WHAT PAINTS. scripts/hero-restore.js, the
+                  tag directly below, rewrites this element’s src/srcset in place when the
+                  visitor has a remembered pick, before the first paint — so the three-way
+                  agreement in rule 1 is about the DEFAULT, which is what this file ships and
+                  what a first-time visit shows. Nothing there changes.
+
                The empty "before" shot is NOT here on purpose: it is loaded on demand when
                the visitor presses “See original”, so the first paint pays for one image. -->
           <img class="hp-canvas__img is-on" data-hp-img src="media-webp/example/modern-bedroom.webp" srcset="media-webp/example/modern-bedroom-900.webp 900w, media-webp/example/modern-bedroom.webp 1248w, media-webp/example/modern-bedroom-1872.webp 1872w, media-webp/example/modern-bedroom-2496.webp 2496w" sizes="(min-width: 1180px) 1110px, 94vw" alt="A bedroom virtually staged in a modern style" data-lang-attr="hero.defaultAlt|alt" fetchpriority="high">
+          <!-- Restores a returning visitor’s remembered pick INTO the node above, rather
+               than swapping it afterwards. It has to be here rather than in <head>: it needs
+               that element to exist, and it has to run before the paint, so it is a classic
+               parser-blocking script (a module would run at the end of parsing, which is the
+               flash it removes) preloaded from <head>. It never replaces the node — rule 3
+               holds. Read its header before moving it. -->
+          <script src="scripts/hero-restore.js"></script>
 
           <!-- Positioned against the canvas rather than laid out in a rail. It briefly shared
                a flex row with the stat pills, and a pill plus a button is wider than a 326px
@@ -2185,6 +2205,14 @@
           <h2 class="home-section__title" id="blog-teaser-title" data-tx="rise" data-lang="home.blog.title">From the Stagify blog</h2>
         </div>
         <div class="home-blog__grid reveal">
+          <a class="home-blog__card" href="/blog/which-virtual-staging-style">
+            <img class="home-blog__thumb" src="media-webp/blog/cover-16-thumb.webp" alt="Three photographs of the same empty living room, staged three different ways on a dark background: a Scandinavian version with a pale grey sofa and a light oak table, a farmhouse version with a linen sofa, a jute rug and a reclaimed wood table, and a luxury version with a green velvet sofa, a patterned rug, a marble table and a brass chandelier" width="400" height="225" data-lang-attr="hub.cards.which-virtual-staging-style.alt|alt" loading="lazy">
+            <div class="home-blog__body">
+              <span class="home-blog__tag" data-lang="hub.cards.which-virtual-staging-style.tag">Guides</span>
+              <h3 class="home-blog__title" data-lang="hub.cards.which-virtual-staging-style.title">One Room, Seven Styles. Only One of Them Sells the House.</h3>
+              <span class="home-blog__meta" data-lang="hub.cards.which-virtual-staging-style.readTime">10 min read</span>
+            </div>
+          </a>
           <a class="home-blog__card" href="/blog/remove-furniture-from-listing-photos">
             <img class="home-blog__thumb" src="media-webp/blog/cover-15-thumb.webp" alt="Two photographs of the same living room side by side on a dark background: on the left it is furnished with a grey sofa, a patterned rug, a bookcase and family photographs on the walls, labelled “As photographed”, and on the right the same room with every piece of furniture removed, labelled “Emptied, ready to stage”" width="400" height="225" data-lang-attr="hub.cards.remove-furniture-from-listing-photos.alt|alt" loading="lazy">
             <div class="home-blog__body">
@@ -2223,14 +2251,6 @@
               <span class="home-blog__tag" data-lang="hub.cards.fsbo-listing-photos.tag">Guides</span>
               <h3 class="home-blog__title" data-lang="hub.cards.fsbo-listing-photos.title">FSBO Is at an All-Time Low. Commission Isn’t the Reason.</h3>
               <span class="home-blog__meta" data-lang="hub.cards.fsbo-listing-photos.readTime">8 min read</span>
-            </div>
-          </a>
-          <a class="home-blog__card" href="/blog/virtual-staging-disclosure-laws-by-state">
-            <img class="home-blog__thumb" src="media-webp/blog/cover-10-thumb.webp" alt="A virtually staged living room overlaid with a white card headed “Who actually requires it”, listing California, Wisconsin and every other state" width="400" height="225" data-lang-attr="hub.cards.virtual-staging-disclosure-laws-by-state.alt|alt" loading="lazy">
-            <div class="home-blog__body">
-              <span class="home-blog__tag" data-lang="hub.cards.virtual-staging-disclosure-laws-by-state.tag">Compliance</span>
-              <h3 class="home-blog__title" data-lang="hub.cards.virtual-staging-disclosure-laws-by-state.title">Do You Have to Disclose Virtual Staging? The 2026 Rules, State by State</h3>
-              <span class="home-blog__meta" data-lang="hub.cards.virtual-staging-disclosure-laws-by-state.readTime">9 min read</span>
             </div>
           </a>
         </div>

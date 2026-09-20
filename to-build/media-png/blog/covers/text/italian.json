@@ -80,5 +80,14 @@
     "headline": "Prima escono i loro mobili.",
     "captionLeft": "Come fotografata",
     "captionRight": "Vuota, pronta da arredare"
+  },
+  "cover-16": {
+    "eyebrow": "Stili di arredamento",
+    "headline": "Una stanza. Tre stili. Tre acquirenti diversi.",
+    "labels": [
+      "Scandinavo",
+      "Rustico",
+      "Lusso"
+    ]
   }
 }

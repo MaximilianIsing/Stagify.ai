@@ -749,5 +749,119 @@
         "noWrap": true
       }
     ]
+  },
+  "cover-16": {
+    "base": "cover-16.webp",
+    "slug": "which-virtual-staging-style",
+    "note": "Full-bleed triptych: a white header bar over three photographs running edge to edge, and a matching white footer band carrying numbered style labels. Both plates are whole bars, so no plate ever touches a photograph. The style names are the app's own furnitureStyles.* labels, so a reader can find the option in the picker.",
+    "plates": [
+      {
+        "x": 0,
+        "y": 0,
+        "w": 1600,
+        "h": 168,
+        "rowFrom": 160
+      },
+      {
+        "x": 0,
+        "y": 812,
+        "w": 1600,
+        "h": 88,
+        "rowFrom": 890
+      }
+    ],
+    "items": [
+      {
+        "key": "eyebrow",
+        "x": 64,
+        "y": 62,
+        "maxW": 1400,
+        "size": 25,
+        "weight": 700,
+        "tracking": 3.4,
+        "fill": "#2563eb",
+        "upper": true,
+        "noWrap": true
+      },
+      {
+        "key": "headline",
+        "x": 64,
+        "y": 136,
+        "maxW": 1472,
+        "maxH": 76,
+        "size": 54,
+        "minSize": 28,
+        "weight": 700,
+        "lineHeight": 1.05,
+        "fill": "#0f1729",
+        "anchor": "bottom"
+      },
+      {
+        "x": 64,
+        "y": 860,
+        "maxW": 447,
+        "runs": [
+          {
+            "text": "01",
+            "size": 30,
+            "weight": 700,
+            "fill": "#2563eb"
+          },
+          {
+            "key": "labels.0",
+            "size": 30,
+            "weight": 700,
+            "tracking": 2.2,
+            "fill": "#0f1729",
+            "upper": true,
+            "gapBefore": 18
+          }
+        ]
+      },
+      {
+        "x": 599,
+        "y": 860,
+        "maxW": 447,
+        "runs": [
+          {
+            "text": "02",
+            "size": 30,
+            "weight": 700,
+            "fill": "#2563eb"
+          },
+          {
+            "key": "labels.1",
+            "size": 30,
+            "weight": 700,
+            "tracking": 2.2,
+            "fill": "#0f1729",
+            "upper": true,
+            "gapBefore": 18
+          }
+        ]
+      },
+      {
+        "x": 1133,
+        "y": 860,
+        "maxW": 447,
+        "runs": [
+          {
+            "text": "03",
+            "size": 30,
+            "weight": 700,
+            "fill": "#2563eb"
+          },
+          {
+            "key": "labels.2",
+            "size": 30,
+            "weight": 700,
+            "tracking": 2.2,
+            "fill": "#0f1729",
+            "upper": true,
+            "gapBefore": 18
+          }
+        ]
+      }
+    ]
   }
 }
