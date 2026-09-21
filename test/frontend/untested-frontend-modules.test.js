@@ -191,7 +191,6 @@ const BLOCKED_CLASSIC = [
   'developers-gate.js',
   'faq-redirect.js',
   'gallery-gate.js',
-  'gtag.js',
   // The hero's pre-paint pick restore. Behaviourally covered by
   // test/frontend/hero-restore.test.js on the same `new Function` harness as the gates
   // here; listed only because an IIFE with no exports is not something node can import,

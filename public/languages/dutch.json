@@ -27,24 +27,67 @@
     "brand": {
       "heading": "Merkkit",
       "body": "Dit zijn de officiële bestanden. Je mag ze zonder toestemming gebruiken om naar Stagify.ai te verwijzen. Teken het merk niet na en wek niet de indruk dat wij jouw product aanbevelen.",
+      "marksLabel": "Productlogo’s",
+      "marksHint": "Eén logo op vier achtergronden. De tekening verandert nooit — alleen wat erachter staat. Alle bestanden zijn PNG, tenzij SVG vermeld staat; de getallen zijn pixels.",
+      "marks": {
+        "core": "Het product en het bedrijf. Bij twijfel deze gebruiken.",
+        "plus": "Het abonnement. Gouden vlak, dezelfde tekening.",
+        "enterprise": "Accounts voor een heel domein. Marineblauw vlak met skyline.",
+        "api": "Het ontwikkelaarsplatform. Marineblauw vlak met raster."
+      },
+      "markFiles": {
+        "full": "356",
+        "svg": "SVG",
+        "px180": "180",
+        "px64": "64",
+        "px32": "32"
+      },
       "paletteLabel": "Kleuren",
+      "copyHint": "Selecteer een kleur om de hexcode te kopiëren.",
       "colors": {
         "brand": "Merkblauw",
         "strong": "Diepblauw",
         "navy": "Marineblauw",
         "soft": "Lichtblauw",
+        "pale": "Lichtblauw",
         "tint": "Tint",
+        "wash": "Waas",
+        "slate": "Leisteen",
         "ink": "Inkt"
       },
-      "copyHint": "Selecteer een kleur om de hexcode te kopiëren.",
+      "paletteNote": "Het goud van het Stagify+-vlak en het marineblauw achter Enterprise en de API horen bij die illustraties, niet bij het palet. Haal ze uit de bestanden in plaats van het blauwe logo te herkleuren.",
+      "typeLabel": "Typografie",
+      "typeBody": "De hele site is gezet in <a href=\"https://rsms.me/inter/\" rel=\"nofollow noopener noreferrer\" target=\"_blank\">Inter</a> in 400, 600 en 700 — gratis, en ook op Google Fonts. Er is geen vector-woordmerk: zet de naam als tekst in plaats van een PNG te vergroten. Waar Inter ontbreekt voldoet elke neutrale schreefloze; zelf vallen we terug op de systeemletters.",
+      "spaceLabel": "Vrije ruimte en minimumformaat",
+      "spaceBody": "Houd rondom het logo minstens de hoogte van de S vrij en zet daar niets in. Ga niet onder 24 px op het scherm of 8 mm in druk — gebruik het bestand van 32 px in plaats van een groter bestand te verkleinen.",
+      "namingLabel": "De naam schrijven",
+      "naming": {
+        "one": "Stagify.ai is één woord, hoofdletter S en kleine .ai — niet “Stagify AI”, “Stageify” of “STAGIFY”.",
+        "two": "De producten heten Stagify+ (geen spatie voor de plus), Stagify Enterprise en de Stagify API.",
+        "three": "Na de eerste vermelding volstaat in lopende tekst gewoon “Stagify”."
+      },
+      "rulesLabel": "Wel en niet",
+      "doLabel": "Graag wel",
+      "do": {
+        "one": "Gebruik de bestanden zoals ze zijn, op elk formaat, op wit of op een donkere achtergrond.",
+        "two": "Kies de achtergrond die hoort bij het product waarover je schrijft.",
+        "three": "Laat het logo naar stagify.ai verwijzen als het in een overzicht of op een partnerpagina staat."
+      },
+      "dontLabel": "Graag niet",
+      "dont": {
+        "one": "De logo’s herkleuren, draaien, omlijnen, bijsnijden of natekenen.",
+        "two": "Ze onevenredig uitrekken of een vijfde achtergrond verzinnen.",
+        "three": "De indruk wekken dat wij je product aanbevelen, sponsoren of leveren.",
+        "four": "Het als je eigen app-icoon, avatar of favicon gebruiken, of samenvoegen met een ander merk."
+      },
       "downloadsLabel": "Downloads",
       "zip": "Alles (ZIP)",
       "logoPng": "Volledig logo (PNG)",
       "iconSvg": "Pictogram (SVG)",
-      "iconPng": "Pictogram (PNG)",
       "avatar": "Profielfoto (PNG)",
+      "linkedin": "LinkedIn-logo (PNG)",
       "ogImage": "Socialecard (PNG)",
-      "usage": "Er is geen vectorwoordmerk: de naam is gezet in <a href=\"https://rsms.me/inter/\" rel=\"nofollow noopener noreferrer\" target=\"_blank\">Inter</a>, dus zet hem als tekst. Verander de kleur van het merk niet, draai of rek het niet uit en teken het niet na. De volledige richtlijnen staan in README.txt in het archief.",
+      "notUs": "Niet wij: stagify.io, stagify.app, stagify.online en stagifyai.com zijn losstaande bedrijven met een gelijkende naam. Deze kit geldt alleen voor Stagify.ai; de volledige richtlijnen zitten als README.txt in het archief.",
       "copied": "{hex} gekopieerd naar het klembord",
       "copyFailed": "Geen toegang tot het klembord. De hexcode is {hex}"
     },

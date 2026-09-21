@@ -222,7 +222,7 @@ test('renderer produces localized real index.html without English title leaking'
   assert.ok(!/Free virtual staging with one click/.test(titleMatch[1]), 'English title leaked in <title>');
   assert.ok(out.includes('<base href="/">'));
   assert.ok(out.includes('<link rel="canonical" href="https://stagify.ai/es">'));
-  assert.ok(out.includes('src="scripts/gtag.js"'), 'relative asset refs must be preserved (base resolves them)');
+  assert.ok(out.includes('src="scripts/session-class.js"'), 'relative asset refs must be preserved (base resolves them)');
 });
 
 // ── Sitemap + baked English hreflang (drift guards) ─────────────────────────

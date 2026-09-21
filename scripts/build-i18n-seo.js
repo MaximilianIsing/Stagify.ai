@@ -3,7 +3,7 @@
 //
 //   node scripts/build-i18n-seo.js
 //
-// It does six things, all derived from config modules so they can't drift:
+// It does eight things, all derived from config modules so they can't drift:
 //   0. Regenerates lib/i18n/blog-i18n-manifest.js from the translation packs on disk
 //      under public/blog/i18n/ — which blog article exists in which language. Steps 3
 //      and 4 read it, so when it changes the script re-execs itself once (see below).
@@ -18,6 +18,11 @@
 //      lib/seo/organization.js into every indexable page, between generated markers.
 //      That block is the site's entity identity — see that module for why four
 //      unrelated "Stagify" products make it load-bearing rather than decorative.
+//   6. Regenerates public/llms.txt from lib/seo/llms-txt.js — the same entity facts and
+//      the same URL set, in the plain-text form an answer engine reads first.
+//   7. Bakes the <link rel="alternate" type="text/plain"> pointer to llms.txt into every
+//      indexable page, so that file is discoverable from any URL rather than by guessing
+//      the well-known path.
 //
 // Idempotent: re-running removes the previously-injected cluster and rewrites it,
 // so it's safe to run any time. A test (test/i18n/i18n.test.js) asserts the committed
@@ -28,12 +33,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
-import { BLOG_HUB, ENGLISH, LOCALIZED_ARTICLES, LOCALIZED_PAGES, buildHreflangCluster, buildOgLocaleBlock } from '../lib/i18n/locales.js';
+import { BLOG_HUB, ENGLISH, LOCALIZED_ARTICLES, LOCALIZED_PAGES, SITE_ORIGIN, buildHreflangCluster, buildOgLocaleBlock } from '../lib/i18n/locales.js';
 import { buildSitemap } from '../lib/i18n/sitemap.js';
 import { buildLocaleDataModule } from '../lib/i18n/locale-data.js';
 import { articleLocales, buildBlogManifestModule } from '../lib/i18n/blog-packs.js';
 import { injectLangNav } from '../lib/i18n/blog-langs.js';
 import { ORGANIZATION_ID, renderOrganizationBlock } from '../lib/seo/organization.js';
+import { buildLlmsTxt } from '../lib/seo/llms-txt.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC = path.join(__dirname, '..', 'public');
@@ -110,6 +116,44 @@ export function injectOgLocale(html, locales) {
  */
 export function injectArticleHreflang(html, pagePath, locales) {
   return injectOgLocale(injectHreflang(html, pagePath, locales), locales);
+}
+
+// The previously-injected llms.txt pointer. Distinguished from the hreflang alternates
+// above by `type=` where those carry `hreflang=`, which is also why EXISTING_ALTERNATE
+// leaves this line alone — the two injectors do not fight over each other's markup.
+const EXISTING_LLMS_LINK = /[ \t]*<link\s+rel="alternate"\s+type="text\/plain"[^>]*>[ \t]*\r?\n/gi;
+
+/** The pointer itself. `rel="alternate"` + a text/plain type is the plain reading of
+ *  "the same site, in another format" — there is no registered rel for llms.txt. */
+const LLMS_LINK = `<link rel="alternate" type="text/plain" title="llms.txt" href="${SITE_ORIGIN}/llms.txt">`;
+
+/**
+ * Inject (or refresh) the llms.txt pointer, after the hreflang cluster when there is one
+ * and after the canonical otherwise. Idempotent, and preserves the file's line ending.
+ *
+ * Placed after the cluster rather than before it so this injector can run last without
+ * injectHreflang — which rebuilds the whole cluster from the canonical downwards on every
+ * pass — pushing the pointer out of position on the next build.
+ * @param {string} html
+ * @returns {string}
+ */
+export function injectLlmsLink(html) {
+  const eol = html.includes('\r\n') ? '\r\n' : '\n';
+  const out = html.replace(EXISTING_LLMS_LINK, '');
+  const alternates = [...out.matchAll(/[ \t]*<link\s+rel="alternate"\s+hreflang="[^"]*"[^>]*>/gi)];
+  if (alternates.length) {
+    const last = alternates[alternates.length - 1];
+    const at = (last.index ?? 0) + last[0].length;
+    const indent = (last[0].match(/^[ \t]*/) || [''])[0];
+    return `${out.slice(0, at)}${eol}${indent}${LLMS_LINK}${out.slice(at)}`;
+  }
+  if (/<link\s+rel="canonical"/i.test(out)) {
+    return out.replace(
+      /([ \t]*)<link\s+rel="canonical"[^>]*>/i,
+      (m, indent) => `${m}${eol}${indent}${LLMS_LINK}`,
+    );
+  }
+  return out.replace(/([ \t]*)(<\/head>)/i, (m, indent) => `${indent}${LLMS_LINK}${eol}${m}`);
 }
 
 // The previously-generated identity region, removed whole so a refresh never nests one
@@ -279,18 +323,30 @@ function run() {
   fs.writeFileSync(localeDataPath, buildLocaleDataModule().split('\n').join(localeDataEol));
   console.log('scripts/locale-data.js regenerated');
 
-  // Step 5 — the entity identity. Separate loop from the hreflang pass above because it
-  // covers a WIDER set of files (the blog and the legal pages are not in LOCALIZED_PAGES)
-  // and because a page missing a canonical is a hard error there but irrelevant here.
+  // Step 6 — the plain-text summary. Same line-ending care as locale-data.js above, and
+  // written AFTER the blog loop so it reads the articles' current titles and descriptions
+  // rather than whatever they said before this run touched them.
+  const llmsPath = path.join(PUBLIC, 'llms.txt');
+  const priorLlms = fs.existsSync(llmsPath) ? fs.readFileSync(llmsPath, 'utf8') : '';
+  const llmsEol = priorLlms.includes('\r\n') ? '\r\n' : '\n';
+  fs.writeFileSync(llmsPath, buildLlmsTxt(PUBLIC).split('\n').join(llmsEol));
+  console.log('llms.txt regenerated');
+
+  // Steps 5 and 7 — the entity identity and the llms.txt pointer, over the same set.
+  // Separate loop from the hreflang pass above because it covers a WIDER set of files (the
+  // blog and the legal pages are not in LOCALIZED_PAGES) and because a page missing a
+  // canonical is a hard error there but irrelevant here. The pointer rides along because
+  // it belongs on exactly the pages the identity block does — every indexable one — and
+  // because running after both hreflang passes is what keeps it below the cluster.
   let identity = 0;
   for (const page of identityPages()) {
     const file = path.join(PUBLIC, page.file);
     const before = fs.readFileSync(file, 'utf8');
-    const after = injectOrganization(linkBlogPublisher(before), page);
+    const after = injectOrganization(injectLlmsLink(linkBlogPublisher(before)), page);
     if (after !== before) {
       fs.writeFileSync(file, after);
       identity += 1;
-      console.log(`organization json-ld → ${page.file}`);
+      console.log(`identity + llms link → ${page.file}`);
     }
   }
 

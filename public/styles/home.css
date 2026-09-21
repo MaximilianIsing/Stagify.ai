@@ -3083,28 +3083,191 @@ body.page-home main {
   text-align: center;
   margin-top: 18px;
 }
+/* --------------------------------------------------------------------------
+   The follow button — an "aurora" plate
+   --------------------------------------------------------------------------
+   Geometry is .plus-cta.plus-plate's, deliberately: same 14/16px padding, 12px
+   radius, 15.5px/800 label, 30px glyph well, 2px hover lift, and the same two
+   scene layers (::before is the world, ::after is what happens to it). This is
+   the site's third plate, so it reads as a member of a family rather than as a
+   one-off — see the .plus-plate block further down for the other two.
+
+   What it does NOT share is the sky. Every other CTA on the page is painted
+   with --cta-gradient, and a seventh navy pill under three warm post covers
+   read as dead; this one is Instagram's own magenta -> violet ramp, landing in
+   --brand-deep so it still ends on the brand. That is the point of it being a
+   different colour: it is the only outbound-to-a-social-network link on the
+   home page, and it should not compete with the actions that keep you here.
+
+   The scene is the gradient itself — three colour blobs at 190% of the plate,
+   wandering across each other on a 22s loop. No objects, no logo in the
+   artwork, nothing that can look fake, and nothing to redraw when Instagram
+   restyles. It is two declarations plus a keyframe, costs no request, and is
+   the only thing in the section that moves at rest. Hover speeds the drift to
+   6s, swells it 10%, and sweeps a gloss across the face.
+
+   The label needs a floor over all of that, hence .ig-follow__scrim: a plum
+   wash carried the full width at a low level rather than faded out at 60%,
+   because the longer packs ("Seguir a @stagify.ai", "@stagify.ai volgen")
+   push the label further right than English does. Same reasoning, and same
+   shape, as the Enterprise plate's scrim. */
 .ig-follow {
+  position: relative;
+  overflow: hidden;
   display: inline-flex;
   align-items: center;
-  gap: 9px;
-  font-family: inherit;
-  font-size: 16px;
-  font-weight: 800;
-  color: var(--bg-elevated);
-  text-decoration: none;
-  padding: 13px 24px;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 252px;
+  max-width: 100%;
+  padding: 14px 14px;
   border-radius: 12px;
-  background: var(--cta-gradient);
-  box-shadow: 0 10px 26px rgba(30, 58, 138, 0.32);
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  font-family: inherit;
+  text-decoration: none;
+  border: 1px solid rgba(255, 190, 220, 0.4);
+  background:
+    radial-gradient(circle at 15% 92%, rgba(249, 206, 52, 0.3) 0, transparent 52%),
+    radial-gradient(circle at 85% 12%, rgba(98, 40, 215, 0.45) 0, transparent 58%),
+    linear-gradient(120deg, #c2185b 0%, #7b1fa2 52%, var(--brand-deep) 100%);
+  box-shadow: 0 10px 26px rgba(60, 12, 50, 0.36), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.ig-follow::before,
+.ig-follow::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+/* The aurora. background-size is 190% so there is somewhere to wander to, and
+   the keyframe moves the POSITION rather than the element, which keeps the
+   whole thing off the layout. */
+.ig-follow::before {
+  z-index: 0;
+  opacity: 0.9;
+  background-image:
+    radial-gradient(circle at 22% 78%, rgba(249, 206, 52, 0.5) 0, transparent 46%),
+    radial-gradient(circle at 58% 20%, rgba(238, 42, 123, 0.55) 0, transparent 48%),
+    radial-gradient(circle at 88% 74%, rgba(98, 40, 215, 0.6) 0, transparent 50%);
+  background-repeat: no-repeat;
+  background-size: 190% 190%;
+  background-position: 50% 50%;
+  animation: ig-aurora 22s ease-in-out infinite alternate;
+  transition: transform 0.55s cubic-bezier(0.22, 0.8, 0.3, 1);
+}
+/* The gloss. Parked off the right edge at rest and swept left on hover; it is
+   a background-position move, so it never repaints the plate. */
+.ig-follow::after {
+  z-index: 1;
+  background: linear-gradient(112deg, transparent 34%, rgba(255, 255, 255, 0.4) 47%, transparent 60%);
+  background-size: 280% 100%;
+  background-position: 150% 0;
+  transition: background-position 0.95s cubic-bezier(0.3, 0.9, 0.3, 1);
+}
+@keyframes ig-aurora {
+  0% {
+    background-position: 12% 70%;
+  }
+  50% {
+    background-position: 72% 26%;
+  }
+  100% {
+    background-position: 30% 86%;
+  }
+}
+/* z-index 3 clears both scene layers (0 / 1) and the scrim (2). */
+.ig-follow__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    rgba(28, 8, 40, 0.52) 0%,
+    rgba(28, 8, 40, 0.34) 52%,
+    rgba(28, 8, 40, 0.18) 80%,
+    rgba(28, 8, 40, 0.1) 100%
+  );
+}
+.ig-follow__label,
+.ig-follow__glyph {
+  position: relative;
+  z-index: 3;
+}
+/* 17.5px, not the plates' 15.5px. The Stagify+ / Enterprise pair sit INSIDE plan
+   cards with a heading, a price and a feature list above them, so their label is
+   the smallest type in its own block; this one is alone under a section heading
+   with nothing to be quiet next to, and at 15.5px it read as a caption on a large
+   coloured panel rather than as the thing to click. */
+.ig-follow__label {
+  font-size: 17.5px;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--bg-elevated);
+  text-shadow: 0 1px 8px rgba(6, 12, 28, 0.6);
+}
+/* The Instagram mark, in the well the other two plates keep their arrow in.
+   It is the logo rather than an arrow because this is the one CTA whose
+   destination is a place people recognise by its mark: the label says where
+   you are going, so the well can say whose it is. */
+.ig-follow__glyph {
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: var(--bg-elevated);
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  transition: background 0.2s ease, transform 0.25s ease;
+}
+.ig-follow__glyph svg {
+  width: 18px;
+  height: 18px;
 }
 .ig-follow:hover {
   transform: translateY(-2px);
-  box-shadow: 0 14px 34px rgba(30, 58, 138, 0.42);
+  box-shadow: 0 16px 34px rgba(60, 12, 50, 0.44);
 }
-.ig-follow svg {
-  width: 19px;
-  height: 19px;
+.ig-follow:hover::before {
+  animation-duration: 6s;
+  transform: scale(1.1);
+}
+.ig-follow:hover::after {
+  background-position: -55% 0;
+}
+.ig-follow:hover .ig-follow__glyph {
+  background: rgba(255, 255, 255, 0.4);
+  transform: scale(1.08);
+}
+.ig-follow:focus-visible {
+  outline: 3px solid var(--brand-soft);
+  outline-offset: 3px;
+}
+/* Everything the plate does beyond existing is motion, so it all goes. The sky
+   and the scrim stay — they are the design, not the animation — and the gloss
+   is re-stated at its resting position rather than left to snap. */
+@media (prefers-reduced-motion: reduce) {
+  .ig-follow,
+  .ig-follow::before,
+  .ig-follow::after,
+  .ig-follow__glyph {
+    transition: none;
+  }
+  .ig-follow::before {
+    animation: none;
+  }
+  .ig-follow:hover,
+  .ig-follow:hover::before,
+  .ig-follow:hover .ig-follow__glyph {
+    transform: none;
+  }
+  .ig-follow:hover::after {
+    background-position: 150% 0;
+  }
 }
 /* The whole card is the link to the post. This replaced a framed <iframe> whose only job
    was to be cropped: --ig-header pulled Instagram's own header bar (avatar / follower
@@ -4312,11 +4475,12 @@ body.page-home main {
   flex: none;
 }
 /* This is the site's SECONDARY CTA pattern, matched deliberately rather than invented:
-   `.ig-follow` (directly above this row) and `.plus-cta` are the same five-stop radial
-   gradient, weight 800, ~13px/22px, 11-12px radius, a soft navy shadow and a -2px hover
-   lift. A flat `background: var(--primary)` shipped here first and read as bland and
-   off-pattern next to the Instagram button six rows up — correctly, because it was the
-   only CTA on the page not speaking this language.
+   `.plus-cta` is the same five-stop radial gradient, weight 800, ~13px/22px, 11-12px
+   radius, a soft navy shadow and a -2px hover lift. A flat `background: var(--primary)`
+   shipped here first and read as bland and off-pattern next to the other CTAs —
+   correctly, because it was the only one on the page not speaking this language.
+   (`.ig-follow`, six rows up, USED to be a member of this family and is no longer: it
+   is a plate on Instagram's own magenta ramp now. See its block above for why.)
 
    It is still NOT `.btn.btn-primary`: that adds `text-transform: uppercase` and, via
    index.css, `font-size: 24px !important`. Same gradient family, indoor voice.

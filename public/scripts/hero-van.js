@@ -14,19 +14,20 @@
  * classic gradient CTA — and mounts nothing. The 769px line is the same breakpoint
  * index.css already uses for this button's desktop sizing.
  *
- * LOADED FROM scripts/index-deferred.js, after `load`. The button is fully usable before
- * this arrives (hero-cta-boot.js binds the click; hero-picker.css paints the plate shell),
- * so a visitor who hovers in the first second sees a navy plate with the label and no
- * street — and then the street is there. That is the LCP trade the homepage makes for
- * everything below the hero photo, and this is 30 KB of SVG-building JS that nobody needs
- * before they can see the page. ONE plate is built at mount; the other seven are built the
- * first time the picker asks for them and cached, so a style change costs one string build
- * and one innerHTML.
+ * THE SECOND MODULE TAG IN <head>, right behind hero-picker.js. Modules run in document
+ * order once the document is parsed, so this executes in the same turn as the picker —
+ * before the visitor can reach the button — and the street is simply there on first
+ * paint. It was in index-deferred.js's after-`load` list at first, and the button painted
+ * as a bare navy plate for the second before the SVG arrived, which read as a glitch.
+ * The cost is one ~30 KB module pair in the early window; index.html modulepreloads
+ * hero-van-art.js so the two fetch in parallel rather than in series. ONE plate is built
+ * at mount; the other seven are built the first time the picker asks for them and
+ * cached, so a style change costs one string build and one innerHTML.
  *
  * THE PICKER TELLS US, WE DO NOT ASK. scripts/hero-picker.js owns the style state and has
  * no imports (by design — it must run before app.js's graph). It publishes the current
  * style two ways: `data-hp-style` on the [data-hp-stage] element, which we read at mount
- * because the picker ran long before us, and a `stagify:hero-style` CustomEvent on
+ * because the picker's tag comes first, and a `stagify:hero-style` CustomEvent on
  * `document` for every later pick. Neither side imports the other.
  */
 
@@ -118,10 +119,9 @@ export function initHeroVan(doc = document, win = window) {
     scene.innerHTML = markupFor(key);
   }
 
-  // The picker ran long before this module (it is the first module tag; we come after
-  // `load`), so its current pick is on the stage element. Fall back to the default when
-  // the attribute is absent — an older cached picker, or the picker bailed on a page
-  // without the hero.
+  // The picker's tag precedes ours, so its current pick is already on the stage element.
+  // Fall back to the default when the attribute is absent — an older cached picker, or
+  // the picker bailed on a page without the hero.
   const initial = (stage && stage.getAttribute('data-hp-style')) || DEFAULT_STYLE;
   setStyle(initial);
   btn.classList.add('hu-mounted');
@@ -148,8 +148,9 @@ export function initHeroVan(doc = document, win = window) {
   return { current: () => current, setStyle };
 }
 
-/* Injected after `load` by index-deferred.js, so the readyState guard takes the direct
-   branch; written in the guarded form anyway so the file is correct wherever it is loaded. */
+/* A module tag in <head> runs after parsing and before DOMContentLoaded, so the guard takes
+   the addEventListener branch; the direct branch keeps the file correct if it is ever moved
+   into index-deferred.js's after-`load` list. */
 if (typeof document !== 'undefined') {
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => initHeroVan());

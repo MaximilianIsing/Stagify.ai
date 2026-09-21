@@ -98,41 +98,6 @@
       li { margin-bottom: 6px; }
       a { color: #2563eb; }
       a:hover { color: #1d4ed8; }
-      /* The advertising opt-out in §16.3. Built by scripts/ad-optout.js; the
-         markup ships a no-JavaScript fallback in the same box. */
-      .pp-optout {
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        background: #ffffff;
-        padding: 18px 20px;
-        margin: 20px 0 8px;
-      }
-      .pp-optout-state {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        font-size: 14px;
-        margin: 0;
-      }
-      .pp-optout-btn {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        font-size: 14px;
-        font-weight: 600;
-        color: #ffffff;
-        background: #2563eb;
-        border: 1px solid #2563eb;
-        border-radius: 6px;
-        padding: 9px 16px;
-        margin-top: 14px;
-        cursor: pointer;
-        transition: background 0.15s, border-color 0.15s;
-      }
-      .pp-optout-btn:hover { background: #1d4ed8; border-color: #1d4ed8; }
-      .pp-optout-btn:focus-visible { outline: 2px solid #1d4ed8; outline-offset: 2px; }
-      .pp-optout-note {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        font-size: 13px;
-        color: #6b7280;
-        margin: 12px 0 0;
-      }
       .pp-footer {
         margin-top: 60px;
         padding-top: 20px;

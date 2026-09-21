@@ -3,15 +3,13 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
-    <!-- Google tag (gtag.js) — Google Ads. Config + async loader in scripts/gtag.js. -->
-    <script src="scripts/gtag.js" defer></script>
     <link rel="icon" type="image/webp" sizes="32x32" href="media-webp/logo/Logo32x32.webp">
     <title>Privacy Policy - Stagify.ai</title>
     <meta name="description" content="Read the Stagify.ai Privacy Policy to learn how we collect, use, and protect your personal data when you use our AI virtual staging service.">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <meta name="author" content="Stagify.ai">
     <link rel="canonical" href="https://stagify.ai/privacy.html">
+    <link rel="alternate" type="text/plain" title="llms.txt" href="https://stagify.ai/llms.txt">
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -264,7 +262,6 @@
         <li><strong>Automatically</strong> when you use the Service (technical logs, IP address, usage metadata)</li>
         <li><strong>From third parties</strong> such as Google (Sign-In verification), Stripe (payment and subscription status), and email-client proxies (for open tracking)</li>
         <li><strong>From your browser</strong> via local storage for authentication tokens, language, and preferences</li>
-        <li><strong>Through advertising cookies</strong> set by the Google tag on our public pages, unless you appear to be in the EEA, the UK, or Switzerland, you have opted out (Section 16.3), or your browser sends a Global Privacy Control signal — in any of those cases the tag is not loaded</li>
         <li><strong>From authorized integrations</strong> where a business customer uses our server-side staging API with an endpoint key (no end-user account required; usage is attributed to that integration)</li>
       </ul>
 
@@ -334,8 +331,6 @@
         <li>Complying with legal obligations and enforcing our terms</li>
         <li>Developing and improving the Service using aggregated or de-identified data where possible (we do not use your Uploads or Generated Output to train our own models — see Section 5.4)</li>
       </ul>
-      <p>We use advertising cookies to measure the performance of our ads and to build remarketing audiences, which is a form of cross-context behavioral advertising. See Section 9 for what is set, Section 10 for who receives it, and Section 16.3 for how to opt out.</p>
-
       <h2 id="s7">7. Legal Bases for Processing (EEA, UK, and Switzerland)</h2>
       <p>If you are in the European Economic Area, the United Kingdom, or Switzerland, we process personal data under these legal bases:</p>
       <ul>
@@ -367,12 +362,11 @@
         <li><strong>Onboarding answers (if provided):</strong> <code>userRole</code>, <code>userReferralSource</code>, <code>userEmail</code></li>
         <li><strong>UI preferences:</strong> background video playback position and similar functional settings</li>
         <li><strong>Masking Studio session (Stagify+):</strong> the room photo and highlighted areas from your most recent session are saved in your browser’s IndexedDB (<code>stagify-masking-studio</code>) so you can resume where you left off. This data stays on your device and is not transmitted to us by this feature; on a shared or public device, choose "Start fresh" or clear your browser storage to remove it.</li>
-        <li><strong>Advertising (Google Ads):</strong> our public pages load the Google tag (<code>gtag.js</code>), which sets Google advertising cookies and identifiers — including <code>_gcl_*</code> and <code>_gac_*</code> on this site, and cookies on <code>google.com</code> and <code>doubleclick.net</code> — to measure whether an ad led to a signup and to build remarketing audiences. Your advertising opt-out choice itself is stored functionally in local storage as <code>stagifyAdOptOut</code>.</li>
       </ul>
-      <p>Every item above except the advertising entry is strictly functional and necessary to operate the Service. The advertising cookies are not necessary, and there are three ways they are switched off: they are not loaded at all if you appear to be in the EEA, the UK, or Switzerland; they are not loaded if your browser sends a Global Privacy Control signal, which we honor automatically on every page; and you can switch them off yourself under Section 16.3. You may also clear cookies and local storage in your browser at any time; doing so may sign you out and reset preferences. If you are located in the EEA or UK, you may contact us to ask which local-storage items are active in your session.</p>
+      <p>Every item above is strictly functional and necessary to operate the Service. <strong>We do not deploy third-party advertising cookies</strong>, and no tracker on this site is used for advertising. You may clear cookies and local storage in your browser at any time; doing so may sign you out and reset preferences. If you are located in the EEA or UK, you may contact us to ask which local-storage items are active in your session.</p>
 
       <h2 id="s10">10. How We Share Information</h2>
-      <p><strong>We do not sell your personal information.</strong> We do share limited online identifiers with Google for cross-context behavioral advertising, as that term is defined under California law — see Section 16.3, which explains what this means and how to opt out.</p>
+      <p><strong>We do not sell your personal information</strong>, and we do not share personal information for cross-context behavioral advertising, as that term is defined under California law — see Section 16.3.</p>
       <p>We disclose information only to the categories of recipients below, and only as needed:</p>
 
       <h3>10.1 Service providers (processors)</h3>
@@ -389,10 +383,7 @@
       <p>The current list, with what each provider receives, is published at <a href="legal/subprocessors.html">stagify.ai/legal/subprocessors.html</a>. These providers are authorized to process personal information only on our instructions and for the purposes described in this policy. Where required by applicable law, we enter into data processing agreements with these providers that impose data-protection obligations consistent with GDPR, UK GDPR, and applicable U.S. state privacy laws.</p>
 
       <h3>10.2 Advertising partners (third parties, not processors)</h3>
-      <ul>
-        <li><strong>Google LLC (Google Ads)</strong> — the Google tag on our public pages sends Google your IP address, the page you are on, and the advertising identifiers in the cookies described in Section 9. Google uses this to attribute ad clicks to signups and to add your browser to remarketing audiences we can later advertise to (<a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google Privacy Policy</a>, <a href="https://business.safety.google/privacy/" target="_blank" rel="noopener noreferrer">Google Ads data practices</a>)</li>
-      </ul>
-      <p>Unlike the providers in Section 10.1, Google is not acting solely on our instructions here, which is why this is listed separately: under California law this relationship is "sharing" for cross-context behavioral advertising rather than disclosure to a service provider. It stops entirely when you opt out under Section 16.3, when you send a Global Privacy Control signal, or when you appear to be in the EEA, the UK, or Switzerland — in each of those cases the tag is never loaded and nothing is sent to Google at all. We do not send Google your Uploads, your Generated Output, your prompts, or the contents of your account.</p>
+      <p><strong>None.</strong> We have no advertising partners and we load no advertising, remarketing, or conversion-tracking tags on any page of this site. Every recipient of personal information is a service provider listed in Section 10.1, acting on our instructions.</p>
 
       <h3>10.3 Enterprise administrators</h3>
       <p>If your organization has an enterprise plan, authorized Stagify administrators may access aggregated domain-level usage data (such as total generations). We do not provide enterprise administrators with access to individual users’ Uploads or Generated Output through that reporting.</p>
@@ -467,26 +458,18 @@
         <li><strong>Identifiers:</strong> Name (if provided), email, account ID, IP address, Google ID, pseudonymous AI Designer ID</li>
         <li><strong>Customer records:</strong> Account and subscription information</li>
         <li><strong>Commercial information:</strong> Subscription status, enterprise usage counts, billing metadata</li>
-        <li><strong>Internet/network activity:</strong> Log data, feature usage metadata, email open status, and pages visited on this site as recorded by the advertising tag (Section 9)</li>
+        <li><strong>Internet/network activity:</strong> Log data, feature usage metadata, and email open status</li>
         <li><strong>Audio/visual information:</strong> Uploads and Generated Output submitted or produced during use, including the saved gallery entries described in Section 5.5</li>
-        <li><strong>Inferences:</strong> We do not build interest or demographic profiles ourselves. Your browser is added to Google Ads remarketing audiences through the tag described in Section 9, which is an advertising audience Google maintains; opting out under Section 16.3 stops it</li>
+        <li><strong>Inferences:</strong> None. We do not create advertising profiles about you, and we do not build interest or demographic profiles of any kind</li>
       </ul>
 
       <h3>16.2 Sources, purposes, and sharing</h3>
       <p>See Sections 3, 4, 6, and 10 for details on sources, business/commercial purposes, and categories of third parties with whom information is shared.</p>
 
       <h3>16.3 Sale and sharing</h3>
-      <p>We do <strong>not</strong> sell personal information. We <strong>do share</strong> personal information for cross-context behavioral advertising, in one narrow respect: the Google Ads tag described in Section 9 passes online identifiers to Google so that ad clicks can be attributed to signups and so that your browser can be added to a remarketing audience. The categories shared are identifiers (IP address, advertising cookie IDs) and internet activity (the pages you visited on this site). We do not share your Uploads, Generated Output, prompts, email address, or account contents for advertising, and we do not track you across unrelated third-party sites ourselves.</p>
-      <p>We do not respond to legacy "Do Not Track" browser signals because there is no industry standard for compliance. We do honor <strong>Global Privacy Control (GPC)</strong> signals as opt-outs from the sharing of personal information, as required under the CPRA — and it is processed automatically: when your browser sends GPC, the advertising tag is never loaded and nothing is sent to Google. You do not need to do anything else, and we do not ask you to create an account to be opted out.</p>
-      <p><strong>Visitors in the EEA, the UK, and Switzerland.</strong> The advertising tag is not loaded there at all, whatever this control says, because those jurisdictions require consent before a non-essential advertising cookie is set and we do not ask for it. We judge this from your browser’s time zone, which the browser already knows and which involves no lookup of your IP address; the check is deliberately broad, so some visitors elsewhere in Europe are covered by it too. If the tag is withheld for this reason the control below will tell you so, and there will be nothing to switch off.</p>
-      <p>If your browser does not send GPC, use the control below. It is stored in this browser, so repeat it on each browser or device you use. Clearing your browser storage clears the choice.</p>
-
-      <!-- Wired by scripts/ad-optout.js, which replaces the fallback below once it
-           runs. The fallback names the two routes that work without JavaScript, so a
-           visitor with scripts off is not shown a dead button. -->
-      <div class="pp-optout" id="ad-optout">
-        <p class="pp-optout-state">This control needs JavaScript. You can also opt out by turning on Global Privacy Control in your browser, or by emailing <a href="mailto:team@stagify.ai">team@stagify.ai</a> — we will confirm and action the request.</p>
-      </div>
+      <p>We do <strong>not</strong> sell personal information, and we do <strong>not</strong> share personal information for cross-context behavioral advertising, as those terms are defined under the CPRA. We run no advertising, remarketing, or conversion-tracking tags on this site, so there is no advertising sharing for you to opt out of. We also do not track you across unrelated third-party sites.</p>
+      <p>We do not respond to legacy "Do Not Track" browser signals because there is no industry standard for compliance. We do honor <strong>Global Privacy Control (GPC)</strong> signals as opt-outs from the sharing of personal information, as required under the CPRA. Because we do not share personal information for advertising in the first place, a GPC signal requires no change in how we handle your data — there is nothing for it to switch off. If that ever changes, this policy will be updated first.</p>
+      <p>If you believe we hold personal information about you that has been shared or sold, you may exercise your rights under Section 15, or email <a href="mailto:team@stagify.ai">team@stagify.ai</a> — we will confirm and action the request.</p>
 
       <h3>16.4 Sensitive personal information</h3>
       <p>We do not intentionally collect sensitive personal information as defined by California law. Do not upload content containing sensitive data unless you have a lawful basis to do so and accept the risks of processing through AI providers.</p>
@@ -525,7 +508,6 @@
       </div>
 
     </div>
-      <script type="module" src="scripts/ad-optout.js"></script>
       <script type="module" src="scripts/footer-year.js"></script>
       <script type="module" src="scripts/aurora-scrollbar.js"></script>
 </body>

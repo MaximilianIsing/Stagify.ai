@@ -20,7 +20,7 @@ test.describe('Home page — load smoke', () => {
       } catch { /* ignore */ }
     });
 
-    // Keep the Google Ads tag (gtag.js) from making real external calls.
+    // Belt-and-braces: keep any third-party analytics call out of the run.
     await stubAnalytics(page);
 
     await page.route('**/api/prompt-count', (route) =>
@@ -437,27 +437,5 @@ test.describe('Home page — load smoke', () => {
     const after = await snapshot();
     expect(after.pressed).toBe('true,false');
     expect(after.cite).toContain('2024');
-  });
-
-  test('the deferred Google Ads tag still initializes', async ({ page }) => {
-    // scripts/gtag.js is `defer` so it stops blocking the parser ahead of every
-    // stylesheet. The risk of that change is silent: the tag would simply stop
-    // setting up, and nobody would notice until conversions dried up. So assert the
-    // two things the tag actually has to leave behind — a callable `gtag` and the
-    // config queued on dataLayer. Neither depends on the external loader, which
-    // stubAnalytics aborts.
-    await page.goto('/');
-    await expect(page.locator('#room-type-select')).toBeAttached();
-
-    const state = await page.evaluate(() => ({
-      gtagType: typeof window.gtag,
-      configured: window.__gtagConfigured === true,
-      entries: (window.dataLayer || []).map((args) => Array.from(args).join(':')),
-    }));
-
-    expect(state.gtagType).toBe('function');
-    expect(state.configured).toBe(true);
-    expect(state.entries.some((e) => e.startsWith('js:'))).toBe(true);
-    expect(state.entries.some((e) => e === 'config:AW-18274233484')).toBe(true);
   });
 });

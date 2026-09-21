@@ -173,8 +173,12 @@ test('hero-picker.js publishes the style both ways hero-van.js reads it', () => 
   assert.ok((src.match(/publishStyle\(\)/g) || []).length >= 3, 'publishStyle() must be defined, called from pick() and called at init');
 });
 
-test('index-deferred.js loads hero-van.js', () => {
-  assert.match(read('public/scripts/index-deferred.js'), /\{ src: 'scripts\/hero-van\.js', module: true \}/);
+test('index.html loads hero-van.js as a module tag right after hero-picker.js, with its art preloaded', () => {
+  const html = read('public/index.html').replace(/<!--[\s\S]*?-->/g, '');
+  const tags = [...html.matchAll(/<script type="module" src="scripts\/([\w-]+\.js)"><\/script>/g)].map((m) => m[1]);
+  assert.equal(tags.indexOf('hero-van.js'), tags.indexOf('hero-picker.js') + 1, `module order: ${tags.slice(0, 3)}`);
+  assert.match(html, /<link rel="modulepreload" href="scripts\/hero-van-art\.js">/);
+  assert.doesNotMatch(read('public/scripts/index-deferred.js').replace(/\/\/.*$/gm, ''), /hero-van\.js/, 'must not ALSO be in the deferred list');
 });
 
 test('the CSS gate and the script gate are the same media condition', () => {

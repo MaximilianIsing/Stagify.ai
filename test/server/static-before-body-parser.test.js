@@ -56,7 +56,12 @@ test('the static handler still sets the documented Cache-Control policy', () => 
   // Reordering is only safe if it was a pure move. These are the four buckets
   // docs/reference/caching.md describes; losing one during a refactor would silently
   // drop a year of caching on every image or font.
-  assert.match(middleware, /\\.\(html\|css\|js\|json\)/, 'the no-cache bucket must survive');
+  // The no-cache bucket also covers .txt/.xml — robots.txt, llms.txt, security.txt and
+  // sitemap.xml. They have routes of their own in routes/public.js that set the same
+  // header, but express.static is mounted ahead of that router and answers first, so
+  // without them in this branch the four documents a crawler reads were the only
+  // responses on the site that did NOT follow the documented policy.
+  assert.match(middleware, /\\.\(html\|css\|js\|json\|txt\|xml\)/, 'the no-cache bucket must survive');
   assert.match(middleware, /woff2\?\|ttf/, 'the font bucket must survive');
   assert.match(middleware, /png\|jpe\?g\|webp/, 'the image bucket must survive');
   assert.match(middleware, /mp4\|webm/, 'the media bucket must survive');

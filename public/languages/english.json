@@ -27,24 +27,67 @@
     "brand": {
       "heading": "Brand kit",
       "body": "These are the official files. Use them to refer to Stagify.ai without asking. Please do not redraw the mark or imply we endorse your product.",
+      "marksLabel": "Product marks",
+      "marksHint": "One mark on four fields. The drawing never changes — only what sits behind it does. Every file is PNG unless marked SVG; the numbers are pixels.",
+      "marks": {
+        "core": "The product and the company. Use this one if in doubt.",
+        "plus": "The subscription. Gold field, same drawing.",
+        "enterprise": "Domain-wide accounts. Navy field with the skyline.",
+        "api": "The developer platform. Navy field with the grid."
+      },
+      "markFiles": {
+        "full": "356",
+        "svg": "SVG",
+        "px180": "180",
+        "px64": "64",
+        "px32": "32"
+      },
       "paletteLabel": "Colours",
+      "copyHint": "Select a colour to copy its hex code.",
       "colors": {
         "brand": "Brand blue",
         "strong": "Strong blue",
         "navy": "Navy",
         "soft": "Soft blue",
+        "pale": "Pale blue",
         "tint": "Tint",
+        "wash": "Wash",
+        "slate": "Slate",
         "ink": "Ink"
       },
-      "copyHint": "Select a colour to copy its hex code.",
+      "paletteNote": "The gold of the Stagify+ field and the navy behind Enterprise and the API belong to those artworks, not to the palette. Take them from the files rather than repainting the blue mark.",
+      "typeLabel": "Typography",
+      "typeBody": "The site is set in <a href=\"https://rsms.me/inter/\" rel=\"nofollow noopener noreferrer\" target=\"_blank\">Inter</a> at 400, 600 and 700 — free, and also on Google Fonts. There is no vector wordmark: set the name as type rather than scaling up a PNG of it. Where Inter is unavailable, any neutral grotesque is fine; we fall back to the system stack ourselves.",
+      "spaceLabel": "Clear space and minimum size",
+      "spaceBody": "Keep a margin around the mark of at least the height of the S, and put nothing inside it. Do not go below 24px on screen or 8mm in print — use the 32px file rather than shrinking a larger one.",
+      "namingLabel": "Writing the name",
+      "naming": {
+        "one": "Stagify.ai is one word, capital S, lowercase .ai — not “Stagify AI”, “Stageify” or “STAGIFY”.",
+        "two": "The products are Stagify+ (no space before the plus), Stagify Enterprise, and the Stagify API.",
+        "three": "After the first mention, plain “Stagify” is fine in running text."
+      },
+      "rulesLabel": "Please do, please don’t",
+      "doLabel": "Please do",
+      "do": {
+        "one": "Use the files as supplied, at any size, on white or on a dark background.",
+        "two": "Pick the field that matches the product you are writing about.",
+        "three": "Point the mark at stagify.ai when it sits in a listing or a partner page."
+      },
+      "dontLabel": "Please don’t",
+      "dont": {
+        "one": "Recolour, rotate, outline, crop or redraw any of the marks.",
+        "two": "Stretch one out of proportion, or invent a fifth field.",
+        "three": "Imply that we endorse, sponsor or supply your product.",
+        "four": "Use it as your own app icon, avatar or favicon, or lock it up with another mark."
+      },
       "downloadsLabel": "Downloads",
       "zip": "Everything (ZIP)",
       "logoPng": "Full logo (PNG)",
       "iconSvg": "Icon (SVG)",
-      "iconPng": "Icon (PNG)",
       "avatar": "PFP (PNG)",
+      "linkedin": "LinkedIn logo (PNG)",
       "ogImage": "Social card (PNG)",
-      "usage": "There is no vector wordmark: the name is set in <a href=\"https://rsms.me/inter/\" rel=\"nofollow noopener noreferrer\" target=\"_blank\">Inter</a>, so set it as type. Please do not recolour, rotate, stretch or redraw the mark. Full guidance is in the archive’s README.txt.",
+      "notUs": "Not us: stagify.io, stagify.app, stagify.online and stagifyai.com are unrelated companies with similar names. This kit is only for Stagify.ai, and the full guidance ships as README.txt inside the archive.",
       "copied": "Copied {hex} to the clipboard",
       "copyFailed": "Could not reach the clipboard. The hex is {hex}"
     },

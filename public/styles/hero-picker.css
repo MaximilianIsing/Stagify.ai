@@ -1015,20 +1015,46 @@
     min-height: 78px;
     margin: 0;
     padding: 20px 100px 20px 22px;
-    border: 1px solid rgba(190, 214, 255, 0.45);
+    /* THE EDGE IS LOAD-BEARING, NOT TRIM. The bar behind this button (.hp-bar) is
+       rgba(9, 17, 45, 0.88) rising to 0.95 at exactly this height, and the plate's own
+       resting face is a night street under the ::after tint - the two land within a few
+       points of each other. With the old 0.45-alpha hairline and a purely BLUE shadow
+       (which is invisible against navy) the plate had no separation from its ground and
+       read as a dark patch rather than a control. The ring below, and the black drop
+       shadow under it, are the whole of that separation. Thin either one and the button
+       stops looking pressable again. */
+    border: 1.5px solid rgba(147, 197, 253, 0.7);
     border-radius: 18px;
-    background: linear-gradient(180deg, #22305a 0%, #141e3a 52%, #0a1120 100%);
-    box-shadow: 0 14px 36px rgba(30, 58, 138, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+    background: linear-gradient(180deg, #2a3a68 0%, #1a2749 52%, #101a34 100%);
+    /* Outer hairline FIRST so it sits directly against the ring: the bar's alpha varies
+       down its height, and the dark line is what keeps the pale border reading as an edge
+       rather than dissolving into whichever tone is behind it. */
+    box-shadow:
+      0 0 0 1px rgba(6, 11, 26, 0.6),
+      0 12px 28px rgba(0, 0, 0, 0.45),
+      0 18px 44px rgba(30, 58, 138, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.16);
     text-transform: none;
     letter-spacing: -0.1px;
     transition: box-shadow 0.25s ease, transform 0.22s cubic-bezier(0.22, 0.8, 0.3, 1);
   }
   #hero-upload.hu:hover {
-    background: linear-gradient(180deg, #22305a 0%, #141e3a 52%, #0a1120 100%);
-    box-shadow: 0 18px 40px rgba(30, 58, 138, 0.42);
+    background: linear-gradient(180deg, #2a3a68 0%, #1a2749 52%, #101a34 100%);
+    box-shadow:
+      0 0 0 1px rgba(6, 11, 26, 0.6),
+      0 16px 36px rgba(0, 0, 0, 0.5),
+      0 22px 52px rgba(30, 58, 138, 0.38),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
   }
+  /* The scale alone was the only press feedback, and at 0.988 it is nearly invisible on a
+     470px box. Collapsing the shadow with it is what actually reads as the plate going
+     down into the bar. */
   #hero-upload.hu:active {
     transform: scale(0.988);
+    box-shadow:
+      0 0 0 1px rgba(6, 11, 26, 0.6),
+      0 4px 12px rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
     transition-duration: 0.06s;
   }
   #hero-upload.hu:focus-visible {
@@ -1039,6 +1065,29 @@
      drawn street. */
   #hero-upload.hu::before {
     content: none;
+  }
+  /* A night tint over the WHOLE scene, under the label scrim. Without it the houses and
+     the van read at full contrast and compete with the copy; with it they sit back as a
+     backdrop. It lifts a little while the van is in, so the arrival brightens the street.
+
+     The RESTING value is what decides whether the button separates from .hp-bar at all:
+     at 0.48 the plate landed on the same tone as the bar behind it and the control
+     disappeared into its own background. 0.36 puts the street a step above the bar while
+     keeping the art behind the copy; the hover value is unchanged, so the arrival still
+     brightens by the same visible amount, just from a lighter floor. The veil below
+     absorbs the difference under the label. */
+  #hero-upload.hu::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: #0b1228;
+    opacity: 0.36;
+    transition: opacity 0.7s ease;
+  }
+  #hero-upload.hu:hover::after {
+    opacity: 0.28;
   }
   #hero-upload.hu strong {
     position: relative;
@@ -1054,7 +1103,7 @@
     /* A touch tighter than Inter's default at this weight. */
     letter-spacing: -0.025em;
     color: var(--bg-elevated);
-    text-shadow: 0 1px 10px rgba(6, 12, 28, 0.8);
+    text-shadow: 0 1px 2px rgba(6, 12, 28, 0.9), 0 2px 14px rgba(6, 12, 28, 0.85);
   }
   #hero-upload.hu .hu-scene {
     position: absolute;
@@ -1077,8 +1126,8 @@
     pointer-events: none;
     background: linear-gradient(
       90deg,
-      rgba(12, 19, 40, 0.66) 0%,
-      rgba(12, 19, 40, 0.5) 34%,
+      rgba(12, 19, 40, 0.74) 0%,
+      rgba(12, 19, 40, 0.58) 34%,
       rgba(12, 19, 40, 0.12) 56%,
       rgba(12, 19, 40, 0) 66%
     );
@@ -1149,7 +1198,7 @@
 
   /* ---- the house: windows come on after the van parks; only the home reacts ---- */
   #hero-upload.hu .lit {
-    opacity: 0.14;
+    opacity: 0.08;
     transition: opacity 0.6s 0.3s;
   }
   #hero-upload.hu:hover .lit {
@@ -1175,12 +1224,13 @@
     transform-origin: left center;
     transition: transform 0.65s cubic-bezier(0.3, 0.8, 0.3, 1);
   }
+  /* Nearly edge-on, so the leaf clears the whole opening and the glyph is unobstructed. */
   #hero-upload.hu:hover .ent .leaf {
-    transform: perspective(70px) rotateY(-72deg);
+    transform: perspective(70px) rotateY(-86deg);
     transition-delay: 1s;
   }
   #hero-upload.hu .ent .leaf.right { transform-origin: right center; }
-  #hero-upload.hu:hover .ent .leaf.right { transform: perspective(70px) rotateY(72deg); }
+  #hero-upload.hu:hover .ent .leaf.right { transform: perspective(70px) rotateY(86deg); }
   /* Custom's pair: no 3D. Each leaf folds flat against its own jamb and darkens as it
      turns edge-on, so the two halves are exact mirrors and the arrow is never covered. */
   #hero-upload.hu .ent[data-k="brownstone"] .leaf {
@@ -1200,8 +1250,21 @@
     opacity: 1;
     transition: opacity 0.5s 1.05s;
   }
+  /* The upload glyph in the hallway: once the door is open its arrow lifts gently out of
+     the tray and settles, over and over, so it reads as "put your photo in here". */
+  #hero-upload.hu .ent .up {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  #hero-upload.hu:hover .ent .up {
+    animation: hu-rise 1.4s ease-in-out 1.6s infinite alternate;
+  }
+  @keyframes hu-rise {
+    from { transform: translateY(0.6px); }
+    to { transform: translateY(-1.4px); }
+  }
   #hero-upload.hu .ent .lantern {
-    opacity: 0.35;
+    opacity: 0.2;
     transition: opacity 0.4s 0.5s;
   }
   #hero-upload.hu:hover .ent .lantern {
@@ -1258,7 +1321,8 @@
   }
   #hero-upload.hu .bounce,
   #hero-upload.hu .puff,
-  #hero-upload.hu .twinkle {
+  #hero-upload.hu .twinkle,
+  #hero-upload.hu .ent .up {
     animation: none !important;
   }
 }

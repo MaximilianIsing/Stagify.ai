@@ -27,24 +27,67 @@
     "brand": {
       "heading": "Kit de marca",
       "body": "Estos son los archivos oficiales. Úsalos para referirte a Stagify.ai sin pedir permiso. No rediseñes el logotipo ni des a entender que respaldamos tu producto.",
+      "marksLabel": "Logotipos de producto",
+      "marksHint": "Un logotipo sobre cuatro fondos. El dibujo nunca cambia; solo cambia lo que hay detrás. Todos los archivos son PNG salvo los marcados SVG; las cifras son píxeles.",
+      "marks": {
+        "core": "El producto y la empresa. Usa este si tienes dudas.",
+        "plus": "La suscripción. Fondo dorado, mismo dibujo.",
+        "enterprise": "Cuentas para todo el dominio. Fondo azul marino con el skyline.",
+        "api": "La plataforma para desarrolladores. Fondo azul marino con la retícula."
+      },
+      "markFiles": {
+        "full": "356",
+        "svg": "SVG",
+        "px180": "180",
+        "px64": "64",
+        "px32": "32"
+      },
       "paletteLabel": "Colores",
+      "copyHint": "Selecciona un color para copiar su código hexadecimal.",
       "colors": {
         "brand": "Azul de marca",
         "strong": "Azul intenso",
         "navy": "Azul marino",
         "soft": "Azul suave",
+        "pale": "Azul pálido",
         "tint": "Tinte",
+        "wash": "Velo",
+        "slate": "Pizarra",
         "ink": "Tinta"
       },
-      "copyHint": "Selecciona un color para copiar su código hexadecimal.",
+      "paletteNote": "El dorado del fondo de Stagify+ y el azul marino de Enterprise y de la API pertenecen a esas ilustraciones, no a la paleta. Tómalos de los archivos en lugar de repintar el logotipo azul.",
+      "typeLabel": "Tipografía",
+      "typeBody": "Todo el sitio está compuesto en <a href=\"https://rsms.me/inter/\" rel=\"nofollow noopener noreferrer\" target=\"_blank\">Inter</a> en los pesos 400, 600 y 700: gratuita y también en Google Fonts. No hay logotipo tipográfico vectorial: compón el nombre como texto en lugar de ampliar un PNG. Si Inter no está disponible, sirve cualquier grotesca neutra; nosotros recurrimos a la tipografía del sistema.",
+      "spaceLabel": "Espacio libre y tamaño mínimo",
+      "spaceBody": "Deja alrededor del logotipo un margen de al menos la altura de la S y no pongas nada dentro. No bajes de 24 px en pantalla ni de 8 mm impreso: usa el archivo de 32 px en lugar de reducir uno mayor.",
+      "namingLabel": "Cómo se escribe el nombre",
+      "naming": {
+        "one": "Stagify.ai es una sola palabra, con S mayúscula y .ai en minúsculas, no «Stagify AI», «Stageify» ni «STAGIFY».",
+        "two": "Los productos son Stagify+ (sin espacio antes del signo más), Stagify Enterprise y la API de Stagify.",
+        "three": "Tras la primera mención, en el texto corrido basta con «Stagify»."
+      },
+      "rulesLabel": "Sí, por favor; no, por favor",
+      "doLabel": "Sí, por favor",
+      "do": {
+        "one": "Usa los archivos tal como se entregan, a cualquier tamaño, sobre blanco o sobre fondo oscuro.",
+        "two": "Elige el fondo que corresponda al producto del que hablas.",
+        "three": "Enlaza el logotipo a stagify.ai cuando aparezca en un directorio o en una página de partners."
+      },
+      "dontLabel": "No, por favor",
+      "dont": {
+        "one": "Recolorear, girar, contornear, recortar ni redibujar ninguno de los logotipos.",
+        "two": "Deformarlos ni inventar un quinto fondo.",
+        "three": "Dar a entender que respaldamos, patrocinamos o suministramos tu producto.",
+        "four": "Usarlo como icono de tu app, avatar o favicon, ni combinarlo con otra marca."
+      },
       "downloadsLabel": "Descargas",
       "zip": "Todo (ZIP)",
       "logoPng": "Logotipo completo (PNG)",
       "iconSvg": "Icono (SVG)",
-      "iconPng": "Icono (PNG)",
       "avatar": "Foto de perfil (PNG)",
+      "linkedin": "Logotipo de LinkedIn (PNG)",
       "ogImage": "Tarjeta social (PNG)",
-      "usage": "No hay un logotipo vectorial: el nombre está compuesto en <a href=\"https://rsms.me/inter/\" rel=\"nofollow noopener noreferrer\" target=\"_blank\">Inter</a>, así que escríbelo como texto. No cambies el color del logotipo, ni lo gires, estires o rediseñes. El archivo README.txt del ZIP contiene las indicaciones completas.",
+      "notUs": "No somos nosotros: stagify.io, stagify.app, stagify.online y stagifyai.com son empresas ajenas con nombres parecidos. Este kit es solo para Stagify.ai, y las indicaciones completas van como README.txt dentro del archivo.",
       "copied": "Se copió {hex} al portapapeles",
       "copyFailed": "No se pudo acceder al portapapeles. El color es {hex}"
     },

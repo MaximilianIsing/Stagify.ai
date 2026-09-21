@@ -14,7 +14,7 @@ per file type in the `setHeaders` callback of `applyBodyAndStatic()`
 
 | File types | `Cache-Control` | Effect |
 |---|---|---|
-| `.html` `.css` `.js` `.json` | `no-cache` | Stored, but **revalidated with the origin on every request** (a cheap `304 Not Modified` via ETag when unchanged). Returning visitors never get stale markup, styling, scripts, or translations after a deploy. |
+| `.html` `.css` `.js` `.json` `.txt` `.xml` | `no-cache` | Stored, but **revalidated with the origin on every request** (a cheap `304 Not Modified` via ETag when unchanged). Returning visitors never get stale markup, styling, scripts, or translations after a deploy. `.txt`/`.xml` covers the crawler-facing documents — `robots.txt`, `llms.txt`, `security.txt`, `sitemap.xml` — which have routes of their own in `routes/public.js` but are answered by `express.static` first, since it is mounted ahead of that router. |
 | `.woff2` `.woff` `.ttf` `.otf` `.eot` | `public, max-age=31536000, immutable` | Cached hard for a year. |
 | `.png` `.jpg` `.webp` `.gif` `.svg` `.ico` `.avif` | `public, max-age=31536000, immutable` | Cached hard for a year. |
 | `.mp4` `.webm` `.mov` `.m4v` `.ogv` `.ogg` `.m4a` `.mp3` | `public, max-age=31536000, immutable` | Cached hard for a year (e.g. `background.mp4`). |
