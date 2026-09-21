@@ -81,7 +81,9 @@ test('it is mounted ahead of the static middleware in server.js', () => {
   // The whole feature depends on this ordering — see the header of this file.
   const server = fs.readFileSync(path.join(ROOT, 'server.js'), 'utf8');
   const vanity = server.indexOf('applyVanityRedirects(app)');
-  const statics = server.indexOf('applyBodyAndStatic(app)');
+  // Matched loosely: applyBodyAndStatic takes injected deps now, so pinning the exact
+  // argument list would fail the next time one is added — and this test is about ORDER.
+  const statics = server.indexOf('applyBodyAndStatic(app');
   assert.ok(vanity > 0, 'server.js no longer mounts the vanity redirects');
   assert.ok(statics > 0, 'server.js no longer mounts the static middleware');
   assert.ok(

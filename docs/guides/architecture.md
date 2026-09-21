@@ -335,7 +335,7 @@ Each is a factory returning a router (built with `createAsyncRouter()`), mounted
 
 | Router | Owns |
 |---|---|
-| `public.js` | SEO files (`robots.txt`, `sitemap.xml`), landing/status pages, `/health`, hero-stat counts, contact/bug logging, `/api/send-email`, hosted-image serving (`/i/:id`), email-open pixel. |
+| `public.js` | SEO files (`robots.txt`, `sitemap.xml`), landing/status pages, `/health`, hero-stat counts (`/api/prompt-count`, `/api/contact-count`, and the canonical `/api/stats` that `llms.txt` points at), contact/bug logging, `/api/send-email`, hosted-image serving (`/i/:id`), email-open pixel. |
 | `i18n.js` | The localized-URL pages: `/es`, `/fr/guides.html`, … rendered server-side per language from `public/languages/*.json` (`lib/i18n/`). Mounted before `public.js`; prefixes are disjoint from every other route. See [`i18n.md`](i18n.md). |
 | `auth.js` | `register` / `verify` / `login` / `logout` / `me` / `forgot-password` / `reset-password` / `google`, plus the staging-banner controls. |
 | `admin.js` | `endpoint_key`-gated log/data exports and hosted-image management (see [`endpoints.md`](../reference/endpoints.md)). |

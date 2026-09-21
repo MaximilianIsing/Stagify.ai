@@ -10,7 +10,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 globalThis.window = globalThis.window || {};
-const { format, widthForText, lenAtDecade, rampValue, smoothWidthCh } = await import('../../public/scripts/count-up.js');
+const { format, widthForText, lenAtDecade, rampValue, smoothWidthCh, hasServerCount } = await import('../../public/scripts/count-up.js');
 
 test('format rounds and groups like the displayed value', () => {
   assert.equal(format(0), '0');
@@ -69,4 +69,19 @@ test('smoothWidthCh rises monotonically as the value climbs (no clipping mid-cou
       `width covers the digits of ${v}`);
     prev = w;
   }
+});
+
+// The server now writes the counts into the hero spans before the page is sent
+// (lib/seo/live-stats.js), which changed what a "blank" span means. revealWithoutCounts()
+// runs when /api/prompt-count fails and used to overwrite whatever was there with an em
+// dash — which would now throw away a correct, server-rendered number because a fetch
+// happened to fail. hasServerCount is the guard, so it is worth pinning.
+test('hasServerCount distinguishes a server-rendered figure from a blank span', () => {
+  assert.equal(hasServerCount('12,345'), true);
+  assert.equal(hasServerCount('0'), true);
+  assert.equal(hasServerCount(' '), false, 'the authored &nbsp; placeholder');
+  assert.equal(hasServerCount(''), false);
+  assert.equal(hasServerCount('—'), false, 'a previous failure marker is not a count');
+  assert.equal(hasServerCount(null), false);
+  assert.equal(hasServerCount(undefined), false);
 });

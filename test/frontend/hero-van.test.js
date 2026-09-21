@@ -88,27 +88,44 @@ function makeDom({ matches = true, style = 'luxury' } = {}) {
   /** @type {Record<string, Function[]>} */
   const btnListeners = {};
   const classes = new Set();
-  const scene = { innerHTML: '' };
+  const scene = { innerHTML: '', querySelector: () => null };
+  const props = {};
   const btn = {
+    style: { setProperty: (k, v) => { props[k] = v; } },
     classList: { contains: (c) => classes.has(c), add: (c) => classes.add(c), remove: (c) => classes.delete(c) },
     querySelector: (sel) => (sel === '.hu-scene' ? scene : null),
     addEventListener: (type, fn) => (btnListeners[type] = btnListeners[type] || []).push(fn),
   };
   const stage = { getAttribute: (n) => (n === 'data-hp-style' ? style : null) };
+  /** The two modals a click can open, each a class set plus the observer it wakes. */
+  const modalWatchers = [];
+  const makeModal = () => {
+    const cls = new Set(['hidden']);
+    return {
+      classList: { contains: (c) => cls.has(c), add: (c) => { cls.add(c); modalWatchers.forEach((fn) => fn()); }, remove: (c) => { cls.delete(c); modalWatchers.forEach((fn) => fn()); } },
+    };
+  };
+  const modals = { 'stage-modal': makeModal(), 'auth-modal': makeModal() };
   const doc = {
-    getElementById: (id) => (id === 'hero-upload' ? btn : null),
+    getElementById: (id) => (id === 'hero-upload' ? btn : modals[id] || null),
     querySelector: (sel) => (sel === '[data-hp-stage]' ? stage : null),
     addEventListener: (type, fn) => (docListeners[type] = docListeners[type] || []).push(fn),
   };
   let now = 0;
+  /** Pending setTimeout callbacks, fired by hand. */
+  const timers = [];
   const win = {
+    setTimeout: (fn, ms) => timers.push({ fn, ms }) && timers.length,
+    clearTimeout: (id) => { if (timers[id - 1]) timers[id - 1].fn = null; },
     matchMedia: (q) => ({ matches: q === SCENE_MEDIA && matches }),
     performance: { now: () => now },
+    MutationObserver: class { constructor(fn) { this.fn = fn; } observe() { modalWatchers.push(this.fn); } },
   };
   return {
-    doc, win, btn, scene, classes,
+    doc, win, btn, scene, classes, modals, props,
     fire: (type, detail) => (docListeners[type] || []).forEach((fn) => fn({ detail })),
-    pointer: (type) => (btnListeners[type] || []).forEach((fn) => fn({})),
+    pointer: (type, ev = {}) => (btnListeners[type] || []).forEach((fn) => fn(ev)),
+    timers,
     tick: (ms) => { now += ms; },
   };
 }
@@ -146,11 +163,100 @@ test('a leave before the door has opened is marked quick; a full visit is not', 
   const d = makeDom();
   initHeroVan(/** @type {any} */ (d.doc), /** @type {any} */ (d.win));
   d.pointer('pointerenter'); d.tick(400); d.pointer('pointerleave');
-  assert.ok(d.classes.has('hu-quick'), 'left mid-drive: reverse at once');
+  assert.ok(d.classes.has('hu-quick'), 'left mid-drive: roll on at once');
+  assert.ok(d.classes.has('hu-out'), 'every leave plays the drive-out');
   d.pointer('pointerenter');
-  assert.ok(!d.classes.has('hu-quick'), 'cleared on the next hover');
+  assert.ok(d.classes.has('hu-quick'), 'kept while the drive-out runs: dropping it would re-time the animation');
+  assert.ok(d.classes.has('hu-out'), 'the hover waits: the van is still driving out');
+  d.pointer('animationend', { animationName: 'hu-drive-out' });
+  assert.ok(!d.classes.has('hu-out'), 'drive-out over: the drive-in can start');
+  assert.ok(!d.classes.has('hu-quick'), 'and quick goes with it');
   d.tick(1500); d.pointer('pointerleave');
   assert.ok(!d.classes.has('hu-quick'), 'door had opened: the ordered leave applies');
+  assert.ok(d.classes.has('hu-out'));
+});
+
+test('a hover during the drive-out waits for it to end; a leave during it changes nothing', () => {
+  const d = makeDom();
+  const ctl = initHeroVan(/** @type {any} */ (d.doc), /** @type {any} */ (d.win));
+  d.pointer('pointerenter'); d.tick(2000); d.pointer('pointerleave');
+  assert.ok(d.classes.has('hu-out'));
+  d.pointer('pointerenter');
+  assert.ok(d.classes.has('hu-out'), 'still driving out: the hover rules stay gated');
+  d.props['--hu-van-x'] = 'untouched';
+  d.pointer('pointerleave');
+  assert.equal(d.props['--hu-van-x'], 'untouched', 'a leave mid-drive-out must not move the from keyframe');
+  d.pointer('animationend', { animationName: 'hu-bump' });
+  assert.ok(d.classes.has('hu-out'), 'some other animation ending is not the drive-out ending');
+  d.pointer('animationend', { animationName: 'hu-drive-out' });
+  assert.ok(!d.classes.has('hu-out'), 'the drive-out ended: hover can arrive again');
+
+  // No animationend at all (reduced motion): the fallback timer clears it.
+  d.pointer('pointerenter'); d.pointer('pointerleave');
+  assert.ok(d.classes.has('hu-out'));
+  const t = d.timers[d.timers.length - 1];
+  assert.equal(t.ms, 1200);
+  t.fn();
+  assert.ok(!d.classes.has('hu-out'), 'fallback timer released it');
+
+  // A style swap rebuilds the scene and discards the animating van: the drive-out is over.
+  d.pointer('pointerenter'); d.pointer('pointerleave');
+  assert.ok(d.classes.has('hu-out'));
+  d.fire(STYLE_EVENT, { style: 'coastal' });
+  assert.equal(ctl.current(), 'coastal');
+  assert.ok(!d.classes.has('hu-out'), 'rebuild ends the drive-out');
+});
+
+test('the drive-out starts from where the van is, falling back to the parking bay', () => {
+  const d = makeDom();
+  initHeroVan(/** @type {any} */ (d.doc), /** @type {any} */ (d.win));
+  d.pointer('pointerenter'); d.tick(1500); d.pointer('pointerleave');
+  assert.equal(d.props['--hu-van-x'], '210px', 'no computed style available: parked');
+  assert.equal(d.props['--hu-out-ms'], '750ms', 'the parked drive-out is the reference speed');
+
+  const e = makeDom();
+  e.scene.querySelector = (sel) => (sel === '.van' ? { tag: 'van' } : null);
+  e.win.getComputedStyle = () => ({ transform: 'matrix(1, 0, 0, 1, 37.5, 0)' });
+  initHeroVan(/** @type {any} */ (e.doc), /** @type {any} */ (e.win));
+  e.pointer('pointerenter'); e.tick(200); e.pointer('pointerleave');
+  assert.equal(e.props['--hu-van-x'], '37.5px', 'mid-arrival: keep going from here');
+  assert.equal(e.props['--hu-out-ms'], '956ms', 'still rolling: 382.5 units at the arrival pace (0.7 × 210 per 0.75s)');
+  assert.equal(e.timers[e.timers.length - 1].ms, 956 + 450, 'the fallback timer follows the duration');
+
+  // The same distance after a full visit (the van parked, then the picker reset it) is slower:
+  // a pull-away from a standstill.
+  const g = makeDom();
+  g.scene.querySelector = (sel) => (sel === '.van' ? { tag: 'van' } : null);
+  g.win.getComputedStyle = () => ({ transform: 'matrix(1, 0, 0, 1, 37.5, 0)' });
+  initHeroVan(/** @type {any} */ (g.doc), /** @type {any} */ (g.win));
+  g.pointer('pointerenter'); g.tick(1500); g.pointer('pointerleave');
+  assert.equal(g.props['--hu-out-ms'], '1366ms', 'same distance, pull-away pace');
+});
+
+test('a click holds the end state while the modal it opened is up, and lets go when it closes', () => {
+  const d = makeDom();
+  initHeroVan(/** @type {any} */ (d.doc), /** @type {any} */ (d.win));
+  d.pointer('pointerenter'); d.tick(300); d.pointer('click');
+  assert.ok(d.classes.has('hu-hold'), 'the click pins the scene');
+  assert.ok(!d.classes.has('hu-quick'), 'a quick click is still a full visit');
+  d.modals['stage-modal'].classList.remove('hidden');   // the modal covers the button…
+  d.pointer('pointerleave');                              // …so the pointer "leaves" it
+  assert.ok(d.classes.has('hu-hold'), 'held while the modal is open');
+  assert.ok(!d.classes.has('hu-quick'));
+  d.modals['stage-modal'].classList.add('hidden');
+  assert.ok(!d.classes.has('hu-hold'), 'released when the modal closes');
+  assert.ok(d.classes.has('hu-out'), 'and the release is a leave: the van drives off');
+
+  // The sign-in modal is the other thing a click can open.
+  d.pointer('pointerenter'); d.pointer('click');
+  d.modals['auth-modal'].classList.remove('hidden'); d.pointer('pointerleave');
+  assert.ok(d.classes.has('hu-hold'));
+  d.modals['auth-modal'].classList.add('hidden');
+  assert.ok(!d.classes.has('hu-hold'));
+
+  // A click that opened nothing (app.js failed to arrive) must not pin the scene forever.
+  d.pointer('pointerenter'); d.pointer('click'); d.pointer('pointerleave');
+  assert.ok(!d.classes.has('hu-hold'), 'no modal: the leave releases it');
 });
 
 // ---- drift guards -------------------------------------------------------------
@@ -188,6 +294,11 @@ test('the CSS gate and the script gate are the same media condition', () => {
   assert.equal(SCENE_MEDIA, '(min-width: 769px) and (hover: hover) and (pointer: fine)');
   assert.match(css, /#hero-upload\.hu \{/);
   assert.match(css, /#hero-upload\.hu\.hu-quick/);
+  assert.match(css, /#hero-upload\.hu:is\(:hover, \.hu-hold\):not\(\.hu-out\) \.van/, 'the drive must key off the hold class as well as :hover, and wait out a drive-out');
+  assert.doesNotMatch(css, /#hero-upload\.hu:is\(:hover, \.hu-hold\) /, 'every hover rule must be gated on :not(.hu-out)');
+  assert.doesNotMatch(css, /#hero-upload\.hu:hover/, 'a bare :hover rule would not hold while the modal is up');
+  assert.match(css, /#hero-upload\.hu\.hu-out \.van \{\s*animation: hu-drive-out/, 'the leave is the drive-out animation');
+  assert.match(css, /@keyframes hu-drive-out \{\s*from \{ transform: translateX\(var\(--hu-van-x, 210px\)\); \}\s*to \{ transform: translateX\(420px\); \}/, 'drive-out: from wherever the van is, off the right edge');
   assert.match(css, /prefers-reduced-motion: reduce/);
 });
 

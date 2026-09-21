@@ -36,6 +36,7 @@ import { createRenderPersistence } from './lib/staging/render-persistence.js';
 import { createConfig } from './lib/config/config.js';
 import { maskReferencePromptSuffix } from './lib/staging/prompts.js';
 import { downscaleImage, padBufferToAspectRatio, buildMarkedRoomImage, normalizeMaskOutputToRoom, downscaleImageForGPT, compositeForReview } from './lib/image/image-primitives.js';
+import { createPublicStats } from './lib/data/public-stats.js';
 import createPublicRouter from './routes/public.js';
 import createI18nRouter from './routes/i18n.js';
 import createReferralRouter from './routes/referrals.js';
@@ -272,27 +273,26 @@ applyVanityRedirects(app);
 // handler) and static-asset serving → lib/http/app-middleware.js. Mounted AFTER
 // the billing router so Stripe's webhook still sees the raw body; the JSON error
 // handler stays registered immediately after the parser and before the routers.
-applyBodyAndStatic(app);
+// readPublicStats is the one reader behind every published copy of the usage figures —
+// the injected HTML here, the locale renders, llms.txt and /api/stats.
+const readPublicStats = createPublicStats({ authStore });
+applyBodyAndStatic(app, { readPublicStats });
 
-// Multer upload configs (staging / chat / hosted-image) + HOSTED_IMAGE_MIME_EXT
-// → lib/http/uploads.js (imported above). Pure config, no server-state deps.
+// Multer upload configs + HOSTED_IMAGE_MIME_EXT → lib/http/uploads.js (imported above).
 
-// DEBUG_MODE / EMAIL_DEBUG_MODE / DEBUG_EMAIL are computed once in
-// lib/config/runtime-flags.js and imported at the top of this file (single source of
-// truth shared with the extracted lib/ modules).
-
-// Stats overrides (STATS_DEBUG / DEBUG_ROOMS / DEBUG_USERS) → lib/config/runtime-flags.js
-// (imported above). Boot log kept here so its ordering is unchanged.
+// DEBUG_MODE / EMAIL_DEBUG_MODE / DEBUG_EMAIL and the stats overrides (STATS_DEBUG /
+// DEBUG_ROOMS / DEBUG_USERS) are all computed once in lib/config/runtime-flags.js and
+// imported at the top of this file — one source of truth shared with the extracted lib/
+// modules. The boot log stays here so its ordering is unchanged.
 if (STATS_DEBUG) {
   logger.debug(`Stats debug: ENABLED (rooms=${DEBUG_ROOMS}, users=${DEBUG_USERS})`);
 }
 
-// getTemperatureForModel / getGeminiImageModel → lib/config/model-config.js
-// setSensitiveHeaders → lib/http/http-helpers.js (imported at top)
-
-// AI/email clients (genAI / openai / resend) + RESEND_FROM_EMAIL / APP_URL are
-// constructed above the billing router (the Stripe webhook needs the Resend client
-// for the trial-email lifecycle). Reused here for the remaining routers.
+// getTemperatureForModel / getGeminiImageModel → lib/config/model-config.js;
+// setSensitiveHeaders → lib/http/http-helpers.js (imported at top). The AI/email clients
+// (genAI / openai / resend) + RESEND_FROM_EMAIL / APP_URL are constructed above the
+// billing router (the Stripe webhook needs the Resend client for the trial-email
+// lifecycle). Reused here for the remaining routers.
 const { getDataLogDir, escapeCsvField, logPromptToFile, logMaskEditToFile, logChatToFile, logRejectionToFile } = createLogging({ __dirname });
 // The rate limiters are module singletons built at import time, before this factory
 // exists, so they take the rejection writer through a setter rather than a dep.
@@ -542,10 +542,10 @@ app.use(createChatRouter({ openai, genLimiter, chatUpload, DEBUG_MODE, requirePr
 // localized-page routes (routes/i18n.js) — /es, /fr/ai-designer.html, … rendered
 // server-side from the language JSON. Mounted before the public router; its prefixes
 // (/es, /fr, …) are disjoint from every other route and from the static files.
-app.use(createI18nRouter({ __dirname, DEBUG_MODE, blogViews }));
+app.use(createI18nRouter({ __dirname, DEBUG_MODE, blogViews, readPublicStats }));
 
 // public routes (routes/public.js)
-app.use(createPublicRouter({ authStore, uptimeMonitor, serviceHealth, resend, LOGS_ACCESS_KEY, endpointKeyMatches, emailLimiter, RESEND_FROM_EMAIL, DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS, hostedImages, email, healthHandler, getPromptCount, getContactCount, incContactCount , blogViews, emailOptOut, __dirname }));
+app.use(createPublicRouter({ authStore, readPublicStats, uptimeMonitor, serviceHealth, resend, LOGS_ACCESS_KEY, endpointKeyMatches, emailLimiter, RESEND_FROM_EMAIL, DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS, hostedImages, email, healthHandler, getPromptCount, getContactCount, incContactCount , blogViews, emailOptOut, __dirname }));
 
 // The owner's gallery (routes/gallery.js) and the public share page
 // (routes/share-public.js). Two routers rather than one because they answer to very

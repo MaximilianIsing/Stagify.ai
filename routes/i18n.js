@@ -20,6 +20,7 @@ import {
 } from '../lib/i18n/blog-packs.js';
 import { pruneHubForLocale, withCardReadTimes } from '../lib/i18n/blog-hub.js';
 import { markCurrentLang } from '../lib/i18n/blog-langs.js';
+import { injectLiveStats } from '../lib/seo/live-stats.js';
 import { logger } from '../lib/logger.js';
 
 /**
@@ -32,12 +33,15 @@ import { logger } from '../lib/logger.js';
 const RETIRED_LOCALIZED_PATHS = ['/terms.html', '/privacy.html'];
 
 /**
- * @param {{ __dirname: string, DEBUG_MODE: boolean, blogViews?: any }} deps
+ * @param {{ __dirname: string, DEBUG_MODE: boolean, blogViews?: any,
+ *   readPublicStats?: (() => import('../lib/data/public-stats.js').PublicStats) | null }} deps
  *   `blogViews` is optional and may throw: it is a counter, and a reader must never lose
  *   their article to it. Same contract routes/public.js keeps for the English copies.
+ *   `readPublicStats` is optional too — without it the localized pages render exactly as
+ *   they did before live counts existed (blank hero figures).
  * @returns {import('express').Router}
  */
-export default function createI18nRouter({ __dirname, DEBUG_MODE, blogViews = null }) {
+export default function createI18nRouter({ __dirname, DEBUG_MODE, blogViews = null, readPublicStats = null }) {
   const router = createAsyncRouter();
   const renderer = createPageRenderer({ publicDir: path.join(__dirname, 'public'), DEBUG_MODE });
 
@@ -49,7 +53,13 @@ export default function createI18nRouter({ __dirname, DEBUG_MODE, blogViews = nu
    */
   function serve(res, locale, page) {
     res.set('Cache-Control', 'no-cache');
-    res.type('html').send(renderer.render(locale, page));
+    // The live hero counts are injected HERE, not inside the renderer: page-renderer.js
+    // memoizes the finished string for the process lifetime, so a count written in there
+    // would freeze at whatever it was on first render and stay stale until the next
+    // deploy. res.send() derives the ETag from this body, so the counts and the ETag move
+    // together. test/i18n/hero-stats-i18n.test.js is the guard on this.
+    const html = renderer.render(locale, page);
+    res.type('html').send(readPublicStats ? injectLiveStats(html, readPublicStats()) : html);
   }
 
   /**
