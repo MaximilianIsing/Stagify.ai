@@ -239,7 +239,13 @@ test('identifier extraction still works on the file this guard exists for', () =
   assert.ok(target, 'ai-designer-model-selector.js must stay in the classic set');
   const called = calledFreeIdentifiers(stripCommentsAndStrings(fs.readFileSync(target, 'utf8')));
   assert.ok(called.size >= 10, `expected many call sites in ai-designer-model-selector.js, found ${called.size}`);
-  assert.ok(called.has('showToast'), 'showToast must still be called there — this guard exists for it');
+  // Was showToast, until the studio's own bug-report form (the only thing there that
+  // called it) was deleted for shipping English under all eleven locales. This name is
+  // the same kind of bridge and is still called from that file.
+  assert.ok(
+    called.has('updateMaskEditorTranslations'),
+    'updateMaskEditorTranslations must still be called there — this guard exists for bridges like it'
+  );
 });
 
 for (const file of classicScripts) {

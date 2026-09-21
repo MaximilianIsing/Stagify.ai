@@ -369,7 +369,7 @@
             role tells a screen reader these are tabs while giving it no way to say which
             panel belongs to which — six unrelated buttons announced as a tablist.
           -->
-          <div class="guide-demo-picker" role="tablist" aria-label="Choose a walkthrough">
+          <div class="guide-demo-picker" role="tablist" data-lang-attr="guides.demoPickerAria|aria-label" aria-label="Choose a walkthrough">
             <button type="button" id="guide-tab-free" class="guide-demo-picker__btn guide-demo-picker__btn--active" role="tab" aria-selected="true" aria-controls="guide-demo-free" tabindex="0" data-demo="free">
               <img src="media-webp/logo/Logo64x64.webp" alt="" width="18" height="18" aria-hidden="true">
               <span data-lang="guides.pickerFree">Free</span>
@@ -548,7 +548,7 @@
             the head and on each card instead.
           -->
           <div class="guides-help">
-            <nav class="guides-rail" aria-label="Guide topics">
+            <nav class="guides-rail" data-lang-attr="guides.topicsAria|aria-label" aria-label="Guide topics">
               <ul class="guides-rail__list">
                 <li>
                   <a class="guides-rail__link" href="#th-tips">

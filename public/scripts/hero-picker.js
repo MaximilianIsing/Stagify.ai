@@ -76,9 +76,11 @@ const ROOMS = [
 /* Furniture styles, in menu order. Labels come from the shared furnitureStyles pack the
  * studios already use, so a style renamed there is renamed here.
  *
- * `standard` and `custom` bookend the list because they are not peers of the six between
- * them, and the order says so: Standard is the baseline the studio itself falls back to, and
- * Custom is the escape hatch for everything no preset covers.
+ * `modern` leads because it is the pair the hero ships painted (DEFAULT_STYLE below), so the
+ * menu opens with the row that is already selected at the top of it rather than one down.
+ * `standard` and `custom` are not peers of the presets either way: Standard is the baseline
+ * the studio itself falls back to, and Custom is the escape hatch for everything no preset
+ * covers, which is why it stays last.
  *
  * THE TWO OF THEM ARE NOT ORDINARY MATRIX LOOKUPS, and the generator is where that is
  * handled — see to-build/media-png/example/tools/generate-combos.mjs:
@@ -86,12 +88,12 @@ const ROOMS = [
  *   - `custom` is NOT. Its matrix entry ("...the furniture and decor the user asks for") is a
  *     null instruction, and generatePrompt() answers an empty free-text box by falling back
  *     to `standard` — so rendered the ordinary way this menu row would be a duplicate of the
- *     one at the top of it. The generator supplies the free text instead, which is what a
+ *     `standard` row. The generator supplies the free text instead, which is what a
  *     visitor picking Custom does too.
  * Both still resolve to media-webp/example/<style>-<room>.webp like everything else here. */
 const STYLES = [
-  { key: 'standard', slug: 'standard', label: 'furnitureStyles.standard' },
   { key: 'modern', slug: 'modern', label: 'furnitureStyles.modern' },
+  { key: 'standard', slug: 'standard', label: 'furnitureStyles.standard' },
   { key: 'scandinavian', slug: 'scandinavian', label: 'furnitureStyles.scandinavian' },
   { key: 'coastal', slug: 'coastal', label: 'furnitureStyles.coastal' },
   { key: 'farmhouse', slug: 'farmhouse', label: 'furnitureStyles.farmhouse' },
@@ -105,6 +107,10 @@ const STYLES = [
  * the script immediately swaps it for another. The test named above fails if you don't. */
 const DEFAULT_ROOM = 'bedroom';
 const DEFAULT_STYLE = 'modern';
+
+/* The SVG namespace, for the menu glyphs. document.createElement('svg') makes an HTMLUnknown
+   element that renders nothing at all, silently — createElementNS is not optional here. */
+const SVG_NS = 'http://www.w3.org/2000/svg';
 
 const DIR = 'media-webp/example/';
 const ORIGINAL_BASE = DIR + 'Original';
@@ -523,28 +529,54 @@ function initHeroPicker() {
   /* ------------------------------------------------------------------- the menus */
 
   /**
-   * One menu row. The thumbnail is the render that choice would produce, so the range is
-   * visible on first open instead of having to be guessed at one pick at a time.
+   * One menu row: a sticker on a halo, and the localized label.
+   *
+   * THE GLYPH IS DRAWN ONCE, IN THE MARKUP. `<use>` points at the `hp-ico-<key>` symbol in the
+   * sprite below the hero in index.html, so fourteen rows cost fourteen references rather than
+   * fourteen copies of the geometry, and the drawing is reviewable as art in one place instead
+   * of as path data scattered through a builder. That block's comment carries the rules the
+   * set is drawn to; test/frontend/hero-picker-icons.test.js enforces them.
+   *
+   * It replaced a 46 by 31 crop of the render each choice produces. That crop could not do the
+   * job it was added for: at that size a 900px interior is its average colour and nothing else,
+   * so Coastal bedroom and Farmhouse bedroom were the same beige rectangle, and opening a menu
+   * decoded fourteen images to say so. The full-size answer is one click away in the canvas.
+   *
+   * The <svg> is aria-hidden with focusable="false": the row's text is its accessible name, a
+   * second wordless node beside it is noise, and an SVG inside a button must not take a tab
+   * stop of its own.
+   *
+   * @param {{key: string}} item a ROOMS or STYLES entry
+   * @param {boolean} isSelected
+   * @param {string} labelKey language-pack key for the row's text
    */
-  /* Thumbs take the 900w candidate, never one of the big ones. Opening a menu paints fourteen 46px
-     images; at the large size that is ~800 KB of decode for a strip of postage stamps, and
-     none of it is the LCP so none of it is racing anything worth winning. */
-  function rowFor(item, isSelected, thumbSrc, labelKey) {
+  function rowFor(item, isSelected, labelKey) {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'hp-menu__item';
     btn.setAttribute('role', 'option');
     btn.setAttribute('aria-selected', String(isSelected));
-    const thumb = new Image();
-    thumb.className = 'hp-menu__thumb';
-    thumb.alt = '';
-    thumb.loading = 'lazy';
-    thumb.decoding = 'async';
-    thumb.src = thumbSrc;
+    // The key is what the stylesheet colours the halo by (`.hp-menu__item[data-key="…"]`), so it
+    // is exposed on the row rather than kept in a second table here.
+    btn.dataset.key = item.key;
+    // The tile is a span, not the <svg>, because the halo is a ::before and an <svg> cannot
+    // carry one. The sticker (the <svg>) sits on top of it and is the thing that peels.
+    const tile = document.createElement('span');
+    tile.className = 'hp-menu__tile';
+    tile.setAttribute('aria-hidden', 'true');
+    const svg = document.createElementNS(SVG_NS, 'svg');
+    svg.setAttribute('class', 'hp-menu__icon');
+    svg.setAttribute('viewBox', '0 0 32 32');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.setAttribute('focusable', 'false');
+    const use = document.createElementNS(SVG_NS, 'use');
+    use.setAttribute('href', `#hp-ico-${item.key}`);
+    svg.appendChild(use);
+    tile.appendChild(svg);
     const text = document.createElement('span');
     text.className = 'hp-menu__text';
     text.textContent = t(labelKey);
-    btn.append(thumb, text);
+    btn.append(tile, text);
     return btn;
   }
 
@@ -552,8 +584,9 @@ function initHeroPicker() {
    *
    * Eight styles at 47px a row is a 390px menu, and it opens UPWARDS out of a headline that
    * already sits at the bottom of the canvas — so the style menu ran the full height of the
-   * hero and finished under the site header. Two columns of four is a little over 200px,
-   * which is shorter than the six-row room menu standing next to it.
+   * hero and finished under the site header. Two columns of four is a little over 200px.
+   * The six rooms split the same way, into 2x3, so the two menus read as one family rather
+   * than a grid next to a tall column.
    *
    * THE FLOW IS COLUMN-WISE, and that is the part that keeps the keyboard honest rather than
    * being a visual preference. The roving-focus handler further down walks a flat NodeList in
@@ -564,7 +597,7 @@ function initHeroPicker() {
    * The row count is set from here rather than written into the stylesheet because the sheet
    * cannot count the list — add a room or a style and a hardcoded `repeat(4, ...)` quietly
    * strands the extra item in a third column. */
-  const SPLIT_AT = 6;
+  const SPLIT_AT = 5;
 
   /**
    * Lay one menu out in a single column or two, by length.
@@ -583,12 +616,12 @@ function initHeroPicker() {
     roomList.textContent = '';
     styleList.textContent = '';
     ROOMS.forEach((r) => {
-      const btn = rowFor(r, r === room, base(r, style) + '-900.webp', r.menu);
+      const btn = rowFor(r, r === room, r.menu);
       btn.addEventListener('click', () => { pick('room', r); closeMenus(roomBtn); });
       roomList.appendChild(btn);
     });
     STYLES.forEach((s) => {
-      const btn = rowFor(s, s === style, base(room, s) + '-900.webp', s.label);
+      const btn = rowFor(s, s === style, s.label);
       btn.addEventListener('click', () => { pick('style', s); closeMenus(styleBtn); });
       styleList.appendChild(btn);
     });

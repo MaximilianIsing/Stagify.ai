@@ -237,8 +237,8 @@
 
    ABOVE 768px ONLY, because below it the menu is not a popover any more but a sheet inset
    14px from both edges of the bar (see the phone block near the foot of this file), and half
-   of a 390px phone is not a column. Once the 46px thumb, the 11px gap and the row padding
-   are taken out there is about 100px of text left, which "Scandinavian" fills exactly and
+   of a 390px phone is not a column. Once the 48px sticker tile, the 11px gap and the row
+   padding are taken out there is about 100px of text left, which "Scandinavian" fills and
    "Benutzerdefiniert" overruns. The phone keeps one column and caps its height instead. */
 @media (min-width: 769px) {
   .hp-menu__list--split {
@@ -255,7 +255,9 @@
   align-items: center;
   gap: 11px;
   width: 100%;
-  padding: 8px 9px;
+  /* Tighter on the left than the right: the halo has its own inset, and a row that is padded
+     evenly reads as the sticker sitting too far in. */
+  padding: 6px 9px 6px 6px;
   border: 0;
   border-radius: 10px;
   background: none;
@@ -299,13 +301,157 @@
   outline-color: var(--bg-elevated);
 }
 
-.hp-menu__thumb {
+/* THE STICKER, THE HALO AND THE PEEL. Each row carries a small coloured scene (the hp-ico-*
+   sprite in index.html) drawn as a die-cut sticker sitting on a pale blob of its own colour, and
+   the sticker lifts off the blob under the pointer. It replaced a 46 by 31 crop of the render
+   each row would produce — see the sprite comment in index.html for why that crop could not
+   work at that size — and a plain line glyph in a square tile that came between, which read as
+   a form control rather than a picture.
+
+   THREE LAYERS, EACH WITH ONE JOB:
+     - `.hp-menu__tile` is the 48px box that reserves the row height and holds the other two.
+       No background of its own: the old tile square is exactly what the sticker escaped.
+     - `.hp-menu__tile::before` is the halo, an off-round blob in the item's pale colour
+       (`--hp-halo`, set per key below). It is the anchor: without it the sticker floats and
+       the left edge of the art wanders from row to row with each scene's silhouette.
+     - `.hp-menu__icon` is the sticker. Ink is --fg from here, colour is the fills baked into
+       the sprite, and the white "die-cut" edge is the stacked drop-shadows: three tight white
+       ones build the cut edge, the fourth is the soft drop under it. `overflow: visible` so
+       the edge and the lift are not clipped by the svg's own box.
+
+   THE PEEL is one transform. Hover lifts and tilts the sticker and deepens its drop; the
+   selected row keeps a smaller resting tilt so it is marked twice, by the navy row and by the
+   sticker not lying flat. It is gated in the sheet's prefers-reduced-motion block near the
+   foot of this file — the blob and the tilt stay, the animation goes. Touch never sees the peel at all, which is fine: the blob and the
+   colour do the work there.
+
+   NOT INVERTED ON THE SELECTED ROW. The fills are fixed colours and cannot follow the row to
+   white the way a line glyph could; the white cut edge is what keeps the sticker separable
+   from the navy row, and the halo drops to 85% so it reads as a backing rather than a light.
+
+   `stroke-width` is NOT set here. It lives on the symbols so the geometry and its weight stay
+   in one place; setting it here too would mean two numbers to keep agreeing, and the one on
+   the symbol would silently win. */
+.hp-menu__tile {
+  position: relative;
   flex: 0 0 auto;
-  width: 46px;
-  height: 31px;
-  border-radius: 6px;
-  object-fit: cover;
-  background: var(--brand-tint);
+  width: 48px;
+  height: 48px;
+  padding: 3px;
+  display: grid;
+  place-items: center;
+}
+
+.hp-menu__tile::before {
+  content: "";
+  position: absolute;
+  inset: 7px 5px 5px 7px;
+  /* Off-round on purpose: a circle reads as a badge, this reads as a blob of backing paper. */
+  border-radius: 46% 54% 58% 42% / 52% 44% 56% 48%;
+  background: var(--hp-halo, var(--brand-wash));
+}
+
+.hp-menu__icon {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: none;
+  stroke: var(--fg);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter:
+    drop-shadow(0 0 1px var(--bg-elevated))
+    drop-shadow(0 0 1px var(--bg-elevated))
+    drop-shadow(0 0 1.5px var(--bg-elevated))
+    drop-shadow(0 1px 2px rgba(13, 26, 58, 0.25));
+  transition:
+    transform 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.3),
+    filter 0.22s ease;
+}
+
+.hp-menu__item:hover .hp-menu__icon {
+  transform: rotate(-8deg) scale(1.12);
+  filter:
+    drop-shadow(0 0 1px var(--bg-elevated))
+    drop-shadow(0 0 1px var(--bg-elevated))
+    drop-shadow(0 0 1.5px var(--bg-elevated))
+    drop-shadow(0 6px 6px rgba(13, 26, 58, 0.3));
+}
+
+.hp-menu__item[aria-selected="true"] .hp-menu__icon {
+  transform: rotate(-4deg);
+}
+
+.hp-menu__item[aria-selected="true"] .hp-menu__tile::before {
+  opacity: 0.85;
+}
+
+/* The halo colour per item, keyed off the data-key rowFor() puts on the row. One pale tint
+   per room and style, chosen to sit under that sticker's own fills rather than to mean
+   anything on its own: the bedroom's blue duvet on a blue blob, the barn's red on a pink one.
+   test/frontend/hero-picker-icons.test.js fails if a picker key has no rule here. */
+.hp-menu__item[data-key="bedroom"] {
+  --hp-halo: var(--brand-tint);
+}
+
+.hp-menu__item[data-key="livingRoom"] {
+  --hp-halo: #e0e7ff;
+}
+
+.hp-menu__item[data-key="diningRoom"] {
+  --hp-halo: #fde68a;
+}
+
+.hp-menu__item[data-key="kitchen"] {
+  --hp-halo: #e7e5e4;
+}
+
+.hp-menu__item[data-key="office"] {
+  --hp-halo: #fee2e2;
+}
+
+.hp-menu__item[data-key="bathroom"] {
+  --hp-halo: #cffafe;
+}
+
+.hp-menu__item[data-key="modern"] {
+  --hp-halo: #e2e8f0;
+}
+
+.hp-menu__item[data-key="standard"] {
+  --hp-halo: #fef3c7;
+}
+
+.hp-menu__item[data-key="scandinavian"] {
+  --hp-halo: #dcfce7;
+}
+
+.hp-menu__item[data-key="coastal"] {
+  --hp-halo: #bae6fd;
+}
+
+.hp-menu__item[data-key="farmhouse"] {
+  --hp-halo: #fecaca;
+}
+
+.hp-menu__item[data-key="luxury"] {
+  --hp-halo: #fef3c7;
+}
+
+.hp-menu__item[data-key="midcentury"] {
+  --hp-halo: #fed7aa;
+}
+
+.hp-menu__item[data-key="custom"] {
+  --hp-halo: #fef08a;
+}
+
+/* The sprite itself is 0x0 and aria-hidden in the markup, but a <svg> with no CSS still takes
+   a line box in the flow on some engines, which shows up as a stray gap between the hero and
+   the sponsor strip. Take it out of layout outright. */
+.hp-icon-sprite {
+  display: none;
 }
 
 /* -------------------------------------------------------------------- the canvas */
@@ -939,6 +1085,16 @@
     transition: none;
   }
 
+  /* The sticker peel. The lift goes, the halo and the selected row's resting tilt stay: they
+     are state, not motion, and the tilt is one of the two things marking the chosen row. */
+  .hp-menu__icon {
+    transition: none;
+  }
+
+  .hp-menu__item:hover .hp-menu__icon {
+    transform: none;
+  }
+
   /* The caret still flips — it is the only thing telling you the menu is open. It just
      arrives there instantly instead of spinning. */
   .hp-slot__chev {
@@ -1165,10 +1321,16 @@
      the parked van's nose sits 4 units from the entrance and any more would overlap. */
   /* On the leave the camera lets the van go first: the pan back starts 0.6s in, when the
      drive-out (0.25s wait + 0.75s) has the van about halfway to the edge. */
+  /* The pan distance is a custom property rather than the transform itself so the style
+     swap's slide-in keyframes below can END on it: a house arriving mid-hover lands on the
+     panned position instead of at zero and then jumping 8px when its animation lets go.
+     Changing the property still transitions `transform`, which is what it feeds. */
   #hero-upload.hu .far,
   #hero-upload.hu .mid,
   #hero-upload.hu .near,
   #hero-upload.hu .home {
+    --hu-pan: 0px;
+    transform: translateX(var(--hu-pan));
     transition: transform 1.3s cubic-bezier(0.45, 0.02, 0.2, 1) 0.6s;
   }
   #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .far,
@@ -1177,10 +1339,64 @@
   #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .near {
     transition: transform 1.6s cubic-bezier(0.3, 0.02, 0.1, 1) 0s;
   }
-  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .far { transform: translateX(-5px); }
-  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .mid { transform: translateX(-8px); }
-  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .home { transform: translateX(-8px); }
-  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .near { transform: translateX(-16px); }
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .far { --hu-pan: -5px; }
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .mid { --hu-pan: -8px; }
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .home { --hu-pan: -8px; }
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .near { --hu-pan: -16px; }
+
+  /* ---- style swap: the "rolling road" ----
+     The picker changed furniture style, so the street shows a different house. hero-van.js
+     grafts the new style's skyline, both houses and the lamp-side props into the live scene
+     right behind the old ones (`.hu-in` on the new, `.hu-leave` on the old) and sets
+     `.hu-swap` on the button for the duration; sky, stars, road and the van are the same
+     elements throughout, so a drive in progress simply carries on. The two houses slide
+     off left at their parallax depths (mid 0.55 of the home's 378) while the new ones
+     slide in from past the right edge, the road's dashes roll under them by exactly
+     that distance (27 dash periods, so the pattern lands on itself) and the skyline and
+     tree, which sit still, crossfade — a skyline that panned would double up with the
+     one arriving. The lamp is on both props bands at the same spot, so its crossfade is
+     invisible and only the tree changes. `both` fill: the incoming bands are inserted
+     before their animation starts and must not flash at rest first.
+     The duration is mirrored in hero-van.js (SWAP_MS) for its fallback timer. */
+  #hero-upload.hu {
+    --hu-swap-ms: 0.95s;
+    --hu-swap-ease: cubic-bezier(0.5, 0.02, 0.15, 1);
+  }
+  #hero-upload.hu .home.hu-leave { animation: hu-home-leave var(--hu-swap-ms) var(--hu-swap-ease) both; }
+  #hero-upload.hu .home.hu-in { animation: hu-home-in var(--hu-swap-ms) var(--hu-swap-ease) both; }
+  #hero-upload.hu .mid.hu-leave { animation: hu-mid-leave var(--hu-swap-ms) var(--hu-swap-ease) both; }
+  #hero-upload.hu .mid.hu-in { animation: hu-mid-in var(--hu-swap-ms) var(--hu-swap-ease) both; }
+  #hero-upload.hu :is(.skyline, .props).hu-leave { animation: hu-band-out var(--hu-swap-ms) ease both; }
+  #hero-upload.hu :is(.skyline, .props).hu-in { animation: hu-band-in var(--hu-swap-ms) ease both; }
+  #hero-upload.hu.hu-swap .road-dash { animation: hu-road-roll var(--hu-swap-ms) var(--hu-swap-ease) both; }
+  @keyframes hu-home-leave {
+    from { transform: translateX(var(--hu-pan, 0px)); }
+    to { transform: translateX(calc(var(--hu-pan, 0px) - 378px)); }
+  }
+  @keyframes hu-home-in {
+    from { transform: translateX(calc(var(--hu-pan, 0px) + 378px)); }
+    to { transform: translateX(var(--hu-pan, 0px)); }
+  }
+  @keyframes hu-mid-leave {
+    from { transform: translateX(var(--hu-pan, 0px)); }
+    to { transform: translateX(calc(var(--hu-pan, 0px) - 208px)); }
+  }
+  @keyframes hu-mid-in {
+    from { transform: translateX(calc(var(--hu-pan, 0px) + 208px)); }
+    to { transform: translateX(var(--hu-pan, 0px)); }
+  }
+  @keyframes hu-band-out {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+  @keyframes hu-band-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes hu-road-roll {
+    from { stroke-dashoffset: 0; }
+    to { stroke-dashoffset: 378; }
+  }
 
   /* ---- the drive: van authored 0..108, parks at x 210 (entrance begins at 322) ----
      Both legs are KEYFRAME animations, not a transition, because the van never reverses:
@@ -1196,9 +1412,9 @@
   }
   /* Duration is `--hu-out-ms`, set by hero-van.js from the distance left to the edge, so
      the van leaves at the same road speed whether it was parked or had barely arrived;
-     0.75s is the parked case (210 units). */
+     0.85s is the parked case (210 units). hero-van.js mirrors this curve (PULL_AWAY). */
   #hero-upload.hu.hu-out .van {
-    animation: hu-drive-out var(--hu-out-ms, 0.75s) cubic-bezier(0.55, 0, 0.9, 0.5) 0.25s both;
+    animation: hu-drive-out var(--hu-out-ms, 0.85s) cubic-bezier(0.5, 0, 0.8, 0.55) 0.25s both;
   }
   #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .van {
     animation: hu-drive-in 1.25s cubic-bezier(0.32, 0.06, 0.2, 1) both;
@@ -1211,24 +1427,51 @@
     from { transform: translateX(var(--hu-van-x, 210px)); }
     to { transform: translateX(420px); }
   }
+  /* The pointer came back while the van was still short of the door: hero-van.js cuts the
+     drive-out and plays this instead, from where the van is to the bay, on a duration and
+     curve it planned to match the van's speed at that instant. Outranks the hover `.van`
+     rule above (which would restart the drive-in from the left) and stays on while the van
+     is parked, until the next leave. */
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out).hu-park .van {
+    animation: hu-drive-park var(--hu-out-ms, 0.6s) var(--hu-out-ease, cubic-bezier(0.35, 0.7, 0.65, 1)) 0s both;
+  }
+  @keyframes hu-drive-park {
+    from { transform: translateX(var(--hu-van-x, -150px)); }
+    to { transform: translateX(210px); }
+  }
   #hero-upload.hu .wheelspin {
     transform-box: fill-box;
     transform-origin: center;
     transform: rotate(0deg);
   }
+  /* The wheels roll at the van's speed: each animation below is the van's own duration and
+     curve, and turns the wheel by exactly the distance driven (7.74° per scene unit; the
+     tyre is r 7.4). The drive-in is 360 units, 2787°. The planned segments — drive-out and
+     park — get their angles from hero-van.js (`--hu-spin-from/to`), which carries the
+     angle across each join so the spokes never jump. */
   #hero-upload.hu.hu-out .wheelspin {
-    animation: hu-spin-out var(--hu-out-ms, 0.75s) cubic-bezier(0.55, 0, 0.9, 0.5) 0.25s both;
+    animation: hu-spin-seg var(--hu-out-ms, 0.85s) cubic-bezier(0.5, 0, 0.8, 0.55) 0.25s both;
   }
   #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .wheelspin {
     animation: hu-spin-in 1.25s cubic-bezier(0.32, 0.06, 0.2, 1) both;
   }
+  /* Its own name, not hu-spin-seg again: a class swap that keeps the animation-name does
+     not restart the animation, it just retimes the one already running (the van's
+     hu-drive-out / hu-drive-park pair is distinct for the same reason). */
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out).hu-park .wheelspin {
+    animation: hu-spin-park var(--hu-out-ms, 0.6s) var(--hu-out-ease, cubic-bezier(0.35, 0.7, 0.65, 1)) 0s both;
+  }
   @keyframes hu-spin-in {
     from { transform: rotate(0deg); }
-    to { transform: rotate(1800deg); }
+    to { transform: rotate(2787deg); }
   }
-  @keyframes hu-spin-out {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(1080deg); }
+  @keyframes hu-spin-seg {
+    from { transform: rotate(var(--hu-spin-from, 0deg)); }
+    to { transform: rotate(var(--hu-spin-to, 1625deg)); }
+  }
+  @keyframes hu-spin-park {
+    from { transform: rotate(var(--hu-spin-from, 0deg)); }
+    to { transform: rotate(var(--hu-spin-to, 1625deg)); }
   }
   #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .bounce {
     animation: hu-bump 1.25s ease-in-out;
@@ -1249,7 +1492,7 @@
   /* Headlights stay on for the drive-out and only go once the van is off the plate. */
   #hero-upload.hu.hu-out .beam,
   #hero-upload.hu.hu-out .lampglow {
-    transition: opacity 0.2s calc(var(--hu-out-ms, 0.75s) + 0.15s);
+    transition: opacity 0.2s calc(var(--hu-out-ms, 0.85s) + 0.15s);
   }
   /* Exhaust: three blurred puffs out of the tailpipe, staggered, only on the way in. */
   #hero-upload.hu .puff {
@@ -1350,10 +1593,10 @@
   #hero-upload.hu.hu-quick .van,
   #hero-upload.hu.hu-quick .wheelspin {
     animation-delay: 0s;
-    /* The van is already rolling: no ease-in from a standstill (that read as a pause),
-       just keep the pace and pick up a little towards the edge. hero-van.js also shortens
-       `--hu-out-ms` for this case so the pace matches the arrival's. */
-    animation-timing-function: cubic-bezier(0.3, 0.2, 0.7, 0.55);
+    /* The van is already rolling: no ease-in from a standstill (that read as a pause).
+       hero-van.js plans `--hu-out-ms` and `--hu-out-ease` for this case so the exit
+       starts at exactly the speed the van had and picks up towards the edge. */
+    animation-timing-function: var(--hu-out-ease, cubic-bezier(0.3, 0.2, 0.7, 0.55));
   }
   #hero-upload.hu.hu-quick .far,
   #hero-upload.hu.hu-quick .mid,
@@ -1364,7 +1607,7 @@
   }
   #hero-upload.hu.hu-quick .beam,
   #hero-upload.hu.hu-quick .lampglow {
-    transition-delay: calc(var(--hu-out-ms, 0.75s) - 0.1s);
+    transition-delay: calc(var(--hu-out-ms, 0.85s) - 0.1s);
   }
 }
 
@@ -1373,13 +1616,15 @@
 @media (min-width: 769px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: reduce) {
   #hero-upload.hu .van,
   #hero-upload.hu.hu-out .van,
-  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .van {
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .van,
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out).hu-park .van {
     transform: translateX(210px);
     animation: none;
   }
   #hero-upload.hu .wheelspin,
   #hero-upload.hu.hu-out .wheelspin,
-  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .wheelspin {
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .wheelspin,
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out).hu-park .wheelspin {
     animation: none;
   }
   #hero-upload.hu .hu-scene,
@@ -1387,6 +1632,9 @@
     transform: none;
     transition: none;
   }
+  /* The style swap's slides and fades are not listed: hero-van.js does a plain rebuild under
+     reduce and never adds `.hu-in` / `.hu-leave` / `.hu-swap`. Killing them here instead
+     would leave both houses on the street until the script's fallback timer ran. */
   #hero-upload.hu .far,
   #hero-upload.hu .mid,
   #hero-upload.hu .near,

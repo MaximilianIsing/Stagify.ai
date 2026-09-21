@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hero CTA street pan: cleaner handover</title>
+<style>
+:root{
+  --bg:#eef2f9;--fg:#1f2937;--muted:#6b7280;--border:#e5e7eb;
+  --brand:#2563eb;--brand-strong:#1d4ed8;--brand-deep:#1e3a8a;--brand-soft:#60a5fa;
+  --brand-pale:#93c5fd;--brand-tint:#dbeafe;--brand-wash:#eff6ff;--bg-elevated:#ffffff;
+  --gold:#ffd48a;
+}
+@property --wx{syntax:"<length>";inherits:true;initial-value:0px}
+
+/* page chrome */
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 Inter,ui-sans-serif,system-ui,sans-serif}
+.rail{position:fixed;left:0;top:0;bottom:0;width:220px;overflow-y:auto;z-index:60;background:#fff;
+  border-right:1px solid var(--border);padding:18px 12px;display:flex;flex-direction:column;gap:2px}
+.rail-t{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:0 10px 8px}
+.rail a{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:9px;text-decoration:none;
+  font-size:13.5px;font-weight:600;color:var(--fg)}
+.rail a i{font-style:normal;font-size:11px;font-weight:800;color:var(--muted);min-width:18px}
+.rail a:hover{background:var(--brand-wash)}
+.rail a.on{background:var(--brand-deep);color:#fff}
+.rail a.on i{color:rgba(255,255,255,.7)}
+.page{margin-left:220px;max-width:1180px;padding:0 24px 120px}
+.panel,.canvas{background:#fff;border:1px solid var(--border);border-radius:16px;margin:22px 0;padding:22px}
+.canvas{padding:0;overflow:hidden}
+.canvas .cap{padding:20px 22px 16px;border-bottom:1px solid var(--border)}
+.cap .n{display:inline-block;background:var(--brand-deep);color:#fff;font-size:11px;font-weight:800;
+  padding:3px 8px;border-radius:6px;margin-right:9px;vertical-align:2px}
+.cap h2{display:inline;font-size:19px;margin:0}
+.trade{margin:9px 0 0;color:var(--muted);font-size:13.5px}
+
+/* ranking */
+.rank{list-style:none;margin:0;padding:0;counter-reset:r}
+.rank li{counter-increment:r;display:grid;grid-template-columns:28px 34px 1fr 160px 52px 54px;
+  gap:12px;align-items:center;padding:11px 0;border-top:1px solid var(--border)}
+.rank li::before{content:counter(r);font-weight:800;color:var(--muted);font-size:13px}
+.rank li i{font-style:normal;font-size:11px;font-weight:800;color:var(--muted)}
+.rank li p{grid-column:3/-1;margin:2px 0 0;font-size:12.5px;color:var(--muted)}
+.bar{display:block;height:8px;border-radius:99px;background:var(--border);overflow:hidden}
+.bar span{display:block;height:100%;background:var(--brand);border-radius:99px}
+.score{font-size:13px;font-weight:700;text-align:right}
+.grade{display:inline-block;min-width:44px;text-align:center;font-size:12px;font-weight:800;
+  color:#fff;padding:3px 7px;border-radius:7px}
+.g-a{background:#16a34a}.g-b{background:#65a30d}.g-c{background:#d97706}
+.g-d{background:#ea580c}.g-f{background:#dc2626}
+
+/* comparison matrix */
+.matrix{width:100%;border-collapse:collapse;font-size:13px}
+.matrix th{text-align:left;font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--muted);padding:0 10px 9px;border-bottom:1px solid var(--border)}
+.matrix td{padding:10px;border-bottom:1px solid var(--border)}
+.matrix tbody tr:hover{background:var(--brand-wash)}
+
+/* pros and cons */
+.verdict{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--border)}
+.verdict ul{list-style:none;margin:0;padding:16px 20px;display:grid;gap:7px;align-content:start}
+.verdict li{position:relative;padding-left:26px;font-size:13px;line-height:1.45}
+.verdict li::before{position:absolute;left:0;top:0;font-size:13px}
+.pros li{color:#14532d}
+.pros li::before{content:"\1F44D"}
+.cons{border-left:1px solid var(--border)}
+.cons li{color:#7f1d1d}
+.cons li::before{content:"\1F44E"}
+
+@media(max-width:900px){
+  .rail{position:sticky;inset:auto;top:0;width:auto;flex-direction:row;overflow-x:auto;
+    border-right:0;border-bottom:1px solid var(--border)}
+  .rail-t{display:none}
+  .rail a{flex:none}
+  .page{margin-left:0;padding:0 16px 80px}
+  .rank li{grid-template-columns:24px 30px 1fr 46px 50px}
+  .rank li .bar{display:none}
+}
+@media(max-width:700px){
+  .verdict{grid-template-columns:1fr}
+  .cons{border-left:0;border-top:1px solid var(--border)}
+}
+
+/* header */
+.top{padding:28px 0 4px}
+.top h1{font-size:22px;margin:0 0 6px}
+.top .req{font-size:14px;color:var(--fg);background:var(--brand-wash);border:1px solid var(--brand-tint);
+  border-radius:10px;padding:10px 14px;margin:0 0 8px}
+.top .meta{font-size:12.5px;color:var(--muted);margin:0}
+.rubric{font-size:12.5px;color:var(--muted);margin:-6px 0 12px}
+
+/* ===== the mocked hero bar and CTA (mirrors #hero-upload.hu) ===== */
+.demo{background:
+    radial-gradient(ellipse at 20% 0%,rgba(96,165,250,.18),transparent 55%),
+    linear-gradient(180deg,#1b2a52 0%,#0d1735 100%);
+  padding:30px 26px}
+.hp{background:rgba(9,17,45,.92);border:1px solid rgba(147,197,253,.18);border-radius:20px;
+  padding:18px 20px 20px;display:grid;gap:14px;color:#fff;max-width:640px}
+.hp-sentence{font-size:22px;font-weight:700;letter-spacing:-.01em;line-height:1.25}
+.hp-sentence b{color:var(--brand-pale);border-bottom:2px dotted rgba(147,197,253,.55);padding-bottom:1px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{background:rgba(255,255,255,.07);border:1px solid rgba(147,197,253,.28);color:#dbeafe;border-radius:99px;
+  padding:5px 11px;font:600 12.5px/1.2 Inter,ui-sans-serif,system-ui,sans-serif;cursor:pointer;transition:background .15s}
+.chip:hover{background:rgba(255,255,255,.14)}
+.chip.on{background:var(--brand);border-color:var(--brand-soft);color:#fff}
+.hint{font-size:12px;color:rgba(219,234,254,.6);margin:-6px 0 0}
+
+.cta{position:relative;overflow:hidden;isolation:isolate;display:flex;align-items:center;justify-content:flex-start;
+  width:470px;max-width:100%;min-height:78px;margin:0;padding:20px 100px 20px 22px;
+  border:1.5px solid rgba(147,197,253,.7);border-radius:18px;cursor:pointer;color:#fff;text-align:left;
+  background:linear-gradient(180deg,#2a3a68 0%,#1a2749 52%,#101a34 100%);
+  box-shadow:0 0 0 1px rgba(6,11,26,.6),0 12px 28px rgba(0,0,0,.45),0 18px 44px rgba(30,58,138,.3),inset 0 1px 0 rgba(255,255,255,.16);
+  font:inherit}
+.cta .layers{position:absolute;inset:0;z-index:0}
+.cta .layer{position:absolute;inset:0;display:block}
+.cta .layer svg{width:100%;height:100%;display:block}
+.cta::after{content:"";position:absolute;inset:0;z-index:1;background:#0b1228;opacity:.36;pointer-events:none}
+.cta .veil{position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:linear-gradient(90deg,rgba(12,19,40,.74) 0%,rgba(12,19,40,.58) 34%,rgba(12,19,40,.12) 56%,rgba(12,19,40,0) 66%)}
+.cta strong{position:relative;z-index:6;font-size:21px;font-weight:800;letter-spacing:-.025em;line-height:1.2;
+  color:#fff;text-shadow:0 1px 2px rgba(6,12,28,.9),0 2px 14px rgba(6,12,28,.85);-webkit-text-stroke:.55px currentColor}
+
+/* van wipe */
+.cta .van{position:absolute;bottom:3px;left:var(--wx);width:150px;height:auto;z-index:1}
+.cta .van svg{width:100%;display:block}
+</style>
+</head>
+<body>
+
+<aside class="rail">
+  <div class="rail-t">Variants</div>
+  <a href="#ranking">Ranking</a>
+  <a href="#compare">Comparison</a>
+  <a href="#v1"><i>01</i> Street Pan</a>
+  <a href="#v2"><i>02</i> Clean Plate</a>
+  <a href="#v3"><i>03</i> Rolling Road</a>
+  <a href="#v4"><i>04</i> Street Memory</a>
+  <a href="#v5"><i>05</i> Motion Blur</a>
+  <a href="#v6"><i>06</i> Two Beat</a>
+  <a href="#v7"><i>07</i> Short Slide</a>
+  <a href="#v8"><i>08</i> Van Delivery</a>
+</aside>
+
+<main class="page">
+  <header class="top">
+    <h1>Hero CTA street pan: cleaner handover</h1>
+    <p class="req">"Street pan is basically perfect but the actual transition over needs a little bit of work, like it's not perfectly clean, so go for a new generation with that in mind."</p>
+    <p class="meta">21 September 2026. Same street pan, seven ways to hand the old house over to the new one. Pick a style chip in any card to play its swap.</p>
+  </header>
+
+  <section id="ranking" class="panel">
+    <h2>Ranking</h2>
+    <p class="rubric">Scored on fit to the brief (30), distinctiveness (20), build cost (20), mobile and accessibility (15), first-glance pull (15).</p>
+    <ol class="rank">
+      <li><i>03</i><b>Rolling Road</b>
+        <span class="bar"><span style="width:92%"></span></span>
+        <span class="score" title="Fit 29 · Distinct 17 · Cost 17 · Mobile 14 · Pull 15">92%</span><span class="grade g-a">A-</span>
+        <p>Only houses travel, the road rolls under them, nothing crosses the label.</p></li>
+      <li><i>02</i><b>Clean Plate</b>
+        <span class="bar"><span style="width:90%"></span></span>
+        <span class="score" title="Fit 29 · Distinct 14 · Cost 19 · Mobile 15 · Pull 13">90%</span><span class="grade g-a">A-</span>
+        <p>Cleanest possible handover, two bands move, the rest is pinned.</p></li>
+      <li><i>04</i><b>Street Memory</b>
+        <span class="bar"><span style="width:87%"></span></span>
+        <span class="score" title="Fit 27 · Distinct 19 · Cost 13 · Mobile 14 · Pull 14">87%</span><span class="grade g-b">B+</span>
+        <p>The last pick recedes to the background house, so the street has continuity.</p></li>
+      <li><i>06</i><b>Two Beat</b>
+        <span class="bar"><span style="width:84%"></span></span>
+        <span class="score" title="Fit 27 · Distinct 14 · Cost 17 · Mobile 14 · Pull 12">84%</span><span class="grade g-b">B</span>
+        <p>No overlap ever, but the empty street beat costs a quarter second.</p></li>
+      <li><i>01</i><b>Street Pan</b>
+        <span class="bar"><span style="width:80%"></span></span>
+        <span class="score" title="Fit 25 · Distinct 13 · Cost 16 · Mobile 13 · Pull 13">80%</span><span class="grade g-b">B-</span>
+        <p>Carried from run 01. Stars double up and the lamp crosses the label.</p></li>
+      <li><i>08</i><b>Van Delivery</b>
+        <span class="bar"><span style="width:78%"></span></span>
+        <span class="score" title="Fit 22 · Distinct 19 · Cost 11 · Mobile 12 · Pull 14">78%</span><span class="grade g-c">C+</span>
+        <p>Carried from run 01. Strong story, but the pan direction is now settled.</p></li>
+      <li><i>07</i><b>Short Slide</b>
+        <span class="bar"><span style="width:74%"></span></span>
+        <span class="score" title="Fit 24 · Distinct 9 · Cost 19 · Mobile 15 · Pull 7">74%</span><span class="grade g-c">C</span>
+        <p>Clean and quick, but it stops feeling like a street.</p></li>
+      <li><i>05</i><b>Motion Blur</b>
+        <span class="bar"><span style="width:64%"></span></span>
+        <span class="score" title="Fit 18 · Distinct 17 · Cost 9 · Mobile 8 · Pull 12">64%</span><span class="grade g-d">D</span>
+        <p>Hides the crossover under a blur instead of fixing it; heavy to paint.</p></li>
+    </ol>
+  </section>
+
+  <section id="compare" class="panel">
+    <h2>Comparison</h2>
+    <table class="matrix"><thead><tr><th>#</th><th>Name</th><th>Density</th><th>Placement</th><th>Interaction</th><th>Content</th></tr></thead>
+    <tbody>
+      <tr><td>01</td><td>Street Pan</td><td>Moderate</td><td>All five bands</td><td>One camera move</td><td>Down the street</td></tr>
+      <tr><td>02</td><td>Clean Plate</td><td>Minimal motion</td><td>Houses only</td><td>One camera move</td><td>Houses pass by</td></tr>
+      <tr><td>03</td><td>Rolling Road</td><td>Moderate</td><td>Houses and road</td><td>Camera plus ground</td><td>Driving past</td></tr>
+      <tr><td>04</td><td>Street Memory</td><td>Moderate</td><td>Houses only</td><td>Recede and enter</td><td>Your last pick behind</td></tr>
+      <tr><td>05</td><td>Motion Blur</td><td>Heavy</td><td>All bands</td><td>Speed ramp</td><td>Fast drive</td></tr>
+      <tr><td>06</td><td>Two Beat</td><td>Moderate</td><td>Houses and road</td><td>Exit, pause, enter</td><td>Empty street beat</td></tr>
+      <tr><td>07</td><td>Short Slide</td><td>Minimal motion</td><td>Houses only</td><td>Nudge and dissolve</td><td>Neutral</td></tr>
+      <tr><td>08</td><td>Van Delivery</td><td>Heavy</td><td>Whole plate</td><td>Masked wipe</td><td>Delivery</td></tr>
+    </tbody></table>
+  </section>
+
+  <section id="v1" class="canvas">
+    <div class="cap"><span class="n">01</span><h2>Street Pan</h2>
+      <span class="grade g-b">B- 80%</span>
+      <p class="trade">The baseline: every band slides at its own depth, sky stays. Watch the stars and the lamp mid-pan.</p></div>
+    <div class="demo"><div class="hp" data-mode="pan"></div></div>
+    <div class="verdict">
+      <ul class="pros"><li>Reuses the hover parallax bands as they ship</li><li>Reads as one continuous camera move</li><li>Under a second</li></ul>
+      <ul class="cons"><li>Two star fields overlap while the far band pans</li><li>Lamp and tree sweep under the label</li><li>House crosses the background house mid-pan</li></ul>
+    </div>
+  </section>
+
+  <section id="v2" class="canvas">
+    <div class="cap"><span class="n">02</span><h2>Clean Plate</h2>
+      <span class="grade g-a">A- 90%</span>
+      <p class="trade">Only the two houses travel. Sky, skyline, road, lamp and tree are pinned, so nothing can ghost.</p></div>
+    <div class="demo"><div class="hp" data-mode="clean"></div></div>
+    <div class="verdict">
+      <ul class="pros"><li>Nothing overlaps, nothing crosses the label</li><li>Two animated groups, cheapest pan here</li><li>Lamp glow stays put on hover</li><li>Reduced motion fallback is a dissolve of two groups</li></ul>
+      <ul class="cons"><li>Houses glide while the ground stays, slightly floaty</li><li>Less sense of travelling than the full pan</li></ul>
+    </div>
+  </section>
+
+  <section id="v3" class="canvas">
+    <div class="cap"><span class="n">03</span><h2>Rolling Road</h2>
+      <span class="grade g-a">A- 92%</span>
+      <p class="trade">Houses travel and the road dashes roll with them; lamp, tree and sky are pinned like foreground props.</p></div>
+    <div class="demo"><div class="hp" data-mode="road"></div></div>
+    <div class="verdict">
+      <ul class="pros"><li>Road motion grounds the houses, no floaty feel</li><li>Dash offset animates on one path, no seam</li><li>Nothing crosses the label or doubles up</li><li>Same bands and easing the hover already uses</li></ul>
+      <ul class="cons"><li>A pinned lamp on a moving street is a small cheat</li><li>Dash roll needs its own reduced motion switch</li></ul>
+    </div>
+  </section>
+
+  <section id="v4" class="canvas">
+    <div class="cap"><span class="n">04</span><h2>Street Memory</h2>
+      <span class="grade g-b">B+ 87%</span>
+      <p class="trade">The current house shrinks back into the background slot as the new one arrives, so your last pick stays on the street.</p></div>
+    <div class="demo"><div class="hp" data-mode="memory"></div></div>
+    <div class="verdict">
+      <ul class="pros"><li>Continuous street, the pan lands exactly on the next scene</li><li>Background house becomes meaningful, not decoration</li><li>Handover is a single motion, no crossing</li></ul>
+      <ul class="cons"><li>Scene builder must take two styles, not one</li><li>Scale and slide must land on the exact mid slot</li><li>First paint needs a chosen background house</li></ul>
+    </div>
+  </section>
+
+  <section id="v5" class="canvas">
+    <div class="cap"><span class="n">05</span><h2>Motion Blur</h2>
+      <span class="grade g-d">D 64%</span>
+      <p class="trade">Full pan with a horizontal blur that peaks mid-transit, so the crossover is too fast to read.</p></div>
+    <div class="demo"><div class="hp" data-mode="blur"></div></div>
+    <div class="verdict">
+      <ul class="pros"><li>Feels fast and expensive</li><li>Crossover flaws are invisible under the blur</li></ul>
+      <ul class="cons"><li>SVG filter repaints a 470px plate every frame</li><li>Blur on a moving plate is a vestibular trigger</li><li>Masks the problem instead of removing it</li><li>Label loses contrast against smeared lights</li></ul>
+    </div>
+  </section>
+
+  <section id="v6" class="canvas">
+    <div class="cap"><span class="n">06</span><h2>Two Beat</h2>
+      <span class="grade g-b">B 84%</span>
+      <p class="trade">The old houses leave fully, the street is empty for a beat, then the new ones arrive. Never two houses at once.</p></div>
+    <div class="demo"><div class="hp" data-mode="twobeat"></div></div>
+    <div class="verdict">
+      <ul class="pros"><li>Old and new never share a frame</li><li>Exit and entry can use different easings</li><li>Simple to reason about, easy to interrupt</li></ul>
+      <ul class="cons"><li>Total time creeps past a second</li><li>The empty beat can read as a stall</li><li>Two timers instead of one animation</li></ul>
+    </div>
+  </section>
+
+  <section id="v7" class="canvas">
+    <div class="cap"><span class="n">07</span><h2>Short Slide</h2>
+      <span class="grade g-c">C 74%</span>
+      <p class="trade">A 48px nudge plus a dissolve, half a second. Clean, but the street stops being a place.</p></div>
+    <div class="demo"><div class="hp" data-mode="slide"></div></div>
+    <div class="verdict">
+      <ul class="pros"><li>Fastest here, 0.5 seconds</li><li>Trivial to build and to interrupt</li><li>Works as its own reduced motion fallback</li></ul>
+      <ul class="cons"><li>Houses ghost through each other during the dissolve</li><li>Reads as a UI transition, not a camera</li><li>Lowest pull of the set</li></ul>
+    </div>
+  </section>
+
+  <section id="v8" class="canvas">
+    <div class="cap"><span class="n">08</span><h2>Van Delivery</h2>
+      <span class="grade g-c">C+ 78%</span>
+      <p class="trade">The removal van drives across and drags the new street in behind it, a masked wipe.</p></div>
+    <div class="demo"><div class="hp" data-mode="van"></div></div>
+    <div class="verdict">
+      <ul class="pros"><li>Reuses the van the hover already draws</li><li>Strongest story of any variant</li><li>People click chips just to watch it</li></ul>
+      <ul class="cons"><li>Collides with a hover van already parked</li><li>Needs a registered property or a rAF loop</li><li>1.3 seconds, slow by the fifth click</li></ul>
+    </div>
+  </section>
+</main>
+
+<script>
+/* ---------- scene art (simplified stand-ins for hero-van-art.js) ---------- */
+const GOLD='#ffd48a';
+const STYLES=[
+  {key:'modern',label:'Modern',house:'modern'},
+  {key:'standard',label:'Standard',house:'victorian'},
+  {key:'scandinavian',label:'Scandinavian',house:'colonial'},
+  {key:'coastal',label:'Coastal',house:'mediterranean'},
+  {key:'farmhouse',label:'Farmhouse',house:'farmhouse'},
+  {key:'luxury',label:'Luxury',house:'georgian'},
+  {key:'midcentury',label:'Midcentury',house:'craftsman'},
+  {key:'custom',label:'Custom',house:'brownstone'}
+];
+const HOUSE_OF=Object.fromEntries(STYLES.map(s=>[s.key,s.house]));
+const LABEL_OF=Object.fromEntries(STYLES.map(s=>[s.key,s.label]));
+
+const WIN=(x,y,w,h)=>`<rect x="${x-1}" y="${y-1}" width="${w+2}" height="${h+2}" fill="#3b4a78"/><rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#0b1224"/><rect class="lit" x="${x}" y="${y}" width="${w}" height="${h}" fill="${GOLD}" opacity=".8"/><path d="M${x+w/2} ${y}v${h}" stroke="#3b4a78" stroke-width=".8"/>`;
+
+const HOUSES={
+modern:`<rect x="0" y="30" width="66" height="36" fill="#2a2f3a"/><rect x="-2" y="28" width="70" height="3" fill="#1b1f2a"/>
+<rect x="0" y="30" width="16" height="36" fill="#6b4a3a"/><path d="M4 30v36M8 30v36M12 30v36" stroke="#7d5847" stroke-width=".8"/>
+${WIN(20,36,26,12)}${WIN(20,53,10,8)}
+<rect x="50" y="44" width="10" height="22" fill="#2a2320"/><rect class="lit" x="52" y="46" width="2" height="18" fill="${GOLD}" opacity=".6"/>
+<path d="M32 66c-3-4-3-8 0-11 3 3 3 7 0 11z" fill="#3f7a4f"/>`,
+victorian:`<rect x="2" y="36" width="42" height="30" fill="#5a3b45"/><path d="M-2 36L23 14L48 36z" fill="#2b2f3a"/><path d="M2 36h42" stroke="#eadcc8" stroke-width="1"/>
+<rect x="44" y="30" width="18" height="36" fill="#4a3038"/><path d="M42 30L53 10L64 30z" fill="#2b2f3a"/><path d="M53 10v-4" stroke="#eadcc8" stroke-width="1"/>
+${WIN(8,42,10,10)}${WIN(48,38,10,8)}${WIN(48,52,10,8)}
+<path d="M26 54a5 5 0 0 1 10 0z" fill="#2e2622"/><rect x="26" y="54" width="10" height="12" fill="#2e2622"/><circle cx="34" cy="60" r=".8" fill="#d9b45a"/>
+<path d="M22 52h18" stroke="#eadcc8" stroke-width="1.2"/><path d="M23 52v14M39 52v14" stroke="#eadcc8" stroke-width="1"/>`,
+colonial:`<rect x="2" y="34" width="60" height="32" fill="#eef2fb"/><path d="M-2 34L32 20L66 34z" fill="#2f3a52"/>
+<rect x="8" y="24" width="5" height="10" fill="#8a5a4a"/><rect x="52" y="24" width="5" height="10" fill="#8a5a4a"/>
+${WIN(9,40,10,9)}${WIN(45,40,10,9)}${WIN(9,54,10,9)}${WIN(45,54,10,9)}
+<g fill="#2f5a3a"><rect x="5" y="39" width="3" height="11"/><rect x="20" y="39" width="3" height="11"/><rect x="41" y="39" width="3" height="11"/><rect x="56" y="39" width="3" height="11"/><rect x="5" y="53" width="3" height="11"/><rect x="20" y="53" width="3" height="11"/><rect x="41" y="53" width="3" height="11"/><rect x="56" y="53" width="3" height="11"/></g>
+<rect x="27" y="48" width="10" height="18" fill="#2f5a3a"/><path d="M27 48a5 5 0 0 1 10 0z" fill="#0b1224"/><path class="lit" d="M27 48a5 5 0 0 1 10 0z" fill="${GOLD}" opacity=".7"/>
+<rect x="24" y="45" width="16" height="2" fill="#eef2fb"/><rect x="25" y="47" width="1.5" height="19" fill="#eef2fb"/><rect x="37.5" y="47" width="1.5" height="19" fill="#eef2fb"/>`,
+mediterranean:`<rect x="0" y="36" width="64" height="30" fill="#d9c7ad"/><path d="M-3 36h70v-6H-3z" fill="#a3492f"/><path d="M-3 32h70" stroke="#7a3320" stroke-width="1.2" stroke-dasharray="4 3"/>
+<rect x="40" y="18" width="20" height="18" fill="#cdb995"/><path d="M37 18h26v-5H37z" fill="#a3492f"/>
+<path d="M8 56V46a5 5 0 0 1 10 0v10z" fill="#0b1224"/><path class="lit" d="M8 56V46a5 5 0 0 1 10 0v10z" fill="${GOLD}" opacity=".8"/>
+<path d="M45 32V26a4 4 0 0 1 8 0v6z" fill="#0b1224"/><path class="lit" d="M45 32V26a4 4 0 0 1 8 0v6z" fill="${GOLD}" opacity=".8"/>
+<path d="M24 66V50a6 6 0 0 1 12 0v16z" fill="#4a2e22"/><path d="M30 50v16" stroke="#3a2118" stroke-width=".8"/>
+<path d="M-8 66c-3-9-3-18 0-27 3 9 3 18 0 27z" fill="#1f4a3a"/>`,
+farmhouse:`<rect x="4" y="34" width="56" height="32" fill="#f4f2ec"/><path d="M0 34L32 12L64 34z" fill="#2b2f3a"/>
+<g stroke="#e0dcd2" stroke-width=".6"><path d="M10 34v32M16 34v32M22 34v32M42 34v32M48 34v32M54 34v32"/></g>
+${WIN(27,22,10,8)}${WIN(8,40,10,8)}${WIN(46,40,10,8)}
+<path d="M2 50h60v-2H2z" fill="#2b2f3a"/><g fill="#f4f2ec"><rect x="6" y="50" width="1.6" height="16"/><rect x="22" y="50" width="1.6" height="16"/><rect x="40" y="50" width="1.6" height="16"/><rect x="56" y="50" width="1.6" height="16"/></g>
+<rect x="27" y="50" width="10" height="16" fill="#8a2f2a"/><rect class="lit" x="29" y="52" width="6" height="4" fill="${GOLD}" opacity=".7"/>
+<rect x="10" y="60" width="4" height="6" rx="1" fill="#7a5a3a"/><path d="M12 60c-3-3-3-6 0-8 3 2 3 5 0 8z" fill="#3f7a4f"/>`,
+georgian:`<rect x="6" y="22" width="52" height="44" fill="#7a4a3a"/><g stroke="#6b3f30" stroke-width=".5"><path d="M6 30h52M6 38h52M6 46h52M6 54h52M6 62h52"/></g>
+<rect x="4" y="20" width="56" height="3" fill="#eef2fb"/><rect x="6" y="17" width="52" height="3" fill="#6b3f30"/>
+<rect x="10" y="11" width="5" height="6" fill="#5a3328"/><rect x="49" y="11" width="5" height="6" fill="#5a3328"/>
+${WIN(10,26,8,9)}${WIN(28,26,8,9)}${WIN(46,26,8,9)}${WIN(10,42,8,9)}${WIN(46,42,8,9)}
+<rect x="26" y="46" width="12" height="20" fill="#0f1a2c"/><path class="lit" d="M26 46a6 6 0 0 1 12 0z" fill="#ffe9bf" opacity=".8"/>
+<rect x="23" y="46" width="2" height="20" fill="#eef2fb"/><rect x="39" y="46" width="2" height="20" fill="#eef2fb"/><rect x="22" y="44" width="20" height="2" fill="#eef2fb"/>
+<rect x="21" y="64" width="22" height="2" fill="#c9d0de"/>`,
+craftsman:`<rect x="2" y="40" width="62" height="26" fill="#5c6b7a"/><path d="M-4 40L33 22L70 40z" fill="#2a3448"/><path d="M-4 40h74" stroke="#3b3128" stroke-width="1.6"/>
+${WIN(28,30,10,6)}
+<path d="M0 48h66v-3H0z" fill="#3b3128"/>
+<g fill="#8a7263"><path d="M6 48v18h5V48z"/><path d="M30 48v18h5V48z"/><path d="M55 48v18h5V48z"/></g>
+<g fill="#4a5568"><rect x="4" y="60" width="9" height="6"/><rect x="28" y="60" width="9" height="6"/><rect x="53" y="60" width="9" height="6"/></g>
+${WIN(14,52,12,8)}${WIN(40,52,12,8)}
+<rect x="27" y="52" width="9" height="14" fill="#9a5f3a"/><rect class="lit" x="29" y="54" width="5" height="3" fill="${GOLD}" opacity=".7"/>`,
+brownstone:`<rect x="10" y="14" width="44" height="52" fill="#5a3f36"/><rect x="8" y="12" width="48" height="4" fill="#8a7263"/><rect x="8" y="16" width="48" height="1" fill="#3a2a22"/>
+${WIN(16,20,8,9)}${WIN(30,20,8,9)}${WIN(44,20,8,9)}${WIN(16,34,8,9)}${WIN(30,34,8,9)}${WIN(44,34,8,9)}${WIN(16,50,8,9)}${WIN(30,50,8,9)}
+<rect x="42" y="46" width="10" height="14" fill="#2e2622"/><rect class="lit" x="44" y="48" width="6" height="3" fill="${GOLD}" opacity=".7"/>
+<g fill="#8a7263"><rect x="40" y="60" width="14" height="2"/><rect x="38" y="62" width="18" height="2"/><rect x="36" y="64" width="22" height="2"/></g>
+<path d="M40 60v-8M54 60v-8" stroke="#0e162e" stroke-width="1.2"/>`
+};
+
+const STARS=`<g class="far" fill="#fff"><circle cx="44" cy="10" r=".9"/><circle cx="92" cy="18" r=".7"/><circle cx="140" cy="8" r="1"/><circle cx="196" cy="14" r=".8"/><circle cx="262" cy="7" r=".9"/><circle cx="330" cy="15" r=".8"/><circle cx="300" cy="5" r=".6"/><circle cx="232" cy="20" r=".6"/></g>`;
+const CITY=`<g class="far"><g fill="#1a2650"><path d="M0 50h10v24H0zM14 44h8v30h-8zM26 40h6v34h-6zM36 46h12v28H36zM52 38h6v36h-6zM62 48h10v26H62zM76 42h8v32h-8zM88 36h5v38h-5zM96 46h12v28H96zM112 52h60v22h-60zM176 44h9v30h-9zM188 38h6v36h-6zM198 48h10v26h-10zM214 52h8v22h-8zM240 46h10v28h-10zM254 40h6v34h-6zM264 48h14v26h-14z"/><path d="M116 52c10-10 20-10 30 0M146 52c8-8 16-8 26 0" fill="none" stroke="#2b3d72" stroke-width="1.2"/></g>
+<g fill="${GOLD}" opacity=".45"><rect x="16" y="48" width="2" height="2"/><rect x="19" y="52" width="2" height="2"/><rect x="38" y="50" width="2" height="2"/><rect x="44" y="54" width="2" height="2"/><rect x="64" y="52" width="2" height="2"/><rect x="78" y="46" width="2" height="2"/><rect x="98" y="50" width="2" height="2"/><rect x="104" y="56" width="2" height="2"/><rect x="180" y="48" width="2" height="2"/><rect x="200" y="52" width="2" height="2"/><rect x="244" y="50" width="2" height="2"/><rect x="268" y="52" width="2" height="2"/></g>
+<circle cx="54" cy="37" r="1" fill="#ff6b6b"/><circle cx="90.5" cy="35" r="1" fill="#ff6b6b"/><circle cx="191" cy="37" r="1" fill="#ff6b6b"/></g>`;
+/* road is 378 wide so a 378 travel lands the 14 unit dash period on itself */
+const ROAD=`<g class="road"><rect x="-2" y="66" width="380" height="8" fill="#080d1c"/><rect x="-2" y="65" width="380" height="1.4" fill="#2a3a63"/><path class="dash" d="M-2 70h380" stroke="#1a2547" stroke-width=".8" stroke-dasharray="6 8"/></g>`;
+const LAMP=(x)=>`<path d="M${x} 22v44" stroke="#33436f" stroke-width="2.4"/><g class="lamphead"><path d="M${x-5} 22h10l-2-6h-6z" fill="${GOLD}" opacity=".9"/><ellipse cx="${x}" cy="66" rx="22" ry="4.5" fill="${GOLD}" opacity=".1"/></g>`;
+const TREE=(x)=>`<path d="M${x} 66c-9-13-9-24 0-36 9 12 9 23 0 36z" fill="#1c3550" opacity=".85"/>`;
+
+let uid=0;
+/* homeKey is the house on the right; midKey the small one behind (defaults to the same style) */
+function sceneSVG(homeKey,midKey){
+  const k=HOUSE_OF[homeKey]||'modern', m=HOUSE_OF[midKey||homeKey]||k; const id=uid++;
+  return `<svg viewBox="0 0 376 74" preserveAspectRatio="xMidYMax slice" focusable="false">
+<defs><linearGradient id="sky${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1e2c58"/><stop offset=".55" stop-color="#14203f"/><stop offset="1" stop-color="#0a1120"/></linearGradient>
+<clipPath id="ground${id}"><rect x="-400" width="1200" height="66"/></clipPath>
+<filter id="mb${id}" x="-30%" width="160%"><feGaussianBlur stdDeviation="0 0"><animate class="mbanim" attributeName="stdDeviation" values="0 0;9 0;0 0" keyTimes="0;.5;1" dur="0.95s" begin="indefinite"/></feGaussianBlur></filter></defs>
+<rect class="sky" width="376" height="74" fill="url(#sky${id})"/>${STARS}${CITY}
+<g class="mid" clip-path="url(#ground${id})"><g class="rig"><g transform="translate(150 66) scale(.62) translate(0 -66)">${HOUSES[m]}</g></g></g>
+<g class="home" clip-path="url(#ground${id})"><g class="rig"><g transform="translate(278 0)">${HOUSES[k]}</g></g></g>
+${ROAD}<g class="props">${LAMP(200)}${TREE(118)}</g></svg>`;
+}
+
+const VAN_SVG=`<svg viewBox="0 0 230 50"><path d="M150 26L230 8v44H150z" fill="${GOLD}" opacity=".16"/>
+<rect x="0" y="6" width="96" height="36" rx="3" fill="#e8ecf4"/><rect x="0" y="6" width="96" height="6" rx="3" fill="#dbe2ee"/>
+<rect x="10" y="18" width="30" height="8" rx="2" fill="#2563eb"/><rect x="46" y="18" width="40" height="3" rx="1.5" fill="#94a3b8"/><rect x="46" y="24" width="28" height="3" rx="1.5" fill="#94a3b8"/>
+<path d="M96 16h20l14 12v14H96z" fill="#dbe2ee"/><path d="M100 18h14l10 9h-24z" fill="#1a2a4a"/>
+<rect x="0" y="40" width="130" height="3" fill="#94a3b8"/><rect x="126" y="30" width="5" height="4" fill="${GOLD}"/><rect x="0" y="30" width="3" height="5" fill="#dc2626"/>
+<g fill="#111827"><circle cx="26" cy="43" r="6"/><circle cx="106" cy="43" r="6"/></g><g fill="#6b7280"><circle cx="26" cy="43" r="2.5"/><circle cx="106" cy="43" r="2.5"/></g></svg>`;
+
+/* ---------- mock hero bar build ---------- */
+document.querySelectorAll('.hp').forEach(hp=>{
+  hp.dataset.key='modern';
+  hp.dataset.prev=hp.dataset.mode==='memory'?'standard':'';
+  hp.innerHTML=`<div class="hp-sentence">Stage this <b>living room</b> in <b class="sty">Modern</b></div>
+  <div class="chips">${STYLES.map(s=>`<button class="chip${s.key==='modern'?' on':''}" data-key="${s.key}" type="button">${s.label}</button>`).join('')}</div>
+  <p class="hint">Pick a different style to play the swap.</p>
+  <button class="cta" type="button"><span class="layers"><span class="layer">${sceneSVG('modern',hp.dataset.prev||undefined)}</span></span><span class="veil"></span><strong>Upload image for free</strong></button>`;
+  hp.querySelector('.chips').addEventListener('click',e=>{
+    const c=e.target.closest('.chip'); if(!c) return; swap(hp,c.dataset.key);
+  });
+});
+
+const lastLayer=L=>[...L.querySelectorAll(':scope > .layer')].pop();
+const addLayer=(L,key,mid)=>{const s=document.createElement('span');s.className='layer';s.innerHTML=sceneSVG(key,mid);const van=L.querySelector(':scope > .van');L.insertBefore(s,van||null);return s;};
+const timers=new WeakMap();
+function later(hp,fn,ms){const t=setTimeout(fn,ms);(timers.get(hp)||timers.set(hp,[]).get(hp)).push(t);}
+
+function settle(hp){
+  (timers.get(hp)||[]).forEach(clearTimeout); timers.set(hp,[]);
+  hp.getAnimations({subtree:true}).forEach(a=>a.cancel());
+  const L=hp.querySelector('.layers');
+  L.innerHTML=`<span class="layer">${sceneSVG(hp.dataset.key,hp.dataset.prev||undefined)}</span>`;
+  hp.querySelector('.cta').style.removeProperty('--wx');
+}
+
+function swap(hp,to){
+  if(to===hp.dataset.key) return;
+  settle(hp);
+  const from=hp.dataset.key; hp.dataset.key=to;
+  if(hp.dataset.mode==='memory') hp.dataset.prev=from;
+  hp.querySelector('.sty').textContent=LABEL_OF[to];
+  hp.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c.dataset.key===to));
+  MODES[hp.dataset.mode](hp,hp.querySelector('.layers'),from,to);
+}
+
+/* ---------- shared pan machinery ---------- */
+const D=950, E='cubic-bezier(.5,.02,.15,1)';
+const hide=(layer,sels)=>layer.querySelectorAll(sels.map(s=>'svg > .'+s).join(',')).forEach(e=>{e.style.opacity='0';});
+/* slide each named band by its depth factor */
+function bands(layer,spec,a,b,opt){
+  for(const [c,k] of Object.entries(spec))
+    layer.querySelectorAll('svg > .'+c).forEach(g=>g.animate(
+      [{transform:`translateX(${a*k}px)`},{transform:`translateX(${b*k}px)`}],
+      Object.assign({duration:D,easing:E,fill:'forwards'},opt||{})));
+}
+/* drop the old layer, unhide what the new one was hiding, cancel the settled animations: no re-render, no flash */
+function finishPan(hp,n,o,ms){
+  later(hp,()=>{
+    o.remove();
+    n.querySelectorAll('svg > *').forEach(e=>{e.style.opacity='';e.removeAttribute('filter');});
+    n.getAnimations({subtree:true}).forEach(a=>a.cancel());
+  },ms);
+}
+
+const MODES={};
+
+/* 01: everything but the sky slides (carried baseline) */
+MODES.pan=(hp,L,from,to)=>{
+  const o=lastLayer(L), n=addLayer(L,to); hide(n,['sky']);
+  const spec={far:.22,mid:.55,home:1,road:1,props:1};
+  bands(o,spec,0,-378); bands(n,spec,378,0);
+  finishPan(hp,n,o,D+30);
+};
+
+/* 02: only the two houses travel */
+MODES.clean=(hp,L,from,to)=>{
+  const o=lastLayer(L), n=addLayer(L,to); hide(n,['sky','far','road','props']);
+  const spec={mid:.55,home:1};
+  bands(o,spec,0,-378); bands(n,spec,378,0);
+  finishPan(hp,n,o,D+30);
+};
+
+/* 03: houses travel, the road dashes roll under them, lamp and tree pinned */
+MODES.road=(hp,L,from,to)=>{
+  const o=lastLayer(L), n=addLayer(L,to); hide(n,['sky','far','road','props']);
+  const spec={mid:.55,home:1};
+  bands(o,spec,0,-378); bands(n,spec,378,0);
+  o.querySelector('.road .dash').animate([{strokeDashoffset:0},{strokeDashoffset:378}],{duration:D,easing:E,fill:'forwards'});
+  finishPan(hp,n,o,D+30);
+};
+
+/* 04: the current house recedes into the mid slot, the new one arrives; the next scene is built with from as its mid */
+MODES.memory=(hp,L,from,to)=>{
+  const o=lastLayer(L), n=addLayer(L,to,from); hide(n,['sky','far','road','props','mid']);
+  const oldHome=o.querySelector('.home .rig'), oldMid=o.querySelector('.mid .rig');
+  oldHome.style.transformOrigin='278px 66px';
+  oldHome.animate([{transform:'translateX(0) scale(1)'},{transform:'translateX(-128px) scale(.62)'}],{duration:D,easing:E,fill:'forwards'});
+  oldMid.animate([{transform:'translateX(0)',opacity:1},{transform:'translateX(-230px)',opacity:0}],{duration:D*.8,easing:E,fill:'forwards'});
+  bands(n,{home:1},378,0);
+  finishPan(hp,n,o,D+30);
+};
+
+/* 05: the full pan under a horizontal blur that peaks mid-transit */
+MODES.blur=(hp,L,from,to)=>{
+  const o=lastLayer(L), n=addLayer(L,to); hide(n,['sky','far']);
+  const spec={mid:.55,home:1,road:1,props:1};
+  [o,n].forEach(l=>{const id=l.querySelector('filter').id; l.querySelectorAll('svg > .mid, svg > .home, svg > .props').forEach(g=>g.setAttribute('filter',`url(#${id})`)); l.querySelector('.mbanim').beginElement();});
+  bands(o,spec,0,-378); bands(n,spec,378,0);
+  finishPan(hp,n,o,D+30);
+};
+
+/* 06: old leaves, empty street, new arrives */
+MODES.twobeat=(hp,L,from,to)=>{
+  const o=lastLayer(L), n=addLayer(L,to); hide(n,['sky','far','props']);
+  const spec={mid:.55,home:1,road:1};
+  bands(o,spec,0,-378,{duration:430,easing:'cubic-bezier(.55,0,.9,.5)'});
+  bands(n,spec,378,0,{duration:480,delay:560,easing:'cubic-bezier(.15,.6,.2,1)'});
+  finishPan(hp,n,o,1070);
+};
+
+/* 07: a 48px nudge with a dissolve */
+MODES.slide=(hp,L,from,to)=>{
+  const o=lastLayer(L), n=addLayer(L,to); hide(n,['sky','far','road','props']);
+  const opt={duration:520,easing:'cubic-bezier(.3,.1,.2,1)'};
+  bands(o,{mid:.55,home:1},0,-48,opt); bands(n,{mid:.55,home:1},48,0,opt);
+  o.querySelectorAll('svg > .mid, svg > .home').forEach(g=>g.animate([{opacity:1},{opacity:0}],Object.assign({fill:'forwards'},opt)));
+  n.querySelectorAll('svg > .mid, svg > .home').forEach(g=>g.animate([{opacity:0},{opacity:1}],Object.assign({fill:'forwards'},opt)));
+  finishPan(hp,n,o,540);
+};
+
+/* 08: the van drags the new street in (carried) */
+MODES.van=(hp,L,from,to)=>{
+  const o=lastLayer(L), n=addLayer(L,to), cta=hp.querySelector('.cta'), W=cta.clientWidth;
+  const van=document.createElement('span'); van.className='van'; van.innerHTML=VAN_SVG; L.appendChild(van);
+  n.style.clipPath=`inset(0 clamp(0px, calc(${W}px - var(--wx)), 100%) 0 0)`;
+  cta.animate([{'--wx':'-160px'},{'--wx':(W+40)+'px'}],{duration:1300,easing:'cubic-bezier(.4,0,.3,1)',fill:'forwards'});
+  van.animate([{transform:'translateY(0)'},{transform:'translateY(-1.5px)'},{transform:'translateY(0)'}],{duration:170,iterations:8});
+  later(hp,()=>{o.remove(); van.remove(); n.style.clipPath='';},1320);
+};
+
+/* ---------- scroll spy ---------- */
+const spy=new IntersectionObserver(es=>{es.forEach(e=>{
+  if(e.isIntersecting)document.querySelectorAll('.rail a').forEach(a=>
+    a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id));
+})},{rootMargin:'-45% 0px -50% 0px'});
+document.querySelectorAll('.panel,.canvas').forEach(s=>spy.observe(s));
+</script>
+</body>
+</html>

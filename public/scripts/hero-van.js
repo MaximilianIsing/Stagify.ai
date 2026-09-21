@@ -5,9 +5,9 @@
  * the lantern comes on, the front door swings open and an up-arrow glows in the hallway.
  * Leave and it all reverses: door first, then the van pulls away. The whole sequence is
  * CSS (styles/hero-picker.css, `#hero-upload.hu`); this file puts the right SVG inside
- * the button, swaps it when the hero picker changes furniture style — each of the eight
- * styles is drawn as a different house, see STYLE_HOUSE in hero-van-art.js — and sets three
- * state classes the CSS reads: `.hu-out` (the pointer left; drive on, off the right edge),
+ * the button, swaps the house when the hero picker changes furniture style — each of the
+ * eight styles is drawn as a different house, see STYLE_HOUSE in hero-van-art.js — and sets
+ * three state classes the CSS reads: `.hu-out` (the pointer left; drive on, off the right edge),
  * `.hu-quick` (it left mid-drive; skip the leave delays) and `.hu-hold` (a click opened a
  * modal over the button; keep the end state until it closes).
  *
@@ -25,7 +25,7 @@
  * The cost is one ~30 KB module pair in the early window; index.html modulepreloads
  * hero-van-art.js so the two fetch in parallel rather than in series. ONE plate is built
  * at mount; the other seven are built the first time the picker asks for them and
- * cached, so a style change costs one string build and one innerHTML.
+ * cached, so a style change costs one string build and one off-document parse.
  *
  * THE PICKER TELLS US, WE DO NOT ASK. scripts/hero-picker.js owns the style state and has
  * no imports (by design — it must run before app.js's graph). It publishes the current
@@ -52,21 +52,13 @@ const PARK_X = 210;
 const OFF_X = 420;
 
 /**
- * The drive-out from the parking bay takes this long; from anywhere else it is scaled to
- * the distance left (same road speed), clamped so a van that has barely arrived does not
- * crawl and a van at the edge does not blink out.
+ * The pull-away from the parking bay (a standstill) takes this long; from anywhere else on
+ * a full visit it is scaled to the distance left, clamped so a van at the edge does not
+ * blink out. Its curve is the CSS default on `.hu-out .van`.
  */
-const OUT_PARKED_MS = 750;
+const OUT_PARKED_MS = 850;
 const OUT_MIN_MS = 350;
 const OUT_MAX_MS = 1600;
-
-/**
- * A van that is still arriving when the pointer leaves does not stop and set off again:
- * it drives past. Its drive-out runs at the arrival's pace rather than the pull-away's,
- * so the reference time is scaled down by this much (the CSS pairs it with a curve that
- * has no ease-in).
- */
-const OUT_ROLLING_FACTOR = 0.7;
 
 /**
  * The drive-out's wait (0.25s, door first) plus a margin: added to its duration for the
@@ -74,6 +66,119 @@ const OUT_ROLLING_FACTOR = 0.7;
  * prefers-reduced-motion nothing animates, so nothing ends.
  */
 const OUT_SLACK_MS = 450;
+
+/**
+ * A style change is a "rolling road": the two houses slide off to the left at their
+ * parallax depths while the new ones slide in from the right, the road's dashes roll under
+ * them, and the skyline and the lamp-side tree crossfade. Sky, stars, road and van stay
+ * where they are — the van in particular, so a drive in progress is never cut. This is the
+ * CSS duration (`--hu-swap-ms`), for the fallback timer that ends the swap if no
+ * animationend arrives.
+ */
+const SWAP_MS = 950;
+const SWAP_SLACK_MS = 150;
+
+/**
+ * The bands a style swap replaces, top-level children of the scene <svg>, in depth order.
+ * `.skyline` (the far skyline; the stars are a separate `.far` and stay), `.mid`, `.home`
+ * and `.props` (lamp and tree). What is NOT here — sky, stars, road, van — is kept from the
+ * old scene.
+ */
+const SWAP_BANDS = ['.skyline', '.mid', '.home', '.props'];
+
+/**
+ * A motion segment as the CSS plays it: a translateX from `from` to `to` over `ms` on the
+ * timing curve `cubic-bezier(x1, y1, x2, y2)`.
+ * @typedef {{ from: number, to: number, ms: number, x1: number, y1: number, x2: number, y2: number }} Segment
+ */
+
+/**
+ * Wheel rotation per scene unit of travel: the tyre is r 7.4, so one turn every 46.5
+ * units. Every segment spins the wheels by exactly its distance times this, on the van's
+ * own duration and curve, so the wheels roll at the van's speed rather than on a clock of
+ * their own — and each segment starts from the angle the last one reached (`spin0`), so
+ * the spokes never jump at a join.
+ */
+const DEG_PER_UNIT = 360 / (2 * Math.PI * 7.4);
+
+/** The CSS drive-in (`hu-drive-in` + the `.van` hover rule), so its speed can be read. */
+const DRIVE_IN = { from: -150, to: PARK_X, ms: 1250, x1: 0.32, y1: 0.06, x2: 0.2, y2: 1, spin0: 0 };
+
+/** The CSS pull-away (`.hu-out .van`), likewise. `ms` is set per leave. */
+const PULL_AWAY = { from: PARK_X, to: OFF_X, ms: OUT_PARKED_MS, x1: 0.5, y1: 0, x2: 0.8, y2: 0.55 };
+
+/**
+ * A van that is still arriving when the pointer leaves does not stop and set off again: it
+ * drives past, at the speed it has at that instant, settling to this (scene units per
+ * second) by the edge — the pull-away's average pace, so a mid-drive exit ends up no
+ * faster than a parked one. The drive-in peaks near 640, so it usually means easing off.
+ */
+const CRUISE = 250;
+
+/** Bounds for a planned segment's duration: never a crawl, never a blink. */
+const ROLL_MIN_S = 0.3;
+const ROLL_MAX_S = 2.2;
+const PARK_MAX_S = 1.4;
+
+/** One coordinate of a unit cubic bezier (P0 = 0, P3 = 1) with inner controls a, b. */
+const bez = (a, b, t) => 3 * a * t * (1 - t) * (1 - t) + 3 * b * t * t * (1 - t) + t * t * t;
+const bezD = (a, b, t) => 3 * a * (1 - t) * (1 - t) + 6 * (b - a) * t * (1 - t) + 3 * (1 - b) * t * t;
+
+/**
+ * The van's speed, in scene units per second, at a point on a segment.
+ *
+ * Inverts the curve's y (progress) for the bezier parameter, then takes dy/dx there; the
+ * curve's x is time, so that slope times the segment's average speed is the speed. Pure —
+ * no clock involved, the position alone says where on the curve the van is.
+ *
+ * @param {Segment} seg
+ * @param {number} x scene units; clamped to the segment
+ * @returns {number}
+ */
+export function speedAt(seg, x) {
+  const span = seg.to - seg.from;
+  const p = Math.min(1, Math.max(0, (x - seg.from) / span));
+  let lo = 0;
+  let hi = 1;
+  for (let i = 0; i < 24; i++) {
+    const mid = (lo + hi) / 2;
+    if (bez(seg.y1, seg.y2, mid) < p) lo = mid; else hi = mid;
+  }
+  const t = (lo + hi) / 2;
+  const dx = bezD(seg.x1, seg.x2, t);
+  const dy = bezD(seg.y1, seg.y2, t);
+  const slope = dx > 1e-6 ? dy / dx : 0;
+  return (Math.abs(span) / seg.ms) * 1000 * slope;
+}
+
+/**
+ * Plan a segment from `x` to `to` that starts at `v0` and ends at `vEnd` units per second.
+ *
+ * Duration is the distance over the mean of the two speeds, clamped; the timing curve's
+ * end slopes are set to those speeds relative to the average, so the van's speed is
+ * continuous across the join. Pure.
+ *
+ * @param {number} x
+ * @param {number} to
+ * @param {number} v0
+ * @param {number} vEnd
+ * @param {number} maxS
+ * @returns {Segment}
+ */
+export function planSegment(x, to, v0, vEnd, maxS) {
+  const d = Math.max(1, Math.abs(to - x));
+  const T = Math.min(maxS, Math.max(ROLL_MIN_S, d / Math.max(1, (v0 + vEnd) / 2)));
+  const s0 = (v0 * T) / d;
+  const sE = (vEnd * T) / d;
+  const x1 = 0.35;
+  const x2 = 0.65;
+  const y1 = Math.min(1, Math.max(0, s0 * x1));
+  const y2 = Math.min(1, Math.max(0, 1 - sE * (1 - x2)));
+  return { from: x, to, ms: Math.round(T * 1000), x1, y1, x2, y2 };
+}
+
+/** @param {Segment} seg */
+const easeOf = (seg) => `cubic-bezier(${seg.x1.toFixed(3)}, ${seg.y1.toFixed(3)}, ${seg.x2.toFixed(3)}, ${seg.y2.toFixed(3)})`;
 
 /** The modals a click on the button can open; each shows and hides with `.hidden`. */
 const MODAL_IDS = ['stage-modal', 'auth-modal'];
@@ -110,7 +215,7 @@ export function buildScene(styleKey, seq = 0) {
     `<g class="mid">${house(140, 66, false)}</g>` +
     `<g class="home">${house(276, 100, true)}${ENT(k)}</g>` +
     ROAD +
-    `<g class="near">${LAMP(200)}${tree}</g>` +
+    `<g class="near props">${LAMP(200)}${tree}</g>` +
     `<g class="van">${BEAM}${VAN()}</g>` +
     `</svg>`
   );
@@ -148,11 +253,75 @@ export function initHeroVan(doc = document, win = window) {
     return html;
   }
 
-  /** @param {string} key */
+  /** The bands of the outgoing style, while they slide off; emptied by finishSwap(). */
+  /** @type {Element[]} */
+  let leaving = [];
+  /** The incoming bands, carrying `.hu-in` until the swap ends. */
+  /** @type {Element[]} */
+  let entering = [];
+  let swapTimer = 0;
+
+  /** End the swap now: drop the old bands, settle the new ones, stop the road. Idempotent. */
+  function finishSwap() {
+    if (!leaving.length && !entering.length) return;
+    for (const el of leaving) el.remove();
+    for (const el of entering) el.classList.remove('hu-in');
+    leaving = [];
+    entering = [];
+    btn.classList.remove('hu-swap');
+    if (swapTimer && win.clearTimeout) win.clearTimeout(swapTimer);
+    swapTimer = 0;
+  }
+
+  const reducedMotion = () => !!(win.matchMedia && win.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+  /**
+   * Show the house for `key`.
+   *
+   * The first paint, and every change under prefers-reduced-motion, is a plain rebuild of
+   * the scene. A later change on a mounted scene is the rolling-road swap instead: the new
+   * scene is built off-document and only its SWAP_BANDS are grafted into the live <svg>,
+   * each right after its outgoing counterpart (so depth order holds), with `.hu-in` on the
+   * new band and `.hu-leave` on the old; `.hu-swap` on the button rolls the road. The CSS
+   * plays the slides and fades; `animationend` of the home's slide-in (or the fallback
+   * timer) ends the swap. A change that lands mid-swap finishes the running one first, so
+   * the same house is never on the street twice — its entrance clip ids are per build, and
+   * a cached build reuses them.
+   * @param {string} key
+   */
   function setStyle(key) {
     if (key === current) return;
+    const mounted = !!current;
     current = key;
-    scene.innerHTML = markupFor(key);
+    finishSwap();
+    const svg = mounted ? scene.querySelector('svg') : null;
+    if (!svg || reducedMotion()) {
+      scene.innerHTML = markupFor(key);
+      return;
+    }
+    const holder = doc.createElement('div');
+    holder.innerHTML = markupFor(key);
+    const next = holder.querySelector('svg');
+    if (!next) {
+      scene.innerHTML = markupFor(key);
+      return;
+    }
+    for (const sel of SWAP_BANDS) {
+      const from = svg.querySelector(':scope > ' + sel);
+      const to = next.querySelector(':scope > ' + sel);
+      if (!from || !to) continue;
+      from.classList.add('hu-leave');
+      to.classList.add('hu-in');
+      svg.insertBefore(to, from.nextSibling);
+      leaving.push(from);
+      entering.push(to);
+    }
+    if (!entering.length) {
+      scene.innerHTML = markupFor(key);
+      return;
+    }
+    btn.classList.add('hu-swap');
+    if (win.setTimeout) swapTimer = win.setTimeout(finishSwap, SWAP_MS + SWAP_SLACK_MS);
   }
 
   // The picker's tag precedes ours, so its current pick is already on the stage element.
@@ -166,9 +335,6 @@ export function initHeroVan(doc = document, win = window) {
     const key = /** @type {CustomEvent<{ style?: string }>} */ (ev).detail?.style;
     if (typeof key !== 'string' || !key || key === current) return;
     setStyle(key);
-    // The rebuild threw away the van that was driving out, and a detached element's
-    // animationcancel never reaches us — so end the drive-out here.
-    outDone();
   });
 
   // "Out": the van never reverses — it arrives from the left and leaves to the right, off
@@ -177,10 +343,23 @@ export function initHeroVan(doc = document, win = window) {
   // transform, so a leave mid-arrival just rolls on instead of snapping to the parking bay.
   // It stays on until the drive-out has ENDED (animationend, with a timer behind it for
   // the reduced-motion case where nothing animates), and while it is on the CSS applies no
-  // hover rule at all: a pointer that comes straight back waits for the van to be off the
-  // plate and then gets the whole arrival, instead of a van that teleports from the right
-  // edge to the left. A leave during a drive-out changes nothing — re-reading `--hu-van-x`
-  // mid-animation would move its `from` keyframe under it.
+  // hover rule at all: a pointer that comes straight back after the van has passed the
+  // door waits for it to be off the plate and then gets the whole arrival, instead of a
+  // van that teleports from the right edge to the left. A leave during a drive-out changes
+  // nothing — re-reading `--hu-van-x` mid-animation would move its `from` keyframe under it.
+  //
+  // "Park": a pointer that comes back while the van is still SHORT of the door does not
+  // watch it drive past and wait for a new one: the drive-out is cut and `.hu-park` plays
+  // a planned segment from where the van is to the parking bay (`hu-drive-park`), and the
+  // rest of the hover — door, lights, camera — starts as normal. The class stays on while
+  // the van is parked (the hover `.van` rule would otherwise restart the drive-in from the
+  // left) and goes with the next leave.
+  //
+  // SPEED IS CONTINUOUS. Every planned segment (a rolling drive-out, a park) starts at the
+  // speed the van has at that instant — read off its current curve, see speedAt() — and its
+  // timing curve and duration are built around that (planSegment()), so a leave or a
+  // return mid-drive never shows a change of pace at the join. Only the pull-away from a
+  // standstill keeps its fixed CSS curve.
   //
   // "Quick" leave: if the pointer goes before the door has opened there is nothing to wait
   // for, so the CSS drops its leave delays and the van rolls on at once instead of pausing
@@ -222,6 +401,10 @@ export function initHeroVan(doc = document, win = window) {
   };
   let outRunning = false;
   let outTimer = 0;
+  let hovering = false;
+  /** The curve the van is on right now, for speedAt(); null when it is at rest. */
+  /** @type {Segment | null} */
+  let seg = null;
   const outDone = () => {
     if (!outRunning) return;
     outRunning = false;
@@ -231,23 +414,63 @@ export function initHeroVan(doc = document, win = window) {
     // Only now: `.hu-quick` zeroes the drive-out's animation-delay, and taking it off
     // while that animation runs re-times it and the van jumps backwards.
     btn.classList.remove('hu-quick');
+    // With the gate open, a pointer still on the button gets the drive-in at once.
+    seg = hovering ? DRIVE_IN : null;
   };
-  /** @param {boolean} [rolling] the van was still arriving (a quick leave) */
+  /** The wheel angle at scene x on the current segment, kept within one turn. */
+  const spinAt = (x) => (seg ? ((seg.spin0 || 0) + (x - seg.from) * DEG_PER_UNIT) % 360 : 0);
+  /** Publish a planned segment's wheel rotation for the CSS `hu-spin-seg` keyframes. */
+  const setSpin = (s) => {
+    btn.style.setProperty('--hu-spin-from', `${s.spin0.toFixed(1)}deg`);
+    btn.style.setProperty('--hu-spin-to', `${(s.spin0 + (s.to - s.from) * DEG_PER_UNIT).toFixed(1)}deg`);
+  };
+  /** @param {boolean} [rolling] the van was still moving (a quick leave) */
   const driveOut = (rolling = false) => {
     if (outRunning) return;
     outRunning = true;
     const x = vanX();
-    const ref = rolling ? OUT_PARKED_MS * OUT_ROLLING_FACTOR : OUT_PARKED_MS;
-    const ms = Math.round(Math.min(OUT_MAX_MS, Math.max(OUT_MIN_MS, (ref * (OFF_X - x)) / (OFF_X - PARK_X))));
+    const spin0 = spinAt(x);
+    btn.classList.remove('hu-park');
+    let ms;
+    if (rolling) {
+      const v0 = seg ? speedAt(seg, x) : 0;
+      seg = planSegment(x, OFF_X, v0, CRUISE, ROLL_MAX_S);
+      ms = seg.ms;
+      btn.style.setProperty('--hu-out-ease', easeOf(seg));
+    } else {
+      ms = Math.round(Math.min(OUT_MAX_MS, Math.max(OUT_MIN_MS, (OUT_PARKED_MS * (OFF_X - x)) / (OFF_X - PARK_X))));
+      seg = { ...PULL_AWAY, from: x, ms };
+      btn.style.removeProperty('--hu-out-ease');
+    }
+    seg.spin0 = spin0;
+    setSpin(seg);
     btn.style.setProperty('--hu-van-x', `${x}px`);
     btn.style.setProperty('--hu-out-ms', `${ms}ms`);
     btn.classList.add('hu-out');
     if (win.setTimeout) outTimer = win.setTimeout(outDone, ms + OUT_SLACK_MS);
   };
+  /** The pointer is back while the van is still short of the door: cut the exit, park. */
+  const park = () => {
+    const x = vanX();
+    const v0 = seg ? speedAt(seg, x) : 0;
+    const spin0 = spinAt(x);
+    outDone();
+    seg = planSegment(x, PARK_X, v0, 0, PARK_MAX_S);
+    seg.spin0 = spin0;
+    setSpin(seg);
+    btn.style.setProperty('--hu-van-x', `${x}px`);
+    btn.style.setProperty('--hu-out-ms', `${seg.ms}ms`);
+    btn.style.setProperty('--hu-out-ease', easeOf(seg));
+    btn.classList.add('hu-park');
+  };
   btn.addEventListener('animationend', (ev) => {
-    if (/** @type {AnimationEvent} */ (ev).animationName === 'hu-drive-out') outDone();
+    const name = /** @type {AnimationEvent} */ (ev).animationName;
+    if (name === 'hu-drive-out') outDone();
+    // The home's slide-in is the longest leg of a style swap, so its end is the swap's end.
+    if (name === 'hu-home-in') finishSwap();
   });
-  // A style swap rebuilds the scene mid-animation, which cancels it without an end event.
+  // A style swap keeps the van, so nothing rebuilds the scene mid-drive any more; kept as
+  // a safety net, since a cancelled drive-out that never clears `.hu-out` freezes the hover.
   btn.addEventListener('animationcancel', (ev) => {
     if (/** @type {AnimationEvent} */ (ev).animationName === 'hu-drive-out') outDone();
   });
@@ -258,10 +481,17 @@ export function initHeroVan(doc = document, win = window) {
     btn.classList.remove('hu-quick');
   };
   btn.addEventListener('pointerenter', () => {
+    hovering = true;
     enteredAt = win.performance ? win.performance.now() : Date.now();
-    if (!outRunning) btn.classList.remove('hu-quick');
+    if (outRunning) {
+      if (vanX() < PARK_X) park();
+      return;
+    }
+    btn.classList.remove('hu-quick');
+    if (!btn.classList.contains('hu-park')) seg = DRIVE_IN;
   });
   btn.addEventListener('pointerleave', () => {
+    hovering = false;
     if (held) {
       if (!modalOpen()) release();
       return;

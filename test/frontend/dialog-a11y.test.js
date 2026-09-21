@@ -2,7 +2,7 @@
 //
 // WHY A SOURCE-LEVEL GUARD
 // Four dialogs shipped without `role="dialog"`, `aria-modal` or `aria-labelledby`:
-// both mask editors, the bug-report popup and the image lightbox (whose close
+// both mask editors, the shared report dialog and the image lightbox (whose close
 // control was a <span>, so keyboard users could not reach it at all). One of them
 // is BUILT IN JS at first open (ai-designer/mask-editor.js) rather than written in
 // markup, which is how it escaped notice longest — a reviewer reading the HTML
@@ -64,13 +64,6 @@ const DIALOGS = [
     // index.html holds several dialogs that DO carry these attributes, so the
     // assertion has to be pinned to this one's own opening tag.
     scope: tagWithId('stage-mask-modal'),
-  },
-  {
-    label: 'AI Designer bug-report popup',
-    file: 'public/ai-designer.html',
-    titleId: 'bug-report-popup-title',
-    attr: markupAttr,
-    scope: tagWithId('bug-report-popup'),
   },
   {
     label: 'account menu "Report an issue" dialog',
@@ -147,7 +140,6 @@ for (const d of DIALOGS) {
 // were fixed last both had a bare "×" as their only content, and the lightbox's was
 // a <span>, so keyboard users could not reach it at all.
 const CLOSE_BUTTONS = [
-  { label: 'bug-report popup', file: 'public/ai-designer.html', id: 'bug-report-popup-close' },
   { label: 'image lightbox', file: 'public/ai-designer.html', id: 'image-modal-close' },
   {
     label: 'account menu "Report an issue" dialog',

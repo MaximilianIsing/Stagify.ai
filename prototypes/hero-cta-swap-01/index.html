@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hero CTA style swap: animation directions</title>
+<style>
+:root{
+  --bg:#eef2f9;--fg:#1f2937;--muted:#6b7280;--border:#e5e7eb;
+  --brand:#2563eb;--brand-strong:#1d4ed8;--brand-deep:#1e3a8a;--brand-soft:#60a5fa;
+  --brand-pale:#93c5fd;--brand-tint:#dbeafe;--brand-wash:#eff6ff;--bg-elevated:#ffffff;
+  --gold:#ffd48a;
+}
+@property --wx{syntax:"<length>";inherits:true;initial-value:0px}
+
+/* page chrome */
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 Inter,ui-sans-serif,system-ui,sans-serif}
+.rail{position:fixed;left:0;top:0;bottom:0;width:220px;overflow-y:auto;z-index:60;background:#fff;
+  border-right:1px solid var(--border);padding:18px 12px;display:flex;flex-direction:column;gap:2px}
+.rail-t{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:0 10px 8px}
+.rail a{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:9px;text-decoration:none;
+  font-size:13.5px;font-weight:600;color:var(--fg)}
+.rail a i{font-style:normal;font-size:11px;font-weight:800;color:var(--muted);min-width:18px}
+.rail a:hover{background:var(--brand-wash)}
+.rail a.on{background:var(--brand-deep);color:#fff}
+.rail a.on i{color:rgba(255,255,255,.7)}
+.page{margin-left:220px;max-width:1180px;padding:0 24px 120px}
+.panel,.canvas{background:#fff;border:1px solid var(--border);border-radius:16px;margin:22px 0;padding:22px}
+.canvas{padding:0;overflow:hidden}
+.canvas .cap{padding:20px 22px 16px;border-bottom:1px solid var(--border)}
+.cap .n{display:inline-block;background:var(--brand-deep);color:#fff;font-size:11px;font-weight:800;
+  padding:3px 8px;border-radius:6px;margin-right:9px;vertical-align:2px}
+.cap h2{display:inline;font-size:19px;margin:0}
+.trade{margin:9px 0 0;color:var(--muted);font-size:13.5px}
+
+/* ranking */
+.rank{list-style:none;margin:0;padding:0;counter-reset:r}
+.rank li{counter-increment:r;display:grid;grid-template-columns:28px 34px 1fr 160px 52px 54px;
+  gap:12px;align-items:center;padding:11px 0;border-top:1px solid var(--border)}
+.rank li::before{content:counter(r);font-weight:800;color:var(--muted);font-size:13px}
+.rank li i{font-style:normal;font-size:11px;font-weight:800;color:var(--muted)}
+.rank li p{grid-column:3/-1;margin:2px 0 0;font-size:12.5px;color:var(--muted)}
+.bar{display:block;height:8px;border-radius:99px;background:var(--border);overflow:hidden}
+.bar span{display:block;height:100%;background:var(--brand);border-radius:99px}
+.score{font-size:13px;font-weight:700;text-align:right}
+.grade{display:inline-block;min-width:44px;text-align:center;font-size:12px;font-weight:800;
+  color:#fff;padding:3px 7px;border-radius:7px}
+.g-a{background:#16a34a}.g-b{background:#65a30d}.g-c{background:#d97706}
+.g-d{background:#ea580c}.g-f{background:#dc2626}
+
+/* comparison matrix */
+.matrix{width:100%;border-collapse:collapse;font-size:13px}
+.matrix th{text-align:left;font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--muted);padding:0 10px 9px;border-bottom:1px solid var(--border)}
+.matrix td{padding:10px;border-bottom:1px solid var(--border)}
+.matrix tbody tr:hover{background:var(--brand-wash)}
+
+/* pros and cons */
+.verdict{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--border)}
+.verdict ul{list-style:none;margin:0;padding:16px 20px;display:grid;gap:7px;align-content:start}
+.verdict li{position:relative;padding-left:26px;font-size:13px;line-height:1.45}
+.verdict li::before{position:absolute;left:0;top:0;font-size:13px}
+.pros li{color:#14532d}
+.pros li::before{content:"\1F44D"}
+.cons{border-left:1px solid var(--border)}
+.cons li{color:#7f1d1d}
+.cons li::before{content:"\1F44E"}
+
+@media(max-width:900px){
+  .rail{position:sticky;inset:auto;top:0;width:auto;flex-direction:row;overflow-x:auto;
+    border-right:0;border-bottom:1px solid var(--border)}
+  .rail-t{display:none}
+  .rail a{flex:none}
+  .page{margin-left:0;padding:0 16px 80px}
+  .rank li{grid-template-columns:24px 30px 1fr 46px 50px}
+  .rank li .bar{display:none}
+}
+@media(max-width:700px){
+  .verdict{grid-template-columns:1fr}
+  .cons{border-left:0;border-top:1px solid var(--border)}
+}
+
+/* header */
+.top{padding:28px 0 4px}
+.top h1{font-size:22px;margin:0 0 6px}
+.top .req{font-size:14px;color:var(--fg);background:var(--brand-wash);border:1px solid var(--brand-tint);
+  border-radius:10px;padding:10px 14px;margin:0 0 8px}
+.top .meta{font-size:12.5px;color:var(--muted);margin:0}
+.rubric{font-size:12.5px;color:var(--muted);margin:-6px 0 12px}
+
+/* ===== the mocked hero bar and CTA (mirrors #hero-upload.hu) ===== */
+.demo{background:
+    radial-gradient(ellipse at 20% 0%,rgba(96,165,250,.18),transparent 55%),
+    linear-gradient(180deg,#1b2a52 0%,#0d1735 100%);
+  padding:30px 26px}
+.hp{background:rgba(9,17,45,.92);border:1px solid rgba(147,197,253,.18);border-radius:20px;
+  padding:18px 20px 20px;display:grid;gap:14px;color:#fff;max-width:640px}
+.hp-sentence{font-size:22px;font-weight:700;letter-spacing:-.01em;line-height:1.25}
+.hp-sentence b{color:var(--brand-pale);border-bottom:2px dotted rgba(147,197,253,.55);padding-bottom:1px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{background:rgba(255,255,255,.07);border:1px solid rgba(147,197,253,.28);color:#dbeafe;border-radius:99px;
+  padding:5px 11px;font:600 12.5px/1.2 Inter,ui-sans-serif,system-ui,sans-serif;cursor:pointer;transition:background .15s}
+.chip:hover{background:rgba(255,255,255,.14)}
+.chip.on{background:var(--brand);border-color:var(--brand-soft);color:#fff}
+.hint{font-size:12px;color:rgba(219,234,254,.6);margin:-6px 0 0}
+
+.cta{position:relative;overflow:hidden;isolation:isolate;display:flex;align-items:center;justify-content:flex-start;
+  width:470px;max-width:100%;min-height:78px;margin:0;padding:20px 100px 20px 22px;
+  border:1.5px solid rgba(147,197,253,.7);border-radius:18px;cursor:pointer;color:#fff;text-align:left;
+  background:linear-gradient(180deg,#2a3a68 0%,#1a2749 52%,#101a34 100%);
+  box-shadow:0 0 0 1px rgba(6,11,26,.6),0 12px 28px rgba(0,0,0,.45),0 18px 44px rgba(30,58,138,.3),inset 0 1px 0 rgba(255,255,255,.16);
+  font:inherit}
+.cta .layers{position:absolute;inset:0;z-index:0;perspective:700px}
+.cta .layer{position:absolute;inset:0;display:block}
+.cta .layer svg{width:100%;height:100%;display:block}
+.cta::after{content:"";position:absolute;inset:0;z-index:1;background:#0b1228;opacity:.36;pointer-events:none}
+.cta .veil{position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:linear-gradient(90deg,rgba(12,19,40,.74) 0%,rgba(12,19,40,.58) 34%,rgba(12,19,40,.12) 56%,rgba(12,19,40,0) 66%)}
+.cta strong{position:relative;z-index:6;font-size:21px;font-weight:800;letter-spacing:-.025em;line-height:1.2;
+  color:#fff;text-shadow:0 1px 2px rgba(6,12,28,.9),0 2px 14px rgba(6,12,28,.85);-webkit-text-stroke:.55px currentColor}
+.cta .fx{position:absolute;inset:0;z-index:5;pointer-events:none}
+.fx .blackout{position:absolute;inset:0;background:#05091a;opacity:0}
+.fx .ring{position:absolute;left:84%;top:74%;width:0;height:0;transform:translate(-50%,-50%);
+  border:2px solid var(--gold);border-radius:50%;opacity:0}
+.fx .grid{position:absolute;inset:0;opacity:0;
+  background:repeating-linear-gradient(90deg,rgba(147,197,253,.28) 0 1px,transparent 1px 14px),
+             repeating-linear-gradient(0deg,rgba(147,197,253,.28) 0 1px,transparent 1px 14px)}
+
+/* van wipe */
+.cta .van{position:absolute;bottom:3px;left:var(--wx);width:150px;height:auto;z-index:1}
+.cta .van svg{width:100%;display:block}
+
+/* split flap */
+.half{position:absolute;left:0;right:0;height:50%;overflow:hidden}
+.half.top{top:0}.half.bot{bottom:0}
+.half .layer,.face .layer{height:200%;top:0;bottom:auto}
+.half.bot .layer,.face.back .layer{top:-100%}
+.flap{position:absolute;left:0;right:0;top:0;height:50%;transform-origin:50% 100%;transform-style:preserve-3d}
+.face{position:absolute;inset:0;overflow:hidden;backface-visibility:hidden}
+.face.back{transform:rotateX(180deg)}
+.seam{position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(0,0,0,.5)}
+
+/* blueprint */
+.layer.bp .home *,.layer.bp .mid *{fill-opacity:0;stroke:var(--brand-pale);stroke-width:.7;
+  stroke-dasharray:260;stroke-dashoffset:260;
+  animation:bp-draw 1s cubic-bezier(.3,.1,.3,1) forwards,bp-fill .45s 1s ease forwards}
+.layer.bp .mid *{animation-delay:.15s,1.15s}
+@keyframes bp-draw{to{stroke-dashoffset:0}}
+@keyframes bp-fill{from{fill-opacity:0;stroke-opacity:1}to{fill-opacity:1;stroke-opacity:0}}
+</style>
+</head>
+<body>
+
+<aside class="rail">
+  <div class="rail-t">Variants</div>
+  <a href="#ranking">Ranking</a>
+  <a href="#compare">Comparison</a>
+  <a href="#v1"><i>01</i> Soft Dissolve</a>
+  <a href="#v2"><i>02</i> Street Pan</a>
+  <a href="#v3"><i>03</i> Lights Out</a>
+  <a href="#v4"><i>04</i> Sink and Rise</a>
+  <a href="#v5"><i>05</i> Van Delivery</a>
+  <a href="#v6"><i>06</i> Door Iris</a>
+  <a href="#v7"><i>07</i> Split Flap</a>
+  <a href="#v8"><i>08</i> Blueprint Draw</a>
+</aside>
+
+<main class="page">
+  <header class="top">
+    <h1>Hero CTA style swap: animation directions</h1>
+    <p class="req">"You know how for the 'Stage this {room} in {style}' on the home page the background for the upload image for free button changes? I don't like how it instantly changes so abruptly, I'd like there to be a nice animation."</p>
+    <p class="meta">21 September 2026. The street inside the CTA changes house per style; today the SVG is swapped in one frame. Pick a style chip in any card to play its swap.</p>
+  </header>
+
+  <section id="ranking" class="panel">
+    <h2>Ranking</h2>
+    <p class="rubric">Scored on fit to the brief (30), distinctiveness (20), build cost (20), mobile and accessibility (15), first-glance pull (15).</p>
+    <ol class="rank">
+      <li><i>02</i><b>Street Pan</b>
+        <span class="bar"><span style="width:90%"></span></span>
+        <span class="score" title="Fit 29 · Distinct 16 · Cost 16 · Mobile 14 · Pull 15">90%</span><span class="grade g-a">A-</span>
+        <p>Reuses the shipped parallax bands, reads as one camera move, never touches the van logic.</p></li>
+      <li><i>05</i><b>Van Delivery</b>
+        <span class="bar"><span style="width:88%"></span></span>
+        <span class="score" title="Fit 29 · Distinct 19 · Cost 12 · Mobile 13 · Pull 15">88%</span><span class="grade g-b">B+</span>
+        <p>Best story, ties the swap to the moving-day van, but collides with the hover van.</p></li>
+      <li><i>03</i><b>Lights Out</b>
+        <span class="bar"><span style="width:84%"></span></span>
+        <span class="score" title="Fit 27 · Distinct 15 · Cost 16 · Mobile 13 · Pull 13">84%</span><span class="grade g-b">B</span>
+        <p>Hides the hard cut inside a blink; the window flicker is the charm.</p></li>
+      <li><i>04</i><b>Sink and Rise</b>
+        <span class="bar"><span style="width:80%"></span></span>
+        <span class="score" title="Fit 26 · Distinct 16 · Cost 13 · Mobile 12 · Pull 13">80%</span><span class="grade g-b">B-</span>
+        <p>Playful and clear, but a second longer than the others and needs a ground clip.</p></li>
+      <li><i>06</i><b>Door Iris</b>
+        <span class="bar"><span style="width:79%"></span></span>
+        <span class="score" title="Fit 25 · Distinct 12 · Cost 18 · Mobile 14 · Pull 10">79%</span><span class="grade g-c">C+</span>
+        <p>One clip-path line, but the circle reads as generic UI rather than a street.</p></li>
+      <li><i>08</i><b>Blueprint Draw</b>
+        <span class="bar"><span style="width:75%"></span></span>
+        <span class="score" title="Fit 24 · Distinct 18 · Cost 9 · Mobile 11 · Pull 13">75%</span><span class="grade g-c">C</span>
+        <p>On brand for a staging tool, yet 1.5 seconds and fragile across eight house drawings.</p></li>
+      <li><i>01</i><b>Soft Dissolve</b>
+        <span class="bar"><span style="width:73%"></span></span>
+        <span class="score" title="Fit 24 · Distinct 8 · Cost 20 · Mobile 14 · Pull 7">73%</span><span class="grade g-c">C</span>
+        <p>Fixes the abruptness in ten lines, and that is all it does.</p></li>
+      <li><i>07</i><b>Split Flap</b>
+        <span class="bar"><span style="width:65%"></span></span>
+        <span class="score" title="Fit 18 · Distinct 19 · Cost 8 · Mobile 9 · Pull 11">65%</span><span class="grade g-d">D</span>
+        <p>Memorable, but a departures board is the wrong metaphor for a street scene.</p></li>
+    </ol>
+  </section>
+
+  <section id="compare" class="panel">
+    <h2>Comparison</h2>
+    <table class="matrix"><thead><tr><th>#</th><th>Name</th><th>Density</th><th>Placement</th><th>Interaction</th><th>Content</th></tr></thead>
+    <tbody>
+      <tr><td>01</td><td>Soft Dissolve</td><td>Minimal motion</td><td>Whole plate</td><td>Single dissolve</td><td>Neutral</td></tr>
+      <tr><td>02</td><td>Street Pan</td><td>Moderate</td><td>Houses and road</td><td>Camera move</td><td>Down the street</td></tr>
+      <tr><td>03</td><td>Lights Out</td><td>Moderate</td><td>Overlay then swap</td><td>Two phase</td><td>Night falls</td></tr>
+      <tr><td>04</td><td>Sink and Rise</td><td>Heavy</td><td>Houses only</td><td>Staggered pair</td><td>Construction</td></tr>
+      <tr><td>05</td><td>Van Delivery</td><td>Heavy</td><td>Whole plate</td><td>Masked wipe</td><td>Delivery</td></tr>
+      <tr><td>06</td><td>Door Iris</td><td>Minimal motion</td><td>Whole plate</td><td>Circle reveal</td><td>Doorway</td></tr>
+      <tr><td>07</td><td>Split Flap</td><td>Heavy</td><td>Whole plate</td><td>3D flip</td><td>Departures board</td></tr>
+      <tr><td>08</td><td>Blueprint Draw</td><td>Maximal</td><td>Houses only</td><td>Stroke draw</td><td>Design drawing</td></tr>
+    </tbody></table>
+  </section>
+
+  <section id="v1" class="canvas">
+    <div class="cap"><span class="n">01</span><h2>Soft Dissolve</h2>
+      <span class="grade g-c">C 73%</span>
+      <p class="trade">Safest fix: a half-second crossfade between the two streets, nothing else moves.</p></div>
+    <div class="demo"><div class="hp" data-mode="fade"></div></div>
+    <div class="verdict">
+      <ul class="pros"><li>Ten lines of CSS on the existing scene span</li><li>Zero risk to the hover van timeline</li><li>Works unchanged under reduced motion</li></ul>
+      <ul class="cons"><li>Two houses ghost through each other mid-fade</li><li>Reads as a slideshow, not a place</li><li>Earns no attention for the style pick</li></ul>
+    </div>
+  </section>
+
+  <section id="v2" class="canvas">
+    <div class="cap"><span class="n">02</span><h2>Street Pan</h2>
+      <span class="grade g-a">A- 90%</span>
+      <p class="trade">The camera dollies down the street to the next house; sky stays, bands slide at their parallax depths.</p></div>
+    <div class="demo"><div class="hp" data-mode="pan"></div></div>
+    <div class="verdict">
+      <ul class="pros"><li>Same far, mid, home, near bands the hover already pans</li><li>Tells a story: every style lives on one street</li><li>Under one second, no overlap ghosting</li><li>Pure transform, cheap to paint</li></ul>
+      <ul class="cons"><li>Needs two scenes mounted for one second</li><li>Rapid chip clicks must cancel cleanly</li><li>Reduced motion needs a dissolve fallback</li></ul>
+    </div>
+  </section>
+
+  <section id="v3" class="canvas">
+    <div class="cap"><span class="n">03</span><h2>Lights Out</h2>
+      <span class="grade g-b">B 84%</span>
+      <p class="trade">The street blacks out, the house changes in the dark, then windows and lantern flick back on.</p></div>
+    <div class="demo"><div class="hp" data-mode="lights"></div></div>
+    <div class="verdict">
+      <ul class="pros"><li>The swap itself stays a one-frame innerHTML</li><li>Flicker reuses the existing lit window class</li><li>Fits the night scene naturally</li></ul>
+      <ul class="cons"><li>Plate goes fully dark, label contrast dips briefly</li><li>Blink can read as a glitch on fast machines</li><li>Nine staggered animations to tune per house</li></ul>
+    </div>
+  </section>
+
+  <section id="v4" class="canvas">
+    <div class="cap"><span class="n">04</span><h2>Sink and Rise</h2>
+      <span class="grade g-b">B- 80%</span>
+      <p class="trade">Old houses sink under the road with a dust puff; the new ones rise and settle with a bounce.</p></div>
+    <div class="demo"><div class="hp" data-mode="rebuild"></div></div>
+    <div class="verdict">
+      <ul class="pros"><li>Only the houses move, sky and road stay put</li><li>Clear cause and effect for the chip click</li><li>Playful without new artwork</li></ul>
+      <ul class="cons"><li>About 1.2 seconds, slowest of the safe picks</li><li>Needs a ground clip path on both bands</li><li>Stagger timings drift across eight house heights</li></ul>
+    </div>
+  </section>
+
+  <section id="v5" class="canvas">
+    <div class="cap"><span class="n">05</span><h2>Van Delivery</h2>
+      <span class="grade g-b">B+ 88%</span>
+      <p class="trade">The removal van drives across the plate and drags the new street in behind it, a masked wipe.</p></div>
+    <div class="demo"><div class="hp" data-mode="van"></div></div>
+    <div class="verdict">
+      <ul class="pros"><li>Reuses the van the hover already draws</li><li>Strongest story: the movers bring the new house</li><li>Highest pull, people will click chips to watch it</li></ul>
+      <ul class="cons"><li>Collides with a hover van already parked</li><li>Needs a registered property or a rAF loop</li><li>1.3 seconds, feels slow on the fifth click</li></ul>
+    </div>
+  </section>
+
+  <section id="v6" class="canvas">
+    <div class="cap"><span class="n">06</span><h2>Door Iris</h2>
+      <span class="grade g-c">C+ 79%</span>
+      <p class="trade">The new street opens as a circle from the front door, with a gold ring pulse.</p></div>
+    <div class="demo"><div class="hp" data-mode="iris"></div></div>
+    <div class="verdict">
+      <ul class="pros"><li>One animated clip-path, nothing inside the SVG changes</li><li>Anchored on the door, the hover's focal point</li><li>Fast, 0.75 seconds</li></ul>
+      <ul class="cons"><li>Circle wipe reads as a generic app transition</li><li>Door position differs per house, anchor drifts</li><li>Ring pulse fights the lantern glow on hover</li></ul>
+    </div>
+  </section>
+
+  <section id="v7" class="canvas">
+    <div class="cap"><span class="n">07</span><h2>Split Flap</h2>
+      <span class="grade g-d">D 65%</span>
+      <p class="trade">The plate flips like an airport departures board; the top half falls to reveal the next street.</p></div>
+    <div class="demo"><div class="hp" data-mode="flap"></div></div>
+    <div class="verdict">
+      <ul class="pros"><li>Instantly memorable, nobody else does this</li><li>Mechanical timing makes the swap feel deliberate</li></ul>
+      <ul class="cons"><li>Wrong metaphor: a board, not a street</li><li>Four scene copies mounted per swap</li><li>3D transforms and the hover camera scale conflict</li><li>Label is cut in half mid-flip</li></ul>
+    </div>
+  </section>
+
+  <section id="v8" class="canvas">
+    <div class="cap"><span class="n">08</span><h2>Blueprint Draw</h2>
+      <span class="grade g-c">C 75%</span>
+      <p class="trade">The old house fades, the new one is drawn as a blue line sketch, then inked in.</p></div>
+    <div class="demo"><div class="hp" data-mode="blueprint"></div></div>
+    <div class="verdict">
+      <ul class="pros"><li>Says "designed", on brand for virtual staging</li><li>Only the house bands are touched</li><li>Distinct from every other transition on the site</li></ul>
+      <ul class="cons"><li>1.5 seconds, longest here</li><li>Dash lengths must be tuned per house path</li><li>Stroke on every child hits filled windows oddly</li><li>Heavy paint on large plates</li></ul>
+    </div>
+  </section>
+</main>
+
+<script>
+/* ---------- scene art (simplified stand-ins for hero-van-art.js) ---------- */
+const GOLD='#ffd48a';
+const STYLES=[
+  {key:'modern',label:'Modern',house:'modern'},
+  {key:'standard',label:'Standard',house:'victorian'},
+  {key:'scandinavian',label:'Scandinavian',house:'colonial'},
+  {key:'coastal',label:'Coastal',house:'mediterranean'},
+  {key:'farmhouse',label:'Farmhouse',house:'farmhouse'},
+  {key:'luxury',label:'Luxury',house:'georgian'},
+  {key:'midcentury',label:'Midcentury',house:'craftsman'},
+  {key:'custom',label:'Custom',house:'brownstone'}
+];
+const HOUSE_OF=Object.fromEntries(STYLES.map(s=>[s.key,s.house]));
+const LABEL_OF=Object.fromEntries(STYLES.map(s=>[s.key,s.label]));
+
+const WIN=(x,y,w,h)=>`<rect x="${x-1}" y="${y-1}" width="${w+2}" height="${h+2}" fill="#3b4a78"/><rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#0b1224"/><rect class="lit" x="${x}" y="${y}" width="${w}" height="${h}" fill="${GOLD}" opacity=".8"/><path d="M${x+w/2} ${y}v${h}" stroke="#3b4a78" stroke-width=".8"/>`;
+
+const HOUSES={
+modern:`<rect x="0" y="30" width="66" height="36" fill="#2a2f3a"/><rect x="-2" y="28" width="70" height="3" fill="#1b1f2a"/>
+<rect x="0" y="30" width="16" height="36" fill="#6b4a3a"/><path d="M4 30v36M8 30v36M12 30v36" stroke="#7d5847" stroke-width=".8"/>
+${WIN(20,36,26,12)}${WIN(20,53,10,8)}
+<rect x="50" y="44" width="10" height="22" fill="#2a2320"/><rect class="lit" x="52" y="46" width="2" height="18" fill="${GOLD}" opacity=".6"/>
+<path d="M32 66c-3-4-3-8 0-11 3 3 3 7 0 11z" fill="#3f7a4f"/>`,
+victorian:`<rect x="2" y="36" width="42" height="30" fill="#5a3b45"/><path d="M-2 36L23 14L48 36z" fill="#2b2f3a"/><path d="M2 36h42" stroke="#eadcc8" stroke-width="1"/>
+<rect x="44" y="30" width="18" height="36" fill="#4a3038"/><path d="M42 30L53 10L64 30z" fill="#2b2f3a"/><path d="M53 10v-4" stroke="#eadcc8" stroke-width="1"/>
+${WIN(8,42,10,10)}${WIN(48,38,10,8)}${WIN(48,52,10,8)}
+<path d="M26 54a5 5 0 0 1 10 0z" fill="#2e2622"/><rect x="26" y="54" width="10" height="12" fill="#2e2622"/><circle cx="34" cy="60" r=".8" fill="#d9b45a"/>
+<path d="M22 52h18" stroke="#eadcc8" stroke-width="1.2"/><path d="M23 52v14M39 52v14" stroke="#eadcc8" stroke-width="1"/>`,
+colonial:`<rect x="2" y="34" width="60" height="32" fill="#eef2fb"/><path d="M-2 34L32 20L66 34z" fill="#2f3a52"/>
+<rect x="8" y="24" width="5" height="10" fill="#8a5a4a"/><rect x="52" y="24" width="5" height="10" fill="#8a5a4a"/>
+${WIN(9,40,10,9)}${WIN(45,40,10,9)}${WIN(9,54,10,9)}${WIN(45,54,10,9)}
+<g fill="#2f5a3a"><rect x="5" y="39" width="3" height="11"/><rect x="20" y="39" width="3" height="11"/><rect x="41" y="39" width="3" height="11"/><rect x="56" y="39" width="3" height="11"/><rect x="5" y="53" width="3" height="11"/><rect x="20" y="53" width="3" height="11"/><rect x="41" y="53" width="3" height="11"/><rect x="56" y="53" width="3" height="11"/></g>
+<rect x="27" y="48" width="10" height="18" fill="#2f5a3a"/><path d="M27 48a5 5 0 0 1 10 0z" fill="#0b1224"/><path class="lit" d="M27 48a5 5 0 0 1 10 0z" fill="${GOLD}" opacity=".7"/>
+<rect x="24" y="45" width="16" height="2" fill="#eef2fb"/><rect x="25" y="47" width="1.5" height="19" fill="#eef2fb"/><rect x="37.5" y="47" width="1.5" height="19" fill="#eef2fb"/>`,
+mediterranean:`<rect x="0" y="36" width="64" height="30" fill="#d9c7ad"/><path d="M-3 36h70v-6H-3z" fill="#a3492f"/><path d="M-3 32h70" stroke="#7a3320" stroke-width="1.2" stroke-dasharray="4 3"/>
+<rect x="40" y="18" width="20" height="18" fill="#cdb995"/><path d="M37 18h26v-5H37z" fill="#a3492f"/>
+<path d="M8 56V46a5 5 0 0 1 10 0v10z" fill="#0b1224"/><path class="lit" d="M8 56V46a5 5 0 0 1 10 0v10z" fill="${GOLD}" opacity=".8"/>
+<path d="M45 32V26a4 4 0 0 1 8 0v6z" fill="#0b1224"/><path class="lit" d="M45 32V26a4 4 0 0 1 8 0v6z" fill="${GOLD}" opacity=".8"/>
+<path d="M24 66V50a6 6 0 0 1 12 0v16z" fill="#4a2e22"/><path d="M30 50v16" stroke="#3a2118" stroke-width=".8"/>
+<path d="M-8 66c-3-9-3-18 0-27 3 9 3 18 0 27z" fill="#1f4a3a"/>`,
+farmhouse:`<rect x="4" y="34" width="56" height="32" fill="#f4f2ec"/><path d="M0 34L32 12L64 34z" fill="#2b2f3a"/>
+<g stroke="#e0dcd2" stroke-width=".6"><path d="M10 34v32M16 34v32M22 34v32M42 34v32M48 34v32M54 34v32"/></g>
+${WIN(27,22,10,8)}${WIN(8,40,10,8)}${WIN(46,40,10,8)}
+<path d="M2 50h60v-2H2z" fill="#2b2f3a"/><g fill="#f4f2ec"><rect x="6" y="50" width="1.6" height="16"/><rect x="22" y="50" width="1.6" height="16"/><rect x="40" y="50" width="1.6" height="16"/><rect x="56" y="50" width="1.6" height="16"/></g>
+<rect x="27" y="50" width="10" height="16" fill="#8a2f2a"/><rect class="lit" x="29" y="52" width="6" height="4" fill="${GOLD}" opacity=".7"/>
+<rect x="10" y="60" width="4" height="6" rx="1" fill="#7a5a3a"/><path d="M12 60c-3-3-3-6 0-8 3 2 3 5 0 8z" fill="#3f7a4f"/>`,
+georgian:`<rect x="6" y="22" width="52" height="44" fill="#7a4a3a"/><g stroke="#6b3f30" stroke-width=".5"><path d="M6 30h52M6 38h52M6 46h52M6 54h52M6 62h52"/></g>
+<rect x="4" y="20" width="56" height="3" fill="#eef2fb"/><rect x="6" y="17" width="52" height="3" fill="#6b3f30"/>
+<rect x="10" y="11" width="5" height="6" fill="#5a3328"/><rect x="49" y="11" width="5" height="6" fill="#5a3328"/>
+${WIN(10,26,8,9)}${WIN(28,26,8,9)}${WIN(46,26,8,9)}${WIN(10,42,8,9)}${WIN(46,42,8,9)}
+<rect x="26" y="46" width="12" height="20" fill="#0f1a2c"/><path class="lit" d="M26 46a6 6 0 0 1 12 0z" fill="#ffe9bf" opacity=".8"/>
+<rect x="23" y="46" width="2" height="20" fill="#eef2fb"/><rect x="39" y="46" width="2" height="20" fill="#eef2fb"/><rect x="22" y="44" width="20" height="2" fill="#eef2fb"/>
+<rect x="21" y="64" width="22" height="2" fill="#c9d0de"/>`,
+craftsman:`<rect x="2" y="40" width="62" height="26" fill="#5c6b7a"/><path d="M-4 40L33 22L70 40z" fill="#2a3448"/><path d="M-4 40h74" stroke="#3b3128" stroke-width="1.6"/>
+${WIN(28,30,10,6)}
+<path d="M0 48h66v-3H0z" fill="#3b3128"/>
+<g fill="#8a7263"><path d="M6 48v18h5V48z"/><path d="M30 48v18h5V48z"/><path d="M55 48v18h5V48z"/></g>
+<g fill="#4a5568"><rect x="4" y="60" width="9" height="6"/><rect x="28" y="60" width="9" height="6"/><rect x="53" y="60" width="9" height="6"/></g>
+${WIN(14,52,12,8)}${WIN(40,52,12,8)}
+<rect x="27" y="52" width="9" height="14" fill="#9a5f3a"/><rect class="lit" x="29" y="54" width="5" height="3" fill="${GOLD}" opacity=".7"/>`,
+brownstone:`<rect x="10" y="14" width="44" height="52" fill="#5a3f36"/><rect x="8" y="12" width="48" height="4" fill="#8a7263"/><rect x="8" y="16" width="48" height="1" fill="#3a2a22"/>
+${WIN(16,20,8,9)}${WIN(30,20,8,9)}${WIN(44,20,8,9)}${WIN(16,34,8,9)}${WIN(30,34,8,9)}${WIN(44,34,8,9)}${WIN(16,50,8,9)}${WIN(30,50,8,9)}
+<rect x="42" y="46" width="10" height="14" fill="#2e2622"/><rect class="lit" x="44" y="48" width="6" height="3" fill="${GOLD}" opacity=".7"/>
+<g fill="#8a7263"><rect x="40" y="60" width="14" height="2"/><rect x="38" y="62" width="18" height="2"/><rect x="36" y="64" width="22" height="2"/></g>
+<path d="M40 60v-8M54 60v-8" stroke="#0e162e" stroke-width="1.2"/>`
+};
+
+const STARS=`<g class="far" fill="#fff"><circle cx="44" cy="10" r=".9"/><circle cx="92" cy="18" r=".7"/><circle cx="140" cy="8" r="1"/><circle cx="196" cy="14" r=".8"/><circle cx="262" cy="7" r=".9"/><circle cx="330" cy="15" r=".8"/><circle cx="300" cy="5" r=".6"/><circle cx="232" cy="20" r=".6"/></g>`;
+const CITY=`<g class="far"><g fill="#1a2650"><path d="M0 50h10v24H0zM14 44h8v30h-8zM26 40h6v34h-6zM36 46h12v28H36zM52 38h6v36h-6zM62 48h10v26H62zM76 42h8v32h-8zM88 36h5v38h-5zM96 46h12v28H96zM112 52h60v22h-60zM176 44h9v30h-9zM188 38h6v36h-6zM198 48h10v26h-10zM214 52h8v22h-8zM240 46h10v28h-10zM254 40h6v34h-6zM264 48h14v26h-14z"/><path d="M116 52c10-10 20-10 30 0M146 52c8-8 16-8 26 0" fill="none" stroke="#2b3d72" stroke-width="1.2"/></g>
+<g fill="${GOLD}" opacity=".45"><rect x="16" y="48" width="2" height="2"/><rect x="19" y="52" width="2" height="2"/><rect x="38" y="50" width="2" height="2"/><rect x="44" y="54" width="2" height="2"/><rect x="64" y="52" width="2" height="2"/><rect x="78" y="46" width="2" height="2"/><rect x="98" y="50" width="2" height="2"/><rect x="104" y="56" width="2" height="2"/><rect x="180" y="48" width="2" height="2"/><rect x="200" y="52" width="2" height="2"/><rect x="244" y="50" width="2" height="2"/><rect x="268" y="52" width="2" height="2"/></g>
+<circle cx="54" cy="37" r="1" fill="#ff6b6b"/><circle cx="90.5" cy="35" r="1" fill="#ff6b6b"/><circle cx="191" cy="37" r="1" fill="#ff6b6b"/></g>`;
+const ROAD=`<g class="near"><rect y="66" width="376" height="8" fill="#080d1c"/><rect y="65" width="376" height="1.4" fill="#2a3a63"/><path d="M0 70h376" stroke="#1a2547" stroke-width=".8" stroke-dasharray="6 8"/></g>`;
+const LAMP=(x)=>`<path d="M${x} 22v44" stroke="#33436f" stroke-width="2.4"/><g class="lamphead"><path d="M${x-5} 22h10l-2-6h-6z" fill="${GOLD}" opacity=".9"/><ellipse cx="${x}" cy="66" rx="22" ry="4.5" fill="${GOLD}" opacity=".1"/></g>`;
+const TREE=(x)=>`<path d="M${x} 66c-9-13-9-24 0-36 9 12 9 23 0 36z" fill="#1c3550" opacity=".85"/>`;
+
+let uid=0;
+function sceneSVG(styleKey){
+  const k=HOUSE_OF[styleKey]||'modern'; const id=uid++;
+  return `<svg viewBox="0 0 376 74" preserveAspectRatio="xMidYMax slice" focusable="false">
+<defs><linearGradient id="sky${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1e2c58"/><stop offset=".55" stop-color="#14203f"/><stop offset="1" stop-color="#0a1120"/></linearGradient><clipPath id="ground${id}"><rect x="-400" width="1200" height="66"/></clipPath></defs>
+<rect class="sky" width="376" height="74" fill="url(#sky${id})"/>${STARS}${CITY}
+<g class="mid" clip-path="url(#ground${id})"><g class="rig"><g transform="translate(150 66) scale(.62) translate(0 -66)">${HOUSES[k]}</g></g></g>
+<g class="home" clip-path="url(#ground${id})"><g class="rig"><g transform="translate(278 0)">${HOUSES[k]}</g></g></g>
+${ROAD}<g class="near">${LAMP(200)}${TREE(118)}</g></svg>`;
+}
+
+const VAN_SVG=`<svg viewBox="0 0 230 50"><path d="M150 26L230 8v44H150z" fill="${GOLD}" opacity=".16"/>
+<rect x="0" y="6" width="96" height="36" rx="3" fill="#e8ecf4"/><rect x="0" y="6" width="96" height="6" rx="3" fill="#dbe2ee"/>
+<rect x="10" y="18" width="30" height="8" rx="2" fill="#2563eb"/><rect x="46" y="18" width="40" height="3" rx="1.5" fill="#94a3b8"/><rect x="46" y="24" width="28" height="3" rx="1.5" fill="#94a3b8"/>
+<path d="M96 16h20l14 12v14H96z" fill="#dbe2ee"/><path d="M100 18h14l10 9h-24z" fill="#1a2a4a"/>
+<rect x="0" y="40" width="130" height="3" fill="#94a3b8"/><rect x="126" y="30" width="5" height="4" fill="${GOLD}"/><rect x="0" y="30" width="3" height="5" fill="#dc2626"/>
+<g fill="#111827"><circle cx="26" cy="43" r="6"/><circle cx="106" cy="43" r="6"/></g><g fill="#6b7280"><circle cx="26" cy="43" r="2.5"/><circle cx="106" cy="43" r="2.5"/></g></svg>`;
+
+/* ---------- mock hero bar build ---------- */
+document.querySelectorAll('.hp').forEach(hp=>{
+  hp.dataset.key='modern';
+  hp.innerHTML=`<div class="hp-sentence">Stage this <b>living room</b> in <b class="sty">Modern</b></div>
+  <div class="chips">${STYLES.map(s=>`<button class="chip${s.key==='modern'?' on':''}" data-key="${s.key}" type="button">${s.label}</button>`).join('')}</div>
+  <p class="hint">Pick a different style to play the swap.</p>
+  <button class="cta" type="button"><span class="layers"><span class="layer">${sceneSVG('modern')}</span></span><span class="veil"></span><span class="fx"><span class="blackout"></span><span class="ring"></span><span class="grid"></span></span><strong>Upload image for free</strong></button>`;
+  hp.querySelector('.chips').addEventListener('click',e=>{
+    const c=e.target.closest('.chip'); if(!c) return; swap(hp,c.dataset.key);
+  });
+});
+
+const lastLayer=L=>[...L.querySelectorAll(':scope > .layer')].pop();
+const addLayer=(L,key)=>{const s=document.createElement('span');s.className='layer';s.innerHTML=sceneSVG(key);const van=L.querySelector(':scope > .van');L.insertBefore(s,van||null);return s;};
+const fx=(hp,cls)=>hp.querySelector('.fx .'+cls);
+const timers=new WeakMap();
+function later(hp,fn,ms){const t=setTimeout(fn,ms);(timers.get(hp)||timers.set(hp,[]).get(hp)).push(t);}
+
+function settle(hp){
+  (timers.get(hp)||[]).forEach(clearTimeout); timers.set(hp,[]);
+  hp.getAnimations({subtree:true}).forEach(a=>a.cancel());
+  const L=hp.querySelector('.layers');
+  L.innerHTML=`<span class="layer">${sceneSVG(hp.dataset.key)}</span>`;
+  hp.querySelectorAll('.fx > *').forEach(e=>e.removeAttribute('style'));
+  hp.querySelector('.cta').style.removeProperty('--wx');
+}
+
+function swap(hp,to){
+  if(to===hp.dataset.key) return;
+  settle(hp);
+  const from=hp.dataset.key; hp.dataset.key=to;
+  hp.querySelector('.sty').textContent=LABEL_OF[to];
+  hp.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c.dataset.key===to));
+  MODES[hp.dataset.mode](hp,hp.querySelector('.layers'),from,to);
+}
+
+/* ---------- the eight transitions ---------- */
+const MODES={};
+
+MODES.fade=(hp,L,from,to)=>{
+  const o=lastLayer(L), n=addLayer(L,to);
+  n.animate([{opacity:0},{opacity:1}],{duration:480,easing:'ease'});
+  o.animate([{opacity:1},{opacity:0}],{duration:480,easing:'ease',fill:'forwards'});
+  later(hp,()=>o.remove(),500);
+};
+
+MODES.pan=(hp,L,from,to)=>{
+  const o=lastLayer(L), n=addLayer(L,to);
+  n.querySelector('.sky').remove();
+  const D=950, E='cubic-bezier(.5,.02,.15,1)', K={far:.22,mid:.55,home:1,near:1};
+  const run=(layer,a,b)=>{for(const [c,k] of Object.entries(K))
+    layer.querySelectorAll('svg > .'+c).forEach(g=>g.animate([{transform:`translateX(${a*k}px)`},{transform:`translateX(${b*k}px)`}],{duration:D,easing:E,fill:'forwards'}));};
+  run(o,0,-376); run(n,376,0);
+  later(hp,()=>{o.remove(); n.innerHTML=sceneSVG(to);},D+30);
+};
+
+MODES.lights=(hp,L,from,to)=>{
+  const o=lastLayer(L), dark=fx(hp,'blackout');
+  dark.animate([{opacity:0},{opacity:1}],{duration:200,easing:'ease-in',fill:'forwards'});
+  later(hp,()=>{
+    const n=addLayer(L,to); o.remove();
+    dark.animate([{opacity:1},{opacity:0}],{duration:600,delay:120,easing:'ease-out',fill:'forwards'});
+    n.querySelectorAll('.home .lit').forEach((w,i)=>w.animate(
+      [{opacity:0},{opacity:0,offset:.5},{opacity:.9,offset:.6},{opacity:.15,offset:.72},{opacity:.8}],
+      {duration:520,delay:200+i*110,fill:'backwards'}));
+    n.querySelectorAll('.mid .lit').forEach((w,i)=>w.animate([{opacity:0},{opacity:.8}],{duration:300,delay:520+i*60,fill:'backwards'}));
+    n.querySelectorAll('.lamphead').forEach(l=>l.animate([{opacity:0},{opacity:1,offset:.3},{opacity:.2,offset:.45},{opacity:1}],{duration:500,delay:150,fill:'backwards'}));
+  },210);
+};
+
+function puff(layer,x,delay){
+  const svg=layer.querySelector('svg'); const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+  g.setAttribute('style','transform-box:fill-box;transform-origin:center');
+  g.innerHTML=`<ellipse cx="${x}" cy="65" rx="18" ry="3" fill="#9aa6c4"/>`; svg.appendChild(g);
+  g.animate([{transform:'scale(.1)',opacity:.7},{transform:'scale(1.6)',opacity:0}],{duration:620,delay,easing:'ease-out',fill:'both'});
+}
+MODES.rebuild=(hp,L,from,to)=>{
+  const o=lastLayer(L), n=addLayer(L,to);
+  n.querySelectorAll('svg > .sky, svg > .far, svg > .near').forEach(e=>e.remove());
+  o.querySelectorAll('.rig').forEach((g,i)=>g.animate(
+    [{transform:'translateY(0)'},{transform:'translateY(-2px)',offset:.2},{transform:'translateY(60px)'}],
+    {duration:460,delay:i*60,easing:'cubic-bezier(.55,0,.85,.35)',fill:'forwards'}));
+  puff(o,170,380); puff(o,312,430);
+  n.querySelectorAll('.rig').forEach((g,i)=>g.animate(
+    [{transform:'translateY(60px)'},{transform:'translateY(-3px)',offset:.82},{transform:'translateY(0)'}],
+    {duration:620,delay:400+i*70,easing:'cubic-bezier(.2,.8,.25,1)',fill:'forwards'}));
+  later(hp,()=>{o.remove(); n.innerHTML=sceneSVG(to);},1150);
+};
+
+MODES.van=(hp,L,from,to)=>{
+  const o=lastLayer(L), n=addLayer(L,to), cta=hp.querySelector('.cta'), W=cta.clientWidth;
+  const van=document.createElement('span'); van.className='van'; van.innerHTML=VAN_SVG; L.appendChild(van);
+  n.style.clipPath=`inset(0 clamp(0px, calc(${W}px - var(--wx)), 100%) 0 0)`;
+  cta.animate([{'--wx':'-160px'},{'--wx':(W+40)+'px'}],{duration:1300,easing:'cubic-bezier(.4,0,.3,1)',fill:'forwards'});
+  van.animate([{transform:'translateY(0)'},{transform:'translateY(-1.5px)'},{transform:'translateY(0)'}],{duration:170,iterations:8});
+  later(hp,()=>{o.remove(); van.remove(); n.style.clipPath='';},1320);
+};
+
+MODES.iris=(hp,L,from,to)=>{
+  const o=lastLayer(L), n=addLayer(L,to);
+  n.animate([{clipPath:'circle(0px at 84% 74%)'},{clipPath:'circle(120% at 84% 74%)'}],{duration:750,easing:'cubic-bezier(.25,.6,.2,1)'});
+  fx(hp,'ring').animate([{width:'0px',height:'0px',opacity:.9},{width:'900px',height:'900px',opacity:0}],{duration:800,easing:'cubic-bezier(.25,.6,.2,1)',fill:'forwards'});
+  later(hp,()=>o.remove(),760);
+};
+
+MODES.flap=(hp,L,from,to)=>{
+  L.innerHTML=`<span class="half top"><span class="layer">${sceneSVG(to)}</span></span>
+<span class="half bot"><span class="layer">${sceneSVG(from)}</span></span>
+<span class="flap"><span class="face front"><span class="layer">${sceneSVG(from)}</span></span><span class="face back"><span class="layer">${sceneSVG(to)}</span></span></span>
+<span class="seam"></span>`;
+  L.querySelector('.flap').animate([{transform:'rotateX(0deg)'},{transform:'rotateX(-180deg)'}],{duration:520,easing:'cubic-bezier(.6,0,.4,1)',fill:'forwards'});
+  hp.querySelector('.cta').animate([{transform:'none'},{transform:'translateY(1.5px)',offset:.9},{transform:'none'}],{duration:600});
+  later(hp,()=>{L.innerHTML=`<span class="layer">${sceneSVG(to)}</span>`;},540);
+};
+
+MODES.blueprint=(hp,L,from,to)=>{
+  const o=lastLayer(L), n=addLayer(L,to); n.classList.add('bp');
+  n.querySelectorAll('svg > .sky, svg > .far, svg > .near').forEach(e=>e.remove());
+  o.querySelectorAll('.home, .mid').forEach(g=>g.animate([{opacity:1},{opacity:0}],{duration:260,fill:'forwards'}));
+  fx(hp,'grid').animate([{opacity:0},{opacity:.5,offset:.15},{opacity:.35,offset:.7},{opacity:0}],{duration:1500,fill:'forwards'});
+  later(hp,()=>{o.remove(); n.classList.remove('bp'); n.innerHTML=sceneSVG(to);},1650);
+};
+
+/* ---------- scroll spy ---------- */
+const spy=new IntersectionObserver(es=>{es.forEach(e=>{
+  if(e.isIntersecting)document.querySelectorAll('.rail a').forEach(a=>
+    a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id));
+})},{rootMargin:'-45% 0px -50% 0px'});
+document.querySelectorAll('.panel,.canvas').forEach(s=>spy.observe(s));
+</script>
+</body>
+</html>

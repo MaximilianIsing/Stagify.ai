@@ -28,7 +28,7 @@
       "heading": "Brand kit",
       "body": "These are the official files. Use them to refer to Stagify.ai without asking. Please do not redraw the mark or imply we endorse your product.",
       "marksLabel": "Product marks",
-      "marksHint": "One mark on four fields. The drawing never changes — only what sits behind it does. Every file is PNG unless marked SVG; the numbers are pixels.",
+      "marksHint": "One mark on four fields. The drawing never changes; only what sits behind it does. Every file is PNG unless marked SVG; the numbers are pixels.",
       "marks": {
         "core": "The product and the company. Use this one if in doubt.",
         "plus": "The subscription. Gold field, same drawing.",
@@ -57,12 +57,12 @@
       },
       "paletteNote": "The gold of the Stagify+ field and the navy behind Enterprise and the API belong to those artworks, not to the palette. Take them from the files rather than repainting the blue mark.",
       "typeLabel": "Typography",
-      "typeBody": "The site is set in <a href=\"https://rsms.me/inter/\" rel=\"nofollow noopener noreferrer\" target=\"_blank\">Inter</a> at 400, 600 and 700 — free, and also on Google Fonts. There is no vector wordmark: set the name as type rather than scaling up a PNG of it. Where Inter is unavailable, any neutral grotesque is fine; we fall back to the system stack ourselves.",
+      "typeBody": "The site is set in <a href=\"https://rsms.me/inter/\" rel=\"nofollow noopener noreferrer\" target=\"_blank\">Inter</a> at 400, 600 and 700. It is free, and also on Google Fonts. There is no vector wordmark: set the name as type rather than scaling up a PNG of it. Where Inter is unavailable, any neutral grotesque is fine; we fall back to the system stack ourselves.",
       "spaceLabel": "Clear space and minimum size",
-      "spaceBody": "Keep a margin around the mark of at least the height of the S, and put nothing inside it. Do not go below 24px on screen or 8mm in print — use the 32px file rather than shrinking a larger one.",
+      "spaceBody": "Keep a margin around the mark of at least the height of the S, and put nothing inside it. Do not go below 24px on screen or 8mm in print. Use the 32px file rather than shrinking a larger one.",
       "namingLabel": "Writing the name",
       "naming": {
-        "one": "Stagify.ai is one word, capital S, lowercase .ai — not “Stagify AI”, “Stageify” or “STAGIFY”.",
+        "one": "Stagify.ai is one word, capital S, lowercase .ai, not “Stagify AI”, “Stageify” or “STAGIFY”.",
         "two": "The products are Stagify+ (no space before the plus), Stagify Enterprise, and the Stagify API.",
         "three": "After the first mention, plain “Stagify” is fine in running text."
       },
@@ -904,7 +904,8 @@
           "body": "Almost every buyer starts online, so your listing photos are the real first showing. Empty or dated rooms are hard to read; people can’t judge scale or picture living there. Staging gives each room a clear purpose and a pull, which is why agents have always relied on it.",
           "p1": "Empty rooms photograph smaller and colder than they are",
           "p2": "Staging shows the intended use of every space",
-          "p3": "Stronger photos earn more clicks, saves, and showings"
+          "p3": "Stronger photos earn more clicks, saves, and showings",
+          "photoAlt": "Stagify.ai founder demonstrating the product at a Compass real estate office"
         },
         "how": {
           "eyebrow": "How it works",
@@ -913,7 +914,8 @@
           "body": "Upload a photo, pick the room type and one of seven styles, and Stagify furnishes it in about eight seconds. Need changes? Remove the existing furniture, add a custom prompt, or mask one area to adjust it without starting over.",
           "p1": "7 styles plus custom prompts and furniture removal",
           "p2": "Mask-edit any part of a result without redoing it",
-          "p3": "Full copyright, yours to use on the MLS or in ads"
+          "p3": "Full copyright, yours to use on the MLS or in ads",
+          "photoAlt": "Stagify.ai presentation to a room of real estate agents"
         },
         "who": {
           "eyebrow": "Who it’s for",
@@ -922,7 +924,8 @@
           "body": "Agents market every listing in minutes instead of waiting on a staging crew. Sellers stage their own photos without hiring anyone. Buyers preview a renovation before they commit. And with AI Designer, you can turn a floor plan into a furnished plan view — or step inside any room on it for a photorealistic render.",
           "p1": "Agents: list sooner and close more",
           "p2": "Sellers & buyers: no software, no designer needed",
-          "p3": "AI Designer: agentic room staging"
+          "p3": "AI Designer: agentic room staging",
+          "photoAlt": "Stagify.ai team member staging a client’s photos on a laptop"
         },
         "team": {
           "eyebrow": "What it skips",
@@ -931,7 +934,8 @@
           "body": "There’s no software to install and nothing to learn. Anyone on the team can open Stagify in a browser, upload a listing photo, and have it staged in seconds, whether on a laptop at the office or a phone in the field.",
           "p1": "No design skills or software needed",
           "p2": "Works in any browser, on any device",
-          "p3": "Every agent can stage their own listings"
+          "p3": "Every agent can stage their own listings",
+          "photoAlt": "Stagify.ai founder presenting to a full office of real estate agents"
         }
       }
     },
@@ -1095,7 +1099,8 @@
         "label": "Agent testimonials",
         "prev": "Previous testimonial",
         "next": "Next testimonial"
-      }
+      },
+      "starsAria": "Rated 5 out of 5 stars"
     },
     "blog": {
       "title": "From the Stagify blog",
@@ -1457,7 +1462,8 @@
   },
   "common": {
     "close": "Close",
-    "selectLanguage": "Select language"
+    "selectLanguage": "Select language",
+    "onLinkedIn": "on LinkedIn"
   },
   "footer": {
     "privacy": "Privacy Policy",
@@ -1659,6 +1665,12 @@
       "pro": "Stagify+",
       "proDescription": "Higher quality, slower"
     },
+    "proGate": {
+      "title": "AI Designer is a Stagify+ feature",
+      "body": "Sign in with a Stagify+ account to use the AI Designer chat, advanced models, and masking tools. Free accounts can use virtual staging on the home page.",
+      "viewPlus": "View Stagify+",
+      "backToStaging": "Back to staging"
+    },
     "messageTag": {
       "auto": "Auto",
       "generate": "Generate",
@@ -1669,7 +1681,8 @@
     "thumbnailStrip": {
       "label": "Base image for next message",
       "help": "Select which room image the AI should modify when you send your next message, especially when adding furniture. Helpful when you have several uploads or staged versions.",
-      "helpAria": "What does base image mean?"
+      "helpAria": "What does base image mean?",
+      "selectAria": "Select base image"
     },
     "alt": {
       "uploadFile": "Attach a file to your message",
@@ -1852,7 +1865,10 @@
     "pickerPromptBar": "Prompt Bar",
     "pickerFurniture": "Furniture",
     "demo3Desc": "Watch AI Designer agentically stage and redesign a room from a simple chat.",
-    "troubleshootingTitle": "Troubleshooting & common issues"
+    "troubleshootingTitle": "Troubleshooting & common issues",
+    "demoPickerAria": "Choose a walkthrough",
+    "topicsAria": "Guide topics",
+    "goToStep": "Go to step {n}"
   },
   "pageMeta": {
     "about": {
@@ -2038,7 +2054,9 @@
       "Blending each area in…",
       "Keeping the rest of the photo untouched…",
       "Adding finishing touches…"
-    ]
+    ],
+    "controlsAria": "Masking Studio controls",
+    "workspaceAria": "Masking Studio workspace"
   },
   "status": {
     "pageTitle": "Status & Uptime | Stagify.ai",
@@ -2194,7 +2212,8 @@
       "phoneLabel": "Phone number",
       "phoneOptional": "(optional)",
       "submit": "Continue to payment",
-      "redirecting": "Redirecting to Stripe…"
+      "redirecting": "Redirecting to Stripe…",
+      "companyPlaceholder": "Company Inc."
     },
     "errors": {
       "domain": "Please enter a valid domain (e.g. company.com).",
@@ -2272,7 +2291,9 @@
     "footLinks": {
       "backToFree": "Back to free staging",
       "questions": "Questions before you buy?"
-    }
+    },
+    "subscribeAria": "Subscribe to Stagify+",
+    "compareAria": "Free vs Stagify+ comparison"
   },
   "gallery": {
     "pageTitle": "Your gallery — Stagify",
@@ -2464,7 +2485,9 @@
     "stepPhotoHint": "Upload a photo in the workspace on the right.",
     "replacePhoto": "Replace photo",
     "stepChanges": "What should change?",
-    "enhanceHint": "Pick at least one change, or describe one above."
+    "enhanceHint": "Pick at least one change, or describe one above.",
+    "controlsAria": "Exterior Studio controls",
+    "workspaceAria": "Exterior Studio workspace"
   },
   "notFound": {
     "pageTitle": "Page not found | Stagify.ai",

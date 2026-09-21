@@ -2719,6 +2719,7 @@ body.page-home main {
 .nar-bar span {
   display: block;
   height: 100%;
+  cursor: pointer;
   /* Each segment's share, set inline in index.html so the bar is complete with no JS
      at all. The 0% here exists only so `var(--seg-w)` always resolves against a
      stylesheet definition (css-tokens.test.js requires that of every fallback-less
@@ -2835,6 +2836,7 @@ body.page-home main {
   gap: 12px;
 }
 .nar-stat {
+  position: relative;
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 14px;
@@ -2843,12 +2845,43 @@ body.page-home main {
   border: 1px solid rgba(37, 99, 235, 0.12);
   border-radius: 13px;
   padding: 12px 18px;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+/* A small check mark that fades in on hover, paired with the underline below on
+   `.nar-stat__num`. A corner badge, absolutely positioned so it never claims space
+   from the grid: the text column is tuned to the exact px the longest tile sentence
+   needs for two lines (see `.nar-card`'s comment) and any narrower column reflows it
+   to three. */
+.nar-stat__icon {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  width: 18px;
+  height: 18px;
+  color: var(--brand);
+  opacity: 0;
+  transform: scale(0.6) rotate(-8deg);
+  transition: opacity 0.2s ease, transform 0.28s cubic-bezier(0.2, 0.7, 0.3, 1.4);
+}
+.nar-stat__icon svg {
+  width: 100%;
+  height: 100%;
+}
+.nar-stat:hover {
+  background: rgba(37, 99, 235, 0.1);
+  border-color: rgba(37, 99, 235, 0.26);
+}
+.nar-stat:hover .nar-stat__icon {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
 }
 /* The ceiling has room in it but not much: on the shorter tile the numeral, not the
    sentence, is what sets the row height, so past roughly 46px the pair grows back over
    the chart column beside it and the card gets taller again. Anything larger has to buy
    the height from the chart, not from here. */
 .nar-stat__num {
+  position: relative;
+  display: inline-block;
   font-size: clamp(30px, 3.2vw, 38px);
   font-weight: 900;
   line-height: 1;
@@ -2864,6 +2897,22 @@ body.page-home main {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+}
+.nar-stat__num::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -3px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--brand);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.32s ease;
+}
+.nar-stat:hover .nar-stat__num::after {
+  transform: scaleX(1);
 }
 .nar-stat__txt {
   font-size: 13.5px;

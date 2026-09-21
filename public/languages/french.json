@@ -904,7 +904,8 @@
           "body": "Presque tous les acheteurs commencent en ligne : vos photos d’annonce sont donc la véritable première visite. Les pièces vides ou démodées sont difficiles à appréhender ; on ne perçoit ni les volumes ni la vie qu’on pourrait y avoir. Le staging donne à chaque pièce une fonction claire et un attrait, et c’est pourquoi les agents s’y fient depuis toujours.",
           "p1": "Les pièces vides paraissent plus petites et plus froides qu’elles ne le sont",
           "p2": "Le staging montre l’usage prévu de chaque espace",
-          "p3": "De meilleures photos génèrent plus de clics, d’enregistrements et de visites"
+          "p3": "De meilleures photos génèrent plus de clics, d’enregistrements et de visites",
+          "photoAlt": "Le fondateur de Stagify.ai présentant le produit dans une agence immobilière Compass"
         },
         "how": {
           "eyebrow": "Comment ça marche",
@@ -913,7 +914,8 @@
           "body": "Importez une photo, choisissez le type de pièce et l’un des sept styles, et Stagify la meuble en environ huit secondes. Besoin de modifications ? Supprimez le mobilier existant, ajoutez une consigne personnalisée, ou masquez une zone pour l’ajuster sans tout recommencer.",
           "p1": "7 styles, plus des consignes personnalisées et la suppression du mobilier",
           "p2": "Modifiez par masque n’importe quelle partie d’un rendu sans le refaire",
-          "p3": "Tous les droits d’auteur, à vous pour le MLS ou la publicité"
+          "p3": "Tous les droits d’auteur, à vous pour le MLS ou la publicité",
+          "photoAlt": "Présentation de Stagify.ai devant une salle d’agents immobiliers"
         },
         "who": {
           "eyebrow": "À qui ça s’adresse",
@@ -922,7 +924,8 @@
           "body": "Les agents commercialisent chaque annonce en quelques minutes au lieu d’attendre une équipe de staging. Les vendeurs meublent leurs propres photos sans engager personne. Les acheteurs prévisualisent une rénovation avant de s’engager. Et avec le Designer IA, vous pouvez transformer un plan en une vue meublée du dessus, ou entrer dans n’importe quelle pièce pour un rendu photoréaliste.",
           "p1": "Agents : publiez plus tôt et concluez davantage",
           "p2": "Vendeurs & acheteurs : aucun logiciel, aucun designer nécessaire",
-          "p3": "Designer IA : mise en scène autonome de pièces"
+          "p3": "Designer IA : mise en scène autonome de pièces",
+          "photoAlt": "Un membre de l’équipe Stagify.ai met en scène les photos d’un client sur un ordinateur portable"
         },
         "team": {
           "eyebrow": "Ce que ça évite",
@@ -931,7 +934,8 @@
           "body": "Aucun logiciel à installer, rien à apprendre. N’importe qui dans l’équipe peut ouvrir Stagify dans un navigateur, importer une photo d’annonce et la faire meubler en quelques secondes, que ce soit sur un ordinateur portable au bureau ou un téléphone sur le terrain.",
           "p1": "Aucune compétence en design ni logiciel requis",
           "p2": "Fonctionne dans tout navigateur, sur tout appareil",
-          "p3": "Chaque agent peut meubler ses propres annonces"
+          "p3": "Chaque agent peut meubler ses propres annonces",
+          "photoAlt": "Le fondateur de Stagify.ai présente devant une agence immobilière au complet"
         }
       }
     },
@@ -1095,7 +1099,8 @@
         "label": "Témoignages d’agents",
         "prev": "Témoignage précédent",
         "next": "Témoignage suivant"
-      }
+      },
+      "starsAria": "Noté 5 étoiles sur 5"
     },
     "blog": {
       "title": "Le blog de Stagify",
@@ -1457,7 +1462,8 @@
   },
   "common": {
     "close": "Fermer",
-    "selectLanguage": "Sélectionner la langue"
+    "selectLanguage": "Sélectionner la langue",
+    "onLinkedIn": "sur LinkedIn"
   },
   "footer": {
     "privacy": "Politique de confidentialité",
@@ -1659,6 +1665,12 @@
       "pro": "Stagify+",
       "proDescription": "Meilleure qualité, plus lent"
     },
+    "proGate": {
+      "title": "Le Designer IA est une fonctionnalité Stagify+",
+      "body": "Connectez-vous avec un compte Stagify+ pour utiliser le chat du Designer IA, les modèles avancés et les outils de masquage. Les comptes gratuits peuvent utiliser le home staging virtuel sur la page d’accueil.",
+      "viewPlus": "Voir Stagify+",
+      "backToStaging": "Retour au staging"
+    },
     "messageTag": {
       "auto": "Auto",
       "generate": "Générer",
@@ -1669,7 +1681,8 @@
     "thumbnailStrip": {
       "label": "Image de base pour le prochain message",
       "help": "Choisissez l’image de pièce que l’IA doit modifier lorsque vous envoyez votre prochain message, surtout pour ajouter du mobilier. Utile lorsque vous avez plusieurs imports ou versions meublées.",
-      "helpAria": "Que signifie image de base ?"
+      "helpAria": "Que signifie image de base ?",
+      "selectAria": "Choisir l’image de base"
     },
     "alt": {
       "uploadFile": "Joindre un fichier à votre message",
@@ -1852,7 +1865,10 @@
     "pickerPromptBar": "Barre de consignes",
     "pickerFurniture": "Mobilier",
     "demo3Desc": "Regardez le Designer IA meubler et redessiner une pièce de façon autonome à partir d’une simple conversation.",
-    "troubleshootingTitle": "Dépannage et problèmes courants"
+    "troubleshootingTitle": "Dépannage et problèmes courants",
+    "demoPickerAria": "Choisissez un tutoriel",
+    "topicsAria": "Rubriques du guide",
+    "goToStep": "Aller à l’étape {n}"
   },
   "pageMeta": {
     "about": {
@@ -2038,7 +2054,9 @@
       "Intégration de chaque zone…",
       "Le reste de la photo reste intact…",
       "Touches finales en cours…"
-    ]
+    ],
+    "controlsAria": "Commandes du Studio de masquage",
+    "workspaceAria": "Espace de travail du Studio de masquage"
   },
   "status": {
     "pageTitle": "État et disponibilité | Stagify.ai",
@@ -2194,7 +2212,8 @@
       "phoneLabel": "Numéro de téléphone",
       "phoneOptional": "(facultatif)",
       "submit": "Continuer vers le paiement",
-      "redirecting": "Redirection vers Stripe…"
+      "redirecting": "Redirection vers Stripe…",
+      "companyPlaceholder": "Entreprise SARL"
     },
     "errors": {
       "domain": "Veuillez saisir un domaine valide (par ex. company.com).",
@@ -2272,7 +2291,9 @@
     "footLinks": {
       "backToFree": "Retour au home staging gratuit",
       "questions": "Des questions avant d’acheter ?"
-    }
+    },
+    "subscribeAria": "S’abonner à Stagify+",
+    "compareAria": "Comparatif Gratuit et Stagify+"
   },
   "gallery": {
     "pageTitle": "Votre galerie — Stagify",
@@ -2464,7 +2485,9 @@
     "stepPhotoHint": "Importez une photo dans l’espace de travail à droite.",
     "replacePhoto": "Remplacer la photo",
     "stepChanges": "Que faut-il changer ?",
-    "enhanceHint": "Choisissez au moins un changement, ou décrivez-en un ci-dessus."
+    "enhanceHint": "Choisissez au moins un changement, ou décrivez-en un ci-dessus.",
+    "controlsAria": "Commandes du Studio Extérieur",
+    "workspaceAria": "Espace de travail du Studio Extérieur"
   },
   "notFound": {
     "pageTitle": "Page introuvable | Stagify.ai",

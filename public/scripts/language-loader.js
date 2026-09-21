@@ -86,11 +86,19 @@ import { LANGUAGES } from './locale-data.js';
       if (value !== undefined) el.innerHTML = value;
     });
 
-    // Attribute values, encoded as "key|attribute".
+    // Attribute values, encoded as "key|attribute", several separated by ";" —
+    // an icon button usually wants the same words as its aria-label AND its title,
+    // and before the list was allowed the title stayed English in all eleven packs
+    // because there was nowhere to put its key. Must stay in step with
+    // applyAttrTranslations in lib/i18n/render-page.js, which parses the same spec
+    // server-side for the localized URLs.
     document.querySelectorAll('[data-lang-attr]').forEach((el) => {
-      const [key, attr] = el.getAttribute('data-lang-attr').split('|');
-      const value = getText(key);
-      if (value !== undefined) el.setAttribute(attr, value);
+      el.getAttribute('data-lang-attr').split(';').forEach((pair) => {
+        const [key, attr] = pair.trim().split('|');
+        if (!key || !attr) return;
+        const value = getText(key);
+        if (value !== undefined) el.setAttribute(attr, value);
+      });
     });
 
     updateTitle();

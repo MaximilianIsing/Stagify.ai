@@ -613,6 +613,142 @@
         </div>
       </section>
 
+      <!-- ============================ the hero picker’s menu glyphs ============================
+           One <symbol> per entry in the ROOMS and STYLES tables in scripts/hero-picker.js, drawn
+           once here and used by every row those menus build. It sits in the markup rather than in
+           that module because hero-picker.js is the first module tag on the page and has no
+           imports ON PURPOSE (read its header): a static import would defer it behind a second
+           network round trip, and it is the script that drives the LCP element.
+
+           WHY GLYPHS AT ALL. Each row used to carry a 46 by 31 crop of the render that choice
+           produces. The intent was right and the size made it impossible: a 900px interior
+           squeezed into a stamp that small keeps only its average colour, so a Coastal bedroom
+           and a Farmhouse bedroom both arrived as the same beige rectangle, and fourteen of them
+           decoded on every menu open for no information gained.
+
+           THESE ARE STICKERS, NOT PICTOGRAMS. A three-stroke pictogram at 20px says "bed"
+           and nothing more, which is no better than the word beside it. Each of these is a small
+           coloured scene with enough furniture in it to say what the choice actually gives you:
+           the kitchen has a hood, an oven window and cabinet handles, the office has a monitor
+           with text on it and a mug, the Luxury glyph is a three-arm chandelier with crystal
+           drops. The stylesheet cuts a white edge around the whole thing and floats it on a pale
+           blob of its own colour, and lifts it under the pointer, which is what makes it read as
+           a sticker on the row rather than an icon in a box. The box is 32 units rendered at 38px
+           rather than 24 at 20 because the detail needs the room.
+
+           THE DRAWING RULES, all of which test/frontend/hero-picker-icons.test.js enforces:
+             - One 32 by 32 viewBox for the whole set. Mixed viewBoxes are how an icon set starts
+               drifting in optical weight: the same stroke number is a different thickness in each.
+             - Ink comes from the stylesheet, colour comes from here. No shape carries a `stroke`
+               attribute: the line colour is --fg via CSS so it is one number for all fourteen.
+               Every CLOSED shape carries a `fill`, its material colour (oak, linen, brass, the
+               barn’s red) or plain white where the object has none, so the glyph is a small
+               coloured sticker rather than a wireframe. Open paths (the legs, the water line,
+               the cushion split) never carry a fill: a fill on an open path is a sliver of colour
+               closing the gap between its two ends, which is a visible bug at this size.
+             - Stroke 1.7 at 32 units, which is about 2px at the 38px these render at. Thinner
+               than about 1.3px and the fine detail greys out against a white row on a 1x display;
+               thicker and adjacent lines in the dense glyphs (the barn doors, the chandelier)
+               merge into blobs.
+             - Nothing crosses the 2-unit margin. The sticker is die-cut by a white drop-shadow
+               edge in the stylesheet, and art touching the viewBox edge gets that edge clipped
+               off on one side.
+             - Rooms are FRONT ELEVATIONS of the room’s furniture; styles are SCENES built from
+               the one or two objects that look is recognised by. A room type has a defining piece
+               (a bed, a tub) and a furniture style does not, so eight chairs differing by leg
+               taper would be eight near-identical glyphs. Each style pairs a seat or a cabinet
+               with its signature accessory instead: Modern gets the arc lamp, Mid-century the
+               starburst clock, Scandinavian the paper lantern and the plant.
+             - Every rect carries an rx. Square-cornered rectangles are how a drawing turns into
+               a wireframe; the only sharp corners in the set are the deliberate ones on the
+               Modern chair, and even those are rx 0.5.
+
+           THE HALO BEHIND EACH STICKER is not drawn here. It is a CSS blob on the row’s
+           `.hp-menu__tile`, coloured per item by the `--hp-halo` rules in styles/hero-picker.css,
+           keyed off the row’s data-key. Two colours per item, in two places, on purpose: the fill
+           is part of the drawing and lives with it; the halo is part of the row and lives with
+           the row.
+
+           These are NOT the fp-* symbols further down this file. Those are top-down plan symbols
+           for the FAQ’s architectural sheet, carrying preserveAspectRatio="none" so they can be
+           stretched to a real metre footprint. Both properties are wrong here: a plan view of a
+           bed is an unreadable rectangle at this size, and a symbol built to be stretched is not
+           one you can drop into a square tile. -->
+      <svg class="hp-icon-sprite" width="0" height="0" aria-hidden="true" focusable="false"><defs>
+        <!-- Bed from the foot. Panelled headboard (the two verticals are the panel joints),
+             two pillows sitting in front of it, a duvet with its fold line, two legs. The pillows
+             overlapping the headboard is what gives the drawing depth; without them the headboard
+             and the duvet are two stacked boxes. -->
+        <symbol id="hp-ico-bedroom" viewBox="0 0 32 32" stroke-width="1.7"><rect x="5" y="4" width="22" height="11" rx="2.2" fill="#c9a070"/><path d="M12 4v6.5M20 4v6.5"/><rect x="7.5" y="10.5" width="7" height="4" rx="1.6" fill="#f1efe7"/><rect x="17.5" y="10.5" width="7" height="4" rx="1.6" fill="#f1efe7"/><rect x="3" y="15" width="26" height="8" rx="2" fill="#93c5fd"/><path d="M3 19h26"/><path d="M6 23v4M26 23v4"/></symbol>
+        <!-- Sofa head on. Back, two rolled arms standing proud of the seat, two seat cushions, a
+             throw cushion leaning against the back, two legs. The arms are drawn as separate
+             rounded blocks rather than as the ends of the back so the seat reads as sunk between
+             them, which is what says "sofa" rather than "bench". -->
+        <symbol id="hp-ico-livingRoom" viewBox="0 0 32 32" stroke-width="1.7"><rect x="5" y="8" width="22" height="8" rx="2" fill="#a5b4fc"/><rect x="2.5" y="13" width="4.5" height="9" rx="1.8" fill="#a5b4fc"/><rect x="25" y="13" width="4.5" height="9" rx="1.8" fill="#a5b4fc"/><rect x="7" y="16" width="18" height="6" rx="1.2" fill="#a5b4fc"/><path d="M16 8v14"/><path d="M9 15.5l3.5-4.5h4l-1.5 4.5z" fill="#fde68a"/><path d="M6 22v3.5M26 22v3.5"/></symbol>
+        <!-- Dining room: a table with a chair at each end and a pendant lamp hung over it. The
+             pendant is what makes it a dining room rather than a desk with visitors; its shade is
+             a trapezoid on a cord, the classic shape over a table. Chair backs are taller than the
+             table so they show above it. -->
+        <symbol id="hp-ico-diningRoom" viewBox="0 0 32 32" stroke-width="1.7"><path d="M16 2.5v4"/><path d="M11.5 11.5l2-5h5l2 5z" fill="#fbbf24"/><rect x="6" y="15" width="20" height="2.5" rx="1.2" fill="#c9a070"/><path d="M9.5 17.5v9M22.5 17.5v9"/><rect x="2.5" y="9.5" width="3" height="8.5" rx="1" fill="#c9a070"/><path d="M3 18v8.5M5.5 18v8.5"/><rect x="26.5" y="9.5" width="3" height="8.5" rx="1" fill="#c9a070"/><path d="M27 18v8.5M29.5 18v8.5"/></symbol>
+        <!-- A kitchen run in elevation. Two wall cabinets with handles, the extractor hood
+             between them, the counter, a tap standing on it at the left, the oven with its window
+             under the hood, and base units with handles either side. Everything is a front view:
+             no hob rings and no sink basin, because those are plan-view ideas that make no sense
+             drawn on the front of a cupboard. -->
+        <symbol id="hp-ico-kitchen" viewBox="0 0 32 32" stroke-width="1.7"><rect x="2.5" y="3" width="10" height="7" rx="1" fill="#f1efe7"/><rect x="19.5" y="3" width="10" height="7" rx="1" fill="#f1efe7"/><path d="M6 8h3M23 8h3"/><rect x="12.5" y="7.5" width="7" height="2.5" rx="0.6" fill="#94a3b8"/><path d="M7.5 14.5V11h2.5"/><rect x="2.5" y="14.5" width="27" height="2.5" rx="1" fill="#d6d3d1"/><rect x="2.5" y="17" width="27" height="9.5" rx="1" fill="#f1efe7"/><path d="M12 17v9.5M20 17v9.5"/><rect x="13.5" y="20.5" width="5" height="3.5" rx="0.6" fill="#dbeafe"/><path d="M12 19h8"/><path d="M5.5 21.5h4M22.5 21.5h4"/></symbol>
+        <!-- Office: a monitor on a stand with two lines of text on the screen, the desk, a mug
+             with a handle at the right, a drawer pedestal with two handles under that end, one
+             leg at the other. The screen text is the detail that does the work: a blank rectangle
+             on a stem is a mirror or a picture frame; two lines make it a display. -->
+        <symbol id="hp-ico-office" viewBox="0 0 32 32" stroke-width="1.7"><rect x="9.5" y="4" width="14" height="9.5" rx="1.2" fill="#dbeafe"/><path d="M12.5 7h8M12.5 9.5h5"/><path d="M16.5 13.5v3"/><path d="M13 16.5h7"/><rect x="24.5" y="13.5" width="3" height="3.5" rx="0.6" fill="#f87171"/><path d="M27.5 14.5a1.2 1.2 0 0 1 0 2.4"/><rect x="2.5" y="17" width="27" height="2.5" rx="1" fill="#c9a070"/><path d="M5 19.5v7"/><rect x="20.5" y="19.5" width="7" height="7" rx="0.8" fill="#c9a070"/><path d="M22.5 22.5h3M22.5 25h3"/></symbol>
+        <!-- Bathroom: a claw-foot tub with a water line, a wall shower over its left end with the
+             spray drawn, a tap over its right end, and a round mirror on the wall. Bathroom is the
+             one room type the pipeline may install fixtures for (BATHROOM_PRESERVATION_RULES in
+             lib/staging/preservation-rules.js), so its glyph is all plumbing and no furniture. -->
+        <symbol id="hp-ico-bathroom" viewBox="0 0 32 32" stroke-width="1.7"><path d="M6 2.5v3.5"/><rect x="3.5" y="6" width="5" height="1.8" rx="0.9" fill="#94a3b8"/><path d="M4.5 9.5v2M6 9.5v2.5M7.5 9.5v2"/><circle cx="24" cy="7" r="3.5" fill="#dbeafe"/><path d="M24 16v-4h-3"/><path d="M2.5 16h27v3.5a5.5 5.5 0 0 1-5.5 5.5H8a5.5 5.5 0 0 1-5.5-5.5z" fill="#ffffff"/><path d="M6 19.5q5-2 10 0t10 0"/><path d="M7 25v2.5M25 25v2.5"/></symbol>
+        <!-- Modern: a cube armchair with a square back and an arc floor lamp swung over it. The
+             chair is the only sharp-cornered thing in the set (rx 0.5) and the arc lamp is the
+             one object everyone reads as "modern interior" without being told. It is spent here
+             rather than on Standard because Modern is the pair the hero ships painted, so this is
+             the glyph most visitors meet already selected. -->
+        <symbol id="hp-ico-modern" viewBox="0 0 32 32" stroke-width="1.7"><path d="M27 27V14a8 8 0 0 0-8-8"/><path d="M23.5 27h6"/><path d="M17 6h4l-1 3h-2z" fill="#1e293b"/><rect x="3" y="12" width="4" height="10" rx="0.5" fill="#64748b"/><rect x="3" y="18.5" width="13" height="5" rx="0.5" fill="#64748b"/><path d="M7 21h9"/><path d="M5 23.5v3.5M14 23.5v3.5"/></symbol>
+        <!-- Standard: the plain furnished corner. A rounded armchair with two arms and a seat
+             cushion, a side table with a shaded lamp on it. Standard is the baseline the studio
+             falls back to rather than a look with a motif of its own, so its scene is the most
+             ordinary living-room furniture there is, drawn the most ordinary way: soft corners,
+             straight legs, a lamp with a plain conical shade. -->
+        <symbol id="hp-ico-standard" viewBox="0 0 32 32" stroke-width="1.7"><rect x="3" y="9" width="13" height="8" rx="2.5" fill="#d6c7b5"/><rect x="2" y="14" width="3.5" height="8" rx="1.5" fill="#d6c7b5"/><rect x="13.5" y="14" width="3.5" height="8" rx="1.5" fill="#d6c7b5"/><rect x="5.5" y="17" width="8" height="5" rx="1" fill="#d6c7b5"/><path d="M4.5 22v3.5M15 22v3.5"/><path d="M20 19h9"/><path d="M21.5 19v6.5M27.5 19v6.5"/><path d="M21.5 12l1.5-5h4l1.5 5z" fill="#fde68a"/><path d="M24.5 12v7"/></symbol>
+        <!-- Scandinavian: a two-door sideboard on splayed tapered legs, a potted plant on top of
+             it, and a round paper lantern hanging beside it. Pale wood, greenery and a paper shade
+             are the three things the look is recognised by; the splayed legs are the one
+             non-vertical support in the room half of the set and carry the silhouette alone. -->
+        <symbol id="hp-ico-scandinavian" viewBox="0 0 32 32" stroke-width="1.7"><rect x="3" y="14" width="20" height="8" rx="1.2" fill="#e3c9a2"/><path d="M13 14v8"/><path d="M10.5 18h1M14.5 18h1"/><path d="M6 22l-2 5.5M20 22l2 5.5"/><rect x="7" y="10" width="5" height="4" rx="0.8" fill="#f5d0a9"/><path d="M9.5 10c-3-2-3-5 0-7 3 2 3 5 0 7z" fill="#4ade80"/><path d="M9.5 8c-2 0-3.5-1-4-3 2 0 3.5 1 4 3zM9.5 8c2 0 3.5-1 4-3-2 0-3.5 1-4 3z" fill="#4ade80"/><path d="M25.5 2.5v4"/><circle cx="25.5" cy="10" r="3.5" fill="#fff7ed"/></symbol>
+        <!-- Coastal: a sailboat on a swell under a sun. Hull, mast, mainsail and jib, one wave
+             under it, and a sun with four rays in the corner. The one landscape rather than an
+             interior, because what this style changes is light and palette, not which furniture
+             arrives. -->
+        <symbol id="hp-ico-coastal" viewBox="0 0 32 32" stroke-width="1.7"><circle cx="7" cy="7" r="3" fill="#fbbf24"/><path d="M2.5 7h1.2M10.3 7h1.2M7 2.5v1.2M7 10.3v1.2"/><path d="M17 22V6"/><path d="M17 7l8 13h-8z" fill="#ffffff"/><path d="M16 10l-5.5 10h5.5z" fill="#ffffff"/><path d="M9 22h16l-2.5 3.5h-11z" fill="#1d4ed8"/><path d="M2.5 28q3.4-2.5 6.8 0t6.8 0 6.8 0 6.6 0"/></symbol>
+        <!-- Farmhouse: a barn. Gable roof, a loft window with its cross mullion under the ridge,
+             double doors with the X bracing on each leaf, and a small side window. The X brace is
+             what keeps this from reading as the generic house icon in the site header, and the
+             loft window is what makes it a barn rather than a shed. -->
+        <symbol id="hp-ico-farmhouse" viewBox="0 0 32 32" stroke-width="1.7"><path d="M4 13 16 4l12 9v14H4z" fill="#dc2626"/><rect x="13.5" y="9" width="5" height="4" rx="0.5" fill="#ffffff"/><path d="M13.5 11h5M16 9v4"/><rect x="11" y="17.5" width="10" height="9.5" rx="0.5" fill="#ffffff"/><path d="M16 17.5v9.5"/><path d="M11 17.5l10 9.5M21 17.5l-10 9.5"/><rect x="5.5" y="18.5" width="3" height="3" rx="0.5" fill="#ffffff"/></symbol>
+        <!-- Luxury: a three-arm chandelier. Chain, hub, two swept arms and a straight one, a
+             candle cup on each with a candle standing in the outer two, and a crystal drop hanging
+             under each cup. Marble and brass have no outline you can draw; a chandelier is the
+             one object that says the grade of the room on its own. -->
+        <symbol id="hp-ico-luxury" viewBox="0 0 32 32" stroke-width="1.7"><path d="M16 2.5v4"/><circle cx="16" cy="8" r="1.5" fill="#d4a017"/><path d="M16 9.5c-6 0-9 3-9 7M16 9.5c6 0 9 3 9 7M16 9.5v7"/><rect x="5.5" y="16.5" width="3" height="2" rx="0.6" fill="#d4a017"/><rect x="14.5" y="16.5" width="3" height="2" rx="0.6" fill="#d4a017"/><rect x="23.5" y="16.5" width="3" height="2" rx="0.6" fill="#d4a017"/><path d="M7 16.5v-3M25 16.5v-3"/><path d="M7 18.5v3M16 18.5v3M25 18.5v3"/><path d="M7 21.5l-1.2 2 1.2 2 1.2-2zM16 21.5l-1.2 2 1.2 2 1.2-2zM25 21.5l-1.2 2 1.2 2 1.2-2z" fill="#dbeafe"/></symbol>
+        <!-- Mid-century: a lounge chair on a pedestal star base, its ottoman beside it, and a
+             starburst clock on the wall above. The chair’s curved shell and the atomic clock are
+             the period’s two signatures; the ottoman is what tells the chair apart from the
+             armchairs in Standard and Modern at a glance. -->
+        <symbol id="hp-ico-midcentury" viewBox="0 0 32 32" stroke-width="1.7"><circle cx="24" cy="8" r="2.5" fill="#fbbf24"/><path d="M24 2.5v1.5M24 12v1.5M18.5 8h1.5M28 8h1.5"/><path d="M20 4l1 1M28 4l-1 1M20 12l1-1M28 12l-1-1"/><path d="M5 21V12.5a3.5 3.5 0 0 1 3.5-3.5h4a2.5 2.5 0 0 1 2.5 2.5V16"/><path d="M5 21h13a2 2 0 0 0 2-2v-3"/><path d="M11 21v4"/><path d="M6.5 27l4.5-2 4.5 2"/><rect x="21" y="19" width="8" height="4" rx="1.5" fill="#b45309"/><path d="M23 23v3M27 23v3"/></symbol>
+        <!-- Custom: a prompt box with two full lines of text and a third just started, a pencil
+             coming down to finish it, and two sparks. Custom is the free-text escape hatch, so the glyph is about
+             writing the brief, which is also exactly what the row does: it opens a text box. -->
+        <symbol id="hp-ico-custom" viewBox="0 0 32 32" stroke-width="1.7"><rect x="2.5" y="14" width="20" height="13" rx="2" fill="#ffffff"/><path d="M6 18.5h10M6 22h7"/><path d="M6 25.5h4"/><path d="M18 12l8-8 2.5 2.5-8 8-3.5 1z" fill="#fbbf24"/><path d="M24.5 5.5l2 2"/><path d="M7 4.5l.9 2.3 2.3.9-2.3.9-.9 2.3-.9-2.3-2.3-.9 2.3-.9z" fill="#fbbf24"/><path d="M13 8.5l.5 1.3 1.3.5-1.3.5-.5 1.3-.5-1.3-1.3-.5 1.3-.5z" fill="#fbbf24"/></symbol>
+      </defs></svg>
+
       <section class="sponsors">
         <div class="sponsors-content">
           <h2 class="sponsors-title" data-lang="sponsors.title">Trusted by agents at:</h2>
@@ -846,7 +982,7 @@
         </div>
         <div class="hstrips reveal" data-strips>
           <div class="hstrip" data-strip="0">
-            <img class="hstrip__img" src="media-webp/Homepage/Meeting2.webp" alt="Stagify.ai founder demonstrating the product at a Compass real estate office" loading="lazy" fetchpriority="low" decoding="async">
+            <img class="hstrip__img" src="media-webp/Homepage/Meeting2.webp" data-lang-attr="home.info.rows.why.photoAlt|alt" alt="Stagify.ai founder demonstrating the product at a Compass real estate office" loading="lazy" fetchpriority="low" decoding="async">
             <div class="hstrip__scrim"></div>
             <h3 class="hstrip__h">
               <button type="button" class="hstrip__btn" id="learn-btn-why" aria-expanded="false" aria-controls="learn-panel-why">
@@ -868,7 +1004,7 @@
           </div>
 
           <div class="hstrip" data-strip="1">
-            <img class="hstrip__img" src="media-webp/Homepage/Meeting1.webp" alt="Stagify.ai presentation to a room of real estate agents" loading="lazy" fetchpriority="low" decoding="async">
+            <img class="hstrip__img" src="media-webp/Homepage/Meeting1.webp" data-lang-attr="home.info.rows.how.photoAlt|alt" alt="Stagify.ai presentation to a room of real estate agents" loading="lazy" fetchpriority="low" decoding="async">
             <div class="hstrip__scrim"></div>
             <h3 class="hstrip__h">
               <button type="button" class="hstrip__btn" id="learn-btn-how" aria-expanded="false" aria-controls="learn-panel-how">
@@ -890,7 +1026,7 @@
           </div>
 
           <div class="hstrip" data-strip="2">
-            <img class="hstrip__img" src="media-webp/Homepage/HelpingOld.webp" alt="Stagify.ai team member staging a client’s photos on a laptop" loading="lazy" fetchpriority="low" decoding="async">
+            <img class="hstrip__img" src="media-webp/Homepage/HelpingOld.webp" data-lang-attr="home.info.rows.who.photoAlt|alt" alt="Stagify.ai team member staging a client’s photos on a laptop" loading="lazy" fetchpriority="low" decoding="async">
             <div class="hstrip__scrim"></div>
             <h3 class="hstrip__h">
               <button type="button" class="hstrip__btn" id="learn-btn-who" aria-expanded="false" aria-controls="learn-panel-who">
@@ -912,7 +1048,7 @@
           </div>
 
           <div class="hstrip" data-strip="3">
-            <img class="hstrip__img" src="media-webp/Homepage/BoardRoom.webp" alt="Stagify.ai founder presenting to a full office of real estate agents" loading="lazy" fetchpriority="low" decoding="async">
+            <img class="hstrip__img" src="media-webp/Homepage/BoardRoom.webp" data-lang-attr="home.info.rows.team.photoAlt|alt" alt="Stagify.ai founder presenting to a full office of real estate agents" loading="lazy" fetchpriority="low" decoding="async">
             <div class="hstrip__scrim"></div>
             <h3 class="hstrip__h">
               <button type="button" class="hstrip__btn" id="learn-btn-team" aria-expanded="false" aria-controls="learn-panel-team">
@@ -988,10 +1124,12 @@
           </div>
           <div class="nar-stats">
             <div class="nar-stat">
+              <span class="nar-stat__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="11" stroke="currentColor" stroke-width="2"/><path d="M7 12.5l3 3 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
               <span class="nar-stat__num">82%</span>
               <span class="nar-stat__txt nar-swap" data-nar-owned data-lang="home.nar.stat1">of agents say clients responded positively to technology in the buying and selling process</span>
             </div>
             <div class="nar-stat">
+              <span class="nar-stat__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="11" stroke="currentColor" stroke-width="2"/><path d="M7 12.5l3 3 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
               <span class="nar-stat__num">46%</span>
               <span class="nar-stat__txt nar-swap" data-nar-owned data-lang="home.nar.stat2">already use AI to generate listing content</span>
             </div>
@@ -1472,7 +1610,7 @@
                in the script, so language-loader.js retranslates it on a switch. -->
           <div class="tw-stack" data-deck-stack data-lang-attr="home.testimonials.deck.label|aria-label" aria-label="Agent testimonials">
             <figure class="tw-card">
-              <div class="tw-stars" role="img" aria-label="Rated 5 out of 5 stars">
+              <div class="tw-stars" role="img" data-lang-attr="home.testimonials.starsAria|aria-label" aria-label="Rated 5 out of 5 stars">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
@@ -1493,7 +1631,7 @@
               </figcaption>
             </figure>
             <figure class="tw-card">
-              <div class="tw-stars" role="img" aria-label="Rated 5 out of 5 stars">
+              <div class="tw-stars" role="img" data-lang-attr="home.testimonials.starsAria|aria-label" aria-label="Rated 5 out of 5 stars">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
@@ -1514,7 +1652,7 @@
               </figcaption>
             </figure>
             <figure class="tw-card">
-              <div class="tw-stars" role="img" aria-label="Rated 5 out of 5 stars">
+              <div class="tw-stars" role="img" data-lang-attr="home.testimonials.starsAria|aria-label" aria-label="Rated 5 out of 5 stars">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
@@ -1535,7 +1673,7 @@
               </figcaption>
             </figure>
             <figure class="tw-card">
-              <div class="tw-stars" role="img" aria-label="Rated 5 out of 5 stars">
+              <div class="tw-stars" role="img" data-lang-attr="home.testimonials.starsAria|aria-label" aria-label="Rated 5 out of 5 stars">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
@@ -1556,7 +1694,7 @@
               </figcaption>
             </figure>
             <figure class="tw-card">
-              <div class="tw-stars" role="img" aria-label="Rated 5 out of 5 stars">
+              <div class="tw-stars" role="img" data-lang-attr="home.testimonials.starsAria|aria-label" aria-label="Rated 5 out of 5 stars">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
@@ -1577,7 +1715,7 @@
               </figcaption>
             </figure>
             <figure class="tw-card">
-              <div class="tw-stars" role="img" aria-label="Rated 5 out of 5 stars">
+              <div class="tw-stars" role="img" data-lang-attr="home.testimonials.starsAria|aria-label" aria-label="Rated 5 out of 5 stars">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
@@ -1598,7 +1736,7 @@
               </figcaption>
             </figure>
             <figure class="tw-card">
-              <div class="tw-stars" role="img" aria-label="Rated 5 out of 5 stars">
+              <div class="tw-stars" role="img" data-lang-attr="home.testimonials.starsAria|aria-label" aria-label="Rated 5 out of 5 stars">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
@@ -2565,7 +2703,7 @@
                          element’s textContent wholesale and would eat the SVG. data-lang-attr
                          carries exactly ONE key|attr pair, so the hover tooltip is mirrored
                          from the translated aria-label in staging-pipeline.js. -->
-                    <button type="button" id="stage-cancel-btn" class="stage-cancel-btn hidden" data-lang-attr="modal.staging.progress.stop|aria-label" aria-label="Stop generation" title="Stop generation">
+                    <button type="button" id="stage-cancel-btn" class="stage-cancel-btn hidden" data-lang-attr="modal.staging.progress.stop|aria-label;modal.staging.progress.stop|title" aria-label="Stop generation" title="Stop generation">
                       <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" aria-hidden="true" focusable="false"><rect x="6" y="6" width="12" height="12" rx="2.5"/></svg>
                     </button>
                   </div>
@@ -2696,10 +2834,10 @@
                     <div class="image-viewer">
                       <img id="stage-preview" class="viewer-image" data-lang-attr="modal.staging.originalImage|alt" alt="Original room photo before virtual staging">
                       <canvas id="canvas1" class="viewer-image hidden"></canvas>
-                      <button id="mask-edit-btn" class="stage-mask-fab hidden" type="button" data-lang-attr="modal.staging.editWithMask|aria-label" aria-label="Edit selected area with mask tool" title="Edit with mask">
+                      <button id="mask-edit-btn" class="stage-mask-fab hidden" type="button" data-lang-attr="modal.staging.editWithMask|aria-label;modal.staging.editWithMask|title" aria-label="Edit selected area with mask tool" title="Edit selected area with mask tool">
                         <img src="media-webp/Mask.webp" data-lang-attr="modal.staging.maskIcon|alt" alt="" aria-hidden="true">
                       </button>
-                      <button id="empty-room-btn" class="stage-mask-fab empty-room-fab hidden" type="button" data-lang-attr="modal.staging.emptyRoomView|aria-label" aria-label="View the emptied room" title="View empty room">
+                      <button id="empty-room-btn" class="stage-mask-fab empty-room-fab hidden" type="button" data-lang-attr="modal.staging.emptyRoomView|aria-label;modal.staging.emptyRoomView|title" aria-label="View the emptied room" title="View the emptied room">
                         <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="3" width="18" height="18" rx="1"/><rect x="8.5" y="8.5" width="7" height="7"/><path d="M3 3l5.5 5.5M21 3l-5.5 5.5M3 21l5.5-5.5M21 21l-5.5-5.5"/></svg>
                       </button>
                       <div id="variation-thumbs" class="variation-thumbs hidden" data-lang-attr="modal.staging.stagingVariations|aria-label" aria-label="Staging variations"></div>

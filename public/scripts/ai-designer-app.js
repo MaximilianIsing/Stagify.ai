@@ -12,7 +12,6 @@ import { lang, stampLang } from './ai-designer/i18n.js';
 import { syncDesignerAccess } from './ai-designer/access.js';
 import { settlePreview } from './preview-access.js';
 import { showToast } from './toast.js';
-import { summariseBugReportHistory } from './bug-report-history.js'; // bridged onto window below
 import { createMaskEditor } from './ai-designer/mask-editor.js';
 import { updateMaskEditorTranslations } from './ai-designer/mask-editor-i18n.js'; // bridged onto window below
 import { createImageViewer } from './ai-designer/image-viewer.js';
@@ -59,16 +58,17 @@ import { fetchWelcomeMessage } from './ai-designer/welcome.js';
         openMaskEditor: (imageSrc, imageType) => openMaskEditor(imageSrc, imageType),
       });
       // Everything the classic (non-module) ai-designer-model-selector.js needs from
-      // this module's scope, which it cannot reach: the lightbox closer, the bug
-      // form's transcript + the summariser that strips its image bytes, and the
-      // feedback/i18n helpers. Naming any of them there is a ReferenceError that kills
-      // the feature silently — the "x" stops working, the whole report is lost, the
+      // this module's scope, which it cannot reach: the lightbox closer, the chat
+      // transcript, and the feedback/i18n helpers. Naming any of them there is a
+      // ReferenceError that kills the feature silently — the "x" stops working, the
       // dialog reports nothing. The transcript goes over as an ACCESSOR, not a
-      // snapshot: the array is reassigned on reset, so a value would go stale.
+      // snapshot: the array is reassigned on reset, so a value would go stale. It is
+      // read by readBugReportHistory (scripts/bug-report-history.js) on behalf of the
+      // shared "Report an issue" dialog, which is the only thing that posts a report
+      // now — the studio's own copy of that form is gone.
       // test/frontend/classic-script-globals.test.js pins these and explains why.
       window.closeImageModal = closeImageModal;
       window.getConversationHistory = () => conversationHistory;
-      window.summariseBugReportHistory = summariseBugReportHistory;
       window.showToast = showToast;
       window.lang = lang;
       window.updateMaskEditorTranslations = updateMaskEditorTranslations;
@@ -333,8 +333,9 @@ import { fetchWelcomeMessage } from './ai-designer/welcome.js';
       // Focus trap for open modals — Escape/click-outside already close them, but
       // without this, Tab can walk focus to controls hidden behind the overlay.
       function getOpenModal() {
-        // Topmost first (mask editor sits above bug report sits above image modal).
-        const ids = ['mask-editor-modal', 'bug-report-popup', 'image-modal'];
+        // Topmost first (the mask editor sits above the image modal). The shared
+        // "Report an issue" dialog is not listed: it runs its own focus trap.
+        const ids = ['mask-editor-modal', 'image-modal'];
         for (const id of ids) {
           const m = document.getElementById(id);
           if (m && m.classList.contains('active')) return m;

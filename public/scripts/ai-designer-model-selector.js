@@ -235,135 +235,23 @@
         }
       })();
       
-      // Initialize bug report popup
+      // The bug button next to Send opens the account menu's "Report an issue"
+      // dialog (public/scripts/profile-menu/report-issue-modal.js). This page used to
+      // carry its own copy of the form in markup, which was never given data-lang
+      // attributes and so rendered English on all eleven locales; the shared dialog is
+      // translated from profile.report.* and posts the same body to /api/bug-report,
+      // transcript included (it calls readBugReportHistory itself).
+      //
+      // profile-menu.js is a <script type="module">, so it is deferred and has not run
+      // when this classic script executes during parsing — the accessor is therefore
+      // read inside the handler, not captured here. Same scope/timing trap as
+      // closeImageModal at the bottom of this file.
       (function initBugReport() {
         const bugReportBtn = document.getElementById('bug-report-btn');
-        const bugReportPopup = document.getElementById('bug-report-popup');
-        const bugReportClose = document.getElementById('bug-report-popup-close');
-        const bugReportCancel = document.getElementById('bug-report-cancel');
-        const bugReportForm = document.getElementById('bug-report-form');
-        const bugReportSubmit = document.getElementById('bug-report-submit');
-        
-        // Focus follows the dialog: without this it stays on the button behind the
-        // overlay, so the dialog is never announced and Tab walks the page under it.
-        function openBugReport() {
-          bugReportPopup.classList.add('active');
-          document.body.style.overflow = 'hidden';
-          var description = document.getElementById('bug-report-description');
-          if (description) description.focus();
-        }
-
-        function closeBugReport() {
-          bugReportPopup.classList.remove('active');
-          document.body.style.overflow = '';
-          bugReportForm.reset();
-          // Always the same trigger here (unlike the per-image mask/lightbox
-          // openers), so it can just be looked up.
-          if (bugReportBtn && bugReportBtn.isConnected) bugReportBtn.focus();
-        }
-        
-        if (bugReportBtn) {
-          bugReportBtn.addEventListener('click', openBugReport);
-        }
-        
-        if (bugReportClose) {
-          bugReportClose.addEventListener('click', closeBugReport);
-        }
-        
-        if (bugReportCancel) {
-          bugReportCancel.addEventListener('click', closeBugReport);
-        }
-        
-        // Close when clicking outside
-        if (bugReportPopup) {
-          bugReportPopup.addEventListener('click', function(e) {
-            if (e.target === bugReportPopup) {
-              closeBugReport();
-            }
-          });
-        }
-        
-        // The transcript itself lives in ai-designer-app.js, which the page loads as a
-        // <script type="module"> — a module's top-level bindings are not shared with a
-        // classic script like this one (the same scope trap spelled out for
-        // closeImageModal at the bottom of this file). Naming that binding here threw a
-        // ReferenceError from inside the submit handler, which failed the WHOLE report,
-        // so it is read through a window accessor: when none is exposed the report still
-        // goes out, just without a transcript.
-        function readConversationHistory() {
-          const accessor = window.getConversationHistory;
-          return typeof accessor === 'function' ? accessor() : [];
-        }
-        
-        // summariseBugReportHistory strips the transcript's base64 image bytes before
-        // the POST — without it a report filed after a render 413'd on the 1MB JSON
-        // limit, exactly when the channel was needed. It now lives in the ES module
-        // public/scripts/bug-report-history.js, because the account menu's "Report an
-        // issue" dialog posts the same body and a second copy would drift; the module
-        // is bridged onto window by ai-designer-app.js, which is what makes the bare
-        // name below resolve here (the same classic-vs-module scope trap as
-        // getConversationHistory above). Why it strips what it strips is documented
-        // there, and pinned by test/frontend/ai-designer/bug-report-history.test.js.
-
-        // Handle form submission
-        if (bugReportForm) {
-          bugReportForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const description = document.getElementById('bug-report-description').value.trim();
-            const steps = document.getElementById('bug-report-steps').value.trim();
-            const email = document.getElementById('bug-report-email').value.trim();
-            
-            if (!description) {
-              showToast(lang('pdf.bug.needDescription', 'Please provide a bug description.'), 'error');
-              return;
-            }
-            
-            // Disable submit button
-            bugReportSubmit.disabled = true;
-            bugReportSubmit.textContent = 'Submitting...';
-            
-            try {
-              const response = await fetch('/api/bug-report', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  description,
-                  steps,
-                  email,
-                  userId: localStorage.getItem('userId') || 'unknown',
-                  userAgent: navigator.userAgent,
-                  url: window.location.href,
-                  timestamp: new Date().toISOString(),
-                  conversationHistory: summariseBugReportHistory(readConversationHistory())
-                })
-              });
-              
-              const data = await response.json();
-              
-              if (response.ok) {
-                showToast(lang('pdf.bug.success', "Thank you for reporting this bug! We’ll look into it."), 'success');
-                closeBugReport();
-              } else {
-                throw new Error(data.error || 'Failed to submit bug report');
-              }
-            } catch (error) {
-              console.error('Error submitting bug report:', error);
-              showToast(lang('pdf.bug.failed', 'Failed to submit bug report. Please try again later.'), 'error');
-            } finally {
-              bugReportSubmit.disabled = false;
-              bugReportSubmit.textContent = 'Submit';
-            }
-          });
-        }
-        
-        // Close with Escape key
-        document.addEventListener('keydown', function(e) {
-          if (e.key === 'Escape' && bugReportPopup.classList.contains('active')) {
-            closeBugReport();
-          }
+        if (!bugReportBtn) return;
+        bugReportBtn.addEventListener('click', function () {
+          const menu = window.StagifyProfileMenu;
+          if (menu && typeof menu.openReportIssue === 'function') menu.openReportIssue(bugReportBtn);
         });
       })();
       

@@ -242,6 +242,11 @@ import { stagifyApiRowHtml } from './profile-menu/api-keys-row.js';
 
   window.StagifyProfileMenu = {
     openAuthModal: auth.openAuthModal,
+    // The AI Designer's bug button (a classic script, ai-designer-model-selector.js)
+    // reaches the report dialog through here. It used to own a second, hand-rolled
+    // copy of the form in ai-designer.html markup, which never carried a data-lang
+    // attribute and so shipped English under every locale; this is the translated one.
+    openReportIssue: reportIssue.open,
     refresh,
     closeDropdown,
     setAuthModeRegister(v) {

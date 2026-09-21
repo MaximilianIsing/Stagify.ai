@@ -73,7 +73,9 @@ test('every aria-label in the shared site-header is wired to a translation key',
     for (const tag of openTags(header)) {
       if (!/\baria-label="/.test(tag)) continue;
       // Scoped to THIS tag: the key must be on the same element as the aria-label.
-      if (/\bdata-lang-attr="[^"]+\|aria-label"/.test(tag)) continue;
+      // The spec may list several "key|attr" pairs separated by ";" — see
+      // applyAttrTranslations in lib/i18n/render-page.js.
+      if (/\bdata-lang-attr="[^"]*\|aria-label(?:"|;)/.test(tag)) continue;
       const label = (tag.match(/aria-label="([^"]*)"/) || [])[1];
       offenders.push(`${path.relative(root, file)}: aria-label="${label}" has no data-lang-attr`);
     }
@@ -93,7 +95,7 @@ const referencedKeys = [
   ...new Set(
     pages.flatMap((file) =>
       openTags(siteHeaderOf(fs.readFileSync(file, 'utf8')))
-        .map((tag) => (tag.match(/\bdata-lang-attr="([^"|]+)\|aria-label"/) || [])[1])
+        .map((tag) => (tag.match(/\bdata-lang-attr="(?:[^"]*;)?([^"|;]+)\|aria-label(?:"|;)/) || [])[1])
         .filter(Boolean),
     ),
   ),

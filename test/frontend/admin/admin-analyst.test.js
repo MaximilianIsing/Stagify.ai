@@ -289,3 +289,23 @@ test('the handle regex is anchored to the exact shape the map mints', () => {
   HANDLE_RE.lastIndex = 0;
   assert.ok(new RegExp(HANDLE_RE.source).test(h), 'the shared regex must match what the map produces');
 });
+
+// ── Why there is no answer ──────────────────────────────────────────────────
+
+test('a truncated turn and an empty one do not read the same', async () => {
+  // They call for opposite things. "The model returned nothing, try asking again"
+  // is a dead end when the real problem is that the answer did not fit: asking the
+  // same question again reproduces it. This is the copy that sent the operator in
+  // circles, so the two codes are pinned apart.
+  const { reasonText } = await import('../../../public/scripts/admin/analyst.js');
+
+  const truncated = reasonText('truncated');
+  const empty = reasonText('empty');
+  const fallback = reasonText('something-new');
+
+  assert.notEqual(truncated, empty);
+  assert.notEqual(truncated, fallback, 'a truncation must not fall through to the generic failure');
+  assert.match(truncated, /narrow|one thing at a time/i, 'it has to say what to do differently');
+  assert.match(reasonText('unavailable'), /Signals/, 'a missing key must say the rest of the tab still works');
+  assert.equal(reasonText(undefined), fallback);
+});
