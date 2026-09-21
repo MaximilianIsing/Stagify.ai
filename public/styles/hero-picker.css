@@ -985,11 +985,23 @@
    navy plate with the label on it, not a flash of the old button.
 
    TIMELINE (hover in):  van 0–1.25s · lantern 0.9s · door 1.0s · windows 0.8s
-   TIMELINE (leave):     door closes at once · lantern 0.5s · windows 0.3s · van, wheels,
-                         beam and the parallax bands wait 0.3s (so the van is already
-                         moving while the door finishes closing). `.hu-quick` — set by
-                         hero-van.js when the pointer left before the door opened — zeroes
-                         those waits, so an interrupted drive reverses instantly.
+   TIMELINE (leave):     door closes at once · lantern 0.5s · windows 0.3s · van and
+                         wheels wait 0.25s (so the van is already moving while the door
+                         finishes closing), then the van drives ON, off the right edge,
+                         over 0.75s, headlights on until it is gone · the camera pans
+                         back from 0.6s, once the van is well on its way. `.hu-out` — set
+                         by hero-van.js on the leave
+                         and cleared when the drive-out has ended — plays that drive-out,
+                         and while it is on, no hover rule applies (`:not(.hu-out)`): a
+                         pointer that comes straight back waits for the van to be gone,
+                         then gets the whole arrival again, rather than a van that
+                         teleports from the right edge to the left. `.hu-quick` — set
+                         when the pointer left before the door opened — zeroes the van's
+                         wait, so an interrupted arrival rolls straight on.
+   `.hu-hold` — set by hero-van.js on click — keeps the end state while the stage (or
+                         sign-in) modal the click opened is covering the button, so the
+                         van does not drive off the moment the modal appears; the leave
+                         plays when that modal closes. Hence `:is(:hover, .hu-hold)`.
    The wheel spin is a TRANSITION on rotate(), not a keyframe, with the drive's own
    easing: it spins up and decelerates with the van and unwinds on the way out, and an
    interruption reverses it from wherever it is. Five turns over the run.
@@ -1038,7 +1050,7 @@
     letter-spacing: -0.1px;
     transition: box-shadow 0.25s ease, transform 0.22s cubic-bezier(0.22, 0.8, 0.3, 1);
   }
-  #hero-upload.hu:hover {
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) {
     background: linear-gradient(180deg, #2a3a68 0%, #1a2749 52%, #101a34 100%);
     box-shadow:
       0 0 0 1px rgba(6, 11, 26, 0.6),
@@ -1086,7 +1098,7 @@
     opacity: 0.36;
     transition: opacity 0.7s ease;
   }
-  #hero-upload.hu:hover::after {
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out)::after {
     opacity: 0.28;
   }
   #hero-upload.hu strong {
@@ -1105,11 +1117,23 @@
     color: var(--bg-elevated);
     text-shadow: 0 1px 2px rgba(6, 12, 28, 0.9), 0 2px 14px rgba(6, 12, 28, 0.85);
   }
+  /* The whole plate is the camera: on hover it dollies in a touch (3.5%), pivoting on the
+     parking bay, and eases back out with the parallax on the leave. Same curve and delays
+     as the bands below so the pan and the push read as one move. The scale is on this
+     HTML span, NOT on the <svg>: Chrome places a nested <svg> (the entrance) wrongly under
+     a CSS transform on its outer <svg>, and the door drifted off its house. */
   #hero-upload.hu .hu-scene {
     position: absolute;
     inset: 0;
     z-index: 0;
     pointer-events: none;
+    transform-origin: 66% 74%;
+    transform: scale(1);
+    transition: transform 1.3s cubic-bezier(0.45, 0.02, 0.2, 1) 0.6s;
+  }
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .hu-scene {
+    transform: scale(1.035);
+    transition: transform 1.6s cubic-bezier(0.3, 0.02, 0.1, 1) 0s;
   }
   #hero-upload.hu .hu-scene svg {
     width: 100%;
@@ -1133,38 +1157,80 @@
     );
   }
 
-  /* ---- parallax: far / mid / home / near pan different distances on hover ---- */
+  /* ---- parallax: far / mid / home / near pan different distances on hover ----
+     One slow camera move, not a snap: the pan in runs 1.6s on a curve that starts soft
+     and settles long (it outlasts the van's 1.25s arrival, so the street is still
+     easing as the van parks); the pan out runs 1.3s on a gentler in-out. The bands keep
+     their depth ratio (far 5 · mid 8 · home 8 · near 16); the home stays at 8 because
+     the parked van's nose sits 4 units from the entrance and any more would overlap. */
+  /* On the leave the camera lets the van go first: the pan back starts 0.6s in, when the
+     drive-out (0.25s wait + 0.75s) has the van about halfway to the edge. */
   #hero-upload.hu .far,
   #hero-upload.hu .mid,
   #hero-upload.hu .near,
   #hero-upload.hu .home {
-    transition: transform 0.95s cubic-bezier(0.22, 0.8, 0.3, 1) 0.3s;
+    transition: transform 1.3s cubic-bezier(0.45, 0.02, 0.2, 1) 0.6s;
   }
-  #hero-upload.hu:hover .far { transform: translateX(-4px); transition-delay: 0s; }
-  #hero-upload.hu:hover .mid { transform: translateX(-8px); transition-delay: 0s; }
-  #hero-upload.hu:hover .home { transform: translateX(-8px); transition-delay: 0s; }
-  #hero-upload.hu:hover .near { transform: translateX(-14px); transition-delay: 0s; }
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .far,
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .mid,
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .home,
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .near {
+    transition: transform 1.6s cubic-bezier(0.3, 0.02, 0.1, 1) 0s;
+  }
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .far { transform: translateX(-5px); }
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .mid { transform: translateX(-8px); }
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .home { transform: translateX(-8px); }
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .near { transform: translateX(-16px); }
 
-  /* ---- the drive: van authored 0..108, parks at x 210 (entrance begins at 322) ---- */
+  /* ---- the drive: van authored 0..108, parks at x 210 (entrance begins at 322) ----
+     Both legs are KEYFRAME animations, not a transition, because the van never reverses:
+     it arrives from the left and LEAVES TO THE RIGHT, off the far edge, and a transition
+     can only run a property back the way it came. Drive-in plays while the button is
+     hovered (or held); `.hu-out` — set by hero-van.js on the leave — plays the drive-out
+     from wherever the van is (`--hu-van-x`, read off the computed transform at that
+     moment, so an interrupted arrival just keeps going) to past the right edge, where it
+     rests until the next hover swaps the animation and the van reappears on the left.
+     Rule order matters: the hover rule is last so a hover during a drive-out wins. */
   #hero-upload.hu .van {
     transform: translateX(-150px);
-    transition: transform 1.25s cubic-bezier(0.32, 0.06, 0.2, 1) 0.3s;
   }
-  #hero-upload.hu:hover .van {
-    transform: translateX(210px);
-    transition-delay: 0s;
+  /* Duration is `--hu-out-ms`, set by hero-van.js from the distance left to the edge, so
+     the van leaves at the same road speed whether it was parked or had barely arrived;
+     0.75s is the parked case (210 units). */
+  #hero-upload.hu.hu-out .van {
+    animation: hu-drive-out var(--hu-out-ms, 0.75s) cubic-bezier(0.55, 0, 0.9, 0.5) 0.25s both;
+  }
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .van {
+    animation: hu-drive-in 1.25s cubic-bezier(0.32, 0.06, 0.2, 1) both;
+  }
+  @keyframes hu-drive-in {
+    from { transform: translateX(-150px); }
+    to { transform: translateX(210px); }
+  }
+  @keyframes hu-drive-out {
+    from { transform: translateX(var(--hu-van-x, 210px)); }
+    to { transform: translateX(420px); }
   }
   #hero-upload.hu .wheelspin {
     transform-box: fill-box;
     transform-origin: center;
     transform: rotate(0deg);
-    transition: transform 1.25s cubic-bezier(0.32, 0.06, 0.2, 1) 0.3s;
   }
-  #hero-upload.hu:hover .wheelspin {
-    transform: rotate(1800deg);
-    transition-delay: 0s;
+  #hero-upload.hu.hu-out .wheelspin {
+    animation: hu-spin-out var(--hu-out-ms, 0.75s) cubic-bezier(0.55, 0, 0.9, 0.5) 0.25s both;
   }
-  #hero-upload.hu:hover .bounce {
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .wheelspin {
+    animation: hu-spin-in 1.25s cubic-bezier(0.32, 0.06, 0.2, 1) both;
+  }
+  @keyframes hu-spin-in {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(1800deg); }
+  }
+  @keyframes hu-spin-out {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(1080deg); }
+  }
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .bounce {
     animation: hu-bump 1.25s ease-in-out;
   }
   @keyframes hu-bump {
@@ -1178,17 +1244,22 @@
     opacity: 0;
     transition: opacity 0.3s 0.3s;
   }
-  #hero-upload.hu:hover .beam { opacity: 1; transition: opacity 0.5s 0.2s; }
-  #hero-upload.hu:hover .lampglow { opacity: 0.45; transition: opacity 0.5s 0.2s; }
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .beam { opacity: 1; transition: opacity 0.5s 0.2s; }
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .lampglow { opacity: 0.45; transition: opacity 0.5s 0.2s; }
+  /* Headlights stay on for the drive-out and only go once the van is off the plate. */
+  #hero-upload.hu.hu-out .beam,
+  #hero-upload.hu.hu-out .lampglow {
+    transition: opacity 0.2s calc(var(--hu-out-ms, 0.75s) + 0.15s);
+  }
   /* Exhaust: three blurred puffs out of the tailpipe, staggered, only on the way in. */
   #hero-upload.hu .puff {
     opacity: 0;
     transform-box: fill-box;
     transform-origin: center;
   }
-  #hero-upload.hu:hover .puff { animation: hu-puff 1s cubic-bezier(0.2, 0.6, 0.4, 1) both; }
-  #hero-upload.hu:hover .p2 { animation-delay: 0.22s; animation-duration: 0.95s; }
-  #hero-upload.hu:hover .p3 { animation-delay: 0.42s; animation-duration: 1.1s; }
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .puff { animation: hu-puff 1s cubic-bezier(0.2, 0.6, 0.4, 1) both; }
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .p2 { animation-delay: 0.22s; animation-duration: 0.95s; }
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .p3 { animation-delay: 0.42s; animation-duration: 1.1s; }
   @keyframes hu-puff {
     0% { opacity: 0; transform: translate(0, 0) scale(0.3); }
     12% { opacity: 0.55; }
@@ -1201,12 +1272,12 @@
     opacity: 0.08;
     transition: opacity 0.6s 0.3s;
   }
-  #hero-upload.hu:hover .lit {
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .lit {
     opacity: 1;
     transition: opacity 0.6s 0.8s;
   }
   #hero-upload.hu .mid .lit,
-  #hero-upload.hu:hover .mid .lit {
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .mid .lit {
     opacity: 0.7;
     transition: none;
   }
@@ -1225,19 +1296,19 @@
     transition: transform 0.65s cubic-bezier(0.3, 0.8, 0.3, 1);
   }
   /* Nearly edge-on, so the leaf clears the whole opening and the glyph is unobstructed. */
-  #hero-upload.hu:hover .ent .leaf {
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .ent .leaf {
     transform: perspective(70px) rotateY(-86deg);
     transition-delay: 1s;
   }
   #hero-upload.hu .ent .leaf.right { transform-origin: right center; }
-  #hero-upload.hu:hover .ent .leaf.right { transform: perspective(70px) rotateY(86deg); }
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .ent .leaf.right { transform: perspective(70px) rotateY(86deg); }
   /* Custom's pair: no 3D. Each leaf folds flat against its own jamb and darkens as it
      turns edge-on, so the two halves are exact mirrors and the arrow is never covered. */
   #hero-upload.hu .ent[data-k="brownstone"] .leaf {
     transition: transform 0.65s cubic-bezier(0.3, 0.8, 0.3, 1), filter 0.65s cubic-bezier(0.3, 0.8, 0.3, 1);
   }
-  #hero-upload.hu:hover .ent[data-k="brownstone"] .leaf,
-  #hero-upload.hu:hover .ent[data-k="brownstone"] .leaf.right {
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .ent[data-k="brownstone"] .leaf,
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .ent[data-k="brownstone"] .leaf.right {
     transform: scaleX(0.16);
     filter: brightness(0.55);
     transition-delay: 1s;
@@ -1246,7 +1317,7 @@
     opacity: 0;
     transition: opacity 0.45s;
   }
-  #hero-upload.hu:hover .ent .spill {
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .ent .spill {
     opacity: 1;
     transition: opacity 0.5s 1.05s;
   }
@@ -1256,7 +1327,7 @@
     transform-box: fill-box;
     transform-origin: center;
   }
-  #hero-upload.hu:hover .ent .up {
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .ent .up {
     animation: hu-rise 1.4s ease-in-out 1.6s infinite alternate;
   }
   @keyframes hu-rise {
@@ -1267,21 +1338,33 @@
     opacity: 0.2;
     transition: opacity 0.4s 0.5s;
   }
-  #hero-upload.hu:hover .ent .lantern {
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .ent .lantern {
     opacity: 1;
     transition: opacity 0.4s 0.9s;
   }
 
-  /* ---- interrupted drive: nothing to wait for, leave now ---- */
+  /* ---- interrupted drive: nothing to wait for, leave now (the camera and the headlights
+     keep their offsets relative to the van, which now sets off at once). hero-van.js keeps
+     this class on until the drive-out has ENDED: an animation-delay that changes under a
+     running animation re-times it, and the van would jump. ---- */
   #hero-upload.hu.hu-quick .van,
-  #hero-upload.hu.hu-quick .wheelspin,
+  #hero-upload.hu.hu-quick .wheelspin {
+    animation-delay: 0s;
+    /* The van is already rolling: no ease-in from a standstill (that read as a pause),
+       just keep the pace and pick up a little towards the edge. hero-van.js also shortens
+       `--hu-out-ms` for this case so the pace matches the arrival's. */
+    animation-timing-function: cubic-bezier(0.3, 0.2, 0.7, 0.55);
+  }
   #hero-upload.hu.hu-quick .far,
   #hero-upload.hu.hu-quick .mid,
   #hero-upload.hu.hu-quick .near,
   #hero-upload.hu.hu-quick .home,
+  #hero-upload.hu.hu-quick .hu-scene {
+    transition-delay: 0.35s;
+  }
   #hero-upload.hu.hu-quick .beam,
   #hero-upload.hu.hu-quick .lampglow {
-    transition-delay: 0s;
+    transition-delay: calc(var(--hu-out-ms, 0.75s) - 0.1s);
   }
 }
 
@@ -1289,11 +1372,21 @@
    van is shown parked, the door closed, the lantern on. */
 @media (min-width: 769px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: reduce) {
   #hero-upload.hu .van,
-  #hero-upload.hu:hover .van {
+  #hero-upload.hu.hu-out .van,
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .van {
     transform: translateX(210px);
-    transition: none;
+    animation: none;
   }
   #hero-upload.hu .wheelspin,
+  #hero-upload.hu.hu-out .wheelspin,
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .wheelspin {
+    animation: none;
+  }
+  #hero-upload.hu .hu-scene,
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .hu-scene {
+    transform: none;
+    transition: none;
+  }
   #hero-upload.hu .far,
   #hero-upload.hu .mid,
   #hero-upload.hu .near,
@@ -1305,13 +1398,13 @@
   #hero-upload.hu .lampglow {
     transition: none;
   }
-  #hero-upload.hu:hover .wheelspin,
-  #hero-upload.hu:hover .far,
-  #hero-upload.hu:hover .mid,
-  #hero-upload.hu:hover .near,
-  #hero-upload.hu:hover .home,
-  #hero-upload.hu:hover .ent .leaf,
-  #hero-upload.hu:hover .ent[data-k="brownstone"] .leaf {
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .wheelspin,
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .far,
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .mid,
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .near,
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .home,
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .ent .leaf,
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .ent[data-k="brownstone"] .leaf {
     transform: none;
     filter: none;
   }

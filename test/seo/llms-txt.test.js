@@ -20,7 +20,7 @@ import { fileURLToPath } from 'node:url';
 import { BLOG_HUB, LOCALIZED_ARTICLES, LOCALIZED_PAGES, SITE_ORIGIN } from '../../lib/i18n/locales.js';
 import { CREDIT_PACKS } from '../../lib/data/credit-packs.js';
 import { SAME_AS } from '../../lib/seo/organization.js';
-import { buildLlmsTxt } from '../../lib/seo/llms-txt.js';
+import { buildLlmsTxt, ROOMS_STAGED_TOKEN, USERS_SERVED_TOKEN } from '../../lib/seo/llms-txt.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..', '..');
@@ -135,4 +135,28 @@ test('llms.txt still carries every owned profile', () => {
   for (const url of SAME_AS) {
     assert.ok(txt.includes(url), `llms.txt is missing the profile ${url}`);
   }
+});
+
+// The "Live usage" section is the one part of this file that is NOT final on disk: it
+// carries placeholders that lib/http/llms-txt-asset.js substitutes per request. Both
+// halves need pinning — the committed file must still hold the tokens (a number committed
+// here would be stale within the hour), and it must point at the endpoint that explains
+// them, because llms.txt naming /api/stats is the only thing that makes that endpoint
+// discoverable.
+test('llms.txt carries the live-usage placeholders rather than committed numbers', () => {
+  const committed = fs.readFileSync(path.join(PUBLIC, 'llms.txt'), 'utf8');
+
+  assert.match(committed, /## Live usage/);
+  assert.ok(committed.includes(ROOMS_STAGED_TOKEN), 'the rooms placeholder is missing');
+  assert.ok(committed.includes(USERS_SERVED_TOKEN), 'the users placeholder is missing');
+  assert.doesNotMatch(
+    committed,
+    /Rooms staged to date: [\d,]/,
+    'a live count was baked into the committed file',
+  );
+});
+
+test('llms.txt points at /api/stats for the machine-readable figures', () => {
+  const committed = fs.readFileSync(path.join(PUBLIC, 'llms.txt'), 'utf8');
+  assert.ok(committed.includes(`${SITE_ORIGIN}/api/stats`), '/api/stats is not linked');
 });

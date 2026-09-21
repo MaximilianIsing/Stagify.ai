@@ -6,6 +6,7 @@ import { escapeCsvField } from '../lib/http/csv-escape.js';
 import { buildBugReportRow, BUG_REPORT_HEADER, bugReportLogCeiling } from '../lib/http/bug-report-row.js';
 import { appendCsvRow } from '../lib/services/csv-append.js';
 import { resolveDataDir } from '../lib/data/data-dir.js';
+import { createStatsHandler, statsFromDeps } from '../lib/http/stats-endpoint.js';
 import { emailPixelLimiter as defaultEmailPixelLimiter, EMAIL_PIXEL_RATE_LIMITED } from '../lib/http/rate-limiters.js';
 import path from 'path';
 import fs from 'fs';
@@ -41,6 +42,7 @@ import { statusPayload } from '../lib/health/service-health.js';
  *   incContactCount: typeof import('../lib/data/counters.js').incContactCount,
  *   blogViews?: ReturnType<typeof import('../lib/data/blog-views.js').createBlogViews>,
  *   emailOptOut?: ReturnType<typeof import('../lib/data/email-optout.js').createEmailOptOut>,
+ *   readPublicStats?: (() => import('../lib/data/public-stats.js').PublicStats) | null,
  *   __dirname: string,
  * }} deps - Stores, injected email client, the email rate-limit + health-check
  *   middleware, debug/stat flags, and hosted-image / logging / counter helpers.
@@ -51,10 +53,12 @@ import { statusPayload } from '../lib/health/service-health.js';
  *   is optional on the same terms: without it the unsubscribe route still answers,
  *   and answers honestly, by telling the reader to email us instead. `serviceHealth`
  *   is optional too: absent, /api/status answers with exactly the payload it always
- *   did, so a spec that stubs the uptime monitor alone still passes.
+ *   did, so a spec that stubs the uptime monitor alone still passes. `readPublicStats`
+ *   is the shared usage-figure reader server.js builds; without it the three stat
+ *   endpoints fall back to the same arithmetic over the counters injected above.
  */
 export default function createPublicRouter(deps) {
-  const { authStore, uptimeMonitor, serviceHealth, resend, LOGS_ACCESS_KEY, endpointKeyMatches, emailLimiter, emailPixelLimiter, RESEND_FROM_EMAIL, DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS, hostedImages, email: emailService, healthHandler, getPromptCount, getContactCount, incContactCount , blogViews, emailOptOut, __dirname } = deps;
+  const { authStore, readPublicStats = null, uptimeMonitor, serviceHealth, resend, LOGS_ACCESS_KEY, endpointKeyMatches, emailLimiter, emailPixelLimiter, RESEND_FROM_EMAIL, DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS, hostedImages, email: emailService, healthHandler, getPromptCount, getContactCount, incContactCount , blogViews, emailOptOut, __dirname } = deps;
   const router = createAsyncRouter();
   const pixelLimiter = emailPixelLimiter ?? defaultEmailPixelLimiter;
 
@@ -569,26 +573,25 @@ router.get('/api/status', (req, res) => {
   return res.json(statusPayload(uptimeMonitor.getSnapshot(), serviceHealth));
 });
 
-router.get('/api/prompt-count', (req, res) => {
-  if (STATS_DEBUG && Number.isFinite(DEBUG_ROOMS)) {
-    return res.json({ promptCount: DEBUG_ROOMS });
-  }
-  res.json({
-    promptCount: getPromptCount()
-  });
-});
+// The three public-usage endpoints, all reading ONE reader so the figures in the HTML,
+// in llms.txt and in the JSON can never disagree (lib/data/public-stats.js owns the
+// arithmetic and the STATS_DEBUG overrides). The response SHAPES below are unchanged:
+// public/scripts/app/hero-stats.js and the Playwright stubs depend on them, including
+// contact-count's debug branch returning usersServed alone.
+const statsDeps = { authStore, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS, getPromptCount, getContactCount };
+const readStats = readPublicStats ?? statsFromDeps(statsDeps);
+
+router.get('/api/prompt-count', (req, res) => res.json({ promptCount: readStats().roomsStaged }));
 
 router.get('/api/contact-count', (req, res) => {
-  if (STATS_DEBUG && Number.isFinite(DEBUG_USERS)) {
-    return res.json({ usersServed: DEBUG_USERS });
-  }
-  const userCount = authStore.getUserCount();
-  res.json({
-    contactCount: getContactCount(),
-    userCount,
-    usersServed: getContactCount() + userCount,
-  });
+  const { usersServed } = readStats();
+  if (STATS_DEBUG && Number.isFinite(DEBUG_USERS)) return res.json({ usersServed });
+  res.json({ contactCount: getContactCount(), userCount: authStore.getUserCount(), usersServed });
 });
+
+// The canonical, self-describing figures — what llms.txt points an answer engine at, and
+// what the served HTML is injected from. Handler in lib/http/stats-endpoint.js.
+router.get('/api/stats', createStatsHandler(readStats));
 
 router.post('/api/bug-report', emailLimiter, async (req, res) => {
   try {

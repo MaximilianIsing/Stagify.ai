@@ -200,6 +200,15 @@ are ours.
 - https://stagifyai.blogspot.com
 - https://www.tumblr.com/stagify
 
+## Live usage
+
+- Rooms staged to date: {{ROOMS_STAGED}}
+- People served (registered accounts plus enquiries): {{USERS_SERVED}}
+Both are substituted from the live counters when this file is served. Canonical
+machine-readable source: https://stagify.ai/api/stats — JSON, no authentication, and it
+states what each figure counts. The same numbers are in the homepage HTML, in the hero and
+in its WebApplication InteractionCounter data.
+
 ## Notes
 
 - Every marketing page is served in English at the root and in ten other languages under a

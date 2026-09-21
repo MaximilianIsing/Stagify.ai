@@ -14,6 +14,18 @@ export function format(n) {
   return Math.round(n).toLocaleString("en-US");
 }
 
+/**
+ * Does this span already show a real figure?
+ *
+ * The server now writes the live counts straight into the hero spans
+ * (lib/seo/live-stats.js), so a blank one is no longer the only possible pre-JS state.
+ * revealWithoutCounts below uses this to avoid replacing a correct, server-rendered
+ * number with an em dash just because a fetch failed.
+ */
+export function hasServerCount(text) {
+  return /\d/.test(String(text == null ? "" : text));
+}
+
 export function widthForText(text) {
   return Math.max(String(text).length, 1) + "ch";
 }
@@ -138,8 +150,13 @@ export function rampValue(target, t) {
     const wrap = document.querySelector(".hero-stats");
     const els = /** @type {HTMLElement[]} */ (Array.from(document.querySelectorAll(".hp-stat__num[data-stat]")));
     els.forEach((el) => {
-      el.textContent = "—";
-      el.style.minWidth = "1ch";
+      // Only blank out a span that was blank to begin with. If the server already put a
+      // figure here, a failed /api/prompt-count is no reason to destroy it — the number is
+      // still true, it just did not get to animate.
+      if (!hasServerCount(el.textContent)) {
+        el.textContent = "—";
+        el.style.minWidth = "1ch";
+      }
       el.removeAttribute("aria-hidden");
     });
     revealWrap(wrap);

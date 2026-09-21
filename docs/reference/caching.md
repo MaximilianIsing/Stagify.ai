@@ -35,6 +35,17 @@ revalidation is enough and there is nothing sensitive in it. Its JSON counterpar
 `/api/*` and non-HTML clients) sets no cache header at all, like every other `sendError()`
 response.
 
+The homepage and `llms.txt` carry a **request-time value**: the live "Rooms staged" /
+"Users served" figures, written into the markup by `lib/seo/live-stats.js` (and
+substituted into `llms.txt` by `lib/http/llms-txt-asset.js`) so an answer engine reading
+the served bytes sees them without executing the page. That is safe under `no-cache`
+because both send with `res.send()`, and Express derives the **ETag from the body it is
+handed** — a moved count is a different body, a different ETag, and a `200` instead of a
+`304` on the next revalidation. The thing to avoid is switching either path to
+`res.sendFile()` or to a stat-based ETag, which would describe the file on disk rather
+than the payload and let two different figures share one validator. The ETag assertions
+in `test/http/live-stats-serving.test.js` are the guard on this.
+
 Dynamic and sensitive responses opt out of caching entirely with `no-store`
 (e.g. the auth config, the `/getpro` grant page, hosted-image listings), so they
 are never stored at any layer.
