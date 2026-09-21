@@ -224,7 +224,7 @@ Everything the browser loads is under `public/`:
   [`guides/frontend.md`](guides/frontend.md#paid-pages-reshape-they-do-not-redirect)) —
   `stagify-plus.html`, `plus-welcome.html` (post-checkout
   "Welcome to Stagify+" confirmation — the Stripe Payment Link's after-payment
-  redirect target and the Google Ads conversion page), `enterprise.html`,
+  redirect target), `enterprise.html`,
   `guides.html`, `contact.html`, `admin.html`, `gallery.html` (the signed-in render
   history), `listing-share.html` (the anonymous `/s/:token` share page), `status.html`,
   the blog under `blog/`, legal pages, `404.html` (served by

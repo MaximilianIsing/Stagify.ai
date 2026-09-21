@@ -1,4 +1,4 @@
-// Drift guards for three resource hints that are copy-pasted across every page, and so
+// Drift guards for two resource hints that are copy-pasted across every page, and so
 // drift silently. None of them changes what a page looks like, which is exactly why a
 // missing one survives review indefinitely.
 //
@@ -16,12 +16,7 @@
 //    so the rule is written once here and applied to both. test/i18n/blog-langs.test.js
 //    is the other half: it asserts a blog page never carries the site switcher.
 //
-// 2. ANALYTICS PRECONNECT. scripts/gtag.js injects the googletagmanager.com loader at
-//    runtime, so that origin appears nowhere in the markup and the preload scanner cannot
-//    discover it. A `preconnect` is the only way to warm DNS/TCP/TLS before the deferred
-//    script runs. Only index.html had one.
-//
-// 3. LANGUAGE-PACK PRELOAD. The English sources preload `languages/english.json`. That is
+// 2. LANGUAGE-PACK PRELOAD. The English sources preload `languages/english.json`. That is
 //    correct for the static English pages and WRONG for every localized render, which
 //    fetches its own pack — see the localized assertion in test/i18n/, and the rewrite in
 //    lib/i18n/render-page.js. Here we only pin the English side: the tag must name
@@ -38,15 +33,6 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..', '..');
 const PUBLIC = path.join(ROOT, 'public');
-
-const GTM_ORIGIN = 'https://www.googletagmanager.com';
-
-/**
- * faq.html loads gtag but is a zero-delay meta-refresh stub: it unloads before a warmed
- * connection could be reused, so a preconnect there would hold a socket for nothing.
- * @type {string[]}
- */
-const PRECONNECT_EXEMPT = ['faq.html'];
 
 function stripComments(html) {
   return html.replace(/<!--[\s\S]*?-->/g, '');
@@ -114,35 +100,6 @@ test('switcher dropdown flags are lazy and the visible flag is eager', () => {
           + 'these 11 requests compete with the LCP image for nothing.',
       );
     }
-  }
-});
-
-test('every page loading gtag.js preconnects to the analytics origin', () => {
-  const gtagPages = PAGES.filter((p) => /<script[^>]+src="\/?scripts\/gtag\.js"/i.test(read(p)));
-  assert.ok(gtagPages.length >= 20, `expected 20+ gtag pages, found ${gtagPages.length}`);
-
-  for (const page of gtagPages) {
-    if (PRECONNECT_EXEMPT.includes(page)) continue;
-    const html = read(page);
-    assert.ok(
-      new RegExp(`<link\\b[^>]*rel="preconnect"[^>]*href="${GTM_ORIGIN}"`, 'i').test(html)
-        || new RegExp(`<link\\b[^>]*href="${GTM_ORIGIN}"[^>]*rel="preconnect"`, 'i').test(html),
-      `${page} loads gtag.js but has no preconnect to ${GTM_ORIGIN}. That origin is injected by JS, so `
-        + 'the preload scanner never sees it and the handshake cannot start early without this hint.',
-    );
-  }
-});
-
-test('the exempt stub really is a redirect stub', () => {
-  // Guards the exemption itself: if faq.html ever becomes a real page, it should be
-  // required to carry the preconnect like everything else.
-  for (const page of PRECONNECT_EXEMPT) {
-    assert.ok(PAGES.includes(page), `${page} is exempt from the preconnect rule but no longer exists.`);
-    assert.match(
-      read(page), /<meta\s+http-equiv="refresh"\s+content="0;/i,
-      `${page} is exempt from the preconnect rule only because it redirects immediately. It no longer `
-        + 'does, so either restore the redirect or drop the exemption and add the preconnect.',
-    );
   }
 });
 

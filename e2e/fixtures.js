@@ -45,15 +45,13 @@ export async function spilloverEditedDataUrl() {
   return 'data:image/png;base64,' + buf.toString('base64');
 }
 
-// The Google Ads tag (public/scripts/gtag.js) sits in the <head> of every public
-// page — both studios and the home page. In tests we abort its outbound requests
-// so the suite stays hermetic and deterministic (the whole point of this e2e
-// setup): no real gtag.js/googleadservices/doubleclick fetches, no ad beacons, no
-// dependence on external network reachability. Blocking the googletagmanager entry
-// point alone would suffice (the library is what pulls the rest), but the ad hosts
-// are listed too so a stray direct call can't slip out either. An aborted request
-// logs a "Failed to load resource" console message, which index.spec already
-// ignores. Called by seedProSession (studios) and directly by index.spec (home).
+// Hermetic-suite guard. The site ships no analytics or advertising tag any more (the
+// Google Ads tag was removed), so today this matches nothing and is a no-op. It stays
+// because ~50 call sites across 19 specs invoke it, and because it is the one place
+// that keeps the suite deterministic if a third-party tag is ever added back: an
+// outbound ad/analytics fetch would otherwise make the run depend on external network
+// reachability. An aborted request logs a "Failed to load resource" console message,
+// which index.spec already ignores.
 export async function stubAnalytics(page) {
   await page.route(/googletagmanager\.com|googleadservices\.com|doubleclick\.net/, (route) =>
     route.abort(),

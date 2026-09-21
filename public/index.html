@@ -3,8 +3,6 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- Google tag (gtag.js) — Google Ads. Config + async loader in scripts/gtag.js. -->
-    <script src="scripts/gtag.js" defer></script>
     <link rel="icon" type="image/webp" sizes="32x32" href="media-webp/logo/Logo32x32.webp">
     <link rel="icon" type="image/webp" sizes="64x64" href="media-webp/logo/Logo64x64.webp">
     <link rel="apple-touch-icon" sizes="180x180" href="media-webp/logo/Logo180x180.webp">
@@ -67,8 +65,7 @@
     <link rel="alternate" hreflang="ja" href="https://stagify.ai/ja">
     <link rel="alternate" hreflang="nl" href="https://stagify.ai/nl">
     <link rel="alternate" hreflang="x-default" href="https://stagify.ai/">
-    <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
-
+    <link rel="alternate" type="text/plain" title="llms.txt" href="https://stagify.ai/llms.txt">
     <!-- Preload only the weights used above the fold: 400 (body) and 700 (h1).
          The 600 face is NOT preloaded — it still loads from the @font-face in
          styles.css with font-display:swap, so it costs a brief swap instead of
@@ -165,6 +162,16 @@
          with the direct init() call at the bottom of hero-picker.js; moving the tag alone
          does nothing. -->
     <script type="module" src="scripts/hero-picker.js"></script>
+    <!-- hero-van.js is SECOND, right behind the picker it listens to: it fills #hero-upload
+         with the drawn street for the picker’s current style (desktop, hovering pointer
+         only). It lived in index-deferred.js’s after-`load` list at first, and the button
+         painted as a bare navy plate for the second before the street arrived; as a module
+         tag here it runs in the same turn as the picker, before the visitor can hover. The
+         modulepreload is what keeps that cheap: the art module is its only import, and
+         without the hint the browser only discovers it after hero-van.js has downloaded —
+         two round trips in series instead of one. -->
+    <link rel="modulepreload" href="scripts/hero-van-art.js">
+    <script type="module" src="scripts/hero-van.js"></script>
     <script type="module" src="scripts/language-detect.js"></script>
     <script type="module" src="scripts/language-loader.js"></script>
     <script type="module" src="scripts/language-switcher.js"></script>
@@ -2293,9 +2300,15 @@
           </a>
         </div>
         <div class="ig-cta reveal">
+          <!-- The plate structure the Stagify+ / Enterprise buttons use: a scrim under
+               the type, the label, and a glyph well on the right — here holding the
+               Instagram mark rather than an arrow. The label keeps its own <span>
+               because data-lang assigns textContent; on the <a> it would wipe the
+               scrim and the logo on the first translation pass. -->
           <a class="ig-follow" href="https://www.instagram.com/stagify.ai/" target="_blank" rel="noopener noreferrer">
-            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.2c3.2 0 3.6 0 4.9.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.43.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s0 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.43.16-1.06.36-2.23.41-1.27.06-1.65.07-4.9.07s-3.63 0-4.9-.07c-1.17-.05-1.8-.25-2.23-.41a3.7 3.7 0 0 1-1.38-.9 3.7 3.7 0 0 1-.9-1.38c-.16-.43-.36-1.06-.41-2.23C2.21 15.58 2.2 15.2 2.2 12s0-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.43-.16 1.06-.36 2.23-.41C8.42 2.21 8.8 2.2 12 2.2zm0 1.8c-3.14 0-3.5 0-4.74.07-.9.04-1.38.19-1.7.32-.43.17-.74.37-1.06.69-.32.32-.52.63-.69 1.06-.13.32-.28.8-.32 1.7C3.42 8.5 3.4 8.86 3.4 12s0 3.5.07 4.74c.04.9.19 1.38.32 1.7.17.43.37.74.69 1.06.32.32.63.52 1.06.69.32.13.8.28 1.7.32 1.24.07 1.6.07 4.74.07s3.5 0 4.74-.07c.9-.04 1.38-.19 1.7-.32.43-.17.74-.37 1.06-.69.32-.32.52-.63.69-1.06.13-.32.28-.8.32-1.7.07-1.24.07-1.6.07-4.74s0-3.5-.07-4.74c-.04-.9-.19-1.38-.32-1.7a2.86 2.86 0 0 0-.69-1.06 2.86 2.86 0 0 0-1.06-.69c-.32-.13-.8-.28-1.7-.32C15.5 4 15.14 4 12 4zm0 3.06A4.94 4.94 0 1 1 12 17a4.94 4.94 0 0 1 0-9.94zm0 1.8a3.14 3.14 0 1 0 0 6.28 3.14 3.14 0 0 0 0-6.28zM17.64 6.95a1.15 1.15 0 1 1 0 2.3 1.15 1.15 0 0 1 0-2.3z"/></svg>
-            <span data-lang="home.instagram.follow">Follow @stagify.ai</span>
+            <span class="ig-follow__scrim" aria-hidden="true"></span>
+            <span class="ig-follow__label" data-lang="home.instagram.follow">Follow @stagify.ai</span>
+            <span class="ig-follow__glyph" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.2c3.2 0 3.6 0 4.9.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.43.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s0 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.43.16-1.06.36-2.23.41-1.27.06-1.65.07-4.9.07s-3.63 0-4.9-.07c-1.17-.05-1.8-.25-2.23-.41a3.7 3.7 0 0 1-1.38-.9 3.7 3.7 0 0 1-.9-1.38c-.16-.43-.36-1.06-.41-2.23C2.21 15.58 2.2 15.2 2.2 12s0-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.43-.16 1.06-.36 2.23-.41C8.42 2.21 8.8 2.2 12 2.2zm0 1.8c-3.14 0-3.5 0-4.74.07-.9.04-1.38.19-1.7.32-.43.17-.74.37-1.06.69-.32.32-.52.63-.69 1.06-.13.32-.28.8-.32 1.7C3.42 8.5 3.4 8.86 3.4 12s0 3.5.07 4.74c.04.9.19 1.38.32 1.7.17.43.37.74.69 1.06.32.32.63.52 1.06.69.32.13.8.28 1.7.32 1.24.07 1.6.07 4.74.07s3.5 0 4.74-.07c.9-.04 1.38-.19 1.7-.32.43-.17.74-.37 1.06-.69.32-.32.52-.63.69-1.06.13-.32.28-.8.32-1.7.07-1.24.07-1.6.07-4.74s0-3.5-.07-4.74c-.04-.9-.19-1.38-.32-1.7a2.86 2.86 0 0 0-.69-1.06 2.86 2.86 0 0 0-1.06-.69c-.32-.13-.8-.28-1.7-.32C15.5 4 15.14 4 12 4zm0 3.06A4.94 4.94 0 1 1 12 17a4.94 4.94 0 0 1 0-9.94zm0 1.8a3.14 3.14 0 1 0 0 6.28 3.14 3.14 0 0 0 0-6.28zM17.64 6.95a1.15 1.15 0 1 1 0 2.3 1.15 1.15 0 0 1 0-2.3z"/></svg></span>
           </a>
         </div>
       </section>
@@ -2950,6 +2963,20 @@
         "priceCurrency": "USD"
       },
       "creator": { "@id": "https://stagify.ai/#organization" },
+      "interactionStatistic": [
+        {
+          "@type": "InteractionCounter",
+          "interactionType": "https://schema.org/CreateAction",
+          "name": "Rooms staged",
+          "userInteractionCount": 0
+        },
+        {
+          "@type": "InteractionCounter",
+          "interactionType": "https://schema.org/RegisterAction",
+          "name": "People served",
+          "userInteractionCount": 0
+        }
+      ],
       "mentions": [
         {
           "@type": "Article",

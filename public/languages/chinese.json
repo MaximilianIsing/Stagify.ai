@@ -27,24 +27,67 @@
     "brand": {
       "heading": "品牌资源包",
       "body": "这些是官方文件。您无需事先征求同意即可用它们指代 Stagify.ai。请不要重绘标志，也不要暗示我们为您的产品背书。",
+      "marksLabel": "产品标识",
+      "marksHint": "同一个标识，四种底色。图形始终不变，变的只是背景。除标注 SVG 外均为 PNG 文件，数字为像素。",
+      "marks": {
+        "core": "产品与公司本身。拿不准时就用这一个。",
+        "plus": "订阅服务。金色底，图形相同。",
+        "enterprise": "按域开通的账户。深蓝底，带城市天际线。",
+        "api": "开发者平台。深蓝底，带网格。"
+      },
+      "markFiles": {
+        "full": "356",
+        "svg": "SVG",
+        "px180": "180",
+        "px64": "64",
+        "px32": "32"
+      },
       "paletteLabel": "颜色",
+      "copyHint": "点选颜色即可复制其十六进制代码。",
       "colors": {
         "brand": "品牌蓝",
         "strong": "深品牌蓝",
         "navy": "藏青",
         "soft": "浅蓝",
+        "pale": "浅蓝",
         "tint": "淡蓝",
+        "wash": "极浅蓝",
+        "slate": "石板灰",
         "ink": "墨色"
       },
-      "copyHint": "点选颜色即可复制其十六进制代码。",
+      "paletteNote": "Stagify+ 的金色以及 Enterprise 和 API 的深蓝属于那几张图本身，不属于配色方案。请直接从文件中取色，不要给蓝色标识重新上色。",
+      "typeLabel": "字体",
+      "typeBody": "全站使用 <a href=\"https://rsms.me/inter/\" rel=\"nofollow noopener noreferrer\" target=\"_blank\">Inter</a> 的 400、600 和 700 三种字重——免费，Google Fonts 上也有。我们没有矢量字标：请用文字排出名称，而不是放大 PNG。若无法使用 Inter，任何中性无衬线体都可以；我们自己会回退到系统字体。",
+      "spaceLabel": "留白与最小尺寸",
+      "spaceBody": "标识四周至少留出字母 S 的高度，并且不要在其中放任何东西。屏幕上不要小于 24 px，印刷不要小于 8 毫米——请改用 32 px 的文件，而不是把大图缩小。",
+      "namingLabel": "名称写法",
+      "naming": {
+        "one": "Stagify.ai 是一个词，大写 S、小写 .ai，不要写成 “Stagify AI”“Stageify” 或 “STAGIFY”。",
+        "two": "产品名称为 Stagify+（加号前不留空格）、Stagify Enterprise 和 Stagify API。",
+        "three": "首次提及之后，正文中直接写 “Stagify” 即可。"
+      },
+      "rulesLabel": "请这样做，请不要这样做",
+      "doLabel": "请这样做",
+      "do": {
+        "one": "按原样使用文件，任意尺寸，放在白底或深色底上。",
+        "two": "选择与所写产品相符的底色。",
+        "three": "在目录页或合作伙伴页面中，请把标识链接到 stagify.ai。"
+      },
+      "dontLabel": "请不要这样做",
+      "dont": {
+        "one": "给任何标识改色、旋转、描边、裁切或重新绘制。",
+        "two": "不按比例拉伸，或自行创造第五种底色。",
+        "three": "暗示我们为贵方产品背书、赞助或供货。",
+        "four": "把它用作你自己的应用图标、头像或站点图标，或与其他标识组合成一个整体。"
+      },
       "downloadsLabel": "下载",
       "zip": "全部文件（ZIP）",
       "logoPng": "完整标志（PNG）",
       "iconSvg": "图标（SVG）",
-      "iconPng": "图标（PNG）",
       "avatar": "头像（PNG）",
+      "linkedin": "LinkedIn 标识（PNG）",
       "ogImage": "社交卡片（PNG）",
-      "usage": "没有矢量文字标识：名称使用 <a href=\"https://rsms.me/inter/\" rel=\"nofollow noopener noreferrer\" target=\"_blank\">Inter</a> 排版，请直接排版为文字。请勿更改颜色、旋转、拉伸或重绘标志。完整规范见压缩包内的 README.txt。",
+      "notUs": "与我们无关：stagify.io、stagify.app、stagify.online 和 stagifyai.com 是名称相近的其他公司。本套素材仅适用于 Stagify.ai，完整说明见压缩包内的 README.txt。",
       "copied": "已复制 {hex} 到剪贴板",
       "copyFailed": "无法访问剪贴板。色值为 {hex}"
     },

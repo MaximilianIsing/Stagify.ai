@@ -1,7 +1,7 @@
 // Stripe-hosted Payment Link for the individual Stagify+ plan (no server-side
 // Checkout Session — the webhook upgrades the account on checkout.session.completed).
 // Its "After payment" redirect is configured in the Stripe dashboard to land the
-// buyer on /plus-welcome.html, which is also the Google Ads conversion page. Keep
+// buyer on /plus-welcome.html, the post-checkout landing page. Keep
 // that page in sync if this flow changes (guarded by test/frontend/plus-welcome.test.js).
 //
 // WHY THE SIGNED-OUT BUTTON DOES NOT REACH STRIPE

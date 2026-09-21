@@ -65,6 +65,17 @@ test('the committed zip holds exactly what is in public/brand/', () => {
   assert.ok(onDisk.includes('README.txt'), 'the kit ships its usage guidance as README.txt');
 });
 
+test('every file in the kit is reachable from the about page, not just from the zip', () => {
+  // The section grew from six pills to a product-mark grid plus a downloads row, and
+  // the point of that grid is that somebody writing about Stagify+ can take the gold
+  // field without unpacking the archive. A master added to KIT_FILES but never linked
+  // is a file only the zip knows about — which is exactly the state the grid replaced.
+  const linked = new Set([...SECTION.matchAll(/href="brand\/([^"]+)"/g)].map((m) => m[1]));
+  for (const name of Object.keys(KIT_FILES)) {
+    assert.ok(linked.has(name), `public/brand/${name} is in the kit but nothing on /about links it`);
+  }
+});
+
 test('every download link on the about page resolves to a file', () => {
   const hrefs = [...SECTION.matchAll(/href="(brand\/[^"]+)"/g)].map((m) => m[1]);
   assert.ok(hrefs.length >= 2, 'expected the about page to link the kit');
@@ -115,7 +126,10 @@ test('every swatch name is translated, and keyed to the colour it labels', () =>
     '--brand-strong': 'strong',
     '--brand-deep': 'navy',
     '--brand-soft': 'soft',
+    '--brand-pale': 'pale',
     '--brand-tint': 'tint',
+    '--brand-wash': 'wash',
+    '--slate': 'slate',
     '--text-heading': 'ink',
   };
 

@@ -251,7 +251,7 @@ h1,h2 {
 
   /* The CTA gradient. Five radial stops over --brand-deep; every primary and
      secondary call to action on the site is painted with it — #hero-upload,
-     .btn-primary, .nav-link, .nav-pill, .ig-follow, .plus-cta, .qr__cta, the
+     .btn-primary, .nav-link, .nav-pill, .plus-cta, .qr__cta, the
      auth profile menu, and the enterprise and Stagify+ submit buttons.
 
      It was written out by hand TEN times across five sheets before this token

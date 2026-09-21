@@ -520,23 +520,19 @@ were both on it and are gone.
 
 The Google Ads tag (`scripts/gtag.js`) was the exception that proved the rule: it sat
 synchronous and **first** in `<head>` on all 19 public pages, ahead of every stylesheet
-link, for a file that only queues two `dataLayer` entries and appends an already-async
-loader. It is `defer` now — and `defer` rather than `async` on purpose, because the tag
-is first in the document and defer preserves order, so `window.gtag` is guaranteed to
-exist before any other deferred or module script runs. That is the contract a future
-conversion snippet will depend on.
+link, for a file that only queued two `dataLayer` entries and appended an already-async
+loader. **That tag has since been removed outright** — the site ran no Google Ads
+campaigns any more, and it fired no conversion events, so it was pure remarketing weight
+at roughly a quarter of the page payload. Removed with it: the `googletagmanager.com`
+preconnect on 34 pages, `scripts/ad-optout.js` and the opt-out control in privacy.html
+§16.3, the four advertising origins in the CSP, and the advertising disclosures in
+§9/§10.2/§16.3 plus `legal/subprocessors.html`.
 
-That tag is also **gated**. Before it configures anything or fetches
-`googletagmanager.com`, `gtag.js` checks two opt-outs: `navigator.globalPrivacyControl`
-(the signal the CPRA requires businesses to process) and a `stagifyAdOptOut` flag in
-local storage, written by [`scripts/ad-optout.js`](../../public/scripts/ad-optout.js) —
-the control rendered into privacy.html §16.3. An opted-out visitor queues nothing and
-makes no request. The gate is not optional politeness: the privacy policy states that
-the site shares personal information for cross-context behavioral advertising and that
-these are the ways to stop it, so
-[`ad-tag-disclosure.test.js`](../../test/frontend/ad-tag-disclosure.test.js) fails the
-build if the tag and the copy ever contradict each other again — which is exactly what
-happened before the guard existed.
+[`ad-tag-disclosure.test.js`](../../test/frontend/ad-tag-disclosure.test.js) is the guard
+that keeps those two halves in step, and it works in **both** directions: while a tag
+ships it fails on a policy that denies advertising, and now that no tag ships it fails on
+a policy that still discloses Google Ads or points at an opt-out with nothing behind it.
+Re-adding any ad tag therefore means re-writing that copy in the same commit.
 
 `test/frontend/head-scripts.test.js` walks every page under `public/` and fails the
 deploy on an unexplained blocking tag; adding one means adding it to that file's

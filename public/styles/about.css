@@ -442,6 +442,214 @@
   color: var(--brand);
 }
 
+/* The four product marks: Stagify.ai, Stagify+, Enterprise, the API. Two columns on a
+   desktop card, one on a phone — a third column would put the four files of a mark on
+   two lines each, which reads as a wrapped paragraph rather than as a set of links.
+   The artwork is the webp the tier pages already serve (public/media-webp/logo/), not
+   the PNG in public/brand/: the download is 130KB and this is a 56px thumbnail. */
+.brand-marks {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(288px, 1fr));
+  gap: 10px;
+}
+
+.brand-mark {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.6);
+  transition: border-color 0.1s ease-out, background 0.1s ease-out;
+}
+
+.brand-mark:hover {
+  border-color: var(--brand-soft);
+  background: var(--brand-wash);
+}
+
+.brand-mark__art {
+  flex: 0 0 auto;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  /* The marks are circles on a transparent square, so a plain hairline ring follows the
+     artwork rather than boxing it. */
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.18);
+}
+
+.brand-mark__body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.brand-mark__name {
+  margin: 0;
+  font-weight: 700;
+  font-size: 14.5px;
+  color: var(--text-heading);
+}
+
+.brand-mark__use {
+  margin: 2px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+/* A <p> of links rather than a list: they are four alternates of one thing, and a
+   bulleted list of "Full / 180 / 64 / 32" inside a card that is itself a list item
+   nests two levels deep for no gain. */
+.brand-mark__files {
+  margin: 8px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.brand-mark__file {
+  padding: 3px 9px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-elevated);
+  color: var(--brand-strong);
+  font-size: 12.5px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: border-color 0.1s ease-out, background 0.1s ease-out, color 0.1s ease-out;
+}
+
+.brand-mark__file:hover {
+  border-color: var(--brand-soft);
+  background: var(--brand-tint);
+  color: var(--brand-deep);
+}
+
+.brand-mark__file:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+/* Type specimen. The three rows are the site's own weights, shown at a size where the
+   difference between 600 and 700 is actually visible — at 14px it is not. */
+.brand-type {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(184px, 1fr));
+  gap: 10px;
+}
+
+.brand-type__row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.brand-type__sample {
+  font-size: 22px;
+  letter-spacing: -0.3px;
+  color: var(--text-heading);
+}
+
+.brand-type__weight {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* Clear space. The dashed frame IS the rule being described — the margin around the art
+   is the cap height of the S at this size — so the diagram and the sentence beside it
+   cannot drift apart the way a screenshot would. */
+.brand-space {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 10px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.brand-space__frame {
+  flex: 0 0 auto;
+  padding: 18px;
+  border: 1px dashed var(--brand-pale);
+  border-radius: 12px;
+  line-height: 0;
+}
+
+.brand-space__art {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+}
+
+.brand-space__note {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.brand-rules {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--fg);
+}
+
+.brand-rules li + li {
+  margin-top: 4px;
+}
+
+/* Do and don't side by side, because the pairing is the point: a reader scanning for
+   "can I recolour it" should find the answer without reading the permissive column. */
+.brand-dos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.brand-dos__col {
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.brand-dos__col--do {
+  border-color: var(--brand-pale);
+}
+
+.brand-dos__title {
+  margin: 0;
+  font-weight: 700;
+  font-size: 13.5px;
+  color: var(--text-heading);
+}
+
+.brand-dos__col--dont .brand-dos__title {
+  color: var(--danger);
+}
+
+.brand-dos .brand-rules {
+  margin-top: 6px;
+}
+
 /* --- phones ---------------------------------------------------------------------- */
 
 @media (max-width: 768px) {
@@ -474,6 +682,19 @@
      rendering a second column with the name ellipsised to three characters. */
   .brand-swatches {
     grid-template-columns: 1fr;
+  }
+
+  /* Same reason as the swatches, one breakpoint earlier: 288px is already wider than
+     half a tablet card once the gutters are taken off. */
+  .brand-marks {
+    grid-template-columns: 1fr;
+  }
+
+  /* The dashed frame plus a 72px mark eats a phone's width before the sentence starts,
+     so the diagram sits above its explanation rather than beside it. */
+  .brand-space {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   /* 2x3 on a phone. Three columns of pill would leave about 90px per label. */

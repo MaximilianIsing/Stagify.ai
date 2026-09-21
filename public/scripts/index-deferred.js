@@ -42,12 +42,10 @@ export const DEFERRED = [
   // in the list because it is the only entry a visitor can SEE arrive — everything below
   // is below-fold behaviour. Zero imports.
   { src: 'scripts/bg-video-start.js', module: true },
-  // #hero-upload's drawn street (desktop, hovering pointer only). The plate shell is CSS
-  // and paints with the page; this fills it with the SVG for the current furniture style
-  // and swaps it when the picker changes. Second because, like the video, a visitor can
-  // SEE it arrive — a hover before it lands gets a navy plate with no street. Imports
-  // scripts/hero-van-art.js, so two fetches. Guarded init.
-  { src: 'scripts/hero-van.js', module: true },
+  // scripts/hero-van.js (#hero-upload's drawn street) was listed here briefly and moved
+  // back to a module tag in <head>, second after hero-picker.js: loaded after `load` the
+  // button painted as a bare navy plate for the second before the street arrived, and it
+  // is part of the hero, which is exactly what this list exists to keep out of the way of.
   // The main staging island: 38 modules, ~267 KB of source, ~89 KB brotli — by a wide
   // margin the largest thing the homepage used to download before it could paint, and
   // nothing in it is reachable until somebody starts staging. scripts/hero-cta-boot.js

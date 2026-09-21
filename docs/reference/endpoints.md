@@ -102,13 +102,11 @@ which also holds the three deliberate exemptions (the two redirect stubs below, 
 > fires `checkout.session.completed` to `POST /api/billing/stripe-webhook` (which upgrades
 > the account to `pro`), then redirects the buyer to **`/plus-welcome.html`** — the
 > post-purchase confirmation page. That redirect is configured on the Payment Link's
-> *After payment* setting in the **Stripe dashboard, not in this repo**, and the same
-> `https://stagify.ai/plus-welcome.html` URL is registered as the Google Ads conversion
-> page. Renaming or removing `plus-welcome.html` therefore silently breaks the
-> post-checkout hand-off and ad conversion tracking (guarded by `test/frontend/plus-welcome.test.js`). That conversion fires through the
-> Google tag, which a visitor can switch off (Global Privacy Control, or the control in
-> privacy.html §16.3) — so a buyer who has opted out completes checkout normally but is
-> not counted as a conversion. See `public/scripts/gtag.js`.
+> *After payment* setting in the **Stripe dashboard, not in this repo**. Renaming or
+> removing `plus-welcome.html` therefore silently breaks the post-checkout hand-off
+> (guarded by `test/frontend/plus-welcome.test.js`). The page was also registered as the
+> Google Ads conversion page; that tag has been removed from the site, so nothing tracks
+> conversions now.
 >
 > Both parameters are buyer-editable, and `customer_email` is unverified by Stripe, so
 > the webhook treats them differently: an email match may **start** a Stagify+ billing
