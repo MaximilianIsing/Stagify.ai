@@ -432,6 +432,22 @@ function wireNarLegend(card) {
       light(pinned);
     });
   });
+
+  segments.forEach((seg, key) => {
+    seg.addEventListener("pointerenter", () => {
+      if (!pinned) light(key);
+    });
+    seg.addEventListener("pointerleave", () => {
+      if (!pinned) light("");
+    });
+    seg.addEventListener("click", () => {
+      pinned = pinned === key ? "" : key;
+      buttons.forEach((b) => {
+        b.setAttribute("aria-pressed", b.getAttribute("data-nar-key") === pinned ? "true" : "false");
+      });
+      light(pinned);
+    });
+  });
 }
 
 function initNarChart() {

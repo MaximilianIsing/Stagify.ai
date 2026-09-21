@@ -1,8 +1,8 @@
-// Transcript summariser for /api/bug-report, shared by the app's TWO report paths:
-// the AI Designer's bug button (the classic ai-designer-model-selector.js, which
-// reaches this through the `window.summariseBugReportHistory` bridge that
-// ai-designer-app.js installs) and the account menu's "Report an issue" dialog
-// (profile-menu/report-issue-modal.js, which imports it directly).
+// Transcript summariser for /api/bug-report, used by the one dialog that posts a
+// report: the account menu's "Report an issue" (profile-menu/report-issue-modal.js,
+// which imports it directly). The AI Designer's bug button opens that same dialog —
+// it used to own a second, hand-rolled form in ai-designer.html markup, which was
+// never given data-lang attributes and so shipped English under all eleven locales.
 //
 // WHY IT EXISTS AT ALL: a bug report carries the chat transcript for context, but
 // the transcript's image entries hold whole base64 data URLs — megabytes each — and

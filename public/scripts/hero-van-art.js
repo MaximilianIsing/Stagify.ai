@@ -98,31 +98,97 @@ const SDOOR=(x,fill,frame)=>`<rect x="${x-1}" y="49" width="10" height="17" fill
 
 export const H = {};
 // H[style](x,w,entrance) → façade. entrance=true leaves the door zone to ENT()
-H.georgian=(x,w,e)=>`<rect x="${x}" y="22" width="${w}" height="44" fill="#5a3a2e"/>${COURSES(x,w,22,66,8,'#6d4536')}
-  <rect x="${x-2}" y="19" width="${w+4}" height="3" fill="#c9d0de"/><rect x="${x}" y="15" width="${w}" height="4" fill="#3a2a27"/>
-  <rect x="${x+6}" y="8" width="5" height="8" fill="#2f2421"/><rect x="${x+5}" y="7" width="7" height="1.6" fill="#c9d0de"/><rect x="${x+w-11}" y="9" width="5" height="7" fill="#2f2421"/><rect x="${x+w-12}" y="8" width="7" height="1.6" fill="#c9d0de"/>
-  ${W(x+6,26)}${W(x+22,26,.6)}${e?W(x+88,26,.7):''}${e?'':W(x+w-14,26,.65)}
-  ${W(x+6,47,.7)}${e?W(x+22,47,.5):''}${e?'':SDOOR(x+w/2-4,'#151a26','#eef2fb')}${e?'':W(x+w-14,47,.55)}
-  <g stroke="#0e162e" stroke-width="1"><path d="M${x+2} 60v6M${x+w-2} 60v6"/></g>`;
-H.victorian=(x,w,e)=>`<rect x="${x}" y="22" width="${w}" height="44" fill="#4a2f28"/>${COURSES(x,w,22,66,8,'#5c3b32')}
-  <path d="M${x-3} 22h${w+6}l-4-7H${x+1}z" fill="#2a3448"/><path d="M${x-3} 22h${w+6}" stroke="#4a5a8a" stroke-width="1.4"/><rect x="${x+w-14}" y="8" width="5" height="8" fill="#2f2421"/><rect x="${x+w-15}" y="7" width="7" height="1.6" fill="#c9d0de"/>
-  <path d="M${x+5} 25h20v41h-20z" fill="#2f2421"/><path d="M${x+5} 25l-3 3v38h3zM${x+25} 25l3 3v38h-3z" fill="#241b19"/><rect x="${x+2}" y="24" width="26" height="1.8" fill="#c9d0de"/>
-  ${WIN(x+8,27,14,10,'lit',.8)}${WIN(x+8,48,14,11,'lit',.6)}
-  ${e?W(x+88,26,.6):W(x+w-14,26,.6)}${e?'':SDOOR(x+w-14,'#7a2f2a','#e8ecf4')}`;
-H.craftsman=(x,w,e)=>`<path d="M${x-8} 44l${w/2+8}-24 ${w/2+8} 24z" fill="#2a3448"/><path d="M${x-8} 44h${w+16}" stroke="#4a5a8a" stroke-width="1.4"/>
+/* Georgian townhouse (Luxury): a rusticated stone ground floor under the brick, a
+   dentilled cornice and a balustraded parapet, chimney pots, keystoned stone lintels,
+   window boxes in flower, a fanlight over the door, and railings with urn finials. */
+H.georgian=(x,w,e)=>{
+  const surround=(a,b)=>`<rect x="${a-1.8}" y="${b-2.2}" width="11.6" height="1.6" fill="#c9d0de"/><path d="M${a+2.6} ${b-2.2}h2.8l.5-1.6h-3.8z" fill="#c9d0de"/>`;
+  const box=(a,b)=>`<rect x="${a-1}" y="${b+10.2}" width="10" height="2" fill="#3a2a27"/><g fill="#c0396b"><circle cx="${a+1}" cy="${b+10}" r=".9"/><circle cx="${a+4}" cy="${b+9.6}" r=".9"/><circle cx="${a+7}" cy="${b+10}" r=".9"/></g><g fill="#3f7a4f"><circle cx="${a+2.5}" cy="${b+10.6}" r=".9"/><circle cx="${a+5.5}" cy="${b+10.6}" r=".9"/></g>`;
+  const rw=e?x+88:x+w-14;
+  return `<rect x="${x}" y="22" width="${w}" height="44" fill="#5a3a2e"/>${COURSES(x,w,22,44,8,'#6d4536')}
+  <rect x="${x}" y="44" width="${w}" height="22" fill="#8a8f9a"/><rect x="${x}" y="44" width="${w}" height="22" fill="#0b1224" opacity=".35"/>
+  <g stroke="#3f4450" stroke-width=".8"><path d="M${x} 49.5h${w}M${x} 55h${w}M${x} 60.5h${w}${Array.from({length:Math.ceil(w/12)+1},(_,i)=>`M${x+i*12} 44v5.5M${x+6+i*12} 49.5v5.5M${x+i*12} 55v5.5M${x+6+i*12} 60.5v5.5`).join('')}"/></g>
+  <rect x="${x-1}" y="43.2" width="${w+2}" height="1.6" fill="#c9d0de"/>
+  <rect x="${x-2}" y="19" width="${w+4}" height="3" fill="#c9d0de"/><g fill="#c9d0de">${Array.from({length:Math.floor((w+2)/3.5)},(_,i)=>`<rect x="${x-1+i*3.5}" y="22" width="1.6" height="1.2"/>`).join('')}</g>
+  <rect x="${x}" y="15" width="${w}" height="4" fill="#3a2a27"/><g fill="#c9d0de" opacity=".9">${Array.from({length:Math.floor(w/4)},(_,i)=>`<rect x="${x+1.4+i*4}" y="15.6" width="1.2" height="3"/>`).join('')}<rect x="${x-1}" y="14.2" width="${w+2}" height="1.2"/></g>
+  <rect x="${x+6}" y="7" width="5" height="8" fill="#2f2421"/><rect x="${x+5}" y="6" width="7" height="1.6" fill="#c9d0de"/><g fill="#6b4a3a"><rect x="${x+6.4}" y="3.6" width="1.6" height="2.4"/><rect x="${x+9}" y="3.6" width="1.6" height="2.4"/></g>
+  <rect x="${x+w-11}" y="8" width="5" height="7" fill="#2f2421"/><rect x="${x+w-12}" y="7" width="7" height="1.6" fill="#c9d0de"/><g fill="#6b4a3a"><rect x="${x+w-10.6}" y="4.6" width="1.6" height="2.4"/><rect x="${x+w-8}" y="4.6" width="1.6" height="2.4"/></g>
+  ${W(x+6,26)}${surround(x+6,26)}${box(x+6,26)}${W(x+22,26,.6)}${surround(x+22,26)}${box(x+22,26)}${W(rw,26,e?.7:.65)}${surround(rw,26)}${e?'':box(rw,26)}
+  ${W(x+6,47,.7)}${surround(x+6,47)}${e?`${W(x+22,47,.5)}${surround(x+22,47)}`:''}
+  ${e?'':`${SDOOR(x+w/2-4,'#151a26','#eef2fb')}<path d="M${x+w/2-6} 49a6 6 0 0 1 12 0z" fill="#0b1224"/><g class="lit"><path d="M${x+w/2-6} 49a6 6 0 0 1 12 0z" fill="${GOLD}" opacity=".6"/></g><path d="M${x+w/2-6} 49a6 6 0 0 1 12 0M${x+w/2} 43v6M${x+w/2-4.2} 44.8l4.2 4.2 4.2-4.2" stroke="#eef2fb" stroke-width=".7" fill="none"/>${W(x+w-14,47,.55)}${surround(x+w-14,47)}`}
+  <g stroke="#0e162e" stroke-width="1"><path d="M${x+2} 60v6M${x+w-2} 60v6"/></g>
+  ${e?'':`<g stroke="#0e162e" stroke-width=".7"><path d="M${x+1} 59.6h${w/2-10}${Array.from({length:Math.floor((w/2-10)/3)},(_,i)=>`M${x+2.5+i*3} 59.6v6.4`).join('')}"/></g><circle cx="${x+1}" cy="58.8" r="1" fill="#0e162e"/><circle cx="${x+w/2-9}" cy="58.8" r="1" fill="#0e162e"/>`}
+  ${e?`<rect x="${x+38}" y="50" width="1.6" height="3" fill="#0e162e"/><g class="lit"><rect x="${x+37.6}" y="50.2" width="2.4" height="2.4" fill="${GOLD}" opacity=".9"/></g><rect x="${x+37.4}" y="49.4" width="2.8" height=".8" fill="#0e162e"/>`:''}`;
+};
+/* Victorian terrace (Standard): slate courses on the roof with iron ridge cresting and a
+   two-pot chimney, a gable dormer, polychrome header bands and a stone string course in
+   the brick, a hipped slate cap and stone surround on the bay, stone lintels, and a low
+   front-garden wall with railings. */
+H.victorian=(x,w,e)=>{
+  const bx=x+5;
+  const sw=e?x+88:x+w-14;
+  return `<rect x="${x}" y="22" width="${w}" height="44" fill="#4a2f28"/>${COURSES(x,w,22,66,8,'#5c3b32')}
+  <g fill="#3a221c" opacity=".7"><rect x="${x}" y="31.5" width="${w}" height="1.2"/><rect x="${x}" y="52.5" width="${w}" height="1.2"/></g>
+  <rect x="${x-1}" y="43.6" width="${w+2}" height="1.6" fill="#c9d0de" opacity=".8"/>
+  <path d="M${x-3} 22h${w+6}l-4-8H${x+1}z" fill="#2a3448"/>
+  <g stroke="#3a4660" stroke-width=".5" opacity=".9"><path d="M${x-1.4} 19h${w+2.8}M${x-.4} 17h${w+.8}M${x+.6} 15h${w-1.2}"/></g>
+  <path d="M${x-3} 22h${w+6}" stroke="#4a5a8a" stroke-width="1.4"/>
+  <g stroke="#6a7aa6" stroke-width=".6"><path d="M${x+1} 14h${w-2}${Array.from({length:Math.floor((w-2)/5)+1},(_,i)=>`M${x+1+i*5} 14v-1.6`).join('')}"/></g>
+  <rect x="${x+w-14}" y="6" width="6" height="8" fill="#2f2421"/><rect x="${x+w-15}" y="5" width="8" height="1.6" fill="#c9d0de"/><g fill="#8a4a3a"><rect x="${x+w-13.5}" y="2.4" width="2" height="2.6"/><rect x="${x+w-10.5}" y="2.4" width="2" height="2.6"/></g>
+  <path d="M${x+w-36} 22l6-8 6 8z" fill="#2f2421"/><path d="M${x+w-37} 22.4l7-9.4 7 9.4" stroke="#c9d0de" stroke-width="1" fill="none"/><rect x="${x+w-32}" y="17" width="4" height="4.6" fill="#0b1224"/><g class="lit"><rect x="${x+w-32}" y="17" width="4" height="4.6" fill="${GOLD}" opacity=".6"/></g>
+  <path d="M${bx-4} 25h28l-3-4H${bx-1}z" fill="#2a3448"/><path d="M${bx-4} 25h28" stroke="#4a5a8a" stroke-width="1"/><rect x="${bx+9.4}" y="18.6" width="1.2" height="2.6" fill="#c9d0de"/>
+  <path d="M${bx} 25h20v41h-20z" fill="#2f2421"/><path d="M${bx} 25l-3 3v38h3zM${bx+20} 25l3 3v38h-3z" fill="#241b19"/>
+  <rect x="${bx-3}" y="25" width="26" height="1.8" fill="#c9d0de"/><rect x="${bx-3}" y="44" width="26" height="1.6" fill="#c9d0de" opacity=".9"/>
+  <g fill="#c9d0de" opacity=".85"><rect x="${bx+1.2}" y="26.8" width="1.6" height="12"/><rect x="${bx+17.2}" y="26.8" width="1.6" height="12"/><rect x="${bx+1.2}" y="47.6" width="1.6" height="13"/><rect x="${bx+17.2}" y="47.6" width="1.6" height="13"/></g>
+  ${WIN(bx+3,27,14,10,'lit',.8)}${WIN(bx+3,48,14,11,'lit',.6)}
+  ${W(sw,26,.6)}<rect x="${sw-2}" y="24.4" width="12" height="1.6" fill="#c9d0de" opacity=".9"/>
+  ${e?'':`<g stroke="#0e162e" stroke-width=".8"><path d="M${x-4} 59h${w/2+8}${Array.from({length:Math.floor((w/2+8)/3)},(_,i)=>`M${x-3+i*3} 59v7`).join('')}"/></g><rect x="${x-5}" y="62" width="${w/2+10}" height="4" fill="#3a3f4a"/>`}
+  ${e?'':`${SDOOR(x+w-14,'#7a2f2a','#e8ecf4')}<path d="M${x+w-15} 49l5-2 5 2z" fill="#e8ecf4"/><rect x="${x+w-17.4}" y="52" width="1.4" height="2.2" fill="#1a1a1a"/><g class="lit"><rect x="${x+w-17.7}" y="52.3" width="2" height="1.6" fill="${GOLD}" opacity=".9"/></g>`}`;
+};
+/* Craftsman bungalow (Midcentury): shingle courses on the roof, a bargeboard with knee
+   braces under the eaves, a slatted attic vent, a shed dormer with a three-light window, a corbelled
+   chimney that actually meets the roof, a sill course over the brick, deeper stone
+   foundation, and shrubs in a planter bed. */
+H.craftsman=(x,w,e)=>{
+  const ax=x+w/2, half=w/2+8;
+  const roofY=(px)=>20+Math.abs(px-ax)/half*24;
+  const cxx=x+w-16;
+  const dx=e?x+14:x+w-30;
+  return `<path d="M${x-8} 44l${half}-24 ${half} 24z" fill="#2a3448"/>
+  <g stroke="#3a4660" stroke-width=".55" opacity=".9"><path d="${[41,38,35,32,29,26,23].map(y=>{const h=(y-20)/24*half-.6;return `M${(ax-h).toFixed(1)} ${y}h${(2*h).toFixed(1)}`;}).join('')}"/></g>
+  <path d="M${x-8} 44h${w+16}" stroke="#4a5a8a" stroke-width="1.4"/>
+  <path d="M${x-9} 44.6l${half+1}-25 ${half+1} 25" stroke="#3b3128" stroke-width="1.2" fill="none"/>
   <g stroke="#3b3128" stroke-width="1"><path d="M${x-6} 45v3M${x+2} 45v3M${x+10} 45v3M${x+18} 45v3M${x+26} 45v3M${x+w-10} 45v3M${x+w-2} 45v3M${x+w+6} 45v3"/></g>
+  <g stroke="#3b3128" stroke-width="1.1" stroke-linecap="round"><path d="M${x-7} 45.2l7 5.6M${x+w+7} 45.2l-7 5.6M${x-7} 45.2v4M${x+w+7} 45.2v4"/></g>
+  <path d="M${ax-5} 34l5-7 5 7z" fill="#1a1f2b"/><g stroke="#3b3128" stroke-width=".6"><path d="M${ax-4} 33.2h8M${ax-3} 31.6h6M${ax-2} 30h4"/></g><path d="M${ax-6} 34.6l6-8.4 6 8.4" stroke="#3b3128" stroke-width=".8" fill="none"/>
+  <path d="M${dx} 34h16v-6l-3-2H${dx+1}z" fill="#2a3448"/><rect x="${dx+1}" y="28.6" width="14" height="5.4" fill="#0b1224"/><g class="lit"><rect x="${dx+1}" y="28.6" width="14" height="5.4" fill="${GOLD}" opacity=".6"/></g><g stroke="#3b3128" stroke-width=".7"><path d="M${dx+5.7} 28.6v5.4M${dx+10.3} 28.6v5.4"/></g><rect x="${dx}" y="27.6" width="16" height="1.2" fill="#3b3128"/>
+  <rect x="${cxx}" y="12" width="4" height="${(roofY(cxx+2)-11).toFixed(1)}" fill="#3b3128"/><rect x="${cxx-.8}" y="11.2" width="5.6" height="1.4" fill="#4a3f34"/><rect x="${cxx}" y="14.6" width="4" height=".6" fill="#2a2320"/>
   <rect x="${x}" y="44" width="${w}" height="22" fill="#6b4a3a"/>${COURSES(x,w,44,66,24,'#7d5847')}
-  <rect x="${x+w-16}" y="14" width="4" height="8" fill="#3b3128"/>
-  
-  ${W(x+6,48)}${W(x+22,48,.6)}${e?W(x+88,48,.55):''}${e?'':SDOOR(x+w-14,'#9a5f3a','#3b3128')}`;
-H.brownstone=(x,w,e)=>`<rect x="${x}" y="22" width="${w}" height="44" fill="#5a3e34"/>${COURSES(x,w,22,44,6,'#6b4a3e')}
+  <rect x="${x}" y="44" width="${w}" height="2.4" fill="#8a7263"/>
+  <rect x="${x-1}" y="63" width="${w+2}" height="3" fill="#5c6b7a"/>
+  ${W(x+6,48)}<rect x="${x+4}" y="46.4" width="12" height="1.4" fill="#8a7263"/>${W(x+22,48,.6)}<rect x="${x+20}" y="46.4" width="12" height="1.4" fill="#8a7263"/>${e?`${W(x+88,48,.55)}<rect x="${x+86}" y="46.4" width="12" height="1.4" fill="#8a7263"/>`:''}
+  <g fill="#3f7a4f"><ellipse cx="${x+w-(e?38:28)}" cy="63" rx="4.5" ry="2.8"/><ellipse cx="${x+w-(e?31:34)}" cy="63.4" rx="3.5" ry="2.4"/></g>
+  ${e?'':`${SDOOR(x+w-14,'#9a5f3a','#3b3128')}<rect x="${x+w-17.4}" y="50" width="1.6" height="2.4" fill="#3b3128"/><g class="lit"><rect x="${x+w-17.7}" y="50.3" width="2.2" height="1.8" fill="${GOLD}" opacity=".9"/></g>`}`;
+};
+/* Brownstone (Custom): a bracketed cornice, carved keystoned lintels and sills, an oriel
+   bay on the second house, basement lights behind grilles, urn finials on the areaway
+   railing with a planter beside it, and cheek walls, a lantern and a hood on the stoop. */
+H.brownstone=(x,w,e)=>{
+  const lintel=(a,b)=>`<rect x="${a-2}" y="${b-2.4}" width="12" height="2" fill="#8a7263"/><path d="M${a+2.8} ${b-2.4}h2.4l.5-1.8h-3.4z" fill="#9a8273"/><rect x="${a-1.5}" y="${b+10}" width="11" height="1.4" fill="#8a7263"/>`;
+  const light=(a)=>`<rect x="${a}" y="62" width="7" height="3" fill="#0b1224"/><g class="lit"><rect x="${a}" y="62" width="7" height="3" fill="${GOLD}" opacity=".4"/></g><g stroke="#3a2a22" stroke-width=".5"><path d="M${a+1.75} 62v3M${a+3.5} 62v3M${a+5.25} 62v3"/></g>`;
+  return `<rect x="${x}" y="22" width="${w}" height="44" fill="#5a3e34"/>${COURSES(x,w,22,44,6,'#6b4a3e')}
   <rect x="${x}" y="44" width="${w}" height="22" fill="#6a4d42"/><g stroke="#55392f" stroke-width=".9"><path d="M${x} 49h${w}M${x} 55h${w}M${x} 61h${w}"/><path d="${Array.from({length:Math.ceil(w/12)+1},(_,i)=>`M${x+i*12} 44v5M${x+6+i*12} 49v6M${x+i*12} 55v6M${x+6+i*12} 61v5`).join('')}"/></g>
   <rect x="${x-1}" y="43" width="${w+2}" height="1.8" fill="#8a7263"/>
-  <g fill="#8a7263">${[8,30,e?0:w-16].filter(v=>v).map(v=>`<rect x="${x+v-2}" y="23.6" width="12" height="2"/>`).join('')}${e?`<rect x="${x+6}" y="44.6" width="12" height="2"/>`:''}</g>
-  <g fill="#8a7263">${Array.from({length:Math.floor(w/6)},(_,i)=>`<rect x="${x+2+i*6}" y="20.4" width="2" height="1.6"/>`).join('')}</g>
-  <rect x="${x}" y="12" width="${w}" height="10" fill="#5a3e34"/>${COURSES(x,w,12,22,6,'#6b4a3e')}<rect x="${x-2}" y="10" width="${w+4}" height="2.6" fill="#8a7263"/><g fill="#8a7263"><rect x="${x+2}" y="12.6" width="2" height="1.6"/><rect x="${x+w/2-1}" y="12.6" width="2" height="1.6"/><rect x="${x+w-4}" y="12.6" width="2" height="1.6"/></g>
-  ${W(x+8,26,.7)}${e?W(x+30,26,.5):W(x+w-16,26,.5)}
-  ${e?W(x+8,47,.6):''}${e?`<g stroke="#0e162e" stroke-width="1"><path d="M${x+2} 58v8M${x+6} 58v8M${x+10} 58v8M${x+14} 58v8M${x+18} 58v8M${x+22} 58v8M${x+1} 58h22"/></g>`:''}${e?'':`<g fill="#8a7263"><rect x="${x+w/2-6}" y="60" width="12" height="1.6"/><rect x="${x+w/2-8}" y="61.6" width="16" height="1.6"/><rect x="${x+w/2-10}" y="63.2" width="20" height="1.6"/><rect x="${x+w/2-12}" y="64.8" width="24" height="1.4"/></g><rect x="${x+w/2-5}" y="46" width="10" height="14" fill="#2e2622"/><rect x="${x+w/2-4}" y="48" width="8" height="6" fill="#0b1224"/><g class="lit"><rect x="${x+w/2-4}" y="48" width="8" height="6" fill="${GOLD}" opacity=".7"/></g>`}`;
+  <rect x="${x-2.5}" y="18.6" width="${w+5}" height="3.4" fill="#8a7263"/><rect x="${x-2.5}" y="18.6" width="${w+5}" height=".8" fill="#9a8273"/>
+  <g fill="#6f5a4b">${Array.from({length:Math.floor((w+4)/6)+1},(_,i)=>`<path d="M${x-2+i*6} 22h2.4l-.4 2.4h-1.6z"/>`).join('')}</g>
+  <rect x="${x}" y="12" width="${w}" height="6.6" fill="#5a3e34"/>${COURSES(x,w,12,18.6,6,'#6b4a3e')}<rect x="${x-2}" y="10" width="${w+4}" height="2.6" fill="#8a7263"/><g fill="#8a7263"><rect x="${x+2}" y="12.6" width="2" height="1.6"/><rect x="${x+w/2-1}" y="12.6" width="2" height="1.6"/><rect x="${x+w-4}" y="12.6" width="2" height="1.6"/></g>
+  ${W(x+8,26,.7)}${lintel(x+8,26)}${e?`${W(x+30,26,.5)}${lintel(x+30,26)}`:''}
+  ${e?'':`<path d="M${x+w-20} 24h14l2 2v12l-2 2h-14l-2-2V26z" fill="#4a322a"/><rect x="${x+w-21}" y="23" width="16" height="1.6" fill="#8a7263"/><rect x="${x+w-21}" y="39.6" width="16" height="1.6" fill="#8a7263"/><path d="M${x+w-21} 41.2l2 3h12l2-3z" fill="#6f5a4b"/>${WIN(x+w-18,27,10,10,'lit',.55)}`}
+  ${e?`${W(x+8,47,.6)}${lintel(x+8,47)}`:''}
+  ${(e?[x+30,x+w-10]:[x+8,x+w-30]).map(light).join('')}
+  ${e?`<g stroke="#0e162e" stroke-width="1"><path d="M${x+2} 58v8M${x+6} 58v8M${x+10} 58v8M${x+14} 58v8M${x+18} 58v8M${x+22} 58v8M${x+1} 58h22"/></g><g fill="#0e162e"><circle cx="${x+2}" cy="57.2" r=".9"/><circle cx="${x+22}" cy="57.2" r=".9"/></g><rect x="${x+26}" y="60" width="6" height="6" fill="#3a3f4a"/><circle cx="${x+29}" cy="58.6" r="3" fill="#3f7a4f"/>`:''}
+  ${e?'':`<g fill="#8a7263"><rect x="${x+w/2-6}" y="60" width="12" height="1.6"/><rect x="${x+w/2-8}" y="61.6" width="16" height="1.6"/><rect x="${x+w/2-10}" y="63.2" width="20" height="1.6"/><rect x="${x+w/2-12}" y="64.8" width="24" height="1.4"/></g><g fill="#7a6455"><rect x="${x+w/2-9}" y="52" width="2.4" height="12"/><rect x="${x+w/2+6.6}" y="52" width="2.4" height="12"/></g><rect x="${x+w/2-5}" y="46" width="10" height="14" fill="#2e2622"/><rect x="${x+w/2-4}" y="48" width="8" height="6" fill="#0b1224"/><g class="lit"><rect x="${x+w/2-4}" y="48" width="8" height="6" fill="${GOLD}" opacity=".7"/></g><rect x="${x+w/2-6.5}" y="44.6" width="13" height="1.6" fill="#8a7263"/><rect x="${x+w/2-11}" y="50" width="1.6" height="2.4" fill="#1a1a1a"/><g class="lit"><rect x="${x+w/2-11.4}" y="50.3" width="2.4" height="1.8" fill="${GOLD}" opacity=".9"/></g>`}`;
+};
 /* Two stacked volumes: a dark standing-seam box cantilevered over a rendered ground floor,
    a light metal coping, a rooftop rail and flue for the skyline, a ribbon window with a
    pendant upstairs, floor-to-ceiling glass downstairs, a wall sconce that washes the
@@ -150,32 +216,79 @@ H.modern=(x,w,e)=>{
   <rect x="${lx-1}" y="49" width="2" height="3" fill="#9aa0aa"/><g class="lit"><path d="M${lx} 52l-4.5 12h9z" fill="${GOLD}" opacity=".16"/><rect x="${lx-1.4}" y="49.4" width="2.8" height="2.2" fill="${GOLD}" opacity=".9"/></g>
   ${e?'':`<rect x="${x+w-12}" y="48" width="8" height="18" fill="#2a2320"/><rect x="${x+w-6}" y="49" width="1.4" height="16" fill="#0b1224"/><g class="lit"><rect x="${x+w-6}" y="49" width="1.4" height="16" fill="${GOLD}" opacity=".8"/></g><rect x="${x+w-30}" y="61" width="10" height="5" fill="#3a3f4a"/><circle cx="${x+w-25}" cy="59" r="3.6" fill="#3f7a4f"/>`}`;
 };
-H.farmhouse=(x,w,e)=>`<path d="M${x-6} 30l${w/2+6}-20 ${w/2+6} 20z" fill="#2b2f3a"/><path d="M${x-6} 30h${w+12}" stroke="#4a5060" stroke-width="1.4"/>
-  
-  <rect x="${x+w/2+4}" y="8" width="4" height="8" fill="#3a3128"/>
+/* Board-and-batten farmhouse: a standing-seam metal roof with a cupola and weathervane,
+   a fieldstone chimney and foundation, gable hoods over the windows, a porch with a
+   baluster rail, a hanging fern and a lantern, and, by the front door, a wagon wheel and a
+   milk can. */
+H.farmhouse=(x,w,e)=>{
+  const ax=x+w/2, slope=20/(w/2+6);
+  const win=(a,b,o)=>`${W(a,b,o)}<rect x="${a-1.6}" y="${b-2}" width="11.2" height="1.4" fill="#f4f2ec"/><path d="M${a-2.4} ${b-2}l6.4-2.6 6.4 2.6z" fill="#3a3f4a"/>`;
+  const seams=Array.from({length:Math.floor((w+12)/7)+1},(_,i)=>{const px=x-6+i*7;return `M${px} 30V${(10+Math.abs(px-ax)*slope).toFixed(1)}`;}).join('');
+  return `<path d="M${x-6} 30l${w/2+6}-20 ${w/2+6} 20z" fill="#2b2f3a"/>
+  <g stroke="#3d4352" stroke-width=".6" opacity=".9"><path d="${seams}"/></g>
+  <path d="M${x-6} 30h${w+12}" stroke="#4a5060" stroke-width="1.4"/><path d="M${x-7} 30.7h${w+14}" stroke="#f4f2ec" stroke-width=".7" opacity=".6"/>
+  <rect x="${ax-3}" y="6" width="6" height="5" fill="#f4f2ec"/><path d="M${ax-4} 6h8l-4-2.6z" fill="#2b2f3a"/><rect x="${ax-1.2}" y="7.2" width="2.4" height="2.6" fill="#0b1224"/><g class="lit"><rect x="${ax-1.2}" y="7.2" width="2.4" height="2.6" fill="${GOLD}" opacity=".6"/></g>
+  <g stroke="#c9c2b6" stroke-width=".6"><path d="M${ax} 3.4v-2.2M${ax-2} 1.8h4"/></g><path d="M${ax-1.4} 1.2l3-.8-.6 1.6z" fill="#c9c2b6"/>
+  <rect x="${ax+10}" y="8" width="5" height="10" fill="#6b6f78"/><g stroke="#4a4e57" stroke-width=".5"><path d="M${ax+10} 11h5M${ax+10} 14h5M${ax+12.5} 8v3M${ax+11} 11v3M${ax+13.5} 14v4"/></g><rect x="${ax+9.4}" y="7.2" width="6.2" height="1" fill="#4a4e57"/>
   <rect x="${x}" y="30" width="${w}" height="36" fill="#e9e6df"/><rect x="${x}" y="30" width="${w}" height="36" fill="#0b1224" opacity=".42"/>
-  <g stroke="#0b1224" stroke-width=".8" opacity=".35"><path d="M${x+6} 30v36M${x+12} 30v36M${x+18} 30v36M${x+24} 30v36M${x+30} 30v36M${x+36} 30v36M${x+42} 30v36M${x+48} 30v36M${x+54} 30v36M${x+60} 30v36"/></g>
-  
-  ${W(x+6,34)}${W(x+22,34,.6)}${e?W(x+88,34,.55):''}
-  ${e?'':`<path d="M${x-4} 46h${w+8}v-2l-3-4H${x-1}z" fill="#2b2f3a"/><path d="M${x-4} 46h${w+8}" stroke="#4a5060" stroke-width="1"/><rect x="${x-2}" y="46" width="2.4" height="20" fill="#f4f2ec"/><rect x="${x+w-.4}" y="46" width="2.4" height="20" fill="#f4f2ec"/><rect x="${x+w/2-1}" y="46" width="2.4" height="20" fill="#f4f2ec"/>`}
-  ${W(x+6,50,.7)}${e?'':SDOOR(x+w-16,'#3f4a46','#f4f2ec')}${e?'':`<rect x="${x-3}" y="63" width="${w+6}" height="1.6" fill="#c9c2b6"/>`}`;
-H.colonial=(x,w,e)=>`<path d="M${x-4} 22l5-9 ${w/2-1}-6 ${w/2-1} 6 5 9z" fill="#2b3446"/><path d="M${x+1} 13h${w-2}" stroke="#3a4560" stroke-width=".8"/><path d="M${x-4} 22h${w+8}" stroke="#4a5a8a" stroke-width="1.4"/>
-  <rect x="${x+w/2+8}" y="3" width="4" height="7" fill="#8a4a3a"/>
-  <path d="M${x+7} 18l4-5 4 5z" fill="#2b3446"/><rect x="${x+9}" y="15" width="4" height="3" fill="#0b1224"/><g class="lit"><rect x="${x+9}" y="15" width="4" height="3" fill="${GOLD}" opacity=".7"/></g>
-  <path d="M${x+w-15} 18l4-5 4 5z" fill="#2b3446"/><rect x="${x+w-13}" y="15" width="4" height="3" fill="#0b1224"/><g class="lit"><rect x="${x+w-13}" y="15" width="4" height="3" fill="${GOLD}" opacity=".5"/></g>
+  <g stroke="#0b1224" stroke-width=".8" opacity=".35"><path d="${Array.from({length:Math.floor(w/6)},(_,i)=>`M${x+6+i*6} 30v36`).join('')}"/></g>
+  <rect x="${x-1}" y="62" width="${w+2}" height="4" fill="#6b6f78"/><g fill="#7d818a" opacity=".8">${Array.from({length:Math.floor(w/9)},(_,i)=>`<rect x="${x+1+i*9}" y="${62.6+(i%2)*1.2}" width="5" height="2.2" rx=".6"/>`).join('')}</g>
+  ${win(x+6,34,.85)}${win(x+22,34,.6)}${e?win(x+88,34,.55):''}
+  ${e?'':`<path d="M${x-4} 46h${w+8}v-2l-3-4H${x-1}z" fill="#2b2f3a"/><path d="M${x-4} 46h${w+8}" stroke="#4a5060" stroke-width="1"/><rect x="${x-2}" y="46" width="2.4" height="20" fill="#f4f2ec"/><rect x="${x+w-.4}" y="46" width="2.4" height="20" fill="#f4f2ec"/><rect x="${x+w/2-1}" y="46" width="2.4" height="20" fill="#f4f2ec"/>
+  <g stroke="#f4f2ec" stroke-width=".7"><path d="M${x+.4} 58.5h${w/2-1.4}M${x+w/2+1.4} 58.5h${w/2-18}${Array.from({length:Math.floor((w/2-2)/3)},(_,i)=>`M${x+2.4+i*3} 58.5v4.5`).join('')}${Array.from({length:Math.floor((w/2-18)/3)},(_,i)=>`M${x+w/2+3.4+i*3} 58.5v4.5`).join('')}"/></g><rect x="${x}" y="62.8" width="${w}" height="1" fill="#f4f2ec" opacity=".8"/>
+  <path d="M${x+27} 46v4" stroke="#5a5f6a" stroke-width=".6"/><path d="M${x+24.6} 50h4.8l-.6 2.4h-3.6z" fill="#8a6a4a"/><path d="M${x+22.8} 52.4h8.4c0 3.4-1.8 5.4-4.2 5.4s-4.2-2-4.2-5.4z" fill="#3f7a4f"/><path d="M${x+23.6} 52.4c-.2 1.4.2 2.6.8 3.4M${x+30.4} 52.4c.2 1.4-.2 2.6-.8 3.4" stroke="#2f5a3a" stroke-width=".7" fill="none"/>
+  <rect x="${x+w-20}" y="49" width="1.4" height="2.4" fill="#1a1a1a"/><g class="lit"><rect x="${x+w-20.3}" y="49.3" width="2" height="1.8" fill="${GOLD}" opacity=".9"/><path d="M${x+w-19.3} 51.4l-3 8h6z" fill="${GOLD}" opacity=".14"/></g>`}
+  ${win(x+6,50,.7)}${e?'':SDOOR(x+w-16,'#3f4a46','#f4f2ec')}${e?'':`<rect x="${x-3}" y="63" width="${w+6}" height="1.6" fill="#c9c2b6"/>`}
+  ${e?`<g stroke="#5a4634" fill="none"><circle cx="${x+33}" cy="60.2" r="4.4" stroke-width="1.3"/><circle cx="${x+33}" cy="60.2" r="1" fill="#5a4634"/><path d="M${x+33} 55.8v8.8M${x+28.6} 60.2h8.8M${x+29.9} 57.1l6.2 6.2M${x+36.1} 57.1l-6.2 6.2" stroke-width=".7"/></g><rect x="${x+40}" y="59" width="3.6" height="6" rx="1" fill="#9aa0aa"/><rect x="${x+40.8}" y="58" width="2" height="1.4" fill="#9aa0aa"/>`:''}`;
+};
+/* White timber colonial (Scandinavian): slate courses on the roof, a dentilled cornice,
+   pedimented dormers with white trim, a weathervane, corner boards, white window heads,
+   louvred shutters, a stone foundation, a picket fence, and a lantern by the door. */
+H.colonial=(x,w,e)=>{
+  const sh=(a,b)=>`<g fill="#2f5a3a"><rect x="${a-3}" y="${b-1}" width="2.4" height="12"/><rect x="${a+8.6}" y="${b-1}" width="2.4" height="12"/></g><g stroke="#1e3d28" stroke-width=".45"><path d="M${a-2.6} ${b+1.5}h1.6M${a-2.6} ${b+3.5}h1.6M${a-2.6} ${b+5.5}h1.6M${a-2.6} ${b+7.5}h1.6M${a+9} ${b+1.5}h1.6M${a+9} ${b+3.5}h1.6M${a+9} ${b+5.5}h1.6M${a+9} ${b+7.5}h1.6"/></g>`;
+  const win=(a,b,o)=>`${W(a,b,o)}<rect x="${a-1.6}" y="${b-2.4}" width="11.2" height="1.4" fill="#eef2fb" opacity=".95"/>${sh(a,b)}`;
+  const dormer=(a,o)=>`<path d="M${a} 18l4-5 4 5z" fill="#2b3446"/><path d="M${a-.6} 18.4l4.6-6 4.6 6" stroke="#eef2fb" stroke-width=".9" fill="none"/><rect x="${a+2}" y="15" width="4" height="3" fill="#0b1224"/><g class="lit"><rect x="${a+2}" y="15" width="4" height="3" fill="${GOLD}" opacity="${o}"/></g>`;
+  return `<path d="M${x-4} 22l5-9 ${w/2-1}-6 ${w/2-1} 6 5 9z" fill="#2b3446"/>
+  <g stroke="#3a4560" stroke-width=".6" opacity=".9"><path d="M${x-1} 19.5h${w+2}M${x+1.5} 16.5h${w-3}"/></g>
+  <path d="M${x+1} 13h${w-2}" stroke="#3a4560" stroke-width=".8"/>
+  <rect x="${x-4}" y="21" width="${w+8}" height="2.2" fill="#eef2fb"/><g fill="#eef2fb">${Array.from({length:Math.floor((w+6)/4)},(_,i)=>`<rect x="${x-3+i*4}" y="23.2" width="2" height="1.2"/>`).join('')}</g>
+  <rect x="${x+w/2+8}" y="3" width="4" height="7" fill="#8a4a3a"/><rect x="${x+w/2+7.4}" y="2.4" width="5.2" height="1" fill="#6b3a2c"/>
+  <g stroke="#c9d0de" stroke-width=".6"><path d="M${x+w/2} 8v-5.4M${x+w/2-2.5} 4.2h5"/></g><path d="M${x+w/2-2} 2.8l2-1 2 1-2 .6z" fill="#c9d0de"/>
+  ${dormer(x+7,.7)}${dormer(x+w-15,.5)}
   <rect x="${x}" y="22" width="${w}" height="44" fill="#c9c3b8"/><rect x="${x}" y="22" width="${w}" height="44" fill="#0b1224" opacity=".45"/>${COURSES(x,w,22,66,6,'#0b1224',.5)}
-  ${W(x+8,26)}<g fill="#2f5a3a"><rect x="${x+5}" y="25" width="2.4" height="12"/><rect x="${x+16.6}" y="25" width="2.4" height="12"/></g>
-  ${W(x+26,26,.6)}<g fill="#2f5a3a"><rect x="${x+23}" y="25" width="2.4" height="12"/><rect x="${x+34.6}" y="25" width="2.4" height="12"/></g>
-  ${e?`${W(x+88,26,.55)}<g fill="#2f5a3a"><rect x="${x+85}" y="25" width="2.4" height="12"/><rect x="${x+96.6}" y="25" width="2.4" height="12"/></g>`:''}
-  ${W(x+8,47,.7)}<g fill="#2f5a3a"><rect x="${x+5}" y="46" width="2.4" height="12"/><rect x="${x+16.6}" y="46" width="2.4" height="12"/></g>
-  ${e?`${W(x+26,47,.5)}<g fill="#2f5a3a"><rect x="${x+23}" y="46" width="2.4" height="12"/><rect x="${x+34.6}" y="46" width="2.4" height="12"/></g>`:''}
-  ${e?'':`<path d="M${x+w-19} 49l6-2.5 6 2.5z" fill="#eef2fb"/>${SDOOR(x+w-17,'#f4f6fa','#eef2fb')}`}`;
-H.mediterranean=(x,w,e)=>`<rect x="${x}" y="22" width="${w}" height="44" fill="#c99b6b"/><rect x="${x}" y="22" width="${w}" height="44" fill="#0b1224" opacity=".35"/>
-  <g fill="#a3492f"><path d="M${x-3} 17h${w+6}v5H${x-3}z"/></g><g fill="#8a3a24" opacity=".8">${Array.from({length:Math.ceil(w/8)+1},(_,i)=>`<path d="M${x-1+i*8} 17h3v5h-3z"/>`).join('')}</g>
-  ${[[x+8,26,.75],[x+26,26,.55],[x+8,47,.6]].concat(e?[[x+88,26,.5]]:[[x+w-16,26,.6]]).map(([a,b,o])=>`<path d="M${a} ${b+4}a4 4 0 0 1 8 0v6h-8z" fill="#0b1224"/><g class="lit"><path d="M${a} ${b+4}a4 4 0 0 1 8 0v6h-8z" fill="${GOLD}" opacity="${o}"/></g><path d="M${a-1} ${b+4}a5 5 0 0 1 10 0" fill="none" stroke="#d9c7ad" stroke-width="1"/>`).join('')}
+  <g fill="#eef2fb" opacity=".85"><rect x="${x}" y="22" width="1.8" height="44"/><rect x="${x+w-1.8}" y="22" width="1.8" height="44"/></g>
+  <rect x="${x}" y="62.5" width="${w}" height="3.5" fill="#6b6f78"/><g stroke="#4a4e57" stroke-width=".5"><path d="${Array.from({length:Math.floor(w/5)},(_,i)=>`M${x+2.5+i*5} 62.5v3.5`).join('')}"/></g>
+  ${win(x+8,26,.85)}${win(x+26,26,.6)}${e?win(x+88,26,.55):''}
+  ${win(x+8,47,.7)}${e?win(x+26,47,.5):''}
+  ${e?'':`<g fill="#eef2fb" opacity=".9">${Array.from({length:Math.floor((w/2+6)/3)},(_,i)=>`<path d="M${x-5+i*3} 66v-5l1-1.2 1 1.2v5z"/>`).join('')}<rect x="${x-5}" y="62.2" width="${w/2+6}" height=".8"/></g>`}
+  ${e?'':`<path d="M${x+w-19} 49l6-2.5 6 2.5z" fill="#eef2fb"/><rect x="${x+w-18}" y="49" width="10" height="1" fill="#eef2fb"/>${SDOOR(x+w-17,'#f4f6fa','#eef2fb')}<rect x="${x+w-21}" y="52" width="1.4" height="2.2" fill="#1a1a1a"/><g class="lit"><rect x="${x+w-21.3}" y="52.3" width="2" height="1.6" fill="${GOLD}" opacity=".9"/></g>`}`;
+};
+/* Stucco with some life in it: a mottled render, a stone base course and a string course
+   between the floors, quoins on the corner, a proper two-course barrel-tile roof with a
+   clay chimney pot, louvred shutters and sills on the arched windows, and a bougainvillea
+   climbing the wall. Same tan/terracotta/teal palette as before, just more surface. */
+H.mediterranean=(x,w,e)=>{
+  const wins=[[x+8,26,.75],[x+26,26,.55],[x+8,47,.6]].concat(e?[[x+88,26,.5]]:[[x+w-16,26,.6]]);
+  const tiles=(y,dx,fill)=>`<g fill="${fill}">${Array.from({length:Math.floor((w+8-dx)/6)},(_,i)=>`<path d="M${x-4+dx+i*6} ${y}h6v1a3 3 0 0 1-6 0z"/>`).join('')}</g>`;
+  const cx=e?x+w-30:x+w-14;                         // chimney
+  const vx=e?x+30:x+21;                             // bougainvillea
+  return `<rect x="${x}" y="22" width="${w}" height="44" fill="#c99b6b"/><rect x="${x}" y="22" width="${w}" height="44" fill="#0b1224" opacity=".35"/>
+  <g fill="#e2c9a6" opacity=".1"><ellipse cx="${x+w*.3}" cy="31" rx="9" ry="4"/><ellipse cx="${x+w*.7}" cy="52" rx="11" ry="5"/><ellipse cx="${x+w*.15}" cy="57" rx="6" ry="2.5"/></g>
+  <g fill="#0b1224" opacity=".08"><ellipse cx="${x+w*.55}" cy="40" rx="8" ry="3"/><ellipse cx="${x+w*.85}" cy="30" rx="6" ry="3"/></g>
+  <rect x="${x}" y="22" width="${w}" height="1.6" fill="#0b1224" opacity=".3"/>
+  <rect x="${x-1}" y="43.4" width="${w+2}" height="1.6" fill="#d9c7ad" opacity=".5"/>
+  <rect x="${x}" y="60" width="${w}" height="6" fill="#9a8468"/><rect x="${x}" y="60" width="${w}" height="6" fill="#0b1224" opacity=".3"/><g stroke="#5e4c38" stroke-width=".6" opacity=".8"><path d="M${x} 63h${w}${Array.from({length:Math.ceil(w/7)},(_,i)=>`M${x+3+i*7} 60v3M${x+i*7} 63v3`).join('')}"/></g>
+  <g fill="#d9c7ad" opacity=".26">${[24,30,36,46,52].map((y,i)=>`<rect x="${x}" y="${y}" width="${i%2?3:4.5}" height="4"/>`).join('')}</g>
+  <rect x="${x-4}" y="14" width="${w+8}" height="1.4" fill="#7a2f1f"/><rect x="${x-4}" y="15.4" width="${w+8}" height="6.6" fill="#a3492f"/>
+  ${tiles(15.4,0,'#8a3a24')}${tiles(18.8,3,'#b5573c')}
+  <rect x="${cx}" y="8" width="4" height="7" fill="#b98a5a"/><rect x="${cx-.6}" y="7" width="5.2" height="1.4" fill="#a3492f"/><rect x="${cx+1}" y="4.6" width="2" height="2.4" fill="#7a2f1f"/>
+  ${wins.map(([a,b,o])=>`<g fill="#2f5a5a"><rect x="${a-4}" y="${b+1}" width="3.4" height="10.5"/><rect x="${a+8.6}" y="${b+1}" width="3.4" height="10.5"/></g><g stroke="#1e3d3d" stroke-width=".5"><path d="M${a-3.4} ${b+3.5}h2.2M${a-3.4} ${b+6}h2.2M${a-3.4} ${b+8.5}h2.2M${a+9.2} ${b+3.5}h2.2M${a+9.2} ${b+6}h2.2M${a+9.2} ${b+8.5}h2.2"/></g><path d="M${a} ${b+4}a4 4 0 0 1 8 0v6h-8z" fill="#0b1224"/><g class="lit"><path d="M${a} ${b+4}a4 4 0 0 1 8 0v6h-8z" fill="${GOLD}" opacity="${o}"/></g><path d="M${a-1} ${b+4}a5 5 0 0 1 10 0" fill="none" stroke="#d9c7ad" stroke-width="1"/><rect x="${a-1.5}" y="${b+10.2}" width="11" height="1.1" fill="#d9c7ad" opacity=".85"/>`).join('')}
   <g stroke="#1a1a1a" stroke-width=".8"><path d="M${x+6} 36h12M${x+8} 36v3M${x+11} 36v3M${x+14} 36v3M${x+24} 36h12M${x+26} 36v3M${x+29} 36v3M${x+32} 36v3"/></g>
-  ${e?'':`<path d="M${x+w/2-5} 66V54a5 5 0 0 1 10 0v12z" fill="#d9c7ad"/><path d="M${x+w/2-4} 66V54a4 4 0 0 1 8 0v12z" fill="#4a2e22"/><g class="lit"><path d="M${x+w/2-4} 66V54a4 4 0 0 1 8 0v12z" fill="${GOLD}" opacity=".16"/></g>`}
+  <path d="M${vx} 66c-2.5-5 1-9-1.5-14 2.5-4 5-7 2.5-12M${vx-1.5} 52c-3-1-4-3-3-6M${vx+1} 40c3-.5 4-2.5 3.5-5M${vx-1} 58c-2.5.5-4.5-1-5-3" stroke="#2f5a3a" stroke-width=".9" fill="none" stroke-linecap="round"/>
+  <g fill="#c8407a"><circle cx="${vx-3.5}" cy="47" r="1.2"/><circle cx="${vx+.5}" cy="44" r="1"/><circle cx="${vx+3}" cy="36" r="1.2"/><circle cx="${vx-1}" cy="40" r=".9"/><circle cx="${vx-5}" cy="56" r="1"/><circle cx="${vx+1.5}" cy="52" r="1.1"/><circle cx="${vx-2}" cy="61" r=".9"/></g><g fill="#e86a9c" opacity=".9"><circle cx="${vx-2}" cy="44.5" r=".7"/><circle cx="${vx+2}" cy="39" r=".7"/><circle cx="${vx-4}" cy="52.5" r=".7"/><circle cx="${vx+.5}" cy="57.5" r=".7"/></g>
+  ${e?'':`<path d="M${x+w/2-5} 66V54a5 5 0 0 1 10 0v12z" fill="#d9c7ad"/><path d="M${x+w/2-4} 66V54a4 4 0 0 1 8 0v12z" fill="#4a2e22"/><g class="lit"><path d="M${x+w/2-4} 66V54a4 4 0 0 1 8 0v12z" fill="${GOLD}" opacity=".16"/></g><rect x="${x+w/2+7}" y="50" width="1.6" height="2.4" fill="#1a1a1a"/><g class="lit"><rect x="${x+w/2+6.6}" y="50.4" width="2.4" height="1.8" fill="${GOLD}" opacity=".9"/><path d="M${x+w/2+7.8} 52.4l-3.5 9h7z" fill="${GOLD}" opacity=".14"/></g>`}
   <path d="M${x+w+2} 66c-3-8-3-16 0-24 3 8 3 16 0 24z" fill="#1f4a3a"/>`;
+};
 
 /* ------------------------------------------------------------------ far backgrounds */
 export const FAR = {};
@@ -217,8 +330,8 @@ FAR.brownstone=`<g class="far"><g fill="#1a2650"><path d="M0 44h14v30H0zM18 34h1
  * Eight styles, eight houses; the label/name columns are prototype notes kept for review.
  */
 export const STYLE_HOUSE = [
-  {key:'standard',     label:'Standard',     house:'victorian',    name:'Victorian terrace'},
   {key:'modern',       label:'Modern',       house:'modern',       name:'Modern pivot'},
+  {key:'standard',     label:'Standard',     house:'victorian',    name:'Victorian terrace'},
   {key:'scandinavian', label:'Scandinavian', house:'colonial',     name:'White timber, shutters'},
   {key:'coastal',      label:'Coastal',      house:'mediterranean',name:'Stucco arch'},
   {key:'farmhouse',    label:'Farmhouse',    house:'farmhouse',    name:'Board-and-batten farmhouse'},

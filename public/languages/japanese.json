@@ -1095,7 +1095,8 @@
         "label": "エージェントの声",
         "prev": "前の声",
         "next": "次の声"
-      }
+      },
+      "starsAria": "5 段階評価で 5"
     },
     "blog": {
       "title": "Stagify ブログ",
@@ -1659,6 +1660,12 @@
       "pro": "Stagify+",
       "proDescription": "より高品質、より低速"
     },
+    "proGate": {
+      "title": "AIデザイナーは Stagify+ の機能です",
+      "body": "AIデザイナーのチャット、高度なモデル、マスクツールを使うには Stagify+ アカウントでログインしてください。無料アカウントでもホームでバーチャルステージングをご利用いただけます。",
+      "viewPlus": "Stagify+ を見る",
+      "backToStaging": "ステージングに戻る"
+    },
     "messageTag": {
       "auto": "自動",
       "generate": "生成",
@@ -1669,7 +1676,8 @@
     "thumbnailStrip": {
       "label": "次のメッセージの基準画像",
       "help": "次のメッセージを送信する際にAIが変更すべき部屋の画像を選択してください。特に家具を追加するときに役立ちます。複数のアップロードやステージング版がある場合に便利です。",
-      "helpAria": "基準画像とは？"
+      "helpAria": "基準画像とは？",
+      "selectAria": "ベース画像を選択"
     },
     "alt": {
       "uploadFile": "メッセージにファイルを添付",
@@ -1852,7 +1860,10 @@
     "pickerPromptBar": "プロンプトバー",
     "pickerFurniture": "家具",
     "demo3Desc": "AIデザイナーが簡単なチャットから部屋を自律的にステージング・再デザインする様子をご覧ください。",
-    "troubleshootingTitle": "トラブルシューティングとよくある問題"
+    "troubleshootingTitle": "トラブルシューティングとよくある問題",
+    "demoPickerAria": "チュートリアルを選択",
+    "topicsAria": "ガイドの項目",
+    "goToStep": "ステップ {n} へ"
   },
   "pageMeta": {
     "about": {
@@ -2038,7 +2049,9 @@
       "各エリアをなじませています…",
       "写真の他の部分はそのまま保護中…",
       "最後の仕上げ中…"
-    ]
+    ],
+    "controlsAria": "マスクスタジオの操作パネル",
+    "workspaceAria": "マスクスタジオの作業領域"
   },
   "status": {
     "pageTitle": "ステータスと稼働状況 | Stagify.ai",
@@ -2194,7 +2207,8 @@
       "phoneLabel": "電話番号",
       "phoneOptional": "（任意）",
       "submit": "支払いに進む",
-      "redirecting": "Stripe にリダイレクトしています…"
+      "redirecting": "Stripe にリダイレクトしています…",
+      "companyPlaceholder": "株式会社サンプル"
     },
     "errors": {
       "domain": "有効なドメインを入力してください（例: company.com）。",
@@ -2272,7 +2286,9 @@
     "footLinks": {
       "backToFree": "無料ステージングに戻る",
       "questions": "ご購入前に質問がありますか？"
-    }
+    },
+    "subscribeAria": "Stagify+ に登録",
+    "compareAria": "無料版と Stagify+ の比較"
   },
   "gallery": {
     "pageTitle": "あなたのギャラリー — Stagify",
@@ -2464,7 +2480,9 @@
     "stepPhotoHint": "右側の作業エリアで写真をアップロードしてください。",
     "replacePhoto": "写真を差し替える",
     "stepChanges": "何を変えますか？",
-    "enhanceHint": "変更を1つ以上選ぶか、上に書いてください。"
+    "enhanceHint": "変更を1つ以上選ぶか、上に書いてください。",
+    "controlsAria": "外観スタジオの操作パネル",
+    "workspaceAria": "外観スタジオの作業領域"
   },
   "notFound": {
     "pageTitle": "ページが見つかりません | Stagify.ai",

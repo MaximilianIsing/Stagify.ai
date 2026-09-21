@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Picker glyphs: halo and peel</title>
+<style>
+/* tokens lifted from public/styles/styles.css :root */
+:root{
+  --bg:#f5f8fd;--bg-elevated:#ffffff;--fg:#1f2937;--muted:#6b7280;--border:#e5e7eb;
+  --brand:#2563eb;--brand-strong:#1d4ed8;--brand-deep:#1e3a8a;--brand-soft:#60a5fa;
+  --brand-pale:#93c5fd;--brand-tint:#dbeafe;--brand-wash:#eff6ff;
+  --slate:#64748b;--slate-deep:#475569;--muted-light:#9ca3af;
+}
+
+/* page chrome */
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 Inter,ui-sans-serif,system-ui,sans-serif}
+.rail{position:fixed;left:0;top:0;bottom:0;width:220px;overflow-y:auto;z-index:60;background:#fff;
+  border-right:1px solid var(--border);padding:18px 12px;display:flex;flex-direction:column;gap:2px}
+.rail-t{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:0 10px 8px}
+.rail a{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:9px;text-decoration:none;
+  font-size:13.5px;font-weight:600;color:var(--fg)}
+.rail a i{font-style:normal;font-size:11px;font-weight:800;color:var(--muted);min-width:18px}
+.rail a:hover{background:var(--brand-wash)}
+.rail a.on{background:var(--brand-deep);color:#fff}
+.rail a.on i{color:rgba(255,255,255,.7)}
+.page{margin-left:220px;max-width:1180px;padding:0 24px 120px}
+.panel,.canvas{background:#fff;border:1px solid var(--border);border-radius:16px;margin:22px 0;padding:22px}
+.canvas{padding:0;overflow:hidden}
+.canvas .cap{padding:20px 22px 16px;border-bottom:1px solid var(--border)}
+.cap .n{display:inline-block;background:var(--brand-deep);color:#fff;font-size:11px;font-weight:800;
+  padding:3px 8px;border-radius:6px;margin-right:9px;vertical-align:2px}
+.cap h2{display:inline;font-size:19px;margin:0}
+.trade{margin:9px 0 0;color:var(--muted);font-size:13.5px}
+
+/* ranking */
+.rank{list-style:none;margin:0;padding:0;counter-reset:r}
+.rank li{counter-increment:r;display:grid;grid-template-columns:28px 34px 1fr 160px 52px 54px;
+  gap:12px;align-items:center;padding:11px 0;border-top:1px solid var(--border)}
+.rank li::before{content:counter(r);font-weight:800;color:var(--muted);font-size:13px}
+.rank li i{font-style:normal;font-size:11px;font-weight:800;color:var(--muted)}
+.rank li p{grid-column:3/-1;margin:2px 0 0;font-size:12.5px;color:var(--muted)}
+.bar{display:block;height:8px;border-radius:99px;background:var(--border);overflow:hidden}
+.bar span{display:block;height:100%;background:var(--brand);border-radius:99px}
+.score{font-size:13px;font-weight:700;text-align:right}
+.grade{display:inline-block;min-width:44px;text-align:center;font-size:12px;font-weight:800;
+  color:#fff;padding:3px 7px;border-radius:7px}
+.g-a{background:#16a34a}.g-b{background:#65a30d}.g-c{background:#d97706}
+.g-d{background:#ea580c}.g-f{background:#dc2626}
+
+/* comparison matrix */
+.matrix{width:100%;border-collapse:collapse;font-size:13px}
+.matrix th{text-align:left;font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--muted);padding:0 10px 9px;border-bottom:1px solid var(--border)}
+.matrix td{padding:10px;border-bottom:1px solid var(--border)}
+.matrix tbody tr:hover{background:var(--brand-wash)}
+
+/* pros and cons */
+.verdict{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--border)}
+.verdict ul{list-style:none;margin:0;padding:16px 20px;display:grid;gap:7px;align-content:start}
+.verdict li{position:relative;padding-left:26px;font-size:13px;line-height:1.45}
+.verdict li::before{position:absolute;left:0;top:0;font-size:13px}
+.pros li{color:#14532d}
+.pros li::before{content:"\1F44D"}
+.cons{border-left:1px solid var(--border)}
+.cons li{color:#7f1d1d}
+.cons li::before{content:"\1F44E"}
+
+@media(max-width:900px){
+  .rail{position:sticky;inset:auto;top:0;width:auto;flex-direction:row;overflow-x:auto;
+    border-right:0;border-bottom:1px solid var(--border)}
+  .rail-t{display:none}
+  .rail a{flex:none}
+  .page{margin-left:0;padding:0 16px 80px}
+  .rank li{grid-template-columns:24px 30px 1fr 46px 50px}
+  .rank li .bar{display:none}
+}
+@media(max-width:700px){
+  .verdict{grid-template-columns:1fr}
+  .cons{border-left:0;border-top:1px solid var(--border)}
+}
+
+/* ============================================ header */
+.top{padding:34px 0 6px}
+.top h1{font-size:26px;margin:0 0 10px;letter-spacing:-.02em}
+.req{background:#fff;border:1px solid var(--border);border-left:3px solid var(--brand);
+  border-radius:0 10px 10px 0;padding:11px 14px;font-size:13.5px;color:var(--slate-deep)}
+.stamp{font-size:12px;color:var(--muted-light);margin:10px 0 0}
+.lede{margin:14px 0 0;color:var(--muted);font-size:14px;max-width:62ch}
+
+/* ============================================ shared hero mock */
+.demo{padding:26px 22px 30px;background:linear-gradient(180deg,#eaf1fb,#dfeaf9)}
+.switch{display:flex;gap:6px;margin:0 0 16px}
+.switch button{border:1px solid var(--border);background:#fff;color:var(--slate-deep);
+  font:600 12.5px Inter,ui-sans-serif,system-ui,sans-serif;padding:6px 12px;border-radius:99px;cursor:pointer}
+.switch button[aria-pressed="true"]{background:var(--brand-deep);border-color:var(--brand-deep);color:#fff}
+.stage{position:relative;border-radius:18px;min-height:340px;box-shadow:0 26px 60px -30px rgba(13,26,58,.55)}
+.shot{position:absolute;inset:0;border-radius:18px;background:linear-gradient(135deg,#d6d9dd,#6b7280)}
+.shot::after{content:"";position:absolute;inset:0;border-radius:18px;
+  background:linear-gradient(180deg,rgba(9,17,45,0) 38%,rgba(9,17,45,.72) 100%)}
+.stage-in{position:relative;height:340px;display:flex;flex-direction:column;justify-content:flex-end;padding:22px}
+.sent{position:relative;z-index:5;margin:0 0 8px;color:#fff;font-size:27px;font-weight:700;
+  letter-spacing:-.02em;text-shadow:0 1px 14px rgba(9,17,45,.45)}
+.sub{position:relative;z-index:5;margin:0;color:rgba(255,255,255,.76);font-size:13px}
+.slot{position:relative;display:inline-block}
+.word{border:0;background:none;font:inherit;color:#fff;cursor:pointer;padding:0 2px;
+  border-bottom:2px dashed rgba(255,255,255,.55)}
+.word::after{content:"";display:inline-block;width:7px;height:7px;margin:0 0 3px 8px;
+  border-right:2px solid rgba(255,255,255,.8);border-bottom:2px solid rgba(255,255,255,.8);transform:rotate(45deg)}
+.pop{position:absolute;bottom:calc(100% + 12px);left:0;z-index:40;background:#fff;
+  border:1px solid var(--border);border-radius:16px;padding:7px;
+  box-shadow:0 26px 60px -22px rgba(13,26,58,.5),0 2px 8px rgba(13,26,58,.07);
+  font-size:16px;font-weight:400;letter-spacing:normal;line-height:1.4;color:var(--slate-deep);text-shadow:none}
+.pop[hidden]{display:none}
+.grid{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;column-gap:4px}
+.grid.rooms{grid-template-rows:repeat(3,auto)}
+.grid.styles{grid-template-rows:repeat(4,auto)}
+.opt{display:flex;align-items:center;gap:11px;width:100%;padding:6px 9px 6px 6px;border:0;border-radius:10px;
+  background:none;font:600 14.5px Inter,ui-sans-serif,system-ui,sans-serif;color:#0f172a;
+  text-align:left;cursor:pointer;white-space:nowrap}
+.opt:hover{background:var(--brand-wash);color:var(--brand-deep)}
+.opt[aria-selected="true"]{background:var(--brand-deep);color:#fff}
+.opt:focus-visible{outline:2px solid var(--brand-deep);outline-offset:-2px}
+
+/* the tile every variant restyles */
+.tile{flex:0 0 auto;width:42px;height:42px;padding:5px;border-radius:11px;background:var(--brand-wash);
+  color:var(--brand-deep);display:grid;place-items:center;overflow:hidden;position:relative}
+.tile svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.opt:hover .tile{background:#fff}
+.opt[aria-selected="true"] .tile{background:rgba(255,255,255,.16);color:#fff}
+
+/* the sheet of fourteen, under each mockup */
+.sheet{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin:18px 0 0}
+.sheet .cell{background:#fff;border:1px solid var(--border);border-radius:12px;padding:8px 4px 6px;
+  display:grid;justify-items:center;gap:5px;font-size:10.5px;font-weight:600;color:var(--slate-deep);text-align:center}
+.sheet .cell b{font-weight:600;white-space:nowrap}
+
+/* the sticker treatment shared by the family: ink, colour, a white die-cut edge, a soft drop */
+.stk .tile{background:none!important;border-radius:0;overflow:visible;width:48px;height:48px;padding:3px}
+.stk .tile svg{position:relative;stroke:#1e293b;stroke-width:1.7;overflow:visible;
+  filter:drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #fff) drop-shadow(0 0 1.5px #fff) drop-shadow(0 1px 2px rgba(13,26,58,.25))}
+/* the halo blob, where a variant uses one */
+.halo .tile::before{content:"";position:absolute;inset:7px 5px 5px 7px;border-radius:46% 54% 58% 42%/52% 44% 56% 48%;background:var(--halo)}
+/* the peel, where a variant uses one */
+.peel .tile svg{transition:transform .22s cubic-bezier(.2,.9,.3,1.3),filter .22s}
+.peel .opt:hover .tile svg{transform:rotate(-8deg) scale(1.12);
+  filter:drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #fff) drop-shadow(0 0 1.5px #fff) drop-shadow(0 6px 6px rgba(13,26,58,.3))}
+.peel .opt[aria-selected="true"] .tile svg{transform:rotate(-4deg)}
+@media(prefers-reduced-motion:reduce){.peel .tile svg,.halo .tile::before{transition:none!important;animation:none!important}}
+
+/* v1 peel (carried): no halo. v2 halo (carried): no peel */
+.v2 .opt[aria-selected="true"] .tile::before{opacity:.85}
+
+/* v3 halo peel: the straight mix */
+.v3 .opt[aria-selected="true"] .tile::before{opacity:.85}
+
+/* v4 squash: the blob is a cushion the sticker lifts off */
+.v4 .tile svg{transition:transform .22s cubic-bezier(.2,.9,.3,1.3)}
+.v4 .tile::before{transition:transform .22s cubic-bezier(.2,.9,.3,1.2),box-shadow .2s;transform-origin:50% 80%}
+.v4 .opt:hover .tile::before{transform:scale(1.14,.86) translateY(2px)}
+.v4 .opt:hover .tile svg{transform:translateY(-4px) scale(1.1)}
+.v4 .opt[aria-selected="true"] .tile svg{transform:translateY(-2px)}
+.v4 .opt[aria-selected="true"] .tile::before{box-shadow:0 0 0 2px rgba(255,255,255,.75)}
+
+/* v5 wobble: the blob changes shape and turns against the sticker */
+.v5 .tile svg{transition:transform .35s ease}
+.v5 .tile::before{transition:border-radius .35s ease,transform .35s ease}
+.v5 .opt:hover .tile::before{border-radius:55% 45% 42% 58%/48% 56% 44% 52%;transform:rotate(12deg) scale(1.06)}
+.v5 .opt:hover .tile svg{transform:rotate(-7deg) scale(1.1)}
+.v5 .opt[aria-selected="true"] .tile::before{transform:rotate(6deg)}
+
+/* v6 ring: the halo drawn as a dashed die-cut line instead of a fill */
+.v6 .tile::before{background:none;border:1.6px dashed var(--ring);inset:5px 3px 3px 5px;transition:transform .3s}
+.v6 .opt:hover .tile::before{transform:rotate(14deg)}
+.v6 .opt[aria-selected="true"] .tile::before{border-color:rgba(255,255,255,.7)}
+
+/* v7 spotlight: the blob is neutral until the pointer brings the colour */
+.v7 .tile::before{background:var(--brand-wash);transition:background .25s,transform .25s}
+.v7 .opt:hover .tile::before{background:var(--halo);transform:scale(1.06)}
+.v7 .opt[aria-selected="true"] .tile::before{background:var(--halo)}
+
+/* v8 burst: the swing */
+.v8 .tile::after{content:"";position:absolute;inset:-6px;border-radius:50%;pointer-events:none;opacity:0;
+  background:
+    radial-gradient(circle at 20% 30%,var(--halo) 0 3px,transparent 4px),
+    radial-gradient(circle at 80% 25%,#fbbf24 0 2.5px,transparent 3.5px),
+    radial-gradient(circle at 85% 70%,var(--halo) 0 3px,transparent 4px),
+    radial-gradient(circle at 25% 80%,#60a5fa 0 2.5px,transparent 3.5px),
+    radial-gradient(circle at 55% 8%,#f87171 0 2px,transparent 3px),
+    radial-gradient(circle at 50% 92%,var(--halo) 0 2.5px,transparent 3.5px)}
+.v8 .opt:hover .tile::after{animation:burst .55s ease-out both}
+.v8 .opt:hover .tile svg{animation:pop .45s cubic-bezier(.3,1.6,.4,1) both}
+@keyframes burst{0%{opacity:1;transform:scale(.4)}100%{opacity:0;transform:scale(1.5)}}
+@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.22) rotate(-6deg)}100%{transform:scale(1.08) rotate(-4deg)}}
+
+@media(max-width:700px){
+  .sent{font-size:20px}
+  .pop{max-width:calc(100vw - 80px)}
+  .grid{grid-auto-flow:row;grid-template-rows:none!important}
+  .sheet{grid-template-columns:repeat(4,1fr)}
+  .v7 .pin{right:-6px;top:-40px;width:64px;height:64px}
+}
+</style>
+</head>
+<body>
+
+<aside class="rail">
+  <div class="rail-t">Variants</div>
+  <a href="#ranking">Ranking</a>
+  <a href="#compare">Comparison</a>
+  <a href="#v1"><i>01</i> Peel</a>
+  <a href="#v2"><i>02</i> Die-cut Halo</a>
+  <a href="#v3"><i>03</i> Halo Peel</a>
+  <a href="#v4"><i>04</i> Squash</a>
+  <a href="#v5"><i>05</i> Wobble</a>
+  <a href="#v6"><i>06</i> Ring</a>
+  <a href="#v7"><i>07</i> Spotlight</a>
+  <a href="#v8"><i>08</i> Burst</a>
+</aside>
+
+<main class="page">
+  <header class="top">
+    <h1>Picker glyphs: halo and peel</h1>
+    <div class="req">I like 05, but I also like the hover effect for 04 so go for a next generation with that.</div>
+    <p class="lede">The Die-cut Halo backing married to the Peel hover, then pushed five ways: how the blob answers the lift.</p>
+    <p class="stamp">Generated 21 September 2026 &middot; prototypes/picker-menu-icons-04</p>
+  </header>
+
+  <section id="ranking" class="panel">
+    <h2>Ranking</h2>
+    <p class="trade">Scored on fit to the brief 30, distinctiveness 20, build cost 20, mobile and accessibility 15, first-glance pull 15.</p>
+    <ol class="rank">
+      <li><i>03</i><b>Halo Peel</b>
+        <span class="bar"><span style="width:89%"></span></span>
+        <span class="score" title="Fit 29 &middot; Distinct 15 &middot; Cost 17 &middot; Mobile 13 &middot; Pull 15">89%</span><span class="grade g-b">B+</span>
+        <p>Exactly the two things asked for, and the blob gives the lifted sticker somewhere to leave.</p></li>
+      <li><i>04</i><b>Squash</b>
+        <span class="bar"><span style="width:84%"></span></span>
+        <span class="score" title="Fit 27 &middot; Distinct 16 &middot; Cost 15 &middot; Mobile 12 &middot; Pull 14">84%</span><span class="grade g-b">B</span>
+        <p>The blob answering the lift sells the weight of the sticker. One more transition.</p></li>
+      <li><i>07</i><b>Spotlight</b>
+        <span class="bar"><span style="width:82%"></span></span>
+        <span class="score" title="Fit 26 &middot; Distinct 16 &middot; Cost 15 &middot; Mobile 11 &middot; Pull 14">82%</span><span class="grade g-b">B-</span>
+        <p>Colour arriving with the pointer keeps the resting menu calm. Touch never gets it.</p></li>
+      <li><i>05</i><b>Wobble</b>
+        <span class="bar"><span style="width:79%"></span></span>
+        <span class="score" title="Fit 25 &middot; Distinct 15 &middot; Cost 14 &middot; Mobile 12 &middot; Pull 13">79%</span><span class="grade g-c">C+</span>
+        <p>Organic and fun, but two things moving in opposite directions is one too many.</p></li>
+      <li><i>01</i><b>Peel</b>
+        <span class="bar"><span style="width:75%"></span></span>
+        <span class="score" title="Fit 22 &middot; Distinct 11 &middot; Cost 16 &middot; Mobile 12 &middot; Pull 14">75%</span><span class="grade g-c">C</span>
+        <p>Carried from run 03. The hover without the backing, so the sticker floats.</p></li>
+      <li><i>02</i><b>Die-cut Halo</b>
+        <span class="bar"><span style="width:74%"></span></span>
+        <span class="score" title="Fit 22 &middot; Distinct 12 &middot; Cost 15 &middot; Mobile 13 &middot; Pull 12">74%</span><span class="grade g-c">C</span>
+        <p>Carried from run 03. The backing without the hover, so nothing rewards the pointer.</p></li>
+      <li><i>06</i><b>Ring</b>
+        <span class="bar"><span style="width:72%"></span></span>
+        <span class="score" title="Fit 21 &middot; Distinct 13 &middot; Cost 16 &middot; Mobile 13 &middot; Pull 9">72%</span><span class="grade g-c">C-</span>
+        <p>Trades the blob's colour for a dashed line and loses most of the anchor with it.</p></li>
+      <li><i>08</i><b>Burst</b>
+        <span class="bar"><span style="width:62%"></span></span>
+        <span class="score" title="Fit 14 &middot; Distinct 20 &middot; Cost 7 &middot; Mobile 8 &middot; Pull 13">62%</span><span class="grade g-d">D</span>
+        <p>Confetti on every hover is a party trick that gets old on the second menu open.</p></li>
+    </ol>
+  </section>
+
+  <section id="compare" class="panel">
+    <h2>Comparison</h2>
+    <table class="matrix">
+      <thead><tr><th>#</th><th>Name</th><th>Density</th><th>Placement</th><th>Interaction</th><th>Content</th></tr></thead>
+      <tbody>
+        <tr><td>01</td><td>Peel</td><td>Medium</td><td>Free on row</td><td>Sticker lifts</td><td>Colour sticker</td></tr>
+        <tr><td>02</td><td>Die-cut Halo</td><td>High</td><td>Colour blob</td><td>Static</td><td>Sticker on backing</td></tr>
+        <tr><td>03</td><td>Halo Peel</td><td>High</td><td>Colour blob</td><td>Sticker lifts</td><td>Sticker on backing</td></tr>
+        <tr><td>04</td><td>Squash</td><td>High</td><td>Colour blob</td><td>Blob squashes, sticker lifts</td><td>Sticker on cushion</td></tr>
+        <tr><td>05</td><td>Wobble</td><td>High</td><td>Colour blob</td><td>Blob morphs, sticker tilts</td><td>Sticker on backing</td></tr>
+        <tr><td>06</td><td>Ring</td><td>Low</td><td>Dashed ring</td><td>Ring turns, sticker lifts</td><td>Sticker in outline</td></tr>
+        <tr><td>07</td><td>Spotlight</td><td>Medium</td><td>Neutral blob</td><td>Colour arrives on hover</td><td>Sticker on backing</td></tr>
+        <tr><td>08</td><td>Burst</td><td>Maximal</td><td>Colour blob</td><td>Confetti, sticker pops</td><td>Sticker on backing</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 01 -->
+  <section id="v1" class="canvas v1 stk peel">
+    <div class="cap"><span class="n">01</span><h2>Peel</h2>
+      <span class="grade g-c">C 75%</span>
+      <p class="trade">The sticker lifts and tilts under the pointer. Carried forward as one baseline.</p></div>
+    <div class="demo" data-variant="1"></div>
+    <div class="verdict">
+      <ul class="pros">
+        <li>One transform on the shipped sticker, no new art</li>
+        <li>The resting tilt marks the selected row without a fill</li>
+      </ul>
+      <ul class="cons">
+        <li>Nothing behind the sticker, so the row has no anchor</li>
+        <li>Touch never sees the lift</li>
+        <li>A scaled sticker can clip the row above on tight menus</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 02 -->
+  <section id="v2" class="canvas v2 stk halo">
+    <div class="cap"><span class="n">02</span><h2>Die-cut Halo</h2>
+      <span class="grade g-c">C 74%</span>
+      <p class="trade">The sticker on a pale blob of its material colour. Carried forward as the other baseline.</p></div>
+    <div class="demo" data-variant="2"></div>
+    <div class="verdict">
+      <ul class="pros">
+        <li>The blob gives every row an anchor and a hue to scan by</li>
+        <li>Backing survives the selected row where fills cannot</li>
+      </ul>
+      <ul class="cons">
+        <li>Nothing rewards the pointer</li>
+        <li>One more colour per item to keep on brand</li>
+        <li>Fourteen hues can read as a candy shelf</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 03 -->
+  <section id="v3" class="canvas v3 stk halo peel">
+    <div class="cap"><span class="n">03</span><h2>Halo Peel</h2>
+      <span class="grade g-b">B+ 89%</span>
+      <p class="trade">The straight mix: the blob stays put, the sticker peels off it under the pointer.</p></div>
+    <div class="demo" data-variant="3"></div>
+    <div class="verdict">
+      <ul class="pros">
+        <li>The blob is the spot the sticker visibly lifts away from</li>
+        <li>Both halves already exist, this is one class on each row</li>
+        <li>Blob and tilt together mark the selected row twice over</li>
+        <li>Gates behind prefers-reduced-motion with the blob still shown</li>
+      </ul>
+      <ul class="cons">
+        <li>Touch gets the blob but never the peel</li>
+        <li>Fourteen filtered transforms on a fast sweep costs frames</li>
+        <li>Lifted sticker can overlap the row above at 1x zoom</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 04 -->
+  <section id="v4" class="canvas v4 stk halo">
+    <div class="cap"><span class="n">04</span><h2>Squash</h2>
+      <span class="grade g-b">B 84%</span>
+      <p class="trade">The blob flattens like a cushion as the sticker rises straight off it. Weight, not spin.</p></div>
+    <div class="demo" data-variant="4"></div>
+    <div class="verdict">
+      <ul class="pros">
+        <li>The blob reacting to the lift sells the sticker as a thing</li>
+        <li>Vertical lift only, so nothing rotates into the neighbour row</li>
+        <li>Selected row gets a white ring on the blob, visible on navy</li>
+      </ul>
+      <ul class="cons">
+        <li>Two transitions per row instead of one</li>
+        <li>Squash reads as a bounce on slower machines</li>
+        <li>Straight lift loses the tilt that said "sticker" in the first place</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 05 -->
+  <section id="v5" class="canvas v5 stk halo">
+    <div class="cap"><span class="n">05</span><h2>Wobble</h2>
+      <span class="grade g-c">C+ 79%</span>
+      <p class="trade">The blob changes shape and turns one way while the sticker tilts the other.</p></div>
+    <div class="demo" data-variant="5"></div>
+    <div class="verdict">
+      <ul class="pros">
+        <li>The most alive of the family, the blob feels like liquid</li>
+        <li>Counter-rotation makes the lift read even at small size</li>
+        <li>Border-radius morph is cheap, no filter change</li>
+      </ul>
+      <ul class="cons">
+        <li>Two things moving in opposite directions is busy on a sweep</li>
+        <li>Morphing blobs read as loading spinners to some visitors</li>
+        <li>Harder to tune: four radii and two rotations per state</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 06 -->
+  <section id="v6" class="canvas v6 stk halo peel">
+    <div class="cap"><span class="n">06</span><h2>Ring</h2>
+      <span class="grade g-c">C- 72%</span>
+      <p class="trade">The halo as a dashed die-cut line in the accent colour, turning slightly as the sticker peels.</p></div>
+    <div class="demo" data-variant="6"></div>
+    <div class="verdict">
+      <ul class="pros">
+        <li>Lightest of the family, the menu stays mostly white</li>
+        <li>The dashed line rhymes with the cut edge of the sticker</li>
+        <li>Selected row turns the ring white, clean on navy</li>
+      </ul>
+      <ul class="cons">
+        <li>A dashed line is not an anchor, the row loses the blob's mass</li>
+        <li>1.6px dashes alias on 1x displays</li>
+        <li>Least pull of the eight by a distance</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 07 -->
+  <section id="v7" class="canvas v7 stk halo peel">
+    <div class="cap"><span class="n">07</span><h2>Spotlight</h2>
+      <span class="grade g-b">B- 82%</span>
+      <p class="trade">Blobs rest in neutral wash; the pointer brings the colour, and the chosen row keeps it.</p></div>
+    <div class="demo" data-variant="7"></div>
+    <div class="verdict">
+      <ul class="pros">
+        <li>Resting menu stays inside the blue-and-white system</li>
+        <li>Colour becomes a signal, only the hovered and chosen rows carry it</li>
+        <li>Same peel, so the pointer gets two rewards for one hover</li>
+      </ul>
+      <ul class="cons">
+        <li>Touch sees colour on the selected row only, the rest stay grey</li>
+        <li>Scanning by hue no longer works at rest</li>
+        <li>Three properties transition per row on a sweep</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 08 -->
+  <section id="v8" class="canvas v8 stk halo">
+    <div class="cap"><span class="n">08</span><h2>Burst</h2>
+      <span class="grade g-d">D 62%</span>
+      <p class="trade">The swing: hovering pops the sticker and throws a ring of confetti out of the blob.</p></div>
+    <div class="demo" data-variant="8"></div>
+    <div class="verdict">
+      <ul class="pros">
+        <li>Nobody forgets it</li>
+        <li>Pure CSS, six radial gradients and two keyframes</li>
+      </ul>
+      <ul class="cons">
+        <li>Delightful once, tiresome by the third hover</li>
+        <li>Confetti overhangs neighbouring rows and the popover edge</li>
+        <li>An animation per row on a sweep is a frame-rate cost</li>
+        <li>Reads as a game, not a tool agents pay for</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<script>
+
+/* The shipped 32-unit scenes, shape for shape. Each shape is [tag, attrs]; paths carry a
+   class: "c" when closed (fillable), "o" when open (detail). */
+const R=(x,y,w,h,rx)=>['rect',{x,y,width:w,height:h,rx}];
+const C=(cx,cy,r)=>['circle',{cx,cy,r}];
+const P=(d)=>['path',{d,class:/z$/i.test(d)?'c':'o'}];
+const BASE={
+  bedroom:[R(5,4,22,11,2.2),P('M12 4v6.5M20 4v6.5'),R(7.5,10.5,7,4,1.6),R(17.5,10.5,7,4,1.6),R(3,15,26,8,2),P('M3 19h26'),P('M6 23v4M26 23v4')],
+  livingRoom:[R(5,8,22,8,2),R(2.5,13,4.5,9,1.8),R(25,13,4.5,9,1.8),R(7,16,18,6,1.2),P('M16 8v14'),P('M9 15.5l3.5-4.5h4l-1.5 4.5z'),P('M6 22v3.5M26 22v3.5')],
+  diningRoom:[P('M16 2.5v4'),P('M11.5 11.5l2-5h5l2 5z'),R(6,15,20,2.5,1.2),P('M9.5 17.5v9M22.5 17.5v9'),R(2.5,9.5,3,8.5,1),P('M3 18v8.5M5.5 18v8.5'),R(26.5,9.5,3,8.5,1),P('M27 18v8.5M29.5 18v8.5')],
+  kitchen:[R(2.5,3,10,7,1),R(19.5,3,10,7,1),P('M6 8h3M23 8h3'),R(12.5,7.5,7,2.5,.6),P('M7.5 14.5V11h2.5'),R(2.5,14.5,27,2.5,1),R(2.5,17,27,9.5,1),P('M12 17v9.5M20 17v9.5'),R(13.5,20.5,5,3.5,.6),P('M12 19h8'),P('M5.5 21.5h4M22.5 21.5h4')],
+  office:[R(9.5,4,14,9.5,1.2),P('M12.5 7h8M12.5 9.5h5'),P('M16.5 13.5v3'),P('M13 16.5h7'),R(24.5,13.5,3,3.5,.6),P('M27.5 14.5a1.2 1.2 0 0 1 0 2.4'),R(2.5,17,27,2.5,1),P('M5 19.5v7'),R(20.5,19.5,7,7,.8),P('M22.5 22.5h3M22.5 25h3')],
+  bathroom:[P('M6 2.5v3.5'),R(3.5,6,5,1.8,.9),P('M4.5 9.5v2M6 9.5v2.5M7.5 9.5v2'),C(24,7,3.5),P('M24 16v-4h-3'),P('M2.5 16h27v3.5a5.5 5.5 0 0 1-5.5 5.5H8a5.5 5.5 0 0 1-5.5-5.5z'),P('M6 19.5q5-2 10 0t10 0'),P('M7 25v2.5M25 25v2.5')],
+  modern:[P('M27 27V14a8 8 0 0 0-8-8'),P('M23.5 27h6'),P('M17 6h4l-1 3h-2z'),R(3,12,4,10,.5),R(3,18.5,13,5,.5),P('M7 21h9'),P('M5 23.5v3.5M14 23.5v3.5')],
+  standard:[R(3,9,13,8,2.5),R(2,14,3.5,8,1.5),R(13.5,14,3.5,8,1.5),R(5.5,17,8,5,1),P('M4.5 22v3.5M15 22v3.5'),P('M20 19h9'),P('M21.5 19v6.5M27.5 19v6.5'),P('M21.5 12l1.5-5h4l1.5 5z'),P('M24.5 12v7')],
+  scandinavian:[R(3,14,20,8,1.2),P('M13 14v8'),P('M10.5 18h1M14.5 18h1'),P('M6 22l-2 5.5M20 22l2 5.5'),R(7,10,5,4,.8),P('M9.5 10c-3-2-3-5 0-7 3 2 3 5 0 7z'),P('M9.5 8c-2 0-3.5-1-4-3 2 0 3.5 1 4 3zM9.5 8c2 0 3.5-1 4-3-2 0-3.5 1-4 3z'),P('M25.5 2.5v4'),C(25.5,10,3.5)],
+  coastal:[C(7,7,3),P('M2.5 7h1.2M10.3 7h1.2M7 2.5v1.2M7 10.3v1.2'),P('M17 22V6'),P('M17 7l8 13h-8z'),P('M16 10l-5.5 10h5.5z'),P('M9 22h16l-2.5 3.5h-11z'),P('M2.5 28q3.4-2.5 6.8 0t6.8 0 6.8 0 6.6 0')],
+  farmhouse:[P('M4 13 16 4l12 9v14H4z'),R(13.5,9,5,4,.5),P('M13.5 11h5M16 9v4'),R(11,17.5,10,9.5,.5),P('M16 17.5v9.5'),P('M11 17.5l10 9.5M21 17.5l-10 9.5'),R(5.5,18.5,3,3,.5)],
+  luxury:[P('M16 2.5v4'),C(16,8,1.5),P('M16 9.5c-6 0-9 3-9 7M16 9.5c6 0 9 3 9 7M16 9.5v7'),R(5.5,16.5,3,2,.6),R(14.5,16.5,3,2,.6),R(23.5,16.5,3,2,.6),P('M7 16.5v-3M25 16.5v-3'),P('M7 18.5v3M16 18.5v3M25 18.5v3'),P('M7 21.5l-1.2 2 1.2 2 1.2-2zM16 21.5l-1.2 2 1.2 2 1.2-2zM25 21.5l-1.2 2 1.2 2 1.2-2z')],
+  midcentury:[C(24,8,2.5),P('M24 2.5v1.5M24 12v1.5M18.5 8h1.5M28 8h1.5'),P('M20 4l1 1M28 4l-1 1M20 12l1-1M28 12l-1-1'),P('M5 21V12.5a3.5 3.5 0 0 1 3.5-3.5h4a2.5 2.5 0 0 1 2.5 2.5V16'),P('M5 21h13a2 2 0 0 0 2-2v-3'),P('M11 21v4'),P('M6.5 27l4.5-2 4.5 2'),R(21,19,8,4,1.5),P('M23 23v3M27 23v3')],
+  custom:[R(2.5,14,20,13,2),P('M6 18.5h10M6 22h7'),P('M6 25.5h4'),P('M18 12l8-8 2.5 2.5-8 8-3.5 1z'),P('M24.5 5.5l2 2'),P('M7 4.5l.9 2.3 2.3.9-2.3.9-.9 2.3-.9-2.3-2.3-.9 2.3-.9z'),P('M13 8.5l.5 1.3 1.3.5-1.3.5-.5 1.3-.5-1.3-1.3-.5 1.3-.5z')]
+};
+
+/* The 24-unit pictograms the badge variants use: one object, three strokes. */
+const SIMPLE={
+  bedroom:[R(4.6,5.6,14.8,6.6,1.8),R(2.6,12.2,18.8,4.6,1.4),P('M5 16.8v2.6M19 16.8v2.6')],
+  livingRoom:[R(4.4,6.8,15.2,5.6,1.8),R(2.6,12.2,18.8,4.6,1.4),P('M12 7.4v4.6'),P('M5 16.8v2.6M19 16.8v2.6')],
+  diningRoom:[R(8.6,4.6,6.8,5.2,1.3),R(2.6,9.8,18.8,2.4,1.2),P('M5.6 12.2v7.2M18.4 12.2v7.2')],
+  kitchen:[R(3.2,4.2,17.6,4.8,1.2),P('M12 4.2v4.8'),R(3.2,11.2,17.6,8.4,1.2),P('M3.2 14.4h17.6M12 14.4v5.2')],
+  office:[R(7.4,3.8,9.2,6.4,1.2),P('M12 10.2v2'),R(2.6,12.2,18.8,2.4,1.2),P('M5.2 14.6v4.8M18.8 14.6v4.8')],
+  bathroom:[P('M3 11.6h18v3.4a4.2 4.2 0 0 1-4.2 4.2H7.2A4.2 4.2 0 0 1 3 15z'),P('M7.2 11.6V7.4a2 2 0 0 1 2-2h2.6'),P('M6.6 19.2v1.4M17.4 19.2v1.4')],
+  modern:[P('M5.2 17.4V6.6a.9.9 0 0 1 .9-.9h2.6a.9.9 0 0 1 .9.9v6.2h9.2a.9.9 0 0 1 .9.9v3.7z'),P('M4.4 17.4h15.2'),P('M6.4 17.4v2.2M17.8 17.4v2.2')],
+  standard:[C(12,12,7.8),C(12,12,2.8)],
+  scandinavian:[R(4.4,8.4,15.2,2.4,1.2),P('M7.4 10.8 5.2 19.4M16.6 10.8l2.2 8.6M12 10.8v8.6')],
+  coastal:[C(17.2,6.6,2.6),P('M2.8 13.4q3.3-2.7 6.6 0t6.6 0 5.2-1.4'),P('M2.8 18q3.3-2.7 6.6 0t6.6 0 5.2-1.4')],
+  farmhouse:[P('M3.2 11.2 12 4.2l8.8 7v7.6a1.2 1.2 0 0 1-1.2 1.2H4.4a1.2 1.2 0 0 1-1.2-1.2z'),R(9.2,13.4,5.6,6.6,.6),P('M9.2 13.4 14.8 20M14.8 13.4 9.2 20')],
+  luxury:[P('M7.6 4.6h8.8l4.4 5.2L12 19.8 3.2 9.8z'),P('M3.2 9.8h17.6M7.6 4.6 12 19.8M16.4 4.6 12 19.8')],
+  midcentury:[C(12,12,3.4),P('M12 3.2v2.6M12 18.2v2.6M3.2 12h2.6M18.2 12h2.6'),P('m6.6 6.6 1.9 1.9M17.4 17.4l-1.9-1.9M17.4 6.6l-1.9 1.9M6.6 17.4l1.9-1.9')],
+  custom:[P('M4.2 19.8l.9-3.5 8.9-8.9 2.6 2.6-8.9 8.9z'),P('m18.4 3.6.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z')]
+};
+
+/* Material colours. */
+const WOOD='#c9a070',OAK='#e3c9a2',LINEN='#f1efe7',BLUE='#93c5fd',BRASS='#d4a017',GREEN='#4ade80',
+  STEEL='#94a3b8',STONE='#d6d3d1',WHITE='#ffffff',INK='#1e293b',RED='#dc2626',SUN='#fbbf24',
+  LEATHER='#b45309',INDIGO='#a5b4fc',GLASS='#dbeafe',SAND='#fde68a',SKY='#7dd3fc',GREY='#64748b';
+
+/* Per shape index on the 32-unit scenes. */
+const PALETTE={
+  bedroom:[WOOD,null,LINEN,LINEN,BLUE,null,null],
+  livingRoom:[INDIGO,INDIGO,INDIGO,INDIGO,null,SAND,null],
+  diningRoom:[null,SUN,WOOD,null,WOOD,null,WOOD,null],
+  kitchen:[LINEN,LINEN,null,STEEL,null,STONE,LINEN,null,GLASS,null,null],
+  office:[GLASS,null,null,null,'#f87171',null,WOOD,null,WOOD,null],
+  bathroom:[null,STEEL,null,GLASS,null,WHITE,null,null],
+  modern:[null,null,INK,GREY,GREY,null,null],
+  standard:['#d6c7b5','#d6c7b5','#d6c7b5','#d6c7b5',null,null,null,SAND,null],
+  scandinavian:[OAK,null,null,null,'#f5d0a9',GREEN,GREEN,null,'#fff7ed'],
+  coastal:[SUN,null,null,WHITE,WHITE,'#1d4ed8',null],
+  farmhouse:[RED,WHITE,null,WHITE,null,null,WHITE],
+  luxury:[null,BRASS,null,BRASS,BRASS,BRASS,null,null,GLASS],
+  midcentury:[SUN,null,null,null,null,null,null,LEATHER,null],
+  custom:[WHITE,null,null,SUN,null,SUN,SUN]
+};
+/* Per shape index on the 24-unit pictograms. */
+const PALETTE_S={
+  bedroom:[WOOD,BLUE,null],livingRoom:[INDIGO,INDIGO,null,null],diningRoom:[WOOD,WOOD,null],
+  kitchen:[LINEN,null,LINEN,null],office:[GLASS,null,WOOD,null],bathroom:[WHITE,null,null],
+  modern:[GREY,null,null],standard:['#d6c7b5',SAND],scandinavian:[OAK,null],coastal:[SUN,null,null],
+  farmhouse:[RED,WHITE,null],luxury:[GLASS,null],midcentury:[SUN,null,null],custom:[SUN,SUN]
+};
+/* One accent per item, for the Two Ink variant. */
+const ACCENT={bedroom:BLUE,livingRoom:INDIGO,diningRoom:WOOD,kitchen:STONE,office:GLASS,bathroom:SKY,
+  modern:GREY,standard:SAND,scandinavian:OAK,coastal:SUN,farmhouse:RED,luxury:BRASS,midcentury:LEATHER,custom:SUN};
+
+const ROOMS=[['bedroom','Bedroom'],['livingRoom','Living room'],['diningRoom','Dining room'],['kitchen','Kitchen'],['office','Office'],['bathroom','Bathroom']];
+const STYLES=[['modern','Modern'],['standard','Standard'],['scandinavian','Scandinavian'],['coastal','Coastal'],['farmhouse','Farmhouse'],['luxury','Luxury'],['midcentury','Mid-century'],['custom','Custom']];
+const SHOT={bedroom:'linear-gradient(135deg,#b9a894,#7d6a55)',livingRoom:'linear-gradient(135deg,#a9b6b0,#65746f)',diningRoom:'linear-gradient(135deg,#c2ab8d,#7a6446)',
+  kitchen:'linear-gradient(135deg,#ccd3d8,#7c8a94)',office:'linear-gradient(135deg,#b0aa9e,#6a6459)',bathroom:'linear-gradient(135deg,#cfdde4,#7f97a3)',
+  modern:'linear-gradient(135deg,#d6d9dd,#6b7280)',standard:'linear-gradient(135deg,#dcd8d0,#8b857a)',scandinavian:'linear-gradient(135deg,#efe6d8,#bfa987)',
+  coastal:'linear-gradient(135deg,#dbeaf3,#7fa8c2)',farmhouse:'linear-gradient(135deg,#e4cfae,#9e7648)',luxury:'linear-gradient(135deg,#cbb27c,#5d4a2c)',
+  midcentury:'linear-gradient(135deg,#d0a982,#6f4a30)',custom:'linear-gradient(135deg,#c9d8f5,#3b5da8)'};
+
+const closed=([tag,a])=>tag!=='path'||a.class==='c';
+function shapes(list,palette,fallback){
+  return list.map(([tag,a],i)=>{
+    const attrs=Object.entries(a).map(([k,v])=>k+'="'+v+'"').join(' ');
+    let fill=palette?palette[i]:null;
+    if(!fill&&fallback&&closed([tag,a])) fill=fallback;
+    return '<'+tag+' '+attrs+(fill?' fill="'+fill+'"':'')+'/>';
+  }).join('');
+}
+function svg(set,key,box,palette,fallback){
+  return '<svg viewBox="0 0 '+box+' '+box+'" aria-hidden="true" focusable="false">'+shapes(set[key],palette,fallback)+'</svg>';
+}
+/* Accent-only palettes: every closed shape takes the item's one accent. */
+const accentPal=(set,key)=>set[key].map(s=>closed(s)?ACCENT[key]:null);
+
+
+/* Pale backing per item for the Die-cut Halo. */
+const HALO={bedroom:'#dbeafe',livingRoom:'#e0e7ff',diningRoom:'#fde68a',kitchen:'#e7e5e4',office:'#fee2e2',bathroom:'#cffafe',
+  modern:'#e2e8f0',standard:'#fef3c7',scandinavian:'#dcfce7',coastal:'#bae6fd',farmhouse:'#fecaca',luxury:'#fef3c7',midcentury:'#fed7aa',custom:'#fef08a'};
+const WHITE_FILL='#ffffff';
+const stickerSvg=(k,cls)=>svg(BASE,k,32,PALETTE[k],WHITE_FILL).replace('<svg','<svg class="'+(cls||'')+'"');
+const inkPal=k=>BASE[k].map(s=>closed(s)?WHITE_FILL:null);
+
+/* Every variant draws the same sticker; the differences are all in the stylesheet. */
+const TILE={1:k=>stickerSvg(k),2:k=>stickerSvg(k),3:k=>stickerSvg(k),4:k=>stickerSvg(k),
+  5:k=>stickerSvg(k),6:k=>stickerSvg(k),7:k=>stickerSvg(k),8:k=>stickerSvg(k)};
+const TILE_STYLE={};
+[1,2,3,4,5,6,7,8].forEach(v=>{TILE_STYLE[v]=k=>' style="--halo:'+HALO[k]+';--ring:'+ACCENT[k]+'"';});
+
+function mount(demo){
+  const v=Number(demo.dataset.variant);
+  const state={rooms:'bedroom',styles:'modern',open:'rooms',hover:null};
+  demo.innerHTML=
+    '<div class="switch"><button type="button" data-menu="rooms" aria-pressed="true">Room menu</button>'+
+    '<button type="button" data-menu="styles" aria-pressed="false">Style menu</button></div>'+
+    '<div class="stage"><div class="shot"></div><div class="stage-in">'+
+    '<h3 class="sent">Stage this <span class="slot" data-slot="rooms"><button class="word" type="button">bedroom</button><span class="pop" hidden></span></span> in '+
+    '<span class="slot" data-slot="styles"><button class="word" type="button">Modern</button><span class="pop" hidden></span></span></h3>'+
+    '<p class="sub">Upload a photo and the same pair carries into the studio.</p></div></div>'+
+    '<div class="sheet"></div>';
+  const listOf=k=>k==='rooms'?ROOMS:STYLES;
+  const label=(k,key)=>listOf(k).find(x=>x[0]===key)[1];
+  const tileFor=(key,ctx)=>'<span class="tile"'+(TILE_STYLE[v]?TILE_STYLE[v](key):'')+'>'+TILE[v](key,ctx)+'</span>';
+
+  function render(){
+    demo.querySelector('.shot').style.background=SHOT[state.styles];
+    ['rooms','styles'].forEach(k=>{
+      demo.querySelector('[data-slot="'+k+'"] .word').textContent = k==='rooms'? label(k,state[k]).toLowerCase() : label(k,state[k]);
+      const pop=demo.querySelector('[data-slot="'+k+'"] .pop');
+      pop.hidden = state.open!==k;
+      const partner = k==='rooms'? state.styles : state.rooms;
+      let html='<span class="grid '+k+'">'+listOf(k).map(([key,name])=>
+        '<button class="opt" type="button" data-k="'+key+'" aria-selected="'+(key===state[k])+'">'+
+        tileFor(key,{partner})+name+'</button>').join('')+'</span>';
+      pop.innerHTML=html;
+    });
+    demo.querySelector('.sheet').innerHTML=[...ROOMS,...STYLES].map(([key,name])=>
+      '<span class="cell">'+tileFor(key)+'<b>'+name+'</b></span>').join('');
+  }
+  demo.addEventListener('click',e=>{
+    const tab=e.target.closest('.switch button');
+    if(tab){ state.open=tab.dataset.menu; state.hover=null; demo.querySelectorAll('.switch button').forEach(b=>b.setAttribute('aria-pressed',String(b===tab))); render(); return; }
+    const w=e.target.closest('.word');
+    if(w){ const k=w.closest('.slot').dataset.slot; state.open= state.open===k? null : k; state.hover=null;
+      demo.querySelectorAll('.switch button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.menu===state.open))); render(); return; }
+    const opt=e.target.closest('.opt[data-k]');
+    if(opt){ state[opt.closest('.slot').dataset.slot]=opt.dataset.k; render(); }
+  });
+  render();
+}
+document.querySelectorAll('.demo[data-variant]').forEach(mount);
+
+const spy=new IntersectionObserver(es=>{es.forEach(e=>{
+  if(e.isIntersecting)document.querySelectorAll('.rail a').forEach(a=>
+    a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id));
+})},{rootMargin:'-45% 0px -50% 0px'});
+document.querySelectorAll('.panel,.canvas').forEach(s=>spy.observe(s));
+</script>
+</body>
+</html>

@@ -1,61 +1,43 @@
-// The AI Designer's bug-report form posts the chat transcript to /api/bug-report,
-// which sits behind the SMALL (1MB) JSON body limit — see the JSON_LARGE_LIMIT_PATHS
-// comment in lib/http/app-middleware.js. The live transcript's image entries carry
-// whole base64 data URLs, so posting it verbatim 413'd every report made after a
-// render: the bug channel broke precisely when it was needed.
+// The bug report posted to /api/bug-report carries the AI Designer chat transcript,
+// and that endpoint sits behind the SMALL (1MB) JSON body limit — see the
+// JSON_LARGE_LIMIT_PATHS comment in lib/http/app-middleware.js. The live transcript's
+// image entries carry whole base64 data URLs, so posting it verbatim 413'd every
+// report made after a render: the bug channel broke precisely when it was needed.
 //
-// public/scripts/ai-designer-model-selector.js therefore summarises the transcript
-// before the POST. These tests pin the two halves of that contract:
+// public/scripts/bug-report-history.js therefore summarises the transcript before the
+// POST. These tests pin the two halves of that contract:
 //   1. the summary is small (the payload survives the 1MB limit), and
 //   2. the summary is LOSSLESS as far as the server is concerned — the row
 //      lib/http/bug-report-row.js builds from it is byte-identical to the row it
 //      would have built from the raw transcript, image COUNT included.
 //
-// The summariser itself now lives in the ES module public/scripts/bug-report-history.js
-// and is imported here, because the account menu's "Report an issue" dialog posts the
-// same body from every other page and a second copy would drift. The classic script
-// reaches it through the `window.summariseBugReportHistory` bridge that
-// ai-designer-app.js installs — see test/frontend/classic-script-globals.test.js for
-// why that bridge is the fragile part, and the SOURCE GUARD at the bottom of this file
-// for the call itself.
+// There is one report path now. The AI Designer used to carry its own hand-rolled
+// form in ai-designer.html markup, with its own copy of this call; it was never given
+// data-lang attributes, so it rendered English on all eleven locales. The bug button
+// now opens the account menu's translated "Report an issue" dialog
+// (public/scripts/profile-menu/report-issue-modal.js), which is what the SOURCE GUARD
+// at the bottom of this file scans.
 //
-// readConversationHistory is still the classic file's own, so it is still extracted
-// from the source by brace-matching and compiled with `new Function` (as in
-// test/i18n/locale-data.test.js) — that runs the real shipped code, not a copy.
+// readBugReportHistory still reads the studio transcript through the
+// `window.getConversationHistory` bridge ai-designer-app.js installs — that bridge is
+// the fragile part, so it is exercised directly here and in
+// test/frontend/classic-script-globals.test.js.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { flattenConversationHistory } from '../../../lib/http/bug-report-row.js';
-import { summariseBugReportHistory as summarise } from '../../../public/scripts/bug-report-history.js';
+import {
+  summariseBugReportHistory as summarise,
+  readBugReportHistory,
+} from '../../../public/scripts/bug-report-history.js';
 
 const rootDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
-const SELECTOR_SRC = path.join(rootDir, 'public', 'scripts', 'ai-designer-model-selector.js');
-const source = fs.readFileSync(SELECTOR_SRC, 'utf8');
+const MODAL_SRC = path.join(rootDir, 'public', 'scripts', 'profile-menu', 'report-issue-modal.js');
 
 /** The 1MB express.json limit /api/bug-report runs under. */
 const JSON_LIMIT_BYTES = 1024 * 1024;
-
-/**
- * Slice one whole `function <name>(…) { … }` out of a classic script by matching braces.
- * @param {string} name Function name to extract.
- * @returns {string} The function's full source text.
- */
-function extractFunction(name) {
-  const start = source.indexOf(`function ${name}(`);
-  assert.notEqual(start, -1, `${name}() not found in ai-designer-model-selector.js`);
-  let depth = 0;
-  for (let i = source.indexOf('{', start); i < source.length; i += 1) {
-    if (source[i] === '{') depth += 1;
-    else if (source[i] === '}' && (depth -= 1) === 0) return source.slice(start, i + 1);
-  }
-  throw new Error(`${name}: unbalanced braces`);
-}
-
-// `window` is a free variable inside readConversationHistory, so passing it as a
-// parameter shadows the (absent) global and lets the test supply a fake.
-const readHistory = new Function('window', `${extractFunction('readConversationHistory')}; return readConversationHistory;`);
 
 /** A data URL the size the studio really produces for a rendered room. */
 const dataUrl = (kb) => `data:image/png;base64,${'A'.repeat(kb * 1024)}`;
@@ -181,19 +163,32 @@ test('a non-array transcript is summarised to an empty one, never thrown on', ()
 
 test('the transcript is read through window.getConversationHistory, absent or not', () => {
   // ai-designer-app.js is a <script type="module">, so its `conversationHistory`
-  // binding is invisible to this classic script. Naming it directly threw a
-  // ReferenceError out of the submit handler and lost the entire report; the
-  // accessor lookup must degrade to an empty transcript instead.
-  assert.deepEqual(readHistory({})(), []);
-  assert.deepEqual(readHistory({ getConversationHistory: 'not a function' })(), []);
-  const live = [{ role: 'user', content: 'hi' }];
-  assert.equal(readHistory({ getConversationHistory: () => live })(), live);
+  // binding is invisible to anything that does not import it. The accessor is the only
+  // way in, it is absent on every page but the studio, and readBugReportHistory must
+  // degrade to an empty transcript rather than throw — a throw here loses the whole
+  // report, which is the failure this file has been written around three times.
+  const realWindow = globalThis.window;
+  try {
+    globalThis.window = {};
+    assert.deepEqual(readBugReportHistory(), []);
+    globalThis.window = { getConversationHistory: 'not a function' };
+    assert.deepEqual(readBugReportHistory(), []);
+    // Present: the transcript comes back summarised, not raw.
+    globalThis.window = { getConversationHistory: () => rawTranscript() };
+    const got = readBugReportHistory();
+    assert.equal(flattenConversationHistory(got), flattenConversationHistory(rawTranscript()));
+    assert.ok(!JSON.stringify(got).includes('base64'), 'image bytes must be stripped on the way out');
+  } finally {
+    if (realWindow === undefined) delete globalThis.window;
+    else globalThis.window = realWindow;
+  }
 });
 
 test('SOURCE GUARD: the bug-report POST sends the summary, not the raw transcript', () => {
   // Comments are stripped first: this file's own prose names the function, and a
   // guard that greps raw source would keep passing with the call deleted.
-  const code = source
+  const code = fs
+    .readFileSync(MODAL_SRC, 'utf8')
     .replace(/\/\*[\s\S]*?\*\//g, '')
     .split('\n')
     .filter((line) => !line.trim().startsWith('//'))
@@ -203,26 +198,27 @@ test('SOURCE GUARD: the bug-report POST sends the summary, not the raw transcrip
   // this test loudly rather than silently passing an empty scan).
   assert.ok(code.includes("fetch('/api/bug-report'"), 'the bug-report POST moved — update this guard');
 
-  assert.match(code, /conversationHistory:\s*summariseBugReportHistory\(readConversationHistory\(\)\)/);
+  assert.match(code, /conversationHistory:\s*readBugReportHistory\(\)/);
   assert.ok(
-    !/conversationHistory:\s*conversationHistory\b/.test(code),
+    !/conversationHistory:\s*conversationHistory/.test(code),
     'the raw transcript is being posted again — this is the 413 regression'
   );
+  assert.match(code, /import\s*\{\s*readBugReportHistory\s*\}\s*from\s*'\.\.\/bug-report-history\.js'/);
 });
 
-test('SOURCE GUARD: the summariser the classic script calls is actually bridged onto window', () => {
-  // The classic script names `summariseBugReportHistory` as a bare identifier; it
-  // resolves only because ai-designer-app.js assigns it to window. Drop that line and
-  // the call throws a ReferenceError from inside the submit handler, which loses the
-  // WHOLE report — the exact failure that has hit this file three times.
-  // classic-script-globals.test.js proves *some* module bridges the name; this proves
-  // it is the one the AI Designer always loads.
-  const entry = fs
-    .readFileSync(path.join(rootDir, 'public', 'scripts', 'ai-designer-app.js'), 'utf8')
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .split('\n')
-    .filter((line) => !line.trim().startsWith('//'))
-    .join('\n');
-  assert.match(entry, /window\.summariseBugReportHistory\s*=\s*summariseBugReportHistory/);
-  assert.match(entry, /import\s*\{\s*summariseBugReportHistory\s*\}\s*from\s*'\.\/bug-report-history\.js'/);
+test('SOURCE GUARD: the AI Designer bug button routes to that one dialog', () => {
+  // The studio's own copy of the form is gone; if the button stops delegating, the
+  // bug channel silently disappears from the page it was invented for.
+  const selector = fs.readFileSync(
+    path.join(rootDir, 'public', 'scripts', 'ai-designer-model-selector.js'), 'utf8'
+  );
+  assert.match(selector, /getElementById\('bug-report-btn'\)/);
+  assert.match(selector, /openReportIssue/);
+  assert.ok(
+    !selector.includes("fetch('/api/bug-report'"),
+    'the studio posted its own report again — that path was removed because it was untranslated'
+  );
+
+  const menu = fs.readFileSync(path.join(rootDir, 'public', 'scripts', 'profile-menu.js'), 'utf8');
+  assert.match(menu, /openReportIssue:\s*reportIssue\.open/);
 });

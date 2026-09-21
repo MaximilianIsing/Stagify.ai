@@ -138,6 +138,16 @@ test('a transcript carrying tool results is passed through unchanged', async () 
   assert.deepEqual(calls[0].messages, messages);
 });
 
+test('a reason the service invents is relayed rather than filtered', async () => {
+  // The service, not the route, decides why a turn produced nothing — 'truncated'
+  // and 'empty' send the operator in opposite directions. A route-level allowlist
+  // of reason codes would quietly flatten the next one back to a generic failure.
+  const { url } = await mount({ answer: { message: null, reason: 'truncated' } });
+  const res = await ask(url, { messages: [{ role: 'user', content: 'everything at once?' }] });
+  assert.equal(res.status, 200);
+  assert.deepEqual(await res.json(), { message: null, reason: 'truncated' });
+});
+
 // ── Caching ─────────────────────────────────────────────────────────────────
 
 test('the answer is never cached', async () => {

@@ -20,11 +20,22 @@ import assert from 'node:assert/strict';
 
 import { createAdminAnalyst, sanitizeMessages } from '../../lib/services/admin-analyst.js';
 import { ANALYST_TOOL_NAMES } from '../../lib/services/admin-analyst-tools.js';
-import { ANALYST_MODEL } from '../../lib/config/model-config.js';
+import {
+  ANALYST_MODEL,
+  ANALYST_MAX_OUTPUT_TOKENS,
+  ANALYST_REASONING_EFFORT,
+  supportsReasoningEffort,
+} from '../../lib/config/model-config.js';
 
-/** A stub client that records the one call it is given. */
+/**
+ * A stub client that records every call it is given.
+ *
+ * An array of replies is consumed one per call, the last staying in place — which
+ * is how the retry path is exercised without the stub needing to know about it.
+ */
 function stubClient(reply) {
   const sent = [];
+  const queue = Array.isArray(reply) ? reply.slice() : [reply];
   return {
     sent,
     client: {
@@ -32,8 +43,9 @@ function stubClient(reply) {
         completions: {
           create: async (req) => {
             sent.push(req);
-            if (reply instanceof Error) throw reply;
-            return reply;
+            const next = queue.length > 1 ? queue.shift() : queue[0];
+            if (next instanceof Error) throw next;
+            return next;
           },
         },
       },
@@ -42,6 +54,19 @@ function stubClient(reply) {
 }
 
 const answer = (content) => ({ choices: [{ message: { content, tool_calls: null } }] });
+
+/** A completion that ran out of budget before it said anything. */
+const truncated = (content = '') => ({
+  choices: [{ finish_reason: 'length', message: { content, tool_calls: null } }],
+  usage: { completion_tokens: 1600, completion_tokens_details: { reasoning_tokens: 1600 } },
+});
+
+/** An assistant turn requesting `id`, so a `tool` reply to it is not an orphan. */
+const requests = (id, name = 'segment_breakdown') => ({
+  role: 'assistant',
+  content: null,
+  tool_calls: [{ id, type: 'function', function: { name, arguments: '{}' } }],
+});
 
 // ── Redaction ───────────────────────────────────────────────────────────────
 
@@ -52,6 +77,9 @@ test('nothing address-shaped survives into the transcript', async () => {
   await analyst.ask({
     messages: [
       { role: 'user', content: 'why did jane@example.com churn, from 203.0.113.9?' },
+      // The requesting turn has to be here or the tool reply is pruned as an
+      // orphan, and this assertion would pass by simply having nothing to check.
+      requests('call_1'),
       { role: 'tool', tool_call_id: 'call_1', content: '{"rows":[{"email":"ops@northside.co","ip":"192.0.2.4"}]}' },
     ],
   });
@@ -175,6 +203,32 @@ test('the request carries our system prompt, our model and our tools', async () 
     [...ANALYST_TOOL_NAMES].sort(),
     'the tool catalogue comes from the registry, never from the client',
   );
+  assert.equal(req.max_completion_tokens, ANALYST_MAX_OUTPUT_TOKENS);
+  // On a reasoning model this budget covers the thinking as well as the answer,
+  // so an effort the request does not state is the one that silently spends it.
+  if (supportsReasoningEffort(ANALYST_MODEL)) {
+    assert.equal(req.reasoning_effort, ANALYST_REASONING_EFFORT);
+  } else {
+    assert.ok(!('reasoning_effort' in req), 'the key is omitted, not sent as undefined');
+  }
+});
+
+test('reasoning effort is a concept only the gpt-5 family has', () => {
+  assert.equal(supportsReasoningEffort('gpt-5'), true);
+  assert.equal(supportsReasoningEffort('gpt-5-mini'), true);
+  assert.equal(supportsReasoningEffort('gpt-4o-mini'), false);
+  assert.equal(supportsReasoningEffort(null), false);
+  assert.ok(
+    ANALYST_REASONING_EFFORT === null || ['minimal', 'low', 'medium', 'high'].includes(ANALYST_REASONING_EFFORT),
+    'an env override may never reach the API as an arbitrary string',
+  );
+});
+
+test('the budget leaves room for a reasoning model to think and still answer', () => {
+  // 1600 was the number that broke: gpt-5 spent it all reasoning over a tool
+  // result and returned an empty completion, which the drawer read as "the model
+  // returned nothing".
+  assert.ok(ANALYST_MAX_OUTPUT_TOKENS >= 4000, `budget too small to hold reasoning: ${ANALYST_MAX_OUTPUT_TOKENS}`);
 });
 
 test('the system prompt states the same evidence floor the rules engine uses', async () => {
@@ -191,11 +245,12 @@ test('no client, an empty completion and a throw all fail open with a reason', a
   const noKey = await createAdminAnalyst({ openai: null }).ask({ messages: [{ role: 'user', content: 'hi' }] });
   assert.deepEqual(noKey, { message: null, reason: 'unavailable' });
 
-  const { client: emptyClient } = stubClient(answer('   '));
+  const { sent: emptySent, client: emptyClient } = stubClient(answer('   '));
   assert.deepEqual(
     await createAdminAnalyst({ openai: emptyClient }).ask({ messages: [{ role: 'user', content: 'hi' }] }),
     { message: null, reason: 'empty' },
   );
+  assert.equal(emptySent.length, 1, 'a completion with no finish_reason is not a truncation, so it is not retried');
 
   const { client: brokenClient } = stubClient(new Error('upstream 500 for request req_abc123'));
   const broken = await createAdminAnalyst({ openai: brokenClient }).ask({ messages: [{ role: 'user', content: 'hi' }] });
@@ -208,4 +263,78 @@ test('an empty transcript never reaches the model', async () => {
   const res = await createAdminAnalyst({ openai: client }).ask({ messages: [] });
   assert.deepEqual(res, { message: null, reason: 'no-messages' });
   assert.equal(sent.length, 0);
+});
+
+// ── Truncation ──────────────────────────────────────────────────────────────
+//
+// The failure this section exists for: gpt-5 bills its reasoning against
+// max_completion_tokens, so a round carrying a tool result could spend the whole
+// budget thinking and come back with `finish_reason: 'length'` and no content.
+// That is indistinguishable, at the call site, from a model with nothing to say —
+// and the drawer told the operator to "try asking again", which never helped.
+
+test('a turn truncated before it said anything is retried once, wider', async () => {
+  const { sent, client } = stubClient([truncated(), answer('8% of 1,240 renders failed.')]);
+  const res = await createAdminAnalyst({ openai: client }).ask({ messages: [{ role: 'user', content: 'failures?' }] });
+
+  assert.equal(res.message, '8% of 1,240 renders failed.');
+  assert.equal(sent.length, 2, 'exactly one retry, never a loop');
+  assert.ok(
+    sent[1].max_completion_tokens > sent[0].max_completion_tokens,
+    'a retry at the same budget would fail the same way',
+  );
+});
+
+test('a turn that truncates twice says so rather than reporting nothing', async () => {
+  const { sent, client } = stubClient([truncated(), truncated()]);
+  const res = await createAdminAnalyst({ openai: client }).ask({ messages: [{ role: 'user', content: 'everything?' }] });
+
+  // 'truncated' and 'empty' send the operator in opposite directions: narrow the
+  // question, versus ask it again.
+  assert.deepEqual(res, { message: null, reason: 'truncated' });
+  assert.equal(sent.length, 2);
+});
+
+test('a truncated turn that still produced text is kept, not retried', async () => {
+  const { sent, client } = stubClient(truncated('Renders are down 8%, and'));
+  const res = await createAdminAnalyst({ openai: client }).ask({ messages: [{ role: 'user', content: 'trend?' }] });
+
+  assert.equal(res.message, 'Renders are down 8%, and');
+  assert.equal(sent.length, 1, 'a partial answer is worth more than a second bill');
+});
+
+// ── Transcript repair ───────────────────────────────────────────────────────
+
+test('a tool reply whose request is not in the transcript is pruned', () => {
+  // The 40-message clamp can cut between an assistant turn and its replies. The
+  // API rejects the dangling reply outright, and the operator sees a generic
+  // failure for what is our own bookkeeping.
+  const out = sanitizeMessages([
+    { role: 'tool', tool_call_id: 'call_gone', content: '{"rows":[]}' },
+    { role: 'user', content: 'and now?' },
+  ]);
+  assert.deepEqual(out.map((m) => m.role), ['user']);
+});
+
+test('an assistant turn whose every tool call is unknown is dropped with its replies', () => {
+  // Keeping it would mean sending `tool_calls: []`, which is itself a 400.
+  const out = sanitizeMessages([
+    { role: 'user', content: 'hi' },
+    { role: 'assistant', content: null, tool_calls: [{ id: 'c1', type: 'function', function: { name: 'exfiltrate_users', arguments: '{}' } }] },
+    { role: 'tool', tool_call_id: 'c1', content: '{"rows":[]}' },
+  ]);
+  assert.deepEqual(out.map((m) => m.role), ['user']);
+});
+
+test('a large tool result keeps its shape and says where it was cut', () => {
+  const huge = JSON.stringify({ rows: Array.from({ length: 4000 }, (_, i) => ({ room: `r${i}`, n: i })) });
+  const out = sanitizeMessages([requests('call_1'), { role: 'tool', tool_call_id: 'call_1', content: huge }]);
+
+  assert.ok(out[1].content.length > 8000, 'the old 8000-char cap threw away most of a real breakdown');
+  assert.match(out[1].content, /truncated: result too large/, 'a silent cut reads as a complete result');
+});
+
+test('a tool result that fits is passed through unmarked', () => {
+  const out = sanitizeMessages([requests('call_1'), { role: 'tool', tool_call_id: 'call_1', content: '{"rows":[]}' }]);
+  assert.equal(out[1].content, '{"rows":[]}');
 });

@@ -40,16 +40,13 @@ declare global {
     __stagifyOpenBasicMask?: () => void;
     /** Closes the fullscreen image modal (ai-designer image viewer). */
     closeImageModal?: (...args: any[]) => void;
-    /** Returns the live AI Designer chat transcript (ai-designer-app.js), for the
-     *  bug-report form in the classic ai-designer-model-selector.js. */
+    /** Returns the live AI Designer chat transcript (ai-designer-app.js). Read by
+     *  readBugReportHistory (scripts/bug-report-history.js) so the shared "Report an
+     *  issue" dialog can attach it — stripped of image bytes, which is what keeps the
+     *  report under the 1MB JSON body limit. */
     getConversationHistory?: () => any[];
-    /** Strips image bytes out of that transcript before it is posted
-     *  (scripts/bug-report-history.js), bridged by ai-designer-app.js for the same
-     *  classic form. Without it the report 413s on the 1MB JSON body limit. */
-    summariseBugReportHistory?: (history: any) => any[];
-    /** Toast notifier (scripts/toast.js), bridged for the bug-report form in the
-     *  classic ai-designer-model-selector.js — without it that form gave no
-     *  feedback at all, on success or on a missing description. */
+    /** Toast notifier (scripts/toast.js), bridged onto window for the classic
+     *  (non-module) scripts the AI Designer loads, which cannot import it. */
     showToast?: (message: string, type?: string) => void;
     /** Mounts one walkthrough player into a `.designer-demo[data-demo]` host.
      *  Published by designer-demo.js so studio-showcase.js can mount just the

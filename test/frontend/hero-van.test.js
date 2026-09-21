@@ -33,7 +33,7 @@ const read = (rel) => fs.readFileSync(path.join(ROOT, rel), 'utf8');
 // branch only registers a listener, so stub that before importing.
 globalThis.document = /** @type {any} */ ({ readyState: 'loading', addEventListener() {} });
 
-const { buildScene, initHeroVan, SCENE_MEDIA, STYLE_EVENT } = await import('../../public/scripts/hero-van.js');
+const { buildScene, initHeroVan, planSegment, speedAt, SCENE_MEDIA, STYLE_EVENT } = await import('../../public/scripts/hero-van.js');
 const { STYLE_HOUSE } = await import('../../public/scripts/hero-van-art.js');
 
 // ---- the art ---------------------------------------------------------------
@@ -91,7 +91,7 @@ function makeDom({ matches = true, style = 'luxury' } = {}) {
   const scene = { innerHTML: '', querySelector: () => null };
   const props = {};
   const btn = {
-    style: { setProperty: (k, v) => { props[k] = v; } },
+    style: { setProperty: (k, v) => { props[k] = v; }, removeProperty: (k) => { delete props[k]; } },
     classList: { contains: (c) => classes.has(c), add: (c) => classes.add(c), remove: (c) => classes.delete(c) },
     querySelector: (sel) => (sel === '.hu-scene' ? scene : null),
     addEventListener: (type, fn) => (btnListeners[type] = btnListeners[type] || []).push(fn),
@@ -195,7 +195,7 @@ test('a hover during the drive-out waits for it to end; a leave during it change
   d.pointer('pointerenter'); d.pointer('pointerleave');
   assert.ok(d.classes.has('hu-out'));
   const t = d.timers[d.timers.length - 1];
-  assert.equal(t.ms, 1200);
+  assert.equal(t.ms, parseInt(d.props['--hu-out-ms'], 10) + 450, 'wait + drive + margin');
   t.fn();
   assert.ok(!d.classes.has('hu-out'), 'fallback timer released it');
 
@@ -212,7 +212,7 @@ test('the drive-out starts from where the van is, falling back to the parking ba
   initHeroVan(/** @type {any} */ (d.doc), /** @type {any} */ (d.win));
   d.pointer('pointerenter'); d.tick(1500); d.pointer('pointerleave');
   assert.equal(d.props['--hu-van-x'], '210px', 'no computed style available: parked');
-  assert.equal(d.props['--hu-out-ms'], '750ms', 'the parked drive-out is the reference speed');
+  assert.equal(d.props['--hu-out-ms'], '850ms', 'the parked drive-out is the reference speed');
 
   const e = makeDom();
   e.scene.querySelector = (sel) => (sel === '.van' ? { tag: 'van' } : null);
@@ -220,8 +220,19 @@ test('the drive-out starts from where the van is, falling back to the parking ba
   initHeroVan(/** @type {any} */ (e.doc), /** @type {any} */ (e.win));
   e.pointer('pointerenter'); e.tick(200); e.pointer('pointerleave');
   assert.equal(e.props['--hu-van-x'], '37.5px', 'mid-arrival: keep going from here');
-  assert.equal(e.props['--hu-out-ms'], '956ms', 'still rolling: 382.5 units at the arrival pace (0.7 × 210 per 0.75s)');
-  assert.equal(e.timers[e.timers.length - 1].ms, 956 + 450, 'the fallback timer follows the duration');
+  // Rolling: planned from the drive-in's speed at x 37.5 (about 640 u/s, near its peak)
+  // down to the cruise of 250, so 382.5 units at a mean of ~445 is ~0.86s.
+  const v0 = speedAt({ from: -150, to: 210, ms: 1250, x1: 0.32, y1: 0.06, x2: 0.2, y2: 1 }, 37.5);
+  assert.ok(v0 > 550 && v0 < 720, `drive-in speed at its middle: ${v0}`);
+  const ms = parseInt(e.props['--hu-out-ms'], 10);
+  assert.ok(ms > 780 && ms < 950, `rolling exit duration: ${ms}`);
+  assert.ok(Math.abs(speedAt(planSegment(37.5, 420, v0, 250, 2.2), 420) - 250) < 1, 'settles to the cruise');
+  assert.match(e.props['--hu-out-ease'], /^cubic-bezier\(0\.350, 0\.\d{3}, 0\.650, 0\.\d{3}\)$/);
+  assert.equal(e.timers[e.timers.length - 1].ms, ms + 450, 'the fallback timer follows the duration');
+  // The wheel angle carries over from the drive-in: 187.5 units in, 1452° → 12° into a turn.
+  const DEG = 360 / (2 * Math.PI * 7.4);
+  assert.ok(Math.abs(parseFloat(e.props['--hu-spin-from']) - (187.5 * DEG) % 360) < 0.2, 'spin picks up where the drive-in had it');
+  assert.ok(Math.abs(parseFloat(e.props['--hu-spin-to']) - parseFloat(e.props['--hu-spin-from']) - 382.5 * DEG) < 0.2, 'and turns by the exit distance');
 
   // The same distance after a full visit (the van parked, then the picker reset it) is slower:
   // a pull-away from a standstill.
@@ -230,7 +241,65 @@ test('the drive-out starts from where the van is, falling back to the parking ba
   g.win.getComputedStyle = () => ({ transform: 'matrix(1, 0, 0, 1, 37.5, 0)' });
   initHeroVan(/** @type {any} */ (g.doc), /** @type {any} */ (g.win));
   g.pointer('pointerenter'); g.tick(1500); g.pointer('pointerleave');
-  assert.equal(g.props['--hu-out-ms'], '1366ms', 'same distance, pull-away pace');
+  assert.equal(g.props['--hu-out-ms'], '1548ms', 'same distance, pull-away pace');
+  assert.equal(g.props['--hu-out-ease'], undefined, 'the pull-away keeps its CSS curve');
+});
+
+test('speedAt and planSegment: speed is continuous across a join', () => {
+  const din = { from: -150, to: 210, ms: 1250, x1: 0.32, y1: 0.06, x2: 0.2, y2: 1 };
+  assert.ok(speedAt(din, -150) > 40 && speedAt(din, -150) < 70, 'sets off slowly (initial slope 0.06/0.32)');
+  assert.ok(speedAt(din, 40) > speedAt(din, -150), 'faster mid-drive');
+  assert.equal(Math.round(speedAt(din, 210)), 0, 'eases to a stop at the bay');
+
+  const out = planSegment(40, 420, 500, 500, 2.2);
+  assert.equal(out.from, 40); assert.equal(out.to, 420);
+  assert.equal(out.ms, 760, '380 units at 500 u/s');
+  assert.ok(Math.abs(speedAt(out, 40) - 500) < 1, `starts at the speed it was given: ${speedAt(out, 40)}`);
+
+  const parkSeg = planSegment(100, 210, 450, 0, 1.4);
+  assert.ok(Math.abs(speedAt(parkSeg, 100) - 450) < 1, 'park starts at the current speed');
+  assert.equal(Math.round(speedAt(parkSeg, 210)), 0, 'and ends at rest');
+  assert.equal(parkSeg.y2, 1, 'ease-out end');
+
+  const crawl = planSegment(-149, 420, 55, 480, 2.2);
+  assert.equal(crawl.ms, 2127, '569 units at a mean of 267.5');
+  const still = planSegment(210, 420, 0, 480, 2.2);
+  assert.equal(still.y1, 0, 'from a standstill the curve starts flat');
+});
+
+test('a hover before the van has passed the door cuts the exit and parks from there', () => {
+  const d = makeDom();
+  let x = 60;
+  d.scene.querySelector = (sel) => (sel === '.van' ? { tag: 'van' } : null);
+  d.win.getComputedStyle = () => ({ transform: `matrix(1, 0, 0, 1, ${x}, 0)` });
+  initHeroVan(/** @type {any} */ (d.doc), /** @type {any} */ (d.win));
+  d.pointer('pointerenter'); d.tick(300); d.pointer('pointerleave');
+  assert.ok(d.classes.has('hu-out') && d.classes.has('hu-quick'));
+  x = 120;
+  d.pointer('pointerenter');
+  assert.ok(d.classes.has('hu-park'), 'short of the door: park');
+  assert.ok(!d.classes.has('hu-out') && !d.classes.has('hu-quick'), 'the exit is cut');
+  assert.equal(d.props['--hu-van-x'], '120px');
+  const ms = parseInt(d.props['--hu-out-ms'], 10);
+  assert.ok(ms >= 300 && ms <= 1400, `park duration ${ms}`);
+  assert.match(d.props['--hu-out-ease'], /, 1\.000\)$/, 'ends at rest');
+  // Wheels: the park turns them by its distance (90 units → 697°), from the angle they had.
+  const DEG = 360 / (2 * Math.PI * 7.4);
+  const from = parseFloat(d.props['--hu-spin-from']);
+  const to = parseFloat(d.props['--hu-spin-to']);
+  assert.ok(Math.abs(to - from - 90 * DEG) < 0.2, `park spin ${to - from} for 90 units`);
+  assert.ok(from >= 0 && from < 360, 'start angle is kept within one turn');
+  // The next leave is an ordinary one, from wherever the park segment has the van.
+  x = 210; d.tick(2000); d.pointer('pointerleave');
+  assert.ok(!d.classes.has('hu-park') && d.classes.has('hu-out'));
+  assert.equal(d.props['--hu-out-ms'], '850ms', 'parked, full visit: the pull-away');
+
+  // Past the door: no retarget, the van finishes leaving and a new one arrives.
+  d.pointer('animationend', { animationName: 'hu-drive-out' });
+  d.pointer('pointerenter'); d.tick(300); d.pointer('pointerleave');
+  x = 260;
+  d.pointer('pointerenter');
+  assert.ok(!d.classes.has('hu-park') && d.classes.has('hu-out'), 'past the door: let it go');
 });
 
 test('a click holds the end state while the modal it opened is up, and lets go when it closes', () => {

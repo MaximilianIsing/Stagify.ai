@@ -1095,7 +1095,8 @@
         "label": "Testimonianze degli agenti",
         "prev": "Testimonianza precedente",
         "next": "Testimonianza successiva"
-      }
+      },
+      "starsAria": "Valutato 5 stelle su 5"
     },
     "blog": {
       "title": "Dal blog di Stagify",
@@ -1659,6 +1660,12 @@
       "pro": "Stagify+",
       "proDescription": "Qualità superiore, più lento"
     },
+    "proGate": {
+      "title": "Il Designer IA è una funzione Stagify+",
+      "body": "Accedi con un account Stagify+ per usare la chat del Designer IA, i modelli avanzati e gli strumenti per le maschere. Gli account gratuiti possono usare l’home staging virtuale nella pagina iniziale.",
+      "viewPlus": "Scopri Stagify+",
+      "backToStaging": "Torna allo staging"
+    },
     "messageTag": {
       "auto": "Auto",
       "generate": "Genera",
@@ -1669,7 +1676,8 @@
     "thumbnailStrip": {
       "label": "Immagine di base per il prossimo messaggio",
       "help": "Scegli quale immagine della stanza l’IA deve modificare quando invii il prossimo messaggio, specialmente quando aggiungi mobili. Utile quando hai più caricamenti o versioni arredate.",
-      "helpAria": "Cosa significa immagine di base?"
+      "helpAria": "Cosa significa immagine di base?",
+      "selectAria": "Scegli l’immagine di base"
     },
     "alt": {
       "uploadFile": "Allega un file al tuo messaggio",
@@ -1852,7 +1860,10 @@
     "pickerPromptBar": "Barra delle istruzioni",
     "pickerFurniture": "Mobili",
     "demo3Desc": "Guarda il Designer IA arredare e riprogettare una stanza in autonomia da una semplice chat.",
-    "troubleshootingTitle": "Risoluzione dei problemi e problemi comuni"
+    "troubleshootingTitle": "Risoluzione dei problemi e problemi comuni",
+    "demoPickerAria": "Scegli un tutorial",
+    "topicsAria": "Argomenti della guida",
+    "goToStep": "Vai al passaggio {n}"
   },
   "pageMeta": {
     "about": {
@@ -2038,7 +2049,9 @@
       "Integriamo ogni area…",
       "Il resto della foto resta intatto…",
       "Ultimi ritocchi…"
-    ]
+    ],
+    "controlsAria": "Comandi dello Studio Maschere",
+    "workspaceAria": "Area di lavoro dello Studio Maschere"
   },
   "status": {
     "pageTitle": "Stato e disponibilità | Stagify.ai",
@@ -2194,7 +2207,8 @@
       "phoneLabel": "Numero di telefono",
       "phoneOptional": "(facoltativo)",
       "submit": "Continua al pagamento",
-      "redirecting": "Reindirizzamento a Stripe…"
+      "redirecting": "Reindirizzamento a Stripe…",
+      "companyPlaceholder": "Azienda S.r.l."
     },
     "errors": {
       "domain": "Inserisci un dominio valido (es. company.com).",
@@ -2272,7 +2286,9 @@
     "footLinks": {
       "backToFree": "Torna allo staging gratuito",
       "questions": "Domande prima di acquistare?"
-    }
+    },
+    "subscribeAria": "Abbonati a Stagify+",
+    "compareAria": "Confronto tra Gratis e Stagify+"
   },
   "gallery": {
     "pageTitle": "La tua galleria — Stagify",
@@ -2464,7 +2480,9 @@
     "stepPhotoHint": "Carica una foto nell’area di lavoro a destra.",
     "replacePhoto": "Sostituisci foto",
     "stepChanges": "Cosa vuoi cambiare?",
-    "enhanceHint": "Scegli almeno una modifica, oppure descrivine una qui sopra."
+    "enhanceHint": "Scegli almeno una modifica, oppure descrivine una qui sopra.",
+    "controlsAria": "Comandi dello Studio Esterni",
+    "workspaceAria": "Area di lavoro dello Studio Esterni"
   },
   "notFound": {
     "pageTitle": "Pagina non trovata | Stagify.ai",

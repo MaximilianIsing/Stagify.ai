@@ -1095,7 +1095,8 @@
         "label": "经纪人评价",
         "prev": "上一条评价",
         "next": "下一条评价"
-      }
+      },
+      "starsAria": "5 星满分评价"
     },
     "blog": {
       "title": "来自 Stagify 博客",
@@ -1659,6 +1660,12 @@
       "pro": "Stagify+",
       "proDescription": "更高质量，较慢"
     },
+    "proGate": {
+      "title": "AI设计师是 Stagify+ 功能",
+      "body": "请使用 Stagify+ 账户登录，即可使用 AI设计师对话、高级模型和遮罩工具。免费账户可以在首页使用虚拟软装。",
+      "viewPlus": "查看 Stagify+",
+      "backToStaging": "返回软装"
+    },
     "messageTag": {
       "auto": "自动",
       "generate": "生成",
@@ -1669,7 +1676,8 @@
     "thumbnailStrip": {
       "label": "下一条消息的基础图片",
       "help": "选择 AI 在下一条消息中应修改哪张房间图片，添加家具时尤其有用。当您有多张上传或多个 staging 版本时很有用。",
-      "helpAria": "基础图片是什么意思？"
+      "helpAria": "基础图片是什么意思？",
+      "selectAria": "选择基准图片"
     },
     "alt": {
       "uploadFile": "向消息附加文件",
@@ -1852,7 +1860,10 @@
     "pickerPromptBar": "提示词栏",
     "pickerFurniture": "家具",
     "demo3Desc": "观看 AI Designer 如何通过简单的对话自动布置和重新设计房间。",
-    "troubleshootingTitle": "故障排查与常见问题"
+    "troubleshootingTitle": "故障排查与常见问题",
+    "demoPickerAria": "选择一个教程",
+    "topicsAria": "指南主题",
+    "goToStep": "跳到第 {n} 步"
   },
   "pageMeta": {
     "about": {
@@ -2038,7 +2049,9 @@
       "正在融合每个区域…",
       "正在保持照片其余部分不变…",
       "正在添加最后的润色…"
-    ]
+    ],
+    "controlsAria": "遮罩工作室控件",
+    "workspaceAria": "遮罩工作室工作区"
   },
   "status": {
     "pageTitle": "状态和可用性 | Stagify.ai",
@@ -2194,7 +2207,8 @@
       "phoneLabel": "电话号码",
       "phoneOptional": "（可选）",
       "submit": "继续付款",
-      "redirecting": "正在跳转到 Stripe…"
+      "redirecting": "正在跳转到 Stripe…",
+      "companyPlaceholder": "公司名称有限公司"
     },
     "errors": {
       "domain": "请输入有效的域名（例如 company.com）。",
@@ -2272,7 +2286,9 @@
     "footLinks": {
       "backToFree": "返回免费布置",
       "questions": "购买前还有疑问？"
-    }
+    },
+    "subscribeAria": "订阅 Stagify+",
+    "compareAria": "免费版与 Stagify+ 对比"
   },
   "gallery": {
     "pageTitle": "您的图库 — Stagify",
@@ -2464,7 +2480,9 @@
     "stepPhotoHint": "在右侧工作区上传照片。",
     "replacePhoto": "更换照片",
     "stepChanges": "要改动什么？",
-    "enhanceHint": "请至少勾选一项改动，或在上方描述一项。"
+    "enhanceHint": "请至少勾选一项改动，或在上方描述一项。",
+    "controlsAria": "外观工作室控件",
+    "workspaceAria": "外观工作室工作区"
   },
   "notFound": {
     "pageTitle": "页面未找到 | Stagify.ai",

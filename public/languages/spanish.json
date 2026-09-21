@@ -1095,7 +1095,8 @@
         "label": "Testimonios de agentes",
         "prev": "Testimonio anterior",
         "next": "Testimonio siguiente"
-      }
+      },
+      "starsAria": "Valorado con 5 de 5 estrellas"
     },
     "blog": {
       "title": "Del blog de Stagify",
@@ -1659,6 +1660,12 @@
       "pro": "Stagify+",
       "proDescription": "Mayor calidad, más lento"
     },
+    "proGate": {
+      "title": "El Diseñador IA es una función de Stagify+",
+      "body": "Inicia sesión con una cuenta Stagify+ para usar el chat del Diseñador IA, los modelos avanzados y las herramientas de máscaras. Las cuentas gratuitas pueden usar el home staging virtual en la página de inicio.",
+      "viewPlus": "Ver Stagify+",
+      "backToStaging": "Volver al staging"
+    },
     "messageTag": {
       "auto": "Auto",
       "generate": "Generar",
@@ -1669,7 +1676,8 @@
     "thumbnailStrip": {
       "label": "Imagen base para el próximo mensaje",
       "help": "Elige qué imagen de habitación debe modificar la IA en tu próximo mensaje, especialmente al añadir muebles. Útil cuando tienes varias subidas o versiones escenificadas.",
-      "helpAria": "¿Qué significa imagen base?"
+      "helpAria": "¿Qué significa imagen base?",
+      "selectAria": "Elegir la imagen base"
     },
     "alt": {
       "uploadFile": "Adjuntar un archivo a tu mensaje",
@@ -1852,7 +1860,10 @@
     "pickerPromptBar": "Barra de prompts",
     "pickerFurniture": "Muebles",
     "demo3Desc": "Mira cómo AI Designer prepara y rediseña una habitación de forma autónoma a partir de un simple chat.",
-    "troubleshootingTitle": "Solución de problemas y dudas comunes"
+    "troubleshootingTitle": "Solución de problemas y dudas comunes",
+    "demoPickerAria": "Elige un tutorial",
+    "topicsAria": "Temas de la guía",
+    "goToStep": "Ir al paso {n}"
   },
   "pageMeta": {
     "about": {
@@ -2038,7 +2049,9 @@
       "Integrando cada zona…",
       "Manteniendo intacto el resto de la foto…",
       "Añadiendo los toques finales…"
-    ]
+    ],
+    "controlsAria": "Controles del Estudio de Máscaras",
+    "workspaceAria": "Área de trabajo del Estudio de Máscaras"
   },
   "status": {
     "pageTitle": "Estado y disponibilidad | Stagify.ai",
@@ -2194,7 +2207,8 @@
       "phoneLabel": "Número de teléfono",
       "phoneOptional": "(opcional)",
       "submit": "Continuar al pago",
-      "redirecting": "Redirigiendo a Stripe…"
+      "redirecting": "Redirigiendo a Stripe…",
+      "companyPlaceholder": "Empresa S.L."
     },
     "errors": {
       "domain": "Introduzca un dominio válido (p. ej., company.com).",
@@ -2272,7 +2286,9 @@
     "footLinks": {
       "backToFree": "Volver al staging gratuito",
       "questions": "¿Preguntas antes de comprar?"
-    }
+    },
+    "subscribeAria": "Suscríbete a Stagify+",
+    "compareAria": "Comparación entre Gratis y Stagify+"
   },
   "gallery": {
     "pageTitle": "Tu galería — Stagify",
@@ -2464,7 +2480,9 @@
     "stepPhotoHint": "Sube una foto en el área de trabajo de la derecha.",
     "replacePhoto": "Cambiar foto",
     "stepChanges": "¿Qué quieres cambiar?",
-    "enhanceHint": "Elige al menos un cambio, o descríbelo arriba."
+    "enhanceHint": "Elige al menos un cambio, o descríbelo arriba.",
+    "controlsAria": "Controles del Estudio de Exteriores",
+    "workspaceAria": "Área de trabajo del Estudio de Exteriores"
   },
   "notFound": {
     "pageTitle": "Página no encontrada | Stagify.ai",

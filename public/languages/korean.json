@@ -1095,7 +1095,8 @@
         "label": "중개인 후기",
         "prev": "이전 후기",
         "next": "다음 후기"
-      }
+      },
+      "starsAria": "별 5개 만점에 5개"
     },
     "blog": {
       "title": "Stagify 블로그",
@@ -1659,6 +1660,12 @@
       "pro": "Stagify+",
       "proDescription": "더 높은 품질, 더 느림"
     },
+    "proGate": {
+      "title": "AI 디자이너는 Stagify+ 기능입니다",
+      "body": "AI 디자이너 채팅, 고급 모델, 마스킹 도구를 사용하려면 Stagify+ 계정으로 로그인하세요. 무료 계정은 홈에서 가상 스테이징을 사용할 수 있습니다.",
+      "viewPlus": "Stagify+ 보기",
+      "backToStaging": "스테이징으로 돌아가기"
+    },
     "messageTag": {
       "auto": "자동",
       "generate": "생성",
@@ -1669,7 +1676,8 @@
     "thumbnailStrip": {
       "label": "다음 메시지의 기본 이미지",
       "help": "다음 메시지를 보낼 때, 특히 가구를 추가할 때 AI가 수정할 방 이미지를 선택하세요. 업로드나 스테이징 버전이 여러 개일 때 유용합니다.",
-      "helpAria": "기본 이미지란 무엇인가요?"
+      "helpAria": "기본 이미지란 무엇인가요?",
+      "selectAria": "기준 이미지 선택"
     },
     "alt": {
       "uploadFile": "메시지에 파일 첨부",
@@ -1852,7 +1860,10 @@
     "pickerPromptBar": "프롬프트 바",
     "pickerFurniture": "가구",
     "demo3Desc": "AI 디자이너가 간단한 대화로 방을 에이전트 방식으로 스테이징하고 다시 디자인하는 모습을 보세요.",
-    "troubleshootingTitle": "문제 해결 및 일반적인 문제"
+    "troubleshootingTitle": "문제 해결 및 일반적인 문제",
+    "demoPickerAria": "안내 선택",
+    "topicsAria": "가이드 주제",
+    "goToStep": "{n}단계로 이동"
   },
   "pageMeta": {
     "about": {
@@ -2038,7 +2049,9 @@
       "각 영역을 자연스럽게 블렌딩하는 중…",
       "사진의 나머지를 그대로 유지하는 중…",
       "마무리 손질을 더하는 중…"
-    ]
+    ],
+    "controlsAria": "마스킹 스튜디오 컨트롤",
+    "workspaceAria": "마스킹 스튜디오 작업 영역"
   },
   "status": {
     "pageTitle": "상태 및 가동 시간 | Stagify.ai",
@@ -2194,7 +2207,8 @@
       "phoneLabel": "전화번호",
       "phoneOptional": "(선택 사항)",
       "submit": "결제 계속하기",
-      "redirecting": "Stripe로 이동 중…"
+      "redirecting": "Stripe로 이동 중…",
+      "companyPlaceholder": "회사명 주식회사"
     },
     "errors": {
       "domain": "유효한 도메인을 입력하세요(예: company.com).",
@@ -2272,7 +2286,9 @@
     "footLinks": {
       "backToFree": "무료 스테이징으로 돌아가기",
       "questions": "구매 전 궁금한 점이 있으신가요?"
-    }
+    },
+    "subscribeAria": "Stagify+ 구독",
+    "compareAria": "무료와 Stagify+ 비교"
   },
   "gallery": {
     "pageTitle": "내 갤러리 — Stagify",
@@ -2464,7 +2480,9 @@
     "stepPhotoHint": "오른쪽 작업 영역에서 사진을 올려 주세요.",
     "replacePhoto": "사진 교체",
     "stepChanges": "무엇을 바꿀까요?",
-    "enhanceHint": "변경 사항을 하나 이상 고르거나 위에 직접 적어 주세요."
+    "enhanceHint": "변경 사항을 하나 이상 고르거나 위에 직접 적어 주세요.",
+    "controlsAria": "외관 스튜디오 컨트롤",
+    "workspaceAria": "외관 스튜디오 작업 영역"
   },
   "notFound": {
     "pageTitle": "페이지를 찾을 수 없습니다 | Stagify.ai",

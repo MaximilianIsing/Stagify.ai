@@ -1095,7 +1095,8 @@
         "label": "Ervaringen van makelaars",
         "prev": "Vorige ervaring",
         "next": "Volgende ervaring"
-      }
+      },
+      "starsAria": "Beoordeeld met 5 van de 5 sterren"
     },
     "blog": {
       "title": "Van de Stagify-blog",
@@ -1659,6 +1660,12 @@
       "pro": "Stagify+",
       "proDescription": "Hogere kwaliteit, langzamer"
     },
+    "proGate": {
+      "title": "De AI-Designer is een Stagify+ functie",
+      "body": "Log in met een Stagify+ account om de chat van de AI-Designer, de geavanceerde modellen en de maskeergereedschappen te gebruiken. Gratis accounts kunnen virtuele styling op de homepagina gebruiken.",
+      "viewPlus": "Bekijk Stagify+",
+      "backToStaging": "Terug naar styling"
+    },
     "messageTag": {
       "auto": "Auto",
       "generate": "Genereren",
@@ -1669,7 +1676,8 @@
     "thumbnailStrip": {
       "label": "Basisafbeelding voor volgend bericht",
       "help": "Selecteer welke kamerafbeelding de AI moet aanpassen wanneer je je volgende bericht verstuurt, vooral bij het toevoegen van meubilair. Handig als je meerdere uploads of gestylede versies hebt.",
-      "helpAria": "Wat betekent basisafbeelding?"
+      "helpAria": "Wat betekent basisafbeelding?",
+      "selectAria": "Basisafbeelding kiezen"
     },
     "alt": {
       "uploadFile": "Voeg een bestand toe aan je bericht",
@@ -1852,7 +1860,10 @@
     "pickerPromptBar": "Prompt Bar",
     "pickerFurniture": "Meubilair",
     "demo3Desc": "Bekijk hoe AI-Designer agentisch een kamer stylet en herontwerpt vanuit een simpele chat.",
-    "troubleshootingTitle": "Probleemoplossing & veelvoorkomende problemen"
+    "troubleshootingTitle": "Probleemoplossing & veelvoorkomende problemen",
+    "demoPickerAria": "Kies een uitleg",
+    "topicsAria": "Onderwerpen van de gids",
+    "goToStep": "Ga naar stap {n}"
   },
   "pageMeta": {
     "about": {
@@ -2038,7 +2049,9 @@
       "Elk gebied inpassen…",
       "De rest van de foto onaangeroerd houden…",
       "De laatste hand aanleggen…"
-    ]
+    ],
+    "controlsAria": "Bediening van de Maskeerstudio",
+    "workspaceAria": "Werkruimte van de Maskeerstudio"
   },
   "status": {
     "pageTitle": "Status & Uptime | Stagify.ai",
@@ -2194,7 +2207,8 @@
       "phoneLabel": "Telefoonnummer",
       "phoneOptional": "(optioneel)",
       "submit": "Doorgaan naar betaling",
-      "redirecting": "Doorverwijzen naar Stripe…"
+      "redirecting": "Doorverwijzen naar Stripe…",
+      "companyPlaceholder": "Bedrijf B.V."
     },
     "errors": {
       "domain": "Voer een geldig domein in (bijv. company.com).",
@@ -2272,7 +2286,9 @@
     "footLinks": {
       "backToFree": "Terug naar gratis staging",
       "questions": "Vragen voordat je koopt?"
-    }
+    },
+    "subscribeAria": "Abonneren op Stagify+",
+    "compareAria": "Vergelijking van Gratis en Stagify+"
   },
   "gallery": {
     "pageTitle": "Jouw galerij — Stagify",
@@ -2464,7 +2480,9 @@
     "stepPhotoHint": "Upload een foto in het werkgebied rechts.",
     "replacePhoto": "Foto vervangen",
     "stepChanges": "Wat moet er veranderen?",
-    "enhanceHint": "Kies minstens één wijziging, of beschrijf er één hierboven."
+    "enhanceHint": "Kies minstens één wijziging, of beschrijf er één hierboven.",
+    "controlsAria": "Bediening van de Buitenstudio",
+    "workspaceAria": "Werkruimte van de Buitenstudio"
   },
   "notFound": {
     "pageTitle": "Pagina niet gevonden | Stagify.ai",

@@ -34,6 +34,40 @@ import { createAnalystTools } from './analyst-tools.js';
  */
 const MAX_ROUNDS = 6;
 
+/**
+ * How many messages of the transcript are posted.
+ *
+ * The route rejects a longer body outright, and a long session would otherwise
+ * start failing for a reason that has nothing to do with the question. Trimming
+ * naively is safe: the server prunes any tool reply the cut separates from the
+ * assistant turn that requested it, so that rule lives in one place rather than
+ * being mirrored (and drifting) here.
+ */
+const MAX_POSTED_MESSAGES = 40;
+
+/**
+ * Why there is no answer, in words rather than a code.
+ *
+ * At module scope, not inside the closure below, because it is pure and it is the
+ * part of this file a test can actually pin.
+ *
+ * @param {string|undefined} reason
+ * @returns {string}
+ */
+export function reasonText(reason) {
+  if (reason === 'unavailable') {
+    return 'No model is configured on this deployment, so the analyst cannot run. Every finding on the Signals '
+      + 'tab is computed in your browser and is unaffected.';
+  }
+  if (reason === 'no-messages') return 'There was nothing to send.';
+  if (reason === 'truncated') {
+    return 'The model ran out of room before it finished answering. Ask for one thing at a time, or narrow the '
+      + 'date range.';
+  }
+  if (reason === 'empty') return 'The model returned nothing. Try asking again, or more specifically.';
+  return 'The analyst could not answer that. The dashboard itself is unaffected.';
+}
+
 /** Openers, shown on an empty drawer. Written as questions the tab cannot answer. */
 const SUGGESTIONS = [
   'What changed in the last week, and is it real?',
@@ -143,17 +177,6 @@ export function createAnalyst({ ctx, apiSend, currentFindings, effectivePlan }) 
 
   // ── The loop ──────────────────────────────────────────────────────────────
 
-  /** Why there is no answer, in words rather than a code. */
-  function reasonText(reason) {
-    if (reason === 'unavailable') {
-      return 'No model is configured on this deployment, so the analyst cannot run. Every finding on the Signals '
-        + 'tab is computed in your browser and is unaffected.';
-    }
-    if (reason === 'no-messages') return 'There was nothing to send.';
-    if (reason === 'empty') return 'The model returned nothing. Try asking again, or more specifically.';
-    return 'The analyst could not answer that. The dashboard itself is unaffected.';
-  }
-
   /**
    * Run one question to completion.
    *
@@ -178,7 +201,7 @@ export function createAnalyst({ ctx, apiSend, currentFindings, effectivePlan }) 
 
     try {
       for (let round = 0; round < MAX_ROUNDS; round++) {
-        const res = await apiSend('/api/admin/analyst', 'POST', { messages: s.messages });
+        const res = await apiSend('/api/admin/analyst', 'POST', { messages: s.messages.slice(-MAX_POSTED_MESSAGES) });
 
         if (res && Array.isArray(res.toolCalls) && res.toolCalls.length) {
           // Replay the assistant's request into the transcript verbatim — the tool

@@ -28,7 +28,7 @@
       "heading": "Brand kit",
       "body": "These are the official files. Use them to refer to Stagify.ai without asking. Please do not redraw the mark or imply we endorse your product.",
       "marksLabel": "Product marks",
-      "marksHint": "One mark on four fields. The drawing never changes — only what sits behind it does. Every file is PNG unless marked SVG; the numbers are pixels.",
+      "marksHint": "One mark on four fields. The drawing never changes; only what sits behind it does. Every file is PNG unless marked SVG; the numbers are pixels.",
       "marks": {
         "core": "The product and the company. Use this one if in doubt.",
         "plus": "The subscription. Gold field, same drawing.",
@@ -57,12 +57,12 @@
       },
       "paletteNote": "The gold of the Stagify+ field and the navy behind Enterprise and the API belong to those artworks, not to the palette. Take them from the files rather than repainting the blue mark.",
       "typeLabel": "Typography",
-      "typeBody": "The site is set in <a href=\"https://rsms.me/inter/\" rel=\"nofollow noopener noreferrer\" target=\"_blank\">Inter</a> at 400, 600 and 700 — free, and also on Google Fonts. There is no vector wordmark: set the name as type rather than scaling up a PNG of it. Where Inter is unavailable, any neutral grotesque is fine; we fall back to the system stack ourselves.",
+      "typeBody": "The site is set in <a href=\"https://rsms.me/inter/\" rel=\"nofollow noopener noreferrer\" target=\"_blank\">Inter</a> at 400, 600 and 700. It is free, and also on Google Fonts. There is no vector wordmark: set the name as type rather than scaling up a PNG of it. Where Inter is unavailable, any neutral grotesque is fine; we fall back to the system stack ourselves.",
       "spaceLabel": "Clear space and minimum size",
-      "spaceBody": "Keep a margin around the mark of at least the height of the S, and put nothing inside it. Do not go below 24px on screen or 8mm in print — use the 32px file rather than shrinking a larger one.",
+      "spaceBody": "Keep a margin around the mark of at least the height of the S, and put nothing inside it. Do not go below 24px on screen or 8mm in print. Use the 32px file rather than shrinking a larger one.",
       "namingLabel": "Writing the name",
       "naming": {
-        "one": "Stagify.ai is one word, capital S, lowercase .ai — not “Stagify AI”, “Stageify” or “STAGIFY”.",
+        "one": "Stagify.ai is one word, capital S, lowercase .ai, not “Stagify AI”, “Stageify” or “STAGIFY”.",
         "two": "The products are Stagify+ (no space before the plus), Stagify Enterprise, and the Stagify API.",
         "three": "After the first mention, plain “Stagify” is fine in running text."
       },
@@ -1095,7 +1095,8 @@
         "label": "Agent testimonials",
         "prev": "Previous testimonial",
         "next": "Next testimonial"
-      }
+      },
+      "starsAria": "Rated 5 out of 5 stars"
     },
     "blog": {
       "title": "From the Stagify blog",
@@ -1659,6 +1660,12 @@
       "pro": "Stagify+",
       "proDescription": "Higher quality, slower"
     },
+    "proGate": {
+      "title": "AI Designer is a Stagify+ feature",
+      "body": "Sign in with a Stagify+ account to use the AI Designer chat, advanced models, and masking tools. Free accounts can use virtual staging on the home page.",
+      "viewPlus": "View Stagify+",
+      "backToStaging": "Back to staging"
+    },
     "messageTag": {
       "auto": "Auto",
       "generate": "Generate",
@@ -1669,7 +1676,8 @@
     "thumbnailStrip": {
       "label": "Base image for next message",
       "help": "Select which room image the AI should modify when you send your next message, especially when adding furniture. Helpful when you have several uploads or staged versions.",
-      "helpAria": "What does base image mean?"
+      "helpAria": "What does base image mean?",
+      "selectAria": "Select base image"
     },
     "alt": {
       "uploadFile": "Attach a file to your message",
@@ -1852,7 +1860,10 @@
     "pickerPromptBar": "Prompt Bar",
     "pickerFurniture": "Furniture",
     "demo3Desc": "Watch AI Designer agentically stage and redesign a room from a simple chat.",
-    "troubleshootingTitle": "Troubleshooting & common issues"
+    "troubleshootingTitle": "Troubleshooting & common issues",
+    "demoPickerAria": "Choose a walkthrough",
+    "topicsAria": "Guide topics",
+    "goToStep": "Go to step {n}"
   },
   "pageMeta": {
     "about": {
@@ -2038,7 +2049,9 @@
       "Blending each area in…",
       "Keeping the rest of the photo untouched…",
       "Adding finishing touches…"
-    ]
+    ],
+    "controlsAria": "Masking Studio controls",
+    "workspaceAria": "Masking Studio workspace"
   },
   "status": {
     "pageTitle": "Status & Uptime | Stagify.ai",
@@ -2194,7 +2207,8 @@
       "phoneLabel": "Phone number",
       "phoneOptional": "(optional)",
       "submit": "Continue to payment",
-      "redirecting": "Redirecting to Stripe…"
+      "redirecting": "Redirecting to Stripe…",
+      "companyPlaceholder": "Company Inc."
     },
     "errors": {
       "domain": "Please enter a valid domain (e.g. company.com).",
@@ -2272,7 +2286,9 @@
     "footLinks": {
       "backToFree": "Back to free staging",
       "questions": "Questions before you buy?"
-    }
+    },
+    "subscribeAria": "Subscribe to Stagify+",
+    "compareAria": "Free vs Stagify+ comparison"
   },
   "gallery": {
     "pageTitle": "Your gallery — Stagify",
@@ -2464,7 +2480,9 @@
     "stepPhotoHint": "Upload a photo in the workspace on the right.",
     "replacePhoto": "Replace photo",
     "stepChanges": "What should change?",
-    "enhanceHint": "Pick at least one change, or describe one above."
+    "enhanceHint": "Pick at least one change, or describe one above.",
+    "controlsAria": "Exterior Studio controls",
+    "workspaceAria": "Exterior Studio workspace"
   },
   "notFound": {
     "pageTitle": "Page not found | Stagify.ai",
