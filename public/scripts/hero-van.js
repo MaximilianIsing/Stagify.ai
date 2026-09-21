@@ -5,9 +5,9 @@
  * the lantern comes on, the front door swings open and an up-arrow glows in the hallway.
  * Leave and it all reverses: door first, then the van pulls away. The whole sequence is
  * CSS (styles/hero-picker.css, `#hero-upload.hu`); this file puts the right SVG inside
- * the button, swaps it when the hero picker changes furniture style — each of the eight
- * styles is drawn as a different house, see STYLE_HOUSE in hero-van-art.js — and sets three
- * state classes the CSS reads: `.hu-out` (the pointer left; drive on, off the right edge),
+ * the button, swaps the house when the hero picker changes furniture style — each of the
+ * eight styles is drawn as a different house, see STYLE_HOUSE in hero-van-art.js — and sets
+ * three state classes the CSS reads: `.hu-out` (the pointer left; drive on, off the right edge),
  * `.hu-quick` (it left mid-drive; skip the leave delays) and `.hu-hold` (a click opened a
  * modal over the button; keep the end state until it closes).
  *
@@ -25,7 +25,7 @@
  * The cost is one ~30 KB module pair in the early window; index.html modulepreloads
  * hero-van-art.js so the two fetch in parallel rather than in series. ONE plate is built
  * at mount; the other seven are built the first time the picker asks for them and
- * cached, so a style change costs one string build and one innerHTML.
+ * cached, so a style change costs one string build and one off-document parse.
  *
  * THE PICKER TELLS US, WE DO NOT ASK. scripts/hero-picker.js owns the style state and has
  * no imports (by design — it must run before app.js's graph). It publishes the current
@@ -66,6 +66,25 @@ const OUT_MAX_MS = 1600;
  * prefers-reduced-motion nothing animates, so nothing ends.
  */
 const OUT_SLACK_MS = 450;
+
+/**
+ * A style change is a "rolling road": the two houses slide off to the left at their
+ * parallax depths while the new ones slide in from the right, the road's dashes roll under
+ * them, and the skyline and the lamp-side tree crossfade. Sky, stars, road and van stay
+ * where they are — the van in particular, so a drive in progress is never cut. This is the
+ * CSS duration (`--hu-swap-ms`), for the fallback timer that ends the swap if no
+ * animationend arrives.
+ */
+const SWAP_MS = 950;
+const SWAP_SLACK_MS = 150;
+
+/**
+ * The bands a style swap replaces, top-level children of the scene <svg>, in depth order.
+ * `.skyline` (the far skyline; the stars are a separate `.far` and stay), `.mid`, `.home`
+ * and `.props` (lamp and tree). What is NOT here — sky, stars, road, van — is kept from the
+ * old scene.
+ */
+const SWAP_BANDS = ['.skyline', '.mid', '.home', '.props'];
 
 /**
  * A motion segment as the CSS plays it: a translateX from `from` to `to` over `ms` on the
@@ -196,7 +215,7 @@ export function buildScene(styleKey, seq = 0) {
     `<g class="mid">${house(140, 66, false)}</g>` +
     `<g class="home">${house(276, 100, true)}${ENT(k)}</g>` +
     ROAD +
-    `<g class="near">${LAMP(200)}${tree}</g>` +
+    `<g class="near props">${LAMP(200)}${tree}</g>` +
     `<g class="van">${BEAM}${VAN()}</g>` +
     `</svg>`
   );
@@ -234,11 +253,75 @@ export function initHeroVan(doc = document, win = window) {
     return html;
   }
 
-  /** @param {string} key */
+  /** The bands of the outgoing style, while they slide off; emptied by finishSwap(). */
+  /** @type {Element[]} */
+  let leaving = [];
+  /** The incoming bands, carrying `.hu-in` until the swap ends. */
+  /** @type {Element[]} */
+  let entering = [];
+  let swapTimer = 0;
+
+  /** End the swap now: drop the old bands, settle the new ones, stop the road. Idempotent. */
+  function finishSwap() {
+    if (!leaving.length && !entering.length) return;
+    for (const el of leaving) el.remove();
+    for (const el of entering) el.classList.remove('hu-in');
+    leaving = [];
+    entering = [];
+    btn.classList.remove('hu-swap');
+    if (swapTimer && win.clearTimeout) win.clearTimeout(swapTimer);
+    swapTimer = 0;
+  }
+
+  const reducedMotion = () => !!(win.matchMedia && win.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+  /**
+   * Show the house for `key`.
+   *
+   * The first paint, and every change under prefers-reduced-motion, is a plain rebuild of
+   * the scene. A later change on a mounted scene is the rolling-road swap instead: the new
+   * scene is built off-document and only its SWAP_BANDS are grafted into the live <svg>,
+   * each right after its outgoing counterpart (so depth order holds), with `.hu-in` on the
+   * new band and `.hu-leave` on the old; `.hu-swap` on the button rolls the road. The CSS
+   * plays the slides and fades; `animationend` of the home's slide-in (or the fallback
+   * timer) ends the swap. A change that lands mid-swap finishes the running one first, so
+   * the same house is never on the street twice — its entrance clip ids are per build, and
+   * a cached build reuses them.
+   * @param {string} key
+   */
   function setStyle(key) {
     if (key === current) return;
+    const mounted = !!current;
     current = key;
-    scene.innerHTML = markupFor(key);
+    finishSwap();
+    const svg = mounted ? scene.querySelector('svg') : null;
+    if (!svg || reducedMotion()) {
+      scene.innerHTML = markupFor(key);
+      return;
+    }
+    const holder = doc.createElement('div');
+    holder.innerHTML = markupFor(key);
+    const next = holder.querySelector('svg');
+    if (!next) {
+      scene.innerHTML = markupFor(key);
+      return;
+    }
+    for (const sel of SWAP_BANDS) {
+      const from = svg.querySelector(':scope > ' + sel);
+      const to = next.querySelector(':scope > ' + sel);
+      if (!from || !to) continue;
+      from.classList.add('hu-leave');
+      to.classList.add('hu-in');
+      svg.insertBefore(to, from.nextSibling);
+      leaving.push(from);
+      entering.push(to);
+    }
+    if (!entering.length) {
+      scene.innerHTML = markupFor(key);
+      return;
+    }
+    btn.classList.add('hu-swap');
+    if (win.setTimeout) swapTimer = win.setTimeout(finishSwap, SWAP_MS + SWAP_SLACK_MS);
   }
 
   // The picker's tag precedes ours, so its current pick is already on the stage element.
@@ -252,9 +335,6 @@ export function initHeroVan(doc = document, win = window) {
     const key = /** @type {CustomEvent<{ style?: string }>} */ (ev).detail?.style;
     if (typeof key !== 'string' || !key || key === current) return;
     setStyle(key);
-    // The rebuild threw away the van that was driving out, and a detached element's
-    // animationcancel never reaches us — so end the drive-out here.
-    outDone();
   });
 
   // "Out": the van never reverses — it arrives from the left and leaves to the right, off
@@ -384,9 +464,13 @@ export function initHeroVan(doc = document, win = window) {
     btn.classList.add('hu-park');
   };
   btn.addEventListener('animationend', (ev) => {
-    if (/** @type {AnimationEvent} */ (ev).animationName === 'hu-drive-out') outDone();
+    const name = /** @type {AnimationEvent} */ (ev).animationName;
+    if (name === 'hu-drive-out') outDone();
+    // The home's slide-in is the longest leg of a style swap, so its end is the swap's end.
+    if (name === 'hu-home-in') finishSwap();
   });
-  // A style swap rebuilds the scene mid-animation, which cancels it without an end event.
+  // A style swap keeps the van, so nothing rebuilds the scene mid-drive any more; kept as
+  // a safety net, since a cancelled drive-out that never clears `.hu-out` freezes the hover.
   btn.addEventListener('animationcancel', (ev) => {
     if (/** @type {AnimationEvent} */ (ev).animationName === 'hu-drive-out') outDone();
   });

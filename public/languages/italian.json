@@ -904,7 +904,8 @@
           "body": "Quasi tutti gli acquirenti iniziano online, quindi le foto del tuo annuncio sono la vera prima visita. Le stanze vuote o datate sono difficili da interpretare; non si riesce a valutare le proporzioni né a immaginarsi di viverci. Lo staging dà a ogni stanza uno scopo chiaro e un richiamo, ed è per questo che gli agenti vi si affidano da sempre.",
           "p1": "Le stanze vuote in foto sembrano più piccole e fredde di quanto siano",
           "p2": "Lo staging mostra l’uso previsto di ogni spazio",
-          "p3": "Foto migliori generano più clic, salvataggi e visite"
+          "p3": "Foto migliori generano più clic, salvataggi e visite",
+          "photoAlt": "Il fondatore di Stagify.ai mostra il prodotto in un ufficio immobiliare Compass"
         },
         "how": {
           "eyebrow": "Come funziona",
@@ -913,7 +914,8 @@
           "body": "Carica una foto, scegli il tipo di stanza e uno dei sette stili, e Stagify la arreda in circa otto secondi. Servono modifiche? Rimuovi i mobili esistenti, aggiungi un’istruzione personalizzata o maschera un’area per regolarla senza ricominciare.",
           "p1": "7 stili più istruzioni personalizzate e rimozione dei mobili",
           "p2": "Modifica con maschera qualsiasi parte di un risultato senza rifarlo",
-          "p3": "Pieni diritti d’autore, tuoi da usare sull’MLS o nelle inserzioni"
+          "p3": "Pieni diritti d’autore, tuoi da usare sull’MLS o nelle inserzioni",
+          "photoAlt": "Presentazione di Stagify.ai davanti a una sala di agenti immobiliari"
         },
         "who": {
           "eyebrow": "A chi è rivolto",
@@ -922,7 +924,8 @@
           "body": "Gli agenti promuovono ogni annuncio in pochi minuti invece di aspettare una squadra di staging. I venditori arredano le proprie foto senza assumere nessuno. Gli acquirenti vedono in anteprima una ristrutturazione prima di impegnarsi. E con il Designer IA puoi trasformare una piantina in una vista arredata dall’alto, oppure entrare in una stanza qualsiasi per un render fotorealistico.",
           "p1": "Agenti: pubblica prima e concludi di più",
           "p2": "Venditori e acquirenti: nessun software, nessun designer necessario",
-          "p3": "Designer IA: staging autonomo delle stanze"
+          "p3": "Designer IA: staging autonomo delle stanze",
+          "photoAlt": "Un membro del team Stagify.ai allestisce le foto di un cliente su un portatile"
         },
         "team": {
           "eyebrow": "Cosa eviti",
@@ -931,7 +934,8 @@
           "body": "Non c’è alcun software da installare e niente da imparare. Chiunque nel team può aprire Stagify nel browser, caricare la foto di un annuncio e farla arredare in pochi secondi, sia da un laptop in ufficio sia da un telefono sul campo.",
           "p1": "Nessuna competenza di design o software necessari",
           "p2": "Funziona in qualsiasi browser, su qualsiasi dispositivo",
-          "p3": "Ogni agente può arredare i propri annunci"
+          "p3": "Ogni agente può arredare i propri annunci",
+          "photoAlt": "Il fondatore di Stagify.ai presenta davanti a un ufficio pieno di agenti immobiliari"
         }
       }
     },
@@ -1458,7 +1462,8 @@
   },
   "common": {
     "close": "Chiudi",
-    "selectLanguage": "Seleziona lingua"
+    "selectLanguage": "Seleziona lingua",
+    "onLinkedIn": "su LinkedIn"
   },
   "footer": {
     "privacy": "Informativa sulla privacy",

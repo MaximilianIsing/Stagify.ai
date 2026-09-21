@@ -397,16 +397,17 @@ function wireNarLegend(card) {
 
   let pinned = "";
 
-  /** @param {string} key the segment to light, or "" for none */
-  function light(key) {
+  /** @param {string|string[]} keys the segment(s) to light, or "" for none */
+  function light(keys) {
+    const lit = Array.isArray(keys) ? keys : keys ? [keys] : [];
     // `data-nar-focus` on the card is the hook the CSS dims everything else off.
-    if (key) card.setAttribute("data-nar-focus", key);
+    if (lit.length) card.setAttribute("data-nar-focus", lit.join(" "));
     else card.removeAttribute("data-nar-focus");
     buttons.forEach((btn) => {
-      btn.classList.toggle("is-lit", Boolean(key) && btn.getAttribute("data-nar-key") === key);
+      btn.classList.toggle("is-lit", lit.includes(btn.getAttribute("data-nar-key")));
     });
     segments.forEach((seg, segKey) => {
-      seg.classList.toggle("is-lit", Boolean(key) && segKey === key);
+      seg.classList.toggle("is-lit", lit.includes(segKey));
     });
   }
 
@@ -448,6 +449,19 @@ function wireNarLegend(card) {
       light(pinned);
     });
   });
+
+  // The "68% of agents already use AI" note covers everyone but "not yet", i.e. the
+  // three left-hand segments, so hovering it lights all three at once.
+  const usedKeys = ["daily", "weekly", "monthly"].filter((key) => segments.has(key));
+  const note = card.querySelector(".nar-usage__note");
+  if (note && usedKeys.length) {
+    note.addEventListener("pointerenter", () => {
+      if (!pinned) light(usedKeys);
+    });
+    note.addEventListener("pointerleave", () => {
+      if (!pinned) light("");
+    });
+  }
 }
 
 function initNarChart() {

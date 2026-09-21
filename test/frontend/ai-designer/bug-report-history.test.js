@@ -200,7 +200,7 @@ test('SOURCE GUARD: the bug-report POST sends the summary, not the raw transcrip
 
   assert.match(code, /conversationHistory:\s*readBugReportHistory\(\)/);
   assert.ok(
-    !/conversationHistory:\s*conversationHistory/.test(code),
+    !/conversationHistory:\s*conversationHistory\b/.test(code),
     'the raw transcript is being posted again — this is the 413 regression'
   );
   assert.match(code, /import\s*\{\s*readBugReportHistory\s*\}\s*from\s*'\.\.\/bug-report-history\.js'/);

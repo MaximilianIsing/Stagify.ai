@@ -59,13 +59,16 @@ export const BEAM=`<defs><radialGradient id="lens" cx=".4" cy=".35" r=".8"><stop
   <g class="beam"><path d="M92 48.5L110 44v22L92 52z" fill="url(#hl)"/><ellipse cx="103" cy="66" rx="11" ry="2" fill="#ffe4a8" opacity=".18"/></g>`;
 export const SKY=(id)=>`<defs><linearGradient id="sky${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1e2c58"/><stop offset=".55" stop-color="#14203f"/><stop offset="1" stop-color="#0a1120"/></linearGradient></defs><rect width="376" height="74" fill="url(#sky${id})"/>`;
 export const STARS=`<g class="far" fill="#fff"><circle class="twinkle" cx="44" cy="10" r=".9"/><circle class="twinkle" cx="92" cy="18" r=".7"/><circle class="twinkle" cx="140" cy="8" r="1"/><circle class="twinkle" cx="196" cy="14" r=".8"/><circle class="twinkle" cx="262" cy="7" r=".9"/><circle class="twinkle" cx="330" cy="15" r=".8"/><circle class="twinkle" cx="300" cy="5" r=".6"/><circle class="twinkle" cx="232" cy="20" r=".6"/></g>`;
-const CITY=`<g class="far">
+const CITY=`<g class="far skyline">
   <g fill="#1a2650"><path d="M0 50h10v24H0zM14 44h8v30h-8zM26 40h6v34h-6zM36 46h12v28H36zM52 38h6v36h-6zM62 48h10v26H62zM76 42h8v32h-8zM88 36h5v38h-5zM96 46h12v28H96zM112 52h60v22h-60zM176 44h9v30h-9zM188 38h6v36h-6zM198 48h10v26h-10zM214 52h8v22h-8z"/>
     <path d="M116 52c10-10 20-10 30 0M146 52c8-8 16-8 26 0" fill="none" stroke="#2b3d72" stroke-width="1.2"/></g>
   <g fill="${GOLD}" opacity=".45"><rect x="16" y="48" width="2" height="2"/><rect x="19" y="52" width="2" height="2"/><rect x="38" y="50" width="2" height="2"/><rect x="44" y="54" width="2" height="2"/><rect x="64" y="52" width="2" height="2"/><rect x="78" y="46" width="2" height="2"/><rect x="98" y="50" width="2" height="2"/><rect x="104" y="56" width="2" height="2"/><rect x="180" y="48" width="2" height="2"/><rect x="200" y="52" width="2" height="2"/></g>
   <circle class="twinkle" cx="54" cy="37" r="1" fill="#ff6b6b"/><circle class="twinkle" cx="90.5" cy="35" r="1" fill="#ff6b6b"/><circle class="twinkle" cx="191" cy="37" r="1" fill="#ff6b6b"/>
   <g fill="#c8d8ff" opacity=".25"><circle cx="120" cy="52" r=".8"/><circle cx="130" cy="47" r=".8"/><circle cx="140" cy="47" r=".8"/><circle cx="150" cy="52" r=".8"/></g></g>`;
-export const ROAD=`<g class="near"><rect y="66" width="376" height="8" fill="#080d1c"/><rect y="65" width="376" height="1.4" fill="#2a3a63"/><path d="M0 70h376" stroke="#1a2547" stroke-width=".8" stroke-dasharray="6 8"/></g>`;
+/* `.road` is the one near band a style swap keeps (the road is the same on every street); its
+   dashes roll during the swap (`.road-dash`, styles/hero-picker.css `hu-road-roll`). The path
+   runs 2 units past each edge so a 378-unit roll, 27 dash periods, lands the pattern on itself. */
+export const ROAD=`<g class="near road"><rect x="-2" y="66" width="380" height="8" fill="#080d1c"/><rect x="-2" y="65" width="380" height="1.4" fill="#2a3a63"/><path class="road-dash" d="M-2 70h380" stroke="#1a2547" stroke-width=".8" stroke-dasharray="6 8"/></g>`;
 export const LAMP=(x)=>`<path d="M${x} 22v44" stroke="#33436f" stroke-width="2.4"/><path d="M${x-5} 22h10l-2-6h-6z" fill="${GOLD}" opacity=".9"/><ellipse cx="${x}" cy="66" rx="22" ry="4.5" fill="${GOLD}" opacity=".1"/>`;
 export const TREE=(x)=>`<path d="M${x} 66c-9-13-9-24 0-36 9 12 9 23 0 36z" fill="#1c3550" opacity=".85"/>`;
 /* a lit window with a frame, sill and curtains. cls lets it be lit-on-hover or always on */
@@ -89,7 +92,10 @@ export const DOOR = {
 
 const EX=322, EY=66-44*38/46, ES=38/46;           // entrance origin + scale
 let entN=0;
-export const ENT=(k)=>`<svg class="ent" data-k="${k}" overflow="visible" x="${EX}" y="${EY}" width="38" height="${44*38/46}" viewBox="0 0 46 44">${DOOR[k].replace(/^<svg[^>]*>/,'').replace(/<\/svg>\s*$/,'').replace(/__CID__/g,'clip'+(entN++))}</svg>`;
+/* Each DOOR string is `<defs>…</defs><svg viewBox="0 0 46 44">…</svg>`: its own <svg> wrapper is
+   dropped (wherever it sits, since the defs come first) and its content drawn straight in this
+   one, which has the same viewBox. */
+export const ENT=(k)=>`<svg class="ent" data-k="${k}" overflow="visible" x="${EX}" y="${EY}" width="38" height="${44*38/46}" viewBox="0 0 46 44">${DOOR[k].replace(/<svg[^>]*>/,'').replace(/<\/svg>\s*$/,'').replace(/__CID__/g,'clip'+(entN++))}</svg>`;
 /* brick / clapboard courses aligned to the entrance art's own courses (local start+6k, scaled) */
 const COURSES=(x,w,y0,y1,localStart,stroke,op=.7)=>{let d='';for(let l=localStart;l<200;l+=6){const y=EY+l*ES;if(y>y1)break;if(y>=y0)d+=`M${x} ${y.toFixed(1)}h${w}`;}for(let l=localStart-6;l>-200;l-=6){const y=EY+l*ES;if(y<y0)break;if(y<=y1)d+=`M${x} ${y.toFixed(1)}h${w}`;}return `<path d="${d}" stroke="${stroke}" stroke-width=".6" opacity="${op}"/>`;};
 const W=(x,y,op=.8)=>WIN(x,y,8,10,'lit',op);
@@ -292,33 +298,33 @@ H.mediterranean=(x,w,e)=>{
 
 /* ------------------------------------------------------------------ far backgrounds */
 export const FAR = {};
-FAR.victorian=`<g class="far"><g fill="#18213f"><path d="M0 36l10-6 10 6v30H0zM20 36l10-6 10 6v30H20zM40 36l10-6 10 6v30H40zM60 36l10-6 10 6v30H60zM80 36l10-6 10 6v30H80zM100 36l10-6 10 6v30h-20zM120 36l10-6 10 6v30h-20zM140 36l10-6 10 6v30h-20zM160 36l10-6 10 6v30h-20zM180 36l10-6 10 6v30h-20zM200 36l10-6 10 6v30h-20z"/></g>
+FAR.victorian=`<g class="far skyline"><g fill="#18213f"><path d="M0 36l10-6 10 6v30H0zM20 36l10-6 10 6v30H20zM40 36l10-6 10 6v30H40zM60 36l10-6 10 6v30H60zM80 36l10-6 10 6v30H80zM100 36l10-6 10 6v30h-20zM120 36l10-6 10 6v30h-20zM140 36l10-6 10 6v30h-20zM160 36l10-6 10 6v30h-20zM180 36l10-6 10 6v30h-20zM200 36l10-6 10 6v30h-20z"/></g>
   <g fill="#1f2a4c"><rect x="12" y="26" width="3" height="6"/><rect x="52" y="26" width="3" height="6"/><rect x="92" y="26" width="3" height="6"/><rect x="132" y="26" width="3" height="6"/><rect x="172" y="26" width="3" height="6"/><rect x="212" y="26" width="3" height="6"/></g>
   <g fill="${GOLD}" opacity=".4"><rect x="6" y="40" width="3" height="3"/><rect x="34" y="42" width="3" height="3"/><rect x="66" y="40" width="3" height="3"/><rect x="86" y="44" width="3" height="3"/><rect x="126" y="41" width="3" height="3"/><rect x="154" y="43" width="3" height="3"/><rect x="186" y="40" width="3" height="3"/></g></g>`;
 FAR.modern=CITY;
-FAR.colonial=`<g class="far"><path d="M0 46L40 22l30 14 26-18 40 22 30-14 40 20 40-16 30 12 32-10 40 14v40H0z" fill="#182541"/>
+FAR.colonial=`<g class="far skyline"><path d="M0 46L40 22l30 14 26-18 40 22 30-14 40 20 40-16 30 12 32-10 40 14v40H0z" fill="#182541"/>
   
   <g fill="#0f1a33">${Array.from({length:26},(_,i)=>`<path d="M${i*14+2} 66l6-18 6 18z"/>`).join('')}</g><g fill="#132040">${Array.from({length:25},(_,i)=>`<path d="M${i*14+9} 66l6-14 6 14z"/>`).join('')}</g></g>`;
-FAR.mediterranean=`<g class="far"><rect y="40" width="376" height="26" fill="#0f2a4a"/><path d="M0 40h376" stroke="#2a4a7a" stroke-width="1"/>
+FAR.mediterranean=`<g class="far skyline"><rect y="40" width="376" height="26" fill="#0f2a4a"/><path d="M0 40h376" stroke="#2a4a7a" stroke-width="1"/>
   <g stroke="#2a4a7a" stroke-width=".7" opacity=".7"><path d="M20 46h30M70 50h20M120 44h40M180 52h26M230 46h30M300 50h20"/></g>
   <path d="M60 40v-14h6v14z" fill="#1c2748"/><path d="M58 26h10l-1-3h-8z" fill="#1c2748"/><circle class="twinkle" cx="63" cy="24" r="1.6" fill="#fff"/><circle class="twinkle" cx="63" cy="24" r="5" fill="#fff" opacity=".14"/>
   <g fill="#1c2748"><path d="M140 40h24l-3 4h-18zM150 40V24l6 16zM300 42h18l-2 3h-14zM308 42V30l4 12z"/></g>
   <circle cx="230" cy="14" r="6" fill="#fff4de" opacity=".85"/><circle cx="230" cy="14" r="10" fill="#fff4de" opacity=".12"/>
   <path d="M226 40c2 4 6 4 8 0M270 46c2 4 6 4 8 0M186 44c2 4 6 4 8 0" stroke="#fff" stroke-opacity=".25" stroke-width=".8" fill="none"/></g>`;
-FAR.farmhouse=`<g class="far"><path d="M0 44C60 36 120 38 190 34s120 2 186 4v30H0z" fill="#16243a"/>
+FAR.farmhouse=`<g class="far skyline"><path d="M0 44C60 36 120 38 190 34s120 2 186 4v30H0z" fill="#16243a"/>
   <path d="M0 52C70 46 140 50 210 44s110 4 166 2v22H0z" fill="#12203a"/>
   <g fill="#0f1a2e">${Array.from({length:14},(_,i)=>`<circle cx="${i*15+12}" cy="${42-(i%3)*2}" r="${5+(i%2)*2}"/>`).join('')}</g>
   <g transform="translate(110,0)"><path d="M0 52V38l10-8 10 8v14z" fill="#7a2a24"/><path d="M0 38l10-8 10 8z" fill="#2b2f3a"/><rect x="7" y="44" width="6" height="8" fill="#3a1a16"/><path d="M7 44l6 8M13 44l-6 8" stroke="#c9a" stroke-width=".6" opacity=".6"/><rect x="24" y="30" width="7" height="22" rx="1" fill="#8a8f9a"/><path d="M23 30a4.5 3 0 0 1 9 0z" fill="#9aa0aa"/></g>
   <g stroke="#3a4a63" stroke-width=".8"><path d="M0 60h376"/><path d="${Array.from({length:32},(_,i)=>`M${i*12} 58v4`).join('')}"/></g></g>`;
-FAR.georgian=`<g class="far"><g fill="#1a2650"><path d="M0 50h10v24H0zM14 44h8v30h-8zM26 40h6v34h-6zM36 46h12v28H36zM52 38h6v36h-6zM62 48h10v26H62zM76 42h8v32h-8zM88 36h5v38h-5zM96 46h12v28H96zM114 44h9v30h-9zM128 38h6v36h-6zM138 48h10v26h-10z"/>
+FAR.georgian=`<g class="far skyline"><g fill="#1a2650"><path d="M0 50h10v24H0zM14 44h8v30h-8zM26 40h6v34h-6zM36 46h12v28H36zM52 38h6v36h-6zM62 48h10v26H62zM76 42h8v32h-8zM88 36h5v38h-5zM96 46h12v28H96zM114 44h9v30h-9zM128 38h6v36h-6zM138 48h10v26h-10z"/>
   <path d="M160 52h36v22h-36z"/><path d="M160 52a18 14 0 0 1 36 0z" fill="#22305f"/><rect x="176" y="26" width="4" height="12"/><path d="M178 26l-4 4h8z" fill="#22305f"/><circle cx="178" cy="24" r="1.5" fill="${GOLD}" opacity=".9"/>
   <path d="M204 48h6v26h-6zM214 42h8v32h-8zM226 50h10v24h-10z"/></g>
   <g fill="${GOLD}" opacity=".45"><rect x="16" y="48" width="2" height="2"/><rect x="38" y="50" width="2" height="2"/><rect x="64" y="52" width="2" height="2"/><rect x="78" y="46" width="2" height="2"/><rect x="98" y="50" width="2" height="2"/><rect x="116" y="48" width="2" height="2"/><rect x="130" y="44" width="2" height="2"/><rect x="216" y="46" width="2" height="2"/><rect x="228" y="54" width="2" height="2"/></g>
   <circle class="twinkle" cx="54" cy="37" r="1" fill="#ff6b6b"/><circle class="twinkle" cx="90.5" cy="35" r="1" fill="#ff6b6b"/></g>`;
-FAR.craftsman=`<g class="far"><path d="M0 50C40 30 90 28 130 40s90 8 130-6 80-4 116 4v30H0z" fill="#1a2140"/><path d="M0 56C60 46 120 48 180 44s120 0 196 6v20H0z" fill="#151c38"/>
+FAR.craftsman=`<g class="far skyline"><path d="M0 50C40 30 90 28 130 40s90 8 130-6 80-4 116 4v30H0z" fill="#1a2140"/><path d="M0 56C60 46 120 48 180 44s120 0 196 6v20H0z" fill="#151c38"/>
   ${[30,70,150,200,250].map(x=>`<path d="M${x} 66V40" stroke="#1c3550" stroke-width="2"/><g fill="#1c3550"><path d="M${x} 40c-8-2-12-8-10-14 6 2 10 8 10 14zM${x} 40c8-2 12-8 10-14-6 2-10 8-10 14zM${x} 40c-2-8 0-14 6-18-2 6-2 12-6 18zM${x} 40c2-8 0-14-6-18 2 6 2 12 6 18z"/></g>`).join('')}
   <circle cx="330" cy="14" r="7" fill="#fff4de" opacity=".85"/><circle cx="330" cy="14" r="12" fill="#fff4de" opacity=".12"/></g>`;
-FAR.brownstone=`<g class="far"><g fill="#1a2650"><path d="M0 44h14v30H0zM18 34h10v40H18zM32 48h12v26H32zM48 30h8v44h-8zM60 40h14v34H60zM78 26h6v48h-6zM88 46h12v28H88zM104 36h10v38h-10z"/><path d="M118 52h100v22H118z"/><path d="M230 40h10v34h-10zM244 32h8v42h-8zM256 46h14v28h-14z"/></g>
+FAR.brownstone=`<g class="far skyline"><g fill="#1a2650"><path d="M0 44h14v30H0zM18 34h10v40H18zM32 48h12v26H32zM48 30h8v44h-8zM60 40h14v34H60zM78 26h6v48h-6zM88 46h12v28H88zM104 36h10v38h-10z"/><path d="M118 52h100v22H118z"/><path d="M230 40h10v34h-10zM244 32h8v42h-8zM256 46h14v28h-14z"/></g>
   <path d="M130 52V30M206 52V30" stroke="#2b3d72" stroke-width="2.2"/><path d="M118 52c12-18 24-22 44-22h12c20 0 32 4 44 22" fill="none" stroke="#2b3d72" stroke-width="1.2"/>
   <g stroke="#2b3d72" stroke-width=".6" opacity=".8"><path d="M140 52V40M150 52V37M160 52V35M176 52V35M186 52V37M196 52V40"/></g>
   <g fill="${GOLD}" opacity=".45"><rect x="20" y="40" width="2" height="2"/><rect x="24" y="48" width="2" height="2"/><rect x="50" y="36" width="2" height="2"/><rect x="64" y="46" width="2" height="2"/><rect x="80" y="32" width="2" height="2"/><rect x="106" y="42" width="2" height="2"/><rect x="246" y="38" width="2" height="2"/><rect x="232" y="50" width="2" height="2"/></g>

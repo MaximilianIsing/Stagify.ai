@@ -904,7 +904,8 @@
           "body": "Fast jeder Käufer beginnt online, daher sind Ihre Angebotsfotos die eigentliche erste Besichtigung. Leere oder veraltete Räume sind schwer zu erfassen; man kann weder Größenverhältnisse einschätzen noch sich das Wohnen dort vorstellen. Staging gibt jedem Raum einen klaren Zweck und Anziehungskraft – deshalb verlassen sich Makler seit jeher darauf.",
           "p1": "Leere Räume wirken auf Fotos kleiner und kühler, als sie sind",
           "p2": "Staging zeigt den vorgesehenen Zweck jedes Raums",
-          "p3": "Bessere Fotos bringen mehr Klicks, Speicherungen und Besichtigungen"
+          "p3": "Bessere Fotos bringen mehr Klicks, Speicherungen und Besichtigungen",
+          "photoAlt": "Der Gründer von Stagify.ai führt das Produkt in einem Immobilienbüro von Compass vor"
         },
         "how": {
           "eyebrow": "Wie es funktioniert",
@@ -913,7 +914,8 @@
           "body": "Laden Sie ein Foto hoch, wählen Sie den Raumtyp und einen von sieben Stilen, und Stagify richtet ihn in etwa acht Sekunden ein. Änderungen nötig? Entfernen Sie vorhandene Möbel, fügen Sie eine eigene Anweisung hinzu oder maskieren Sie einen Bereich, um ihn anzupassen, ohne neu zu beginnen.",
           "p1": "7 Stile plus eigene Anweisungen und Möbelentfernung",
           "p2": "Bearbeiten Sie per Maske jeden Teil eines Ergebnisses, ohne es neu zu erstellen",
-          "p3": "Volles Urheberrecht, Ihres zur Nutzung im MLS oder in Anzeigen"
+          "p3": "Volles Urheberrecht, Ihres zur Nutzung im MLS oder in Anzeigen",
+          "photoAlt": "Stagify.ai-Präsentation vor einem Raum voller Immobilienmakler"
         },
         "who": {
           "eyebrow": "Für wen es ist",
@@ -922,7 +924,8 @@
           "body": "Makler vermarkten jedes Angebot in Minuten, statt auf ein Staging-Team zu warten. Verkäufer richten ihre eigenen Fotos ein, ohne jemanden zu beauftragen. Käufer sehen eine Renovierung in der Vorschau, bevor sie sich festlegen. Und mit dem KI-Designer verwandeln Sie einen Grundriss in eine möblierte Draufsicht — oder gehen in einen beliebigen Raum hinein für ein fotorealistisches Rendering.",
           "p1": "Makler: früher inserieren und mehr abschließen",
           "p2": "Verkäufer & Käufer: keine Software, kein Designer nötig",
-          "p3": "KI-Designer: agentenbasiertes Raum-Staging"
+          "p3": "KI-Designer: agentenbasiertes Raum-Staging",
+          "photoAlt": "Ein Teammitglied von Stagify.ai stellt die Fotos eines Kunden am Laptop ein"
         },
         "team": {
           "eyebrow": "Was entfällt",
@@ -931,7 +934,8 @@
           "body": "Es gibt keine Software zu installieren und nichts zu lernen. Jeder im Team kann Stagify im Browser öffnen, ein Angebotsfoto hochladen und es in Sekunden einrichten lassen – ob am Laptop im Büro oder am Handy unterwegs.",
           "p1": "Keine Designkenntnisse oder Software erforderlich",
           "p2": "Funktioniert in jedem Browser, auf jedem Gerät",
-          "p3": "Jeder Makler kann seine eigenen Angebote einrichten"
+          "p3": "Jeder Makler kann seine eigenen Angebote einrichten",
+          "photoAlt": "Der Gründer von Stagify.ai präsentiert vor einem vollen Büro von Immobilienmaklern"
         }
       }
     },
@@ -1458,7 +1462,8 @@
   },
   "common": {
     "close": "Schließen",
-    "selectLanguage": "Sprache auswählen"
+    "selectLanguage": "Sprache auswählen",
+    "onLinkedIn": "auf LinkedIn"
   },
   "footer": {
     "privacy": "Datenschutzrichtlinie",

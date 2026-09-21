@@ -1321,10 +1321,16 @@
      the parked van's nose sits 4 units from the entrance and any more would overlap. */
   /* On the leave the camera lets the van go first: the pan back starts 0.6s in, when the
      drive-out (0.25s wait + 0.75s) has the van about halfway to the edge. */
+  /* The pan distance is a custom property rather than the transform itself so the style
+     swap's slide-in keyframes below can END on it: a house arriving mid-hover lands on the
+     panned position instead of at zero and then jumping 8px when its animation lets go.
+     Changing the property still transitions `transform`, which is what it feeds. */
   #hero-upload.hu .far,
   #hero-upload.hu .mid,
   #hero-upload.hu .near,
   #hero-upload.hu .home {
+    --hu-pan: 0px;
+    transform: translateX(var(--hu-pan));
     transition: transform 1.3s cubic-bezier(0.45, 0.02, 0.2, 1) 0.6s;
   }
   #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .far,
@@ -1333,10 +1339,64 @@
   #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .near {
     transition: transform 1.6s cubic-bezier(0.3, 0.02, 0.1, 1) 0s;
   }
-  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .far { transform: translateX(-5px); }
-  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .mid { transform: translateX(-8px); }
-  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .home { transform: translateX(-8px); }
-  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .near { transform: translateX(-16px); }
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .far { --hu-pan: -5px; }
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .mid { --hu-pan: -8px; }
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .home { --hu-pan: -8px; }
+  #hero-upload.hu:is(:hover, .hu-hold):not(.hu-out) .near { --hu-pan: -16px; }
+
+  /* ---- style swap: the "rolling road" ----
+     The picker changed furniture style, so the street shows a different house. hero-van.js
+     grafts the new style's skyline, both houses and the lamp-side props into the live scene
+     right behind the old ones (`.hu-in` on the new, `.hu-leave` on the old) and sets
+     `.hu-swap` on the button for the duration; sky, stars, road and the van are the same
+     elements throughout, so a drive in progress simply carries on. The two houses slide
+     off left at their parallax depths (mid 0.55 of the home's 378) while the new ones
+     slide in from past the right edge, the road's dashes roll under them by exactly
+     that distance (27 dash periods, so the pattern lands on itself) and the skyline and
+     tree, which sit still, crossfade — a skyline that panned would double up with the
+     one arriving. The lamp is on both props bands at the same spot, so its crossfade is
+     invisible and only the tree changes. `both` fill: the incoming bands are inserted
+     before their animation starts and must not flash at rest first.
+     The duration is mirrored in hero-van.js (SWAP_MS) for its fallback timer. */
+  #hero-upload.hu {
+    --hu-swap-ms: 0.95s;
+    --hu-swap-ease: cubic-bezier(0.5, 0.02, 0.15, 1);
+  }
+  #hero-upload.hu .home.hu-leave { animation: hu-home-leave var(--hu-swap-ms) var(--hu-swap-ease) both; }
+  #hero-upload.hu .home.hu-in { animation: hu-home-in var(--hu-swap-ms) var(--hu-swap-ease) both; }
+  #hero-upload.hu .mid.hu-leave { animation: hu-mid-leave var(--hu-swap-ms) var(--hu-swap-ease) both; }
+  #hero-upload.hu .mid.hu-in { animation: hu-mid-in var(--hu-swap-ms) var(--hu-swap-ease) both; }
+  #hero-upload.hu :is(.skyline, .props).hu-leave { animation: hu-band-out var(--hu-swap-ms) ease both; }
+  #hero-upload.hu :is(.skyline, .props).hu-in { animation: hu-band-in var(--hu-swap-ms) ease both; }
+  #hero-upload.hu.hu-swap .road-dash { animation: hu-road-roll var(--hu-swap-ms) var(--hu-swap-ease) both; }
+  @keyframes hu-home-leave {
+    from { transform: translateX(var(--hu-pan, 0px)); }
+    to { transform: translateX(calc(var(--hu-pan, 0px) - 378px)); }
+  }
+  @keyframes hu-home-in {
+    from { transform: translateX(calc(var(--hu-pan, 0px) + 378px)); }
+    to { transform: translateX(var(--hu-pan, 0px)); }
+  }
+  @keyframes hu-mid-leave {
+    from { transform: translateX(var(--hu-pan, 0px)); }
+    to { transform: translateX(calc(var(--hu-pan, 0px) - 208px)); }
+  }
+  @keyframes hu-mid-in {
+    from { transform: translateX(calc(var(--hu-pan, 0px) + 208px)); }
+    to { transform: translateX(var(--hu-pan, 0px)); }
+  }
+  @keyframes hu-band-out {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+  @keyframes hu-band-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes hu-road-roll {
+    from { stroke-dashoffset: 0; }
+    to { stroke-dashoffset: 378; }
+  }
 
   /* ---- the drive: van authored 0..108, parks at x 210 (entrance begins at 322) ----
      Both legs are KEYFRAME animations, not a transition, because the van never reverses:
@@ -1572,6 +1632,9 @@
     transform: none;
     transition: none;
   }
+  /* The style swap's slides and fades are not listed: hero-van.js does a plain rebuild under
+     reduce and never adds `.hu-in` / `.hu-leave` / `.hu-swap`. Killing them here instead
+     would leave both houses on the street until the script's fallback timer ran. */
   #hero-upload.hu .far,
   #hero-upload.hu .mid,
   #hero-upload.hu .near,

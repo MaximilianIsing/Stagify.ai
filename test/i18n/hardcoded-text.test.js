@@ -22,6 +22,11 @@
 // not sentences in any language, while "Back to staging" is unmistakably one. SKIP
 // covers the rest: whole subtrees that are deliberately language-neutral.
 //
+// That makes this a FLOOR, not a ceiling. A function-word-free imperative like
+// "Select base image" slips through, and deliberately so: the alternative is a
+// dictionary that fails on every proper noun the site adds. The sweep is here to stop
+// paragraphs and whole dialogs shipping untranslated, which is what actually happened.
+//
 // When this fails, the fix is almost never to add to SKIP. It is to add the key to all
 // eleven packs and hang data-lang / data-lang-attr on the element.
 
@@ -99,9 +104,19 @@ function keyedAttrsOf(tag) {
   );
 }
 
-/** Does this opening tag put its own subtree under a key? */
+/**
+ * Does this opening tag put its own subtree under a key?
+ *
+ * `data-lang-js` is the odd one out: neither renderer reads it. It marks an element
+ * whose text a script writes with its own t() lookup, because the pack value carries a
+ * placeholder the renderers cannot fill — `enterprise.success.line` is
+ * "…ending in {domain} now have…", and a plain data-lang would paint the literal
+ * "{domain}" on the page. The attribute names the key that script uses, so the element
+ * is still greppable from the pack, and this sweep can tell "localized elsewhere" from
+ * "never localized at all".
+ */
 function coversContent(tag) {
-  return /\bdata-lang(?:-html|-faq|-json|-list)?="/.test(tag);
+  return /\bdata-lang(?:-html|-faq|-json|-list|-js)?="/.test(tag);
 }
 
 /**
@@ -125,7 +140,7 @@ function untranslatedStrings(html) {
   const tokens = /<\/?([a-zA-Z][\w-]*)\b([^>]*)>|([^<]+)/g;
   let m;
   while ((m = tokens.exec(src)) !== null) {
-    const [whole, name, attrs, text] = m;
+    const [whole, name, , text] = m;
 
     if (text !== undefined) {
       if (!opaque && !covered && !skipped) {
@@ -187,7 +202,6 @@ test('the prose detector tells a sentence from a name, a code and a number', () 
     'Back to staging',
     'AI Designer is a Stagify+ feature',
     'Rated 5 out of 5 stars',
-    'Select base image',
     'Report a Bug',
     'Stagify.ai founder demonstrating the product at a Compass office',
   ]) {

@@ -904,7 +904,8 @@
           "body": "Bijna elke koper begint online, dus je advertentiefoto’s zijn de echte eerste bezichtiging. Lege of gedateerde kamers zijn lastig in te schatten; mensen kunnen de schaal niet beoordelen of zich voorstellen er te wonen. Styling geeft elke kamer een duidelijk doel en aantrekkingskracht, en daarom vertrouwen makelaars er altijd al op.",
           "p1": "Lege kamers ogen op foto’s kleiner en kouder dan ze zijn",
           "p2": "Styling toont het bedoelde gebruik van elke ruimte",
-          "p3": "Sterkere foto’s leveren meer klikken, opslagen en bezichtigingen op"
+          "p3": "Sterkere foto’s leveren meer klikken, opslagen en bezichtigingen op",
+          "photoAlt": "De oprichter van Stagify.ai demonstreert het product op een makelaarskantoor van Compass"
         },
         "how": {
           "eyebrow": "Hoe het werkt",
@@ -913,7 +914,8 @@
           "body": "Upload een foto, kies het kamertype en een van de zeven stijlen, en Stagify richt hem in ongeveer acht seconden in. Aanpassingen nodig? Verwijder het bestaande meubilair, voeg een eigen prompt toe, of maskeer één gebied om het aan te passen zonder opnieuw te beginnen.",
           "p1": "7 stijlen plus eigen prompts en meubelverwijdering",
           "p2": "Bewerk met een masker elk deel van een resultaat zonder het over te doen",
-          "p3": "Volledig auteursrecht, van jou om te gebruiken op de MLS of in advertenties"
+          "p3": "Volledig auteursrecht, van jou om te gebruiken op de MLS of in advertenties",
+          "photoAlt": "Presentatie van Stagify.ai voor een zaal vol makelaars"
         },
         "who": {
           "eyebrow": "Voor wie het is",
@@ -922,7 +924,8 @@
           "body": "Makelaars promoten elke advertentie in minuten in plaats van te wachten op een stylingteam. Verkopers stylen hun eigen foto’s zonder iemand in te huren. Kopers bekijken een verbouwing voordat ze zich vastleggen. En met AI-Designer maak je van een plattegrond een ingerichte weergave van bovenaf — of stap je een kamer binnen voor een fotorealistische render.",
           "p1": "Makelaars: sneller adverteren en meer deals sluiten",
           "p2": "Verkopers & kopers: geen software, geen ontwerper nodig",
-          "p3": "AI-Designer: agentische kamerstyling"
+          "p3": "AI-Designer: agentische kamerstyling",
+          "photoAlt": "Een teamlid van Stagify.ai stylet de foto’s van een klant op een laptop"
         },
         "team": {
           "eyebrow": "Wat niet nodig is",
@@ -931,7 +934,8 @@
           "body": "Er is geen software om te installeren en niets om te leren. Iedereen in het team kan Stagify in een browser openen, een advertentiefoto uploaden en die in seconden laten stylen, of het nu op een laptop op kantoor is of een telefoon in het veld.",
           "p1": "Geen ontwerpvaardigheden of software nodig",
           "p2": "Werkt in elke browser, op elk apparaat",
-          "p3": "Elke makelaar kan zijn eigen advertenties stylen"
+          "p3": "Elke makelaar kan zijn eigen advertenties stylen",
+          "photoAlt": "De oprichter van Stagify.ai presenteert voor een vol makelaarskantoor"
         }
       }
     },
@@ -1458,7 +1462,8 @@
   },
   "common": {
     "close": "Sluiten",
-    "selectLanguage": "Selecteer taal"
+    "selectLanguage": "Selecteer taal",
+    "onLinkedIn": "op LinkedIn"
   },
   "footer": {
     "privacy": "Privacybeleid",

@@ -2844,22 +2844,24 @@ body.page-home main {
   background: rgba(37, 99, 235, 0.06);
   border: 1px solid rgba(37, 99, 235, 0.12);
   border-radius: 13px;
-  padding: 12px 18px 12px 44px;
+  padding: 12px 18px;
   transition: background 0.2s ease, border-color 0.2s ease;
 }
-/* A small check mark that slides in on hover, paired with the underline below on
-   `.nar-stat__num`. Absolutely positioned in the left padding reserved for it above,
-   rather than a grid column, so it never disturbs the numeral/sentence alignment. */
+/* A small check mark that fades in on hover, paired with the underline below on
+   `.nar-stat__num`. A corner badge, absolutely positioned so it never claims space
+   from the grid: the text column is tuned to the exact px the longest tile sentence
+   needs for two lines (see `.nar-card`'s comment) and any narrower column reflows it
+   to three. */
 .nar-stat__icon {
   position: absolute;
-  left: 16px;
-  top: 50%;
-  width: 20px;
-  height: 20px;
+  top: 8px;
+  right: 10px;
+  width: 18px;
+  height: 18px;
   color: var(--brand);
   opacity: 0;
-  transform: translate(-8px, -50%);
-  transition: opacity 0.22s ease, transform 0.28s cubic-bezier(0.2, 0.7, 0.3, 1.4);
+  transform: scale(0.6) rotate(-8deg);
+  transition: opacity 0.2s ease, transform 0.28s cubic-bezier(0.2, 0.7, 0.3, 1.4);
 }
 .nar-stat__icon svg {
   width: 100%;
@@ -2871,7 +2873,7 @@ body.page-home main {
 }
 .nar-stat:hover .nar-stat__icon {
   opacity: 1;
-  transform: translate(0, -50%);
+  transform: scale(1) rotate(0deg);
 }
 /* The ceiling has room in it but not much: on the shorter tile the numeral, not the
    sentence, is what sets the row height, so past roughly 46px the pair grows back over

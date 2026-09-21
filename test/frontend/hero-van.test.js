@@ -2,7 +2,8 @@
 // public/scripts/hero-van.js and public/scripts/hero-van-art.js.
 //
 // On desktop, #hero-upload is a drawn night street: hero-van.js puts the SVG for the
-// picker's furniture style inside the button and swaps it when the style changes; the
+// picker's furniture style inside the button and, when the style changes, grafts the new
+// style's bands into the live scene beside the old ones (the "rolling road" swap); the
 // motion is CSS in styles/hero-picker.css. Three files and a markup hook have to agree
 // for any of it to show, and each looks fine alone while the feature is dead:
 //
@@ -57,6 +58,11 @@ test('every plate is well-formed SVG: unique ids, resolved refs, balanced groups
     const open = (svg.match(/<g\b/g) || []).length;
     const close = (svg.match(/<\/g>/g) || []).length;
     assert.equal(open, close, `${key}: <g> ${open} vs </g> ${close}`);
+    // The entrance is a nested <svg> built from a string with its own wrapper; a dangling
+    // open tag there is invisible in a browser (the parser recovers) but re-parents in ours.
+    const svgOpen = (svg.match(/<svg\b/g) || []).length;
+    const svgClose = (svg.match(/<\/svg>/g) || []).length;
+    assert.equal(svgOpen, svgClose, `${key}: <svg> ${svgOpen} vs </svg> ${svgClose}`);
     assert.doesNotMatch(svg, /\$\{|undefined|NaN/, `${key}: a template leaked into the markup`);
     // The moving parts the CSS keys off. Lose a class and that part simply stops moving.
     for (const cls of ['van', 'wheelspin', 'far', 'mid', 'near', 'home', 'ent', 'leaf', 'spill', 'lantern', 'lit', 'puff']) {
@@ -159,6 +165,168 @@ test('does not mount below the desktop gate, and never mounts twice', () => {
   assert.equal(initHeroVan(/** @type {any} */ (d.doc), /** @type {any} */ (d.win)), null);
 });
 
+/**
+ * A fake of the SVG DOM the rolling-road swap touches, on top of makeDom(): the scene
+ * span parses `innerHTML` into a tree of top-level <svg> children (a tag-depth scan of
+ * the string, enough to tell `<g class="mid">…</g>` from its neighbours), and elements
+ * support the graft's operations: `:scope > .x` lookups, classList, insertBefore,
+ * nextSibling and remove(). `doc.createElement('div')` returns the same kind of holder.
+ */
+function makeSvgDom(opts) {
+  const d = makeDom(opts);
+  class El {
+    constructor(tag, cls, html) {
+      this.tag = tag;
+      this.cls = new Set(cls ? cls.split(/\s+/).filter(Boolean) : []);
+      this.html = html;
+      /** @type {El[]} */ this.children = [];
+      /** @type {El | null} */ this.parent = null;
+      this.classList = { add: (c) => this.cls.add(c), remove: (c) => this.cls.delete(c), contains: (c) => this.cls.has(c) };
+    }
+    get nextSibling() { const p = this.parent; if (!p) return null; return p.children[p.children.indexOf(this) + 1] || null; }
+    insertBefore(el, ref) {
+      if (el.parent) el.parent.children.splice(el.parent.children.indexOf(el), 1);
+      el.parent = this;
+      const i = ref ? this.children.indexOf(ref) : this.children.length;
+      this.children.splice(i < 0 ? this.children.length : i, 0, el);
+      return el;
+    }
+    remove() { if (this.parent) { this.parent.children.splice(this.parent.children.indexOf(this), 1); this.parent = null; } }
+    /** `svg`, `:scope > .cls`, or a plain `.cls` anywhere below (the van lookup). */
+    querySelector(sel) {
+      if (sel === 'svg') return this.children.find((c) => c.tag === 'svg') || null;
+      const child = /^:scope > \.(\S+)$/.exec(sel);
+      if (child) return this.children.find((c) => c.cls.has(child[1])) || null;
+      const deep = /^\.(\S+)$/.exec(sel);
+      if (deep) {
+        for (const c of this.children) {
+          if (c.cls.has(deep[1])) return c;
+          const hit = c.querySelector(sel);
+          if (hit) return hit;
+        }
+        return null;
+      }
+      throw new Error('fake DOM: selector not supported: ' + sel);
+    }
+    set innerHTML(markup) {
+      this.children = [];
+      const outer = /^<svg[^>]*>([\s\S]*)<\/svg>$/.exec(markup.trim());
+      if (!outer) return;
+      const svg = new El('svg', '', '');
+      this.insertBefore(svg, null);
+      // Split the svg's content into top-level elements by tag depth.
+      const body = outer[1];
+      const tagRe = /<(\/?)([a-zA-Z]+)([^>]*?)(\/?)>/g;
+      let depth = 0; let start = -1; let tag = ''; let cls = ''; let m;
+      while ((m = tagRe.exec(body))) {
+        const [whole, closing, name, attrs, selfClose] = m;
+        if (!closing && depth === 0) { start = m.index; tag = name; cls = (/class="([^"]*)"/.exec(attrs) || [])[1] || ''; }
+        if (!closing && !selfClose) depth += 1;
+        if (closing) depth -= 1;
+        if (depth === 0 && start >= 0) {
+          svg.insertBefore(new El(tag, cls, body.slice(start, m.index + whole.length)), null);
+          start = -1;
+        }
+      }
+    }
+    get innerHTML() { return this.children.map((c) => c.outerHTML).join(''); }
+    get outerHTML() { return this.tag === 'svg' ? `<svg>${this.innerHTML}</svg>` : this.html; }
+  }
+  const scene = new El('span', 'hu-scene', '');
+  d.btn.querySelector = (sel) => (sel === '.hu-scene' ? scene : null);
+  d.doc.createElement = (tag) => new El(tag, '', '');
+  const svg = () => scene.querySelector('svg');
+  return {
+    ...d,
+    scene,
+    svg,
+    /** The classes of the scene's top-level bands, in order, e.g. "far skyline hu-leave". */
+    bands: () => svg().children.map((c) => [...c.cls].join(' ')),
+    house: (el) => (/data-k="([a-z]+)"/.exec(el.html) || [])[1],
+  };
+}
+
+test('a style change on a mounted scene grafts the new bands in beside the old, keeping sky, road and van', () => {
+  const d = makeSvgDom({ style: 'modern' });
+  const ctl = initHeroVan(/** @type {any} */ (d.doc), /** @type {any} */ (d.win));
+  const before = d.bands();
+  assert.ok(before.includes('van') && before.filter((b) => b.includes('road')).length === 1, 'sanity: one road, one van');
+  const sky = d.svg().children[1];
+
+  d.fire(STYLE_EVENT, { style: 'farmhouse' });
+  assert.equal(ctl.current(), 'farmhouse');
+  assert.ok(d.classes.has('hu-swap'), 'the road rolls for the duration');
+  const bands = d.bands();
+  // Each swapped band is followed by its incoming twin; nothing else is duplicated.
+  for (const cls of ['skyline', 'mid', 'home', 'props']) {
+    const i = bands.findIndex((b) => b.split(' ').includes(cls) && b.includes('hu-leave'));
+    assert.ok(i >= 0, `${cls}: the outgoing band carries .hu-leave`);
+    assert.ok(bands[i + 1].split(' ').includes(cls) && bands[i + 1].includes('hu-in'), `${cls}: the incoming band sits right behind it with .hu-in`);
+  }
+  assert.equal(bands.filter((b) => b === 'van').length, 1, 'the van is the same element, not rebuilt');
+  assert.equal(bands.filter((b) => b.includes('road')).length, 1, 'one road');
+  assert.equal(d.svg().children[1], sky, 'the sky is untouched');
+  const homes = d.svg().children.filter((c) => c.cls.has('home'));
+  assert.deepEqual(homes.map(d.house), ['modern', 'farmhouse'], 'old house leaving, new house arriving');
+  assert.equal(d.bands().filter((b) => b.split(' ').includes('far') && !b.includes('skyline')).length, 1, 'the stars are not swapped');
+
+  // The home's slide-in ending ends the swap: old bands gone, new ones settled, road still.
+  d.pointer('animationend', { animationName: 'hu-mid-in' });
+  assert.ok(d.classes.has('hu-swap'), 'the mid finishing is not the end');
+  d.pointer('animationend', { animationName: 'hu-home-in' });
+  assert.ok(!d.classes.has('hu-swap'));
+  const after = d.bands();
+  assert.equal(after.length, before.length, 'back to one band of each');
+  assert.ok(!after.some((b) => /hu-(in|leave)/.test(b)), 'no swap classes left behind');
+  assert.deepEqual(d.svg().children.filter((c) => c.cls.has('home')).map(d.house), ['farmhouse']);
+});
+
+test('a style change mid-swap finishes the running swap first; the fallback timer ends a swap with no animationend', () => {
+  const d = makeSvgDom({ style: 'modern' });
+  initHeroVan(/** @type {any} */ (d.doc), /** @type {any} */ (d.win));
+  d.fire(STYLE_EVENT, { style: 'luxury' });
+  d.fire(STYLE_EVENT, { style: 'modern' });
+  const homes = d.svg().children.filter((c) => c.cls.has('home'));
+  assert.deepEqual(homes.map(d.house), ['georgian', 'modern'], 'the interrupted swap settled on luxury, which now leaves');
+  assert.equal(homes[0].cls.has('hu-leave'), true);
+  assert.equal(d.bands().filter((b) => b.includes('home')).length, 2, 'never three houses');
+
+  const t = d.timers[d.timers.length - 1];
+  assert.equal(t.ms, 950 + 150, 'the CSS duration plus a margin');
+  t.fn();
+  assert.ok(!d.classes.has('hu-swap'));
+  assert.deepEqual(d.svg().children.filter((c) => c.cls.has('home')).map(d.house), ['modern']);
+});
+
+test('under prefers-reduced-motion a style change is a plain rebuild', () => {
+  const d = makeSvgDom({ style: 'modern' });
+  const inner = d.win.matchMedia;
+  d.win.matchMedia = (q) => (q === '(prefers-reduced-motion: reduce)' ? { matches: true } : inner(q));
+  initHeroVan(/** @type {any} */ (d.doc), /** @type {any} */ (d.win));
+  d.fire(STYLE_EVENT, { style: 'coastal' });
+  assert.ok(!d.classes.has('hu-swap'));
+  assert.deepEqual(d.svg().children.filter((c) => c.cls.has('home')).map(d.house), ['mediterranean']);
+  assert.ok(!d.bands().some((b) => /hu-(in|leave)/.test(b)));
+});
+
+test('the swap hooks agree across the art, the script and the CSS', () => {
+  const css = read('public/styles/hero-picker.css');
+  for (const { key } of STYLE_HOUSE) {
+    const svg = buildScene(key, key);
+    for (const cls of ['skyline', 'props', 'road', 'road-dash']) {
+      assert.match(svg, new RegExp(`class="[^"]*\\b${cls}\\b`), `${key}: nothing carries .${cls}`);
+    }
+    assert.equal((svg.match(/class="[^"]*\bskyline\b/g) || []).length, 1, `${key}: exactly one skyline`);
+    assert.match(svg, /<path class="road-dash" d="M-2 70h380"[^>]*stroke-dasharray="6 8"/, `${key}: the dash roll below is 27 periods of 14, over a path that runs past both edges`);
+  }
+  assert.match(css, /#hero-upload\.hu \.home\.hu-in \{ animation: hu-home-in /, 'the swap ends on the home slide-in animation, by name');
+  assert.match(css, /#hero-upload\.hu\.hu-swap \.road-dash \{ animation: hu-road-roll /);
+  assert.match(css, /@keyframes hu-road-roll \{\s*from \{ stroke-dashoffset: 0; \}\s*to \{ stroke-dashoffset: 378; \}/);
+  assert.match(css, /--hu-swap-ms: 0\.95s;/, 'hero-van.js SWAP_MS mirrors this');
+  assert.match(css, /#hero-upload\.hu:is\(:hover, \.hu-hold\):not\(\.hu-out\) \.home \{ --hu-pan: -8px; \}/, 'the pan is the custom property the slide-in keyframes end on');
+  assert.match(css, /@keyframes hu-home-in \{\s*from \{ transform: translateX\(calc\(var\(--hu-pan, 0px\) \+ 378px\)\); \}\s*to \{ transform: translateX\(var\(--hu-pan, 0px\)\); \}/);
+});
+
 test('a leave before the door has opened is marked quick; a full visit is not', () => {
   const d = makeDom();
   initHeroVan(/** @type {any} */ (d.doc), /** @type {any} */ (d.win));
@@ -178,7 +346,7 @@ test('a leave before the door has opened is marked quick; a full visit is not', 
 
 test('a hover during the drive-out waits for it to end; a leave during it changes nothing', () => {
   const d = makeDom();
-  const ctl = initHeroVan(/** @type {any} */ (d.doc), /** @type {any} */ (d.win));
+  initHeroVan(/** @type {any} */ (d.doc), /** @type {any} */ (d.win));
   d.pointer('pointerenter'); d.tick(2000); d.pointer('pointerleave');
   assert.ok(d.classes.has('hu-out'));
   d.pointer('pointerenter');
@@ -199,12 +367,22 @@ test('a hover during the drive-out waits for it to end; a leave during it change
   t.fn();
   assert.ok(!d.classes.has('hu-out'), 'fallback timer released it');
 
-  // A style swap rebuilds the scene and discards the animating van: the drive-out is over.
-  d.pointer('pointerenter'); d.pointer('pointerleave');
+});
+
+test('a style change mid-drive-out keeps the van: the drive-out carries on and ends on its own', () => {
+  const d = makeSvgDom();
+  const ctl = initHeroVan(/** @type {any} */ (d.doc), /** @type {any} */ (d.win));
+  d.pointer('pointerenter'); d.tick(2000); d.pointer('pointerleave');
   assert.ok(d.classes.has('hu-out'));
+  const van = d.svg().children.find((c) => c.cls.has('van'));
   d.fire(STYLE_EVENT, { style: 'coastal' });
   assert.equal(ctl.current(), 'coastal');
-  assert.ok(!d.classes.has('hu-out'), 'rebuild ends the drive-out');
+  assert.ok(d.classes.has('hu-out'), 'the swap grafts houses; the van and its drive-out are untouched');
+  assert.equal(d.svg().children.find((c) => c.cls.has('van')), van, 'same van element');
+  d.pointer('animationend', { animationName: 'hu-home-in' });
+  assert.ok(d.classes.has('hu-out'), 'the swap ending is not the drive-out ending');
+  d.pointer('animationend', { animationName: 'hu-drive-out' });
+  assert.ok(!d.classes.has('hu-out'));
 });
 
 test('the drive-out starts from where the van is, falling back to the parking bay', () => {

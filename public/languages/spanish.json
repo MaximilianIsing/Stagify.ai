@@ -904,7 +904,8 @@
           "body": "Casi todos los compradores empiezan en línea, así que las fotos de tu anuncio son la verdadera primera visita. Las habitaciones vacías o anticuadas cuestan de interpretar; la gente no puede juzgar la escala ni imaginarse viviendo allí. El diseño le da a cada habitación un propósito claro y un atractivo, por eso los agentes siempre han confiado en él.",
           "p1": "Las habitaciones vacías se ven más pequeñas y frías de lo que son",
           "p2": "El diseño muestra el uso previsto de cada espacio",
-          "p3": "Mejores fotos generan más clics, guardados y visitas"
+          "p3": "Mejores fotos generan más clics, guardados y visitas",
+          "photoAlt": "El fundador de Stagify.ai demostrando el producto en una oficina inmobiliaria de Compass"
         },
         "how": {
           "eyebrow": "Cómo funciona",
@@ -913,7 +914,8 @@
           "body": "Sube una foto, elige el tipo de habitación y uno de los siete estilos, y Stagify la amuebla en unos ocho segundos. ¿Necesitas cambios? Quita los muebles existentes, añade un prompt personalizado o enmascara un área para ajustarla sin empezar de cero.",
           "p1": "7 estilos más prompts personalizados y eliminación de muebles",
           "p2": "Edita con máscara cualquier parte del resultado sin rehacerlo",
-          "p3": "Derechos de autor completos: úsala en el MLS o en anuncios"
+          "p3": "Derechos de autor completos: úsala en el MLS o en anuncios",
+          "photoAlt": "Presentación de Stagify.ai ante una sala de agentes inmobiliarios"
         },
         "who": {
           "eyebrow": "Para quién es",
@@ -922,7 +924,8 @@
           "body": "Los agentes promocionan cada propiedad en minutos en lugar de esperar a un equipo de diseño. Los vendedores diseñan sus propias fotos sin contratar a nadie. Los compradores previsualizan una reforma antes de comprometerse. Y con AI Designer, puedes convertir un plano en una vista amueblada desde arriba, o entrar en cualquier habitación para un render fotorrealista.",
           "p1": "Agentes: publica antes y cierra más",
           "p2": "Vendedores y compradores: sin software ni diseñador",
-          "p3": "AI Designer: staging de habitaciones con agentes de IA"
+          "p3": "AI Designer: staging de habitaciones con agentes de IA",
+          "photoAlt": "Un miembro del equipo de Stagify.ai preparando las fotos de un cliente en un portátil"
         },
         "team": {
           "eyebrow": "Lo que evita",
@@ -931,7 +934,8 @@
           "body": "No hay software que instalar ni nada que aprender. Cualquier persona del equipo puede abrir Stagify en el navegador, subir una foto de una propiedad y tenerla diseñada en segundos, ya sea en un portátil en la oficina o en el móvil sobre el terreno.",
           "p1": "Sin conocimientos de diseño ni software",
           "p2": "Funciona en cualquier navegador y dispositivo",
-          "p3": "Cada agente puede diseñar sus propias propiedades"
+          "p3": "Cada agente puede diseñar sus propias propiedades",
+          "photoAlt": "El fundador de Stagify.ai presentando ante una oficina llena de agentes inmobiliarios"
         }
       }
     },
@@ -1458,7 +1462,8 @@
   },
   "common": {
     "close": "Cerrar",
-    "selectLanguage": "Seleccionar idioma"
+    "selectLanguage": "Seleccionar idioma",
+    "onLinkedIn": "en LinkedIn"
   },
   "footer": {
     "privacy": "Política de privacidad",

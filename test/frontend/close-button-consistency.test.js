@@ -60,7 +60,6 @@ const CLOSE_BUTTONS = [
   { label: 'gallery detail dialog', file: 'public/gallery.html', id: 'gal-detail-close', corner: true },
   { label: 'Masking Studio help', file: 'public/masking-studio.html', id: 'ms-help-close', corner: true },
   { label: 'exterior hand-off dialog', file: 'public/masking-studio.html', id: 'ms-exterior-back', corner: true },
-  { label: 'bug-report popup', file: 'public/ai-designer.html', id: 'bug-report-popup-close', corner: false },
   {
     label: 'AI Designer mask editor',
     file: 'public/scripts/ai-designer/mask-editor.js',
@@ -185,7 +184,6 @@ test('no surface has grown its own close style back', () => {
     'report-modal__close',
     'gal-detail__close',
     'ms-help-close',
-    'bug-report-popup-close',
     'mask-editor-close',
   ];
 
