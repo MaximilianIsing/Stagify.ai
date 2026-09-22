@@ -59,17 +59,63 @@ export const BEAM=`<defs><radialGradient id="lens" cx=".4" cy=".35" r=".8"><stop
   <g class="beam"><path d="M92 48.5L110 44v22L92 52z" fill="url(#hl)"/><ellipse cx="103" cy="66" rx="11" ry="2" fill="#ffe4a8" opacity=".18"/></g>`;
 export const SKY=(id)=>`<defs><linearGradient id="sky${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1e2c58"/><stop offset=".55" stop-color="#14203f"/><stop offset="1" stop-color="#0a1120"/></linearGradient></defs><rect width="376" height="74" fill="url(#sky${id})"/>`;
 export const STARS=`<g class="far" fill="#fff"><circle class="twinkle" cx="44" cy="10" r=".9"/><circle class="twinkle" cx="92" cy="18" r=".7"/><circle class="twinkle" cx="140" cy="8" r="1"/><circle class="twinkle" cx="196" cy="14" r=".8"/><circle class="twinkle" cx="262" cy="7" r=".9"/><circle class="twinkle" cx="330" cy="15" r=".8"/><circle class="twinkle" cx="300" cy="5" r=".6"/><circle class="twinkle" cx="232" cy="20" r=".6"/></g>`;
+/* ------------------------------------------------------------------ far-band helpers
+   Three navies, farthest first: night haze lifts what is far away, so the most distant
+   layer is the LIGHTEST. Lit windows are gold at half opacity; the plate's tint sits on
+   top of all of this, so nothing here needs to be subtle to start with. */
+const FAR1='#22305f', FAR2='#1a2650', FAR3='#141c3a';
+const WINS=(pts,op=.45,w=2,h=2)=>`<g fill="${GOLD}" opacity="${op}">${pts.map(([x,y])=>`<rect x="${x}" y="${y}" width="${w}" height="${h}"/>`).join('')}</g>`;
+/* a grid of lit windows with every third dark, for towers */
+const GRID=(x,y,cols,rows,dx,dy,s=1.3,op=.5)=>{let o='';for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){if((r*cols+c)%3===1)continue;o+=`<rect x="${x+c*dx}" y="${y+r*dy}" width="${s}" height="${s}"/>`;}return `<g fill="${GOLD}" opacity="${op}">${o}</g>`;};
+const MOON=(x,y,r)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="#fff4de" opacity=".85"/><circle cx="${x}" cy="${y}" r="${r*1.7}" fill="#fff4de" opacity=".12"/>`;
+const CLOUD=(x,y,w,op=.1)=>`<path d="M${x} ${y}c${w*.08} ${-w*.14} ${w*.24} ${-w*.16} ${w*.34} ${-w*.06}c${w*.08} ${-w*.12} ${w*.26} ${-w*.12} ${w*.34} 0c${w*.12} ${-w*.05} ${w*.26} 0 ${w*.32} ${w*.06}z" fill="#c8d8ff" opacity="${op}"/>`;
+const SMOKE=(x,y)=>`<path d="M${x} ${y}c-1.6-2 1.6-3.4 0-5.4s1.6-3.4 0-5.4" stroke="#c8d8ff" stroke-opacity=".2" stroke-width=".8" fill="none" stroke-linecap="round"/>`;
+const HAZE=(y=58)=>`<rect y="${y}" width="376" height="${74-y}" fill="#2b3d72" opacity=".16"/>`;
+const RED=(x,y)=>`<circle class="twinkle" cx="${x}" cy="${y}" r="1" fill="#ff6b6b"/>`;
+
+/* Modern: a downtown. Haze-lifted towers behind, a glass tower with lit floors, a tower
+   crane over a site, blocks in front, aircraft lights on the tallest. */
 const CITY=`<g class="far skyline">
-  <g fill="#1a2650"><path d="M0 50h10v24H0zM14 44h8v30h-8zM26 40h6v34h-6zM36 46h12v28H36zM52 38h6v36h-6zM62 48h10v26H62zM76 42h8v32h-8zM88 36h5v38h-5zM96 46h12v28H96zM112 52h60v22h-60zM176 44h9v30h-9zM188 38h6v36h-6zM198 48h10v26h-10zM214 52h8v22h-8z"/>
+  <g fill="${FAR1}"><path d="M26 22h12v52H26zM44 30h8v44h-8zM238 18h10v56h-10zM252 26h8v48h-8zM348 24h12v50h-12zM364 34h12v40h-12z"/></g>
+  <g stroke="#2f4180" stroke-width=".5" opacity=".8"><path d="M28 28h8M28 34h8M28 40h8M28 46h8M28 52h8M240 24h6M240 30h6M240 36h6M240 42h6M240 48h6M350 30h8M350 36h8M350 42h8M350 48h8"/></g>
+  ${RED(32,20)}${RED(243,16)}
+  <path d="M100 18h12v56h-12z" fill="${FAR2}"/><path d="M104 18l2-5 2 5z" fill="${FAR2}"/><g stroke="#3b4f8a" stroke-width=".6"><path d="M101 22h10M101 26h10M101 30h10M101 34h10M101 38h10M101 42h10M101 46h10M101 50h10M101 54h10M101 58h10"/></g>
+  <g fill="${FAR2}"><path d="M0 50h10v24H0zM14 44h8v30h-8zM26 40h6v34h-6zM36 46h12v28H36zM52 38h6v36h-6zM62 48h10v26H62zM76 42h8v32h-8zM88 36h5v38h-5zM96 46h12v28H96zM112 52h60v22h-60zM176 44h9v30h-9zM188 38h6v36h-6zM198 48h10v26h-10zM214 52h8v22h-8zM228 46h8v28h-8zM342 44h10v30h-10zM356 50h14v24h-14z"/>
     <path d="M116 52c10-10 20-10 30 0M146 52c8-8 16-8 26 0" fill="none" stroke="#2b3d72" stroke-width="1.2"/></g>
-  <g fill="${GOLD}" opacity=".45"><rect x="16" y="48" width="2" height="2"/><rect x="19" y="52" width="2" height="2"/><rect x="38" y="50" width="2" height="2"/><rect x="44" y="54" width="2" height="2"/><rect x="64" y="52" width="2" height="2"/><rect x="78" y="46" width="2" height="2"/><rect x="98" y="50" width="2" height="2"/><rect x="104" y="56" width="2" height="2"/><rect x="180" y="48" width="2" height="2"/><rect x="200" y="52" width="2" height="2"/></g>
-  <circle class="twinkle" cx="54" cy="37" r="1" fill="#ff6b6b"/><circle class="twinkle" cx="90.5" cy="35" r="1" fill="#ff6b6b"/><circle class="twinkle" cx="191" cy="37" r="1" fill="#ff6b6b"/>
-  <g fill="#c8d8ff" opacity=".25"><circle cx="120" cy="52" r=".8"/><circle cx="130" cy="47" r=".8"/><circle cx="140" cy="47" r=".8"/><circle cx="150" cy="52" r=".8"/></g></g>`;
+  <g stroke="#2b3d72" fill="none"><path d="M262 74V26M248 26h30" stroke-width="1"/><path d="M262 26l-5 6h10l-5-6M262 32l-4 6h8l-4-6M262 38l-4 6h8l-4-6M262 44l-4 6h8l-4-6M262 50l-4 6h8l-4-6M248 26v3M262 22l-14 4M262 22l16 4M274 27v9" stroke-width=".6"/></g><rect x="272" y="36" width="4" height="2" fill="#2b3d72"/>${RED(262,21)}
+  ${WINS([[16,48],[19,52],[38,50],[44,54],[64,52],[78,46],[98,50],[104,56],[180,48],[200,52],[230,50],[232,58],[344,48],[358,54],[366,60],[46,34],[254,30],[256,40]])}
+  ${RED(54,37)}${RED(90.5,35)}${RED(191,37)}
+  <g fill="#c8d8ff" opacity=".25"><circle cx="120" cy="52" r=".8"/><circle cx="130" cy="47" r=".8"/><circle cx="140" cy="47" r=".8"/><circle cx="150" cy="52" r=".8"/></g>
+  ${HAZE()}</g>`;
 /* `.road` is the one near band a style swap keeps (the road is the same on every street); its
    dashes roll during the swap (`.road-dash`, styles/hero-picker.css `hu-road-roll`). The path
    runs 2 units past each edge so a 378-unit roll, 27 dash periods, lands the pattern on itself. */
 export const ROAD=`<g class="near road"><rect x="-2" y="66" width="380" height="8" fill="#080d1c"/><rect x="-2" y="65" width="380" height="1.4" fill="#2a3a63"/><path class="road-dash" d="M-2 70h380" stroke="#1a2547" stroke-width=".8" stroke-dasharray="6 8"/></g>`;
-export const LAMP=(x)=>`<path d="M${x} 22v44" stroke="#33436f" stroke-width="2.4"/><path d="M${x-5} 22h10l-2-6h-6z" fill="${GOLD}" opacity=".9"/><ellipse cx="${x}" cy="66" rx="22" ry="4.5" fill="${GOLD}" opacity=".1"/>`;
+/* ------------------------------------------------------------------ street lamps
+   One per house, drawn to its era (LAMPS, keyed like H / FAR); LAMP is the plain one an
+   unknown key falls back to. Same footprint for all: base on the road at (x, 66), the
+   light between y 14 and 24, nothing wider than 14 units, so the parked van's rear (210)
+   and the tree (118) clear every one. Each carries the ground pool and a head halo so
+   the street reads lit at rest; the head is `.lamplit` should the CSS ever want it. */
+const POOL=(x)=>`<ellipse cx="${x}" cy="66" rx="22" ry="4.5" fill="${GOLD}" opacity=".1"/>`;
+export const LAMP=(x)=>`<g class="lamp" data-lamp="plain"><path d="M${x} 22v44" stroke="#33436f" stroke-width="2.4"/><path class="lamplit" d="M${x-5} 22h10l-2-6h-6z" fill="${GOLD}" opacity=".9"/>${POOL(x)}</g>`;
+export const LAMPS={};
+/* Modern pivot: a slim steel column with a cantilevered arm and a flat LED bar, cool white. */
+LAMPS.modern=(x)=>`<g class="lamp" data-lamp="modern"><rect x="${x-1.6}" y="64" width="3.2" height="2" fill="#3a4666"/><path d="M${x} 64V18" stroke="#3a4666" stroke-width="2"/><path d="M${x} 18h9" stroke="#3a4666" stroke-width="2" stroke-linecap="round"/><rect x="${x+2}" y="18.4" width="8" height="2.2" rx=".6" fill="#2a3352"/><rect class="lamplit" x="${x+2.4}" y="20.2" width="7.2" height="1" fill="#dfe9ff" opacity=".95"/><circle cx="${x+6}" cy="21" r="5.5" fill="#dfe9ff" opacity=".16"/><ellipse cx="${x+6}" cy="66" rx="20" ry="4" fill="#dfe9ff" opacity=".1"/></g>`;
+/* Victorian terrace: fluted cast-iron column on a plinth, a four-pane gas lantern with a finial. */
+LAMPS.victorian=(x)=>`<g class="lamp" data-lamp="victorian"><path d="M${x-4} 66h8l-1-3h-6z" fill="#2c3a66"/><rect x="${x-2.2}" y="56" width="4.4" height="7" fill="#2c3a66"/><path d="M${x} 56V26" stroke="#2c3a66" stroke-width="2.6"/><path d="M${x-.9} 30v24M${x+.9} 30v24" stroke="#2c375c" stroke-width=".5"/><path d="M${x-4} 26h8" stroke="#2c3a66" stroke-width="1.6"/><path d="M${x-4} 26v-8l4-2 4 2v8" fill="#0b1224" stroke="#2c3a66" stroke-width="1"/><path class="lamplit" d="M${x-3} 25v-6.5l3-1.5 3 1.5V25z" fill="${GOLD}" opacity=".95"/><path d="M${x} 18v7" stroke="#2c3a66" stroke-width=".6"/><path d="M${x} 16v-3" stroke="#2c3a66" stroke-width="1.2"/><circle cx="${x}" cy="12.5" r="1" fill="#2c3a66"/><circle cx="${x}" cy="21" r="6" fill="${GOLD}" opacity=".22"/>${POOL(x)}</g>`;
+/* White timber, shutters: a square wooden post with a colonial onion lantern in black iron. */
+LAMPS.colonial=(x)=>`<g class="lamp" data-lamp="colonial"><rect x="${x-2}" y="24" width="4" height="42" fill="#e8ecf4"/><rect x="${x-3}" y="62" width="6" height="4" fill="#c9d0de"/><path d="M${x-2} 24h4" stroke="#1a1f2e" stroke-width="1.4"/><path d="M${x-4.5} 23.5h9l-1.5-2.5h-6z" fill="#1a1f2e"/><path d="M${x-3.5} 21V15l3.5-1.5 3.5 1.5v6z" fill="#0b1224"/><path class="lamplit" d="M${x-2.6} 20.4v-4.8l2.6-1.1 2.6 1.1v4.8z" fill="${GOLD}" opacity=".95"/><path d="M${x} 13.5v6.9M${x-3.5} 17.5h7" stroke="#1a1f2e" stroke-width=".55"/><path d="M${x} 13.5c0-1.6 1.2-2.4 0-3.2-1.2.8 0 1.6 0 3.2z" fill="#1a1f2e"/><circle cx="${x}" cy="18" r="5.5" fill="${GOLD}" opacity=".22"/>${POOL(x)}</g>`;
+/* Stucco arch: a wrought-iron post with a curled arm and a hanging teardrop lantern. */
+LAMPS.mediterranean=(x)=>`<g class="lamp" data-lamp="mediterranean"><path d="M${x-3.5} 66h7l-1.2-2.4h-4.6z" fill="#2c2f3e"/><path d="M${x} 63.6V20" stroke="#2c2f3e" stroke-width="2.2"/><path d="M${x} 20c0-4 3-5 7-4 2 .5 3 2 2.5 4.5" fill="none" stroke="#2c2f3e" stroke-width="1.4" stroke-linecap="round"/><path d="M${x+9.5} 20.5c-.8-1.5-2.2-1-2 .5" fill="none" stroke="#2c2f3e" stroke-width=".9"/><path d="M${x+9.5} 21v2" stroke="#2c2f3e" stroke-width=".8"/><path d="M${x+9.5} 23c-2.5 0-3.6 2.4-3.6 4.6 0 2.4 1.8 3.6 3.6 3.6s3.6-1.2 3.6-3.6c0-2.2-1.1-4.6-3.6-4.6z" fill="#2c2f3e"/><path class="lamplit" d="M${x+9.5} 24.2c-1.8 0-2.6 1.9-2.6 3.6 0 1.8 1.2 2.6 2.6 2.6s2.6-.8 2.6-2.6c0-1.7-.8-3.6-2.6-3.6z" fill="#ffc46b" opacity=".95"/><circle cx="${x+9.5}" cy="27.5" r="5.5" fill="#ffc46b" opacity=".22"/><ellipse cx="${x+8}" cy="66" rx="22" ry="4.5" fill="#ffc46b" opacity=".1"/></g>`;
+/* Board-and-batten farmhouse: a timber pole with a gooseneck barn light under a wide shade. */
+LAMPS.farmhouse=(x)=>`<g class="lamp" data-lamp="farmhouse"><path d="M${x} 66V20" stroke="#5a4636" stroke-width="3"/><path d="M${x-1.5} 30h3M${x-1.5} 44h3" stroke="#3f2f24" stroke-width="1"/><path d="M${x} 20c0-3.5 2.5-4.5 5.5-4.5s5.5 1 5.5 4.5" fill="none" stroke="#2b2f3a" stroke-width="1.4" stroke-linecap="round"/><path d="M${x+11} 20v2" stroke="#2b2f3a" stroke-width="1.2"/><path d="M${x+4} 25.5l3-3.5h8l3 3.5z" fill="#2b2f3a"/><path d="M${x+3} 25.5h16v1.2h-16z" fill="#1f232c"/><rect class="lamplit" x="${x+8.5}" y="26.7" width="5" height="1.6" rx=".8" fill="${GOLD}" opacity=".95"/><circle cx="${x+11}" cy="28" r="5.5" fill="${GOLD}" opacity=".22"/><ellipse cx="${x+11}" cy="66" rx="22" ry="4.5" fill="${GOLD}" opacity=".1"/></g>`;
+/* Georgian townhouse: a tall black column with a crowned Windsor lantern and ball finials. */
+LAMPS.georgian=(x)=>`<g class="lamp" data-lamp="georgian"><path d="M${x-4.5} 66h9l-1.2-2h-6.6z" fill="#1e2848"/><rect x="${x-2.6}" y="58" width="5.2" height="6" fill="#1e2848"/><path d="M${x} 58V25" stroke="#1e2848" stroke-width="2.8"/><circle cx="${x}" cy="27" r="1.6" fill="#1e2848"/><path d="M${x-5} 25h10" stroke="#1e2848" stroke-width="1.6"/><path d="M${x-4.5} 25V16h9v9" fill="#0b1224" stroke="#1e2848" stroke-width="1"/><path class="lamplit" d="M${x-3.5} 24v-7.2h7V24z" fill="${GOLD}" opacity=".95"/><path d="M${x} 16.8v7.2M${x-4.5} 20.4h9" stroke="#1e2848" stroke-width=".55"/><path d="M${x-5.5} 16h11l-2.5-3h-6z" fill="#1e2848"/><path d="M${x} 13v-2" stroke="#1e2848" stroke-width="1.2"/><circle cx="${x}" cy="10" r="1.3" fill="#1e2848"/><circle cx="${x-5.5}" cy="15.4" r=".9" fill="#1e2848"/><circle cx="${x+5.5}" cy="15.4" r=".9" fill="#1e2848"/><circle cx="${x}" cy="20.4" r="6.5" fill="${GOLD}" opacity=".22"/>${POOL(x)}</g>`;
+/* Craftsman porch: a short post on a stone pier, a Mission lantern with a pyramid cap and amber glass. */
+LAMPS.craftsman=(x)=>`<g class="lamp" data-lamp="craftsman"><rect x="${x-4}" y="52" width="8" height="14" fill="#4a5568"/><path d="M${x-4} 56h8M${x-4} 60h8M${x} 52v4M${x-2} 56v4M${x+2} 60v6" stroke="#3a4454" stroke-width=".6"/><rect x="${x-4.8}" y="51" width="9.6" height="1.6" fill="#5c6b7a"/><path d="M${x} 51V28" stroke="#3b3128" stroke-width="2.6"/><path d="M${x-5} 28h10" stroke="#3b3128" stroke-width="1.4"/><path d="M${x-4.5} 28V20h9v8z" fill="#0b1224" stroke="#3b3128" stroke-width="1"/><path class="lamplit" d="M${x-3.5} 27v-6h7v6z" fill="#f0b25a" opacity=".95"/><path d="M${x-1.2} 21v6M${x+1.2} 21v6M${x-3.5} 24h7" stroke="#3b3128" stroke-width=".7"/><path d="M${x-6} 20h12l-6-4z" fill="#3b3128"/><circle cx="${x}" cy="24" r="6" fill="#f0b25a" opacity=".22"/><ellipse cx="${x}" cy="66" rx="22" ry="4.5" fill="#f0b25a" opacity=".1"/></g>`;
+/* Brownstone stoop: the bishop's crook, a tall fluted pole that curls over to a hanging acorn globe. */
+LAMPS.brownstone=(x)=>`<g class="lamp" data-lamp="brownstone"><path d="M${x-4} 66h8l-1-2.6h-6z" fill="#28345c"/><rect x="${x-2.4}" y="57" width="4.8" height="6.5" fill="#28345c"/><path d="M${x} 57V18" stroke="#28345c" stroke-width="2.4"/><path d="M${x-.8} 24v30M${x+.8} 24v30" stroke="#2c375c" stroke-width=".45"/><path d="M${x} 18c0-6 4-8 8-6 3 1.5 3.5 5 1.5 6.5" fill="none" stroke="#28345c" stroke-width="1.8" stroke-linecap="round"/><path d="M${x+9.5} 18.5c-1.4-1.2-2.8-.4-2.4 1" fill="none" stroke="#28345c" stroke-width="1"/><path d="M${x+8.5} 19.5v2" stroke="#28345c" stroke-width="1"/><path d="M${x+5} 21.5h7l-.8 1.6h-5.4z" fill="#28345c"/><path class="lamplit" d="M${x+8.5} 23c-2.4 0-3.6 1.8-3.6 3.8 0 2.4 1.6 4.2 3.6 4.2s3.6-1.8 3.6-4.2c0-2-1.2-3.8-3.6-3.8z" fill="#fff1d6" opacity=".95"/><circle cx="${x+8.5}" cy="27" r="6" fill="#fff1d6" opacity=".2"/><ellipse cx="${x+7}" cy="66" rx="22" ry="4.5" fill="#fff1d6" opacity=".1"/></g>`;
 export const TREE=(x)=>`<path d="M${x} 66c-9-13-9-24 0-36 9 12 9 23 0 36z" fill="#1c3550" opacity=".85"/>`;
 /* a lit window with a frame, sill and curtains. cls lets it be lit-on-hover or always on */
 const WIN=(x,y,w,h,cls='lit',op=.85)=>`<rect x="${x-1}" y="${y-1}" width="${w+2}" height="${h+2}" fill="#3b4a78"/><rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#0b1224"/>
@@ -298,38 +344,100 @@ H.mediterranean=(x,w,e)=>{
 
 /* ------------------------------------------------------------------ far backgrounds */
 export const FAR = {};
-FAR.victorian=`<g class="far skyline"><g fill="#18213f"><path d="M0 36l10-6 10 6v30H0zM20 36l10-6 10 6v30H20zM40 36l10-6 10 6v30H40zM60 36l10-6 10 6v30H60zM80 36l10-6 10 6v30H80zM100 36l10-6 10 6v30h-20zM120 36l10-6 10 6v30h-20zM140 36l10-6 10 6v30h-20zM160 36l10-6 10 6v30h-20zM180 36l10-6 10 6v30h-20zM200 36l10-6 10 6v30h-20z"/></g>
-  <g fill="#1f2a4c"><rect x="12" y="26" width="3" height="6"/><rect x="52" y="26" width="3" height="6"/><rect x="92" y="26" width="3" height="6"/><rect x="132" y="26" width="3" height="6"/><rect x="172" y="26" width="3" height="6"/><rect x="212" y="26" width="3" height="6"/></g>
-  <g fill="${GOLD}" opacity=".4"><rect x="6" y="40" width="3" height="3"/><rect x="34" y="42" width="3" height="3"/><rect x="66" y="40" width="3" height="3"/><rect x="86" y="44" width="3" height="3"/><rect x="126" y="41" width="3" height="3"/><rect x="154" y="43" width="3" height="3"/><rect x="186" y="40" width="3" height="3"/></g></g>`;
+/* Victorian: the terrace row runs the whole street now, with a clock tower and a church
+   spire on the skyline behind it, smoke from the chimney pots and a gasholder frame. */
+FAR.victorian=`<g class="far skyline">
+  <g fill="${FAR1}"><path d="M236 66V22h10v44zM238 22l5-8 5 8z"/><path d="M350 66V30h6v36zM348 30l5-14 5 14z"/><path d="M300 66V48h12v18z"/></g>
+  <circle cx="241" cy="30" r="3" fill="${GOLD}" opacity=".55"/><path d="M241 30v-2M241 30l1.5 1" stroke="${FAR3}" stroke-width=".6"/>
+  <g stroke="#2f4180" stroke-width=".7" fill="none" opacity=".8"><path d="M96 66V40M112 66V40M128 66V40M96 44h32M96 52h32M96 60h32"/></g>
+  <g fill="${FAR2}"><path d="M0 36l10-6 10 6v30H0zM20 36l10-6 10 6v30H20zM40 36l10-6 10 6v30H40zM60 36l10-6 10 6v30H60zM80 36l10-6 10 6v30H80zM100 36l10-6 10 6v30h-20zM120 36l10-6 10 6v30h-20zM140 36l10-6 10 6v30h-20zM160 36l10-6 10 6v30h-20zM180 36l10-6 10 6v30h-20zM200 36l10-6 10 6v30h-20zM220 36l10-6 10 6v30h-20zM240 36l10-6 10 6v30h-20zM260 36l10-6 10 6v30h-20zM280 36l10-6 10 6v30h-20zM300 36l10-6 10 6v30h-20zM320 36l10-6 10 6v30h-20zM340 36l10-6 10 6v30h-20zM360 36l10-6 10 6v30h-20z"/></g>
+  <g fill="#1f2a4c"><rect x="12" y="26" width="3" height="6"/><rect x="52" y="26" width="3" height="6"/><rect x="92" y="26" width="3" height="6"/><rect x="132" y="26" width="3" height="6"/><rect x="172" y="26" width="3" height="6"/><rect x="212" y="26" width="3" height="6"/><rect x="252" y="26" width="3" height="6"/><rect x="292" y="26" width="3" height="6"/><rect x="332" y="26" width="3" height="6"/><rect x="366" y="26" width="3" height="6"/></g>
+  ${SMOKE(13.5,25)}${SMOKE(93.5,25)}${SMOKE(213.5,25)}${SMOKE(333.5,25)}
+  ${WINS([[6,40],[34,42],[66,40],[86,44],[126,41],[154,43],[186,40],[226,42],[246,44],[266,40],[306,42],[326,44],[346,40],[366,44]],.4,3,3)}
+  ${MOON(300,18,3.5)}${CLOUD(40,20,40,.08)}${HAZE(60)}</g>`;
 FAR.modern=CITY;
-FAR.colonial=`<g class="far skyline"><path d="M0 46L40 22l30 14 26-18 40 22 30-14 40 20 40-16 30 12 32-10 40 14v40H0z" fill="#182541"/>
-  
+/* New England: a ridge, a fog bank over the pines, a white steeple with a lit clock in the
+   gap beyond the houses, a barn by the road on the far right, the moon over it all. */
+FAR.colonial=`<g class="far skyline">
+  <path d="M0 40L30 24l40 12 36-22 44 24 30-10 44 18 40-16 30 12 32-10 40 14v40H0z" fill="${FAR1}"/>
+  <path d="M0 46L40 22l30 14 26-18 40 22 30-14 40 20 40-16 30 12 32-10 40 14v40H0z" fill="#182541"/>
+  ${MOON(318,20,5)}${CLOUD(120,24,70,.09)}
+  <g fill="#c8d8ff" opacity=".55"><path d="M236 66V42h10v24z"/><path d="M238 42V30h6v12z"/><path d="M237 30l4-14 4 14z"/></g><rect x="239" y="44" width="4" height="4" fill="${FAR3}"/><rect class="lit" x="239" y="44" width="4" height="4" fill="${GOLD}" opacity=".6"/><circle cx="241" cy="36" r="1.6" fill="${GOLD}" opacity=".55"/>
+  <g fill="${FAR2}"><path d="M346 66V50l12-8 12 8v16z"/><path d="M346 50l12-8 12 8z" fill="${FAR3}"/></g><rect x="356" y="56" width="4" height="4" fill="${GOLD}" opacity=".5"/>
+  <rect y="50" width="376" height="10" fill="#c8d8ff" opacity=".07"/>
   <g fill="#0f1a33">${Array.from({length:26},(_,i)=>`<path d="M${i*14+2} 66l6-18 6 18z"/>`).join('')}</g><g fill="#132040">${Array.from({length:25},(_,i)=>`<path d="M${i*14+9} 66l6-14 6 14z"/>`).join('')}</g></g>`;
-FAR.mediterranean=`<g class="far skyline"><rect y="40" width="376" height="26" fill="#0f2a4a"/><path d="M0 40h376" stroke="#2a4a7a" stroke-width="1"/>
-  <g stroke="#2a4a7a" stroke-width=".7" opacity=".7"><path d="M20 46h30M70 50h20M120 44h40M180 52h26M230 46h30M300 50h20"/></g>
+/* Coastal: the bay. A hill village with a bell tower across the water, the lighthouse
+   beam, moonlight on the swell, boats at anchor, a headland. */
+FAR.mediterranean=`<g class="far skyline">
+  <path d="M290 40c14-10 30-16 50-16 16 0 28 4 36 10v6H290z" fill="${FAR1}"/>
+  <g fill="${FAR2}"><path d="M300 40V34h5v6zM308 40V32h6v8zM318 40V30h5v10zM326 40V33h7v7zM337 40V31h5v9zM346 40V35h6v5zM356 40V33h5v7zM364 40V36h6v4z"/><path d="M330 30V18h4v12z"/><path d="M329 18l3-4 3 4z"/></g>
+  ${WINS([[301,36],[310,34],[320,32],[328,35],[339,33],[348,37],[358,35],[365,37]],.5,1.6,1.6)}<circle cx="332" cy="24" r="1" fill="${GOLD}" opacity=".6"/>
+  <path d="M320 40c-1.6-4-1.6-8 0-12 1.6 4 1.6 8 0 12zM352 40c-1.6-4-1.6-8 0-12 1.6 4 1.6 8 0 12z" fill="${FAR3}"/>
+  <path d="M150 40c14-6 30-8 50-6v6z" fill="${FAR1}" opacity=".8"/>
+  <rect y="40" width="376" height="26" fill="#0f2a4a"/><path d="M0 40h376" stroke="#2a4a7a" stroke-width="1"/>
+  <g stroke="#2a4a7a" stroke-width=".7" opacity=".7"><path d="M20 46h30M70 50h20M120 44h40M180 52h26M230 46h30M300 50h20M340 46h24"/></g>
+  <path d="M63 24L118 12v22z" fill="#fff" opacity=".05"/>
   <path d="M60 40v-14h6v14z" fill="#1c2748"/><path d="M58 26h10l-1-3h-8z" fill="#1c2748"/><circle class="twinkle" cx="63" cy="24" r="1.6" fill="#fff"/><circle class="twinkle" cx="63" cy="24" r="5" fill="#fff" opacity=".14"/>
-  <g fill="#1c2748"><path d="M140 40h24l-3 4h-18zM150 40V24l6 16zM300 42h18l-2 3h-14zM308 42V30l4 12z"/></g>
-  <circle cx="230" cy="14" r="6" fill="#fff4de" opacity=".85"/><circle cx="230" cy="14" r="10" fill="#fff4de" opacity=".12"/>
-  <path d="M226 40c2 4 6 4 8 0M270 46c2 4 6 4 8 0M186 44c2 4 6 4 8 0" stroke="#fff" stroke-opacity=".25" stroke-width=".8" fill="none"/></g>`;
-FAR.farmhouse=`<g class="far skyline"><path d="M0 44C60 36 120 38 190 34s120 2 186 4v30H0z" fill="#16243a"/>
-  <path d="M0 52C70 46 140 50 210 44s110 4 166 2v22H0z" fill="#12203a"/>
+  <g fill="#1c2748"><path d="M140 40h24l-3 4h-18zM150 40V24l6 16zM300 42h18l-2 3h-14zM308 42V30l4 12zM250 41h12l-2 2h-8zM255 41V33l3 8z"/></g>
+  ${MOON(230,18,6)}<g stroke="#fff" stroke-opacity=".18" stroke-width=".8"><path d="M226 44h9M224 48h12M227 52h7M223 56h14"/></g>
+  <path d="M226 40c2 4 6 4 8 0M270 46c2 4 6 4 8 0M186 44c2 4 6 4 8 0" stroke="#fff" stroke-opacity=".25" stroke-width=".8" fill="none"/>
+  ${CLOUD(140,18,50,.08)}</g>`;
+/* Farm country: rolling fields, a wind pump and water tower, the barn and silo, another
+   farmstead lit up on the far side, hay bales and fireflies along the fence. */
+FAR.farmhouse=`<g class="far skyline">
+  <path d="M0 38C60 30 120 32 190 28s120 2 186 4v40H0z" fill="${FAR1}"/>
+  <path d="M0 44C60 36 120 38 190 34s120 2 186 4v30H0z" fill="#16243a"/>
+  ${MOON(300,17,4.5)}${CLOUD(60,20,60,.08)}
   <g fill="#0f1a2e">${Array.from({length:14},(_,i)=>`<circle cx="${i*15+12}" cy="${42-(i%3)*2}" r="${5+(i%2)*2}"/>`).join('')}</g>
+  <g stroke="#2b3d72" stroke-width=".8" fill="none"><path d="M248 60V34M244 60l4-26 4 26M245 44h6M244 52h8"/></g><circle cx="248" cy="32" r="4" fill="none" stroke="#2b3d72" stroke-width=".8"/><path d="M248 32l0-4M248 32l3.5 2M248 32l-3.5 2M248 32l2.5-3M248 32l-2.5-3M248 32l0 4" stroke="#2b3d72" stroke-width=".6"/>
+  <g fill="${FAR2}"><path d="M56 50V38h12v12z"/><path d="M55 38h14l-1-2H56z"/><rect x="58" y="50" width="1.2" height="10"/><rect x="65" y="50" width="1.2" height="10"/><path d="M57 52l9 6M66 52l-9 6" stroke="${FAR2}" stroke-width=".6"/></g>
   <g transform="translate(110,0)"><path d="M0 52V38l10-8 10 8v14z" fill="#7a2a24"/><path d="M0 38l10-8 10 8z" fill="#2b2f3a"/><rect x="7" y="44" width="6" height="8" fill="#3a1a16"/><path d="M7 44l6 8M13 44l-6 8" stroke="#c9a" stroke-width=".6" opacity=".6"/><rect x="24" y="30" width="7" height="22" rx="1" fill="#8a8f9a"/><path d="M23 30a4.5 3 0 0 1 9 0z" fill="#9aa0aa"/></g>
+  <g fill="${FAR2}"><path d="M346 56V46l8-6 8 6v10z"/><path d="M345 46l9-7 9 7z" fill="${FAR3}"/><rect x="340" y="50" width="4" height="6"/><path d="M362 56c-4-5-4-10 0-14 4 4 4 9 0 14z"/></g>${WINS([[351,49],[356,49]],.55,2.5,2.5)}
+  <path d="M0 52C70 46 140 50 210 44s110 4 166 2v22H0z" fill="#12203a"/>
+  <g fill="#2a3a5e"><ellipse cx="30" cy="58" rx="3" ry="2"/><ellipse cx="38" cy="58" rx="3" ry="2"/><ellipse cx="228" cy="57" rx="3" ry="2"/><ellipse cx="262" cy="57" rx="3" ry="2"/><ellipse cx="270" cy="57" rx="3" ry="2"/></g>
+  <g fill="${GOLD}" opacity=".5"><circle class="twinkle" cx="20" cy="55" r=".7"/><circle class="twinkle" cx="46" cy="53" r=".6"/><circle class="twinkle" cx="240" cy="54" r=".7"/><circle class="twinkle" cx="256" cy="56" r=".6"/><circle class="twinkle" cx="360" cy="53" r=".7"/></g>
   <g stroke="#3a4a63" stroke-width=".8"><path d="M0 60h376"/><path d="${Array.from({length:32},(_,i)=>`M${i*12} 58v4`).join('')}"/></g></g>`;
-FAR.georgian=`<g class="far skyline"><g fill="#1a2650"><path d="M0 50h10v24H0zM14 44h8v30h-8zM26 40h6v34h-6zM36 46h12v28H36zM52 38h6v36h-6zM62 48h10v26H62zM76 42h8v32h-8zM88 36h5v38h-5zM96 46h12v28H96zM114 44h9v30h-9zM128 38h6v36h-6zM138 48h10v26h-10z"/>
+/* Georgian: a capital. A column with a statue, the dome, a cathedral spire with a lit
+   clock, a crescent of terraces sweeping off to the right, a lamplit bridge below it. */
+FAR.georgian=`<g class="far skyline">
+  <g fill="${FAR1}"><path d="M250 74V30h10v44z"/><path d="M251 30l4-14 4 14z"/><path d="M280 50c20-10 60-12 96-8v32h-96z"/><path d="M20 74V22h4v52z"/><path d="M19 22h6l-1-3h-4zM21 19l1-3 1 3z"/></g>
+  <circle cx="255" cy="36" r="2.6" fill="${GOLD}" opacity=".5"/><path d="M255 36v-1.8M255 36l1.2.8" stroke="${FAR3}" stroke-width=".5"/>
+  <g stroke="#2f4180" stroke-width=".5" opacity=".7"><path d="M284 46v28M292 44v30M300 43v31M308 42v32M316 42v32M324 42v32M332 42v32M340 42v32M348 43v31M356 43v31M364 44v30"/></g>
+  ${WINS([[286,50],[286,58],[294,48],[302,54],[310,48],[318,56],[326,50],[334,60],[342,50],[350,56],[358,48],[366,54]],.45,1.6,1.6)}
+  <g fill="${FAR2}"><path d="M0 50h10v24H0zM14 44h8v30h-8zM26 40h6v34h-6zM36 46h12v28H36zM52 38h6v36h-6zM62 48h10v26H62zM76 42h8v32h-8zM88 36h5v38h-5zM96 46h12v28H96zM114 44h9v30h-9zM128 38h6v36h-6zM138 48h10v26h-10z"/>
   <path d="M160 52h36v22h-36z"/><path d="M160 52a18 14 0 0 1 36 0z" fill="#22305f"/><rect x="176" y="26" width="4" height="12"/><path d="M178 26l-4 4h8z" fill="#22305f"/><circle cx="178" cy="24" r="1.5" fill="${GOLD}" opacity=".9"/>
   <path d="M204 48h6v26h-6zM214 42h8v32h-8zM226 50h10v24h-10z"/></g>
-  <g fill="${GOLD}" opacity=".45"><rect x="16" y="48" width="2" height="2"/><rect x="38" y="50" width="2" height="2"/><rect x="64" y="52" width="2" height="2"/><rect x="78" y="46" width="2" height="2"/><rect x="98" y="50" width="2" height="2"/><rect x="116" y="48" width="2" height="2"/><rect x="130" y="44" width="2" height="2"/><rect x="216" y="46" width="2" height="2"/><rect x="228" y="54" width="2" height="2"/></g>
-  <circle class="twinkle" cx="54" cy="37" r="1" fill="#ff6b6b"/><circle class="twinkle" cx="90.5" cy="35" r="1" fill="#ff6b6b"/></g>`;
-FAR.craftsman=`<g class="far skyline"><path d="M0 50C40 30 90 28 130 40s90 8 130-6 80-4 116 4v30H0z" fill="#1a2140"/><path d="M0 56C60 46 120 48 180 44s120 0 196 6v20H0z" fill="#151c38"/>
-  ${[30,70,150,200,250].map(x=>`<path d="M${x} 66V40" stroke="#1c3550" stroke-width="2"/><g fill="#1c3550"><path d="M${x} 40c-8-2-12-8-10-14 6 2 10 8 10 14zM${x} 40c8-2 12-8 10-14-6 2-10 8-10 14zM${x} 40c-2-8 0-14 6-18-2 6-2 12-6 18zM${x} 40c2-8 0-14-6-18 2 6 2 12 6 18z"/></g>`).join('')}
-  <circle cx="330" cy="14" r="7" fill="#fff4de" opacity=".85"/><circle cx="330" cy="14" r="12" fill="#fff4de" opacity=".12"/></g>`;
-FAR.brownstone=`<g class="far skyline"><g fill="#1a2650"><path d="M0 44h14v30H0zM18 34h10v40H18zM32 48h12v26H32zM48 30h8v44h-8zM60 40h14v34H60zM78 26h6v48h-6zM88 46h12v28H88zM104 36h10v38h-10z"/><path d="M118 52h100v22H118z"/><path d="M230 40h10v34h-10zM244 32h8v42h-8zM256 46h14v28h-14z"/></g>
+  <g fill="#1f2a4c"><rect x="16" y="42" width="2" height="3"/><rect x="28" y="38" width="2" height="3"/><rect x="54" y="35" width="2" height="4"/><rect x="78" y="40" width="2" height="3"/><rect x="216" y="40" width="2" height="3"/></g>${SMOKE(29,38)}${SMOKE(79,40)}
+  <g stroke="#2b3d72" stroke-width="1" fill="none"><path d="M280 66h96"/><path d="M284 66a8 8 0 0 1 16 0M304 66a8 8 0 0 1 16 0M324 66a8 8 0 0 1 16 0M344 66a8 8 0 0 1 16 0"/></g><g fill="${GOLD}" opacity=".55"><circle cx="292" cy="62" r=".8"/><circle cx="312" cy="62" r=".8"/><circle cx="332" cy="62" r=".8"/><circle cx="352" cy="62" r=".8"/></g>
+  ${WINS([[16,48],[38,50],[64,52],[78,46],[98,50],[116,48],[130,44],[216,46],[228,54],[40,58],[100,60],[140,54]])}
+  ${RED(54,37)}${RED(90.5,35)}${CLOUD(130,22,60,.08)}${HAZE(62)}</g>`;
+/* Hillside: a mountain ridge behind the hills, a water tower and a radio mast on the crest,
+   bungalows lit along a winding road, palms, the moon. */
+FAR.craftsman=`<g class="far skyline">
+  <path d="M0 40C30 22 60 18 100 30s70 6 110-8 70-12 100 0 40 6 66 2v50H0z" fill="${FAR1}"/>
+  ${MOON(330,17,7)}${CLOUD(180,16,60,.07)}
+  <path d="M0 50C40 30 90 28 130 40s90 8 130-6 80-4 116 4v30H0z" fill="#1a2140"/>
+  <g stroke="#2b3d72" stroke-width=".8" fill="none"><path d="M236 44V34M246 44V34M236 44l10-10M246 44l-10-10"/></g><path d="M234 34h14v-6h-14z" fill="${FAR2}"/><path d="M234 28l7-3 7 3z" fill="${FAR2}"/>
+  <path d="M300 40V16" stroke="#2b3d72" stroke-width="1"/><path d="M296 40l4-24 4 24M298 30h4M297 35h6" stroke="#2b3d72" stroke-width=".5" fill="none"/>${RED(300,15)}
+  <path d="M210 52c20-6 40-8 60-14s40-8 60-6" stroke="#3b4f8a" stroke-width=".7" fill="none" stroke-dasharray="3 3" opacity=".6"/>
+  <g fill="${FAR2}"><path d="M220 50h10v6h-10zM252 44h10v6h-10zM284 40h12v6h-12zM350 46h10v6h-10z"/><path d="M219 50l6-3 6 3zM251 44l6-3 6 3zM283 40l7-3 7 3zM349 46l6-3 6 3z" fill="${FAR3}"/></g>
+  ${WINS([[223,52],[255,46],[259,46],[288,42],[293,42],[353,48]],.55,1.6,1.6)}
+  <path d="M0 56C60 46 120 48 180 44s120 0 196 6v20H0z" fill="#151c38"/>
+  ${[30,70,150,200,250,310,352].map(x=>`<path d="M${x} 66V40" stroke="#1c3550" stroke-width="2"/><g fill="#1c3550"><path d="M${x} 40c-8-2-12-8-10-14 6 2 10 8 10 14zM${x} 40c8-2 12-8 10-14-6 2-10 8-10 14zM${x} 40c-2-8 0-14 6-18-2 6-2 12-6 18zM${x} 40c2-8 0-14-6-18 2 6 2 12 6 18z"/></g>`).join('')}</g>`;
+/* The city across the river: a stepped spire behind the bridge, towers with window grids
+   lifted by haze, a rooftop water tank, the bridge cables, ferry lights on the water. */
+FAR.brownstone=`<g class="far skyline">
+  <g fill="${FAR1}"><path d="M40 74V30h16v44z"/><path d="M43 30v-8h10v8zM46 22v-6h4v6zM47.5 16v-5h1v5z"/><path d="M230 74V26h10v48zM262 74V20h12v54zM290 74V34h14v40zM320 74V22h12v52zM346 74V30h10v44zM362 74V38h14v36z"/></g>
+  ${GRID(42,32,3,12,5,3.2,1.2,.45)}${GRID(264,22,2,14,5,3.4,1.2,.45)}${GRID(322,24,2,13,5,3.6,1.2,.45)}${GRID(292,36,3,10,4,3.6,1.1,.4)}
+  ${RED(48,10)}${RED(268,18)}${RED(326,20)}
+  <g fill="${FAR2}"><path d="M0 44h14v30H0zM18 34h10v40H18zM32 48h12v26H32zM48 30h8v44h-8zM60 40h14v34H60zM78 26h6v48h-6zM88 46h12v28H88zM104 36h10v38h-10z"/><path d="M118 52h100v22H118z"/><path d="M230 40h10v34h-10zM244 32h8v42h-8zM256 46h14v28h-14zM278 44h10v30h-10zM306 46h12v28h-12zM340 42h10v32h-10zM356 48h14v26h-14z"/></g>
+  <g fill="#2b3d72"><rect x="90" y="40" width="6" height="6" rx=".5"/><path d="M89 40h8l-1-2h-6z"/><path d="M91 46v2M95 46v2" stroke="#2b3d72" stroke-width=".8"/></g>
   <path d="M130 52V30M206 52V30" stroke="#2b3d72" stroke-width="2.2"/><path d="M118 52c12-18 24-22 44-22h12c20 0 32 4 44 22" fill="none" stroke="#2b3d72" stroke-width="1.2"/>
   <g stroke="#2b3d72" stroke-width=".6" opacity=".8"><path d="M140 52V40M150 52V37M160 52V35M176 52V35M186 52V37M196 52V40"/></g>
-  <g fill="${GOLD}" opacity=".45"><rect x="20" y="40" width="2" height="2"/><rect x="24" y="48" width="2" height="2"/><rect x="50" y="36" width="2" height="2"/><rect x="64" y="46" width="2" height="2"/><rect x="80" y="32" width="2" height="2"/><rect x="106" y="42" width="2" height="2"/><rect x="246" y="38" width="2" height="2"/><rect x="232" y="50" width="2" height="2"/></g>
+  <g stroke="${GOLD}" stroke-width=".8" opacity=".35"><path d="M120 51h96"/></g>
+  ${WINS([[20,40],[24,48],[50,36],[64,46],[80,32],[106,42],[246,38],[232,50],[280,48],[308,52],[342,46],[360,52],[8,50],[92,50]])}
   <g fill="#c8d8ff" opacity=".35"><circle cx="130" cy="29" r="1"/><circle cx="206" cy="29" r="1"/><circle cx="150" cy="37" r=".8"/><circle cx="186" cy="37" r=".8"/></g>
-  <circle class="twinkle" cx="80" cy="25" r="1" fill="#ff6b6b"/></g>`;
+  ${RED(80,25)}${CLOUD(160,16,50,.07)}${HAZE(64)}</g>`;
 
 /**
  * Furniture style (scripts/hero-picker.js STYLES, in menu order) → house drawn for it.

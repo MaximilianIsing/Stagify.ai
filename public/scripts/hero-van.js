@@ -34,7 +34,7 @@
  * `document` for every later pick. Neither side imports the other.
  */
 
-import { BEAM, ENT, FAR, H, LAMP, ROAD, SKY, STARS, STYLE_HOUSE, TREE, VAN } from './hero-van-art.js';
+import { BEAM, ENT, FAR, H, LAMP, LAMPS, ROAD, SKY, STARS, STYLE_HOUSE, TREE, VAN } from './hero-van-art.js';
 
 /** The media condition under which the scene is mounted at all. */
 export const SCENE_MEDIA = '(min-width: 769px) and (hover: hover) and (pointer: fine)';
@@ -69,8 +69,8 @@ const OUT_SLACK_MS = 450;
 
 /**
  * A style change is a "rolling road": the two houses slide off to the left at their
- * parallax depths while the new ones slide in from the right, the road's dashes roll under
- * them, and the skyline and the lamp-side tree crossfade. Sky, stars, road and van stay
+ * parallax depths, the lamp and tree with them, while the new ones slide in from the
+ * right, the road's dashes roll under them and the skyline crossfades. Sky, stars, road and van stay
  * where they are — the van in particular, so a drive in progress is never cut. This is the
  * CSS duration (`--hu-swap-ms`), for the fallback timer that ends the swap if no
  * animationend arrives.
@@ -190,7 +190,8 @@ const HOUSE_FOR = new Map(STYLE_HOUSE.map((m) => [m.key, m.house]));
 const DEFAULT_STYLE = 'modern';
 
 /**
- * The complete scene for one furniture style, as an SVG string.
+ * The complete scene for one furniture style, as an SVG string: its house twice (small
+ * behind, full-size with the entrance), its skyline, and its own street lamp.
  *
  * Pure: same inputs, same markup, except that entrance clip ids are numbered per call so two
  * plates in one document never share one (ENT() in hero-van-art.js). `seq` only namespaces
@@ -204,6 +205,7 @@ export function buildScene(styleKey, seq = 0) {
   const k = HOUSE_FOR.get(styleKey) || HOUSE_FOR.get(DEFAULT_STYLE) || 'modern';
   const house = H[k];
   const far = FAR[k] || '';
+  const lamp = (LAMPS[k] || LAMP)(200);
   // Farmhouse and the low Craftsman bungalow have their own trees; the others get the one
   // by the lamp.
   const tree = k === 'farmhouse' || k === 'craftsman' ? '' : TREE(118);
@@ -215,7 +217,7 @@ export function buildScene(styleKey, seq = 0) {
     `<g class="mid">${house(140, 66, false)}</g>` +
     `<g class="home">${house(276, 100, true)}${ENT(k)}</g>` +
     ROAD +
-    `<g class="near props">${LAMP(200)}${tree}</g>` +
+    `<g class="near props">${lamp}${tree}</g>` +
     `<g class="van">${BEAM}${VAN()}</g>` +
     `</svg>`
   );
@@ -355,6 +357,15 @@ export function initHeroVan(doc = document, win = window) {
   // the van is parked (the hover `.van` rule would otherwise restart the drive-in from the
   // left) and goes with the next leave.
   //
+  // "Stay": the pointer is back before the van has even moved — the leave's first 0.25s,
+  // while the door is still closing and the van waits for it. Nothing to retarget: the
+  // drive-out is cut, `.hu-park` keeps the van in the bay (a zero-length park), and
+  // `.hu-reopen` drops the entrance's hover delays so the door swings back open from
+  // wherever it got to instead of pausing a second for a lantern that is already lit.
+  // Only a PULL-AWAY can be stayed: a rolling exit passes through the bay at speed. The
+  // wheels keep their angle across the stay, and the visit counts as full from here on,
+  // so the next leave is the ordered one however soon it comes.
+  //
   // SPEED IS CONTINUOUS. Every planned segment (a rolling drive-out, a park) starts at the
   // speed the van has at that instant — read off its current curve, see speedAt() — and its
   // timing curve and duration are built around that (planSegment()), so a leave or a
@@ -380,7 +391,8 @@ export function initHeroVan(doc = document, win = window) {
     return !!el && !el.classList.contains('hidden');
   });
   /**
-   * Where the van is right now, in scene units, for the drive-out to start from.
+   * Where the van is right now, in scene units; null when it cannot be read (no van, or
+   * no getComputedStyle).
    *
    * Read inside a momentary `.hu-hold`: by the time pointerleave fires the :hover state
    * is already gone, and a computed-style read would cancel the drive-in and report the
@@ -388,23 +400,29 @@ export function initHeroVan(doc = document, win = window) {
    * live, and the read returns the van's actual mid-drive transform. Nothing paints in
    * between — the class is off again before this function returns.
    */
-  const vanX = () => {
+  const readVanX = () => {
     const van = scene.querySelector('.van');
-    if (!van || !win.getComputedStyle) return PARK_X;
+    if (!van || !win.getComputedStyle) return null;
     const wasHeld = btn.classList.contains('hu-hold');
     if (!wasHeld) btn.classList.add('hu-hold');
     const t = win.getComputedStyle(van).transform;
     if (!wasHeld) btn.classList.remove('hu-hold');
     const m = /matrix\(([^)]+)\)/.exec(t || '');
     const x = m ? parseFloat(m[1].split(',')[4]) : NaN;
-    return Number.isFinite(x) ? x : PARK_X;
+    return Number.isFinite(x) ? x : null;
   };
+  /** readVanX() with the parking bay as the answer when the van cannot be read. */
+  const vanX = () => readVanX() ?? PARK_X;
   let outRunning = false;
   let outTimer = 0;
   let hovering = false;
   /** The curve the van is on right now, for speedAt(); null when it is at rest. */
   /** @type {Segment | null} */
   let seg = null;
+  /** The wheel angle while the van rests with no segment (after a stay); 0 for a fresh van. */
+  let restSpin = 0;
+  /** True while the current drive-out is the pull-away from the bay (not a rolling exit). */
+  let leavingBay = false;
   const outDone = () => {
     if (!outRunning) return;
     outRunning = false;
@@ -416,9 +434,12 @@ export function initHeroVan(doc = document, win = window) {
     btn.classList.remove('hu-quick');
     // With the gate open, a pointer still on the button gets the drive-in at once.
     seg = hovering ? DRIVE_IN : null;
+    // The van that left is gone; the next one arrives with its wheels at zero.
+    restSpin = 0;
+    leavingBay = false;
   };
   /** The wheel angle at scene x on the current segment, kept within one turn. */
-  const spinAt = (x) => (seg ? ((seg.spin0 || 0) + (x - seg.from) * DEG_PER_UNIT) % 360 : 0);
+  const spinAt = (x) => (seg ? ((seg.spin0 || 0) + (x - seg.from) * DEG_PER_UNIT) % 360 : restSpin);
   /** Publish a planned segment's wheel rotation for the CSS `hu-spin-seg` keyframes. */
   const setSpin = (s) => {
     btn.style.setProperty('--hu-spin-from', `${s.spin0.toFixed(1)}deg`);
@@ -440,6 +461,7 @@ export function initHeroVan(doc = document, win = window) {
     } else {
       ms = Math.round(Math.min(OUT_MAX_MS, Math.max(OUT_MIN_MS, (OUT_PARKED_MS * (OFF_X - x)) / (OFF_X - PARK_X))));
       seg = { ...PULL_AWAY, from: x, ms };
+      leavingBay = true;
       btn.style.removeProperty('--hu-out-ease');
     }
     seg.spin0 = spin0;
@@ -463,6 +485,22 @@ export function initHeroVan(doc = document, win = window) {
     btn.style.setProperty('--hu-out-ease', easeOf(seg));
     btn.classList.add('hu-park');
   };
+  /** The pointer is back and the van never left the bay: cancel the leave, reopen the door. */
+  const stay = () => {
+    const spin0 = spinAt(PARK_X);
+    outDone();
+    seg = null;
+    restSpin = spin0;
+    // The door was open (a pull-away only follows a full visit), so whatever happens next
+    // is an ordered leave, however soon it comes.
+    enteredAt = (win.performance ? win.performance.now() : Date.now()) - DOOR_OPEN_MS;
+    setSpin({ spin0, from: PARK_X, to: PARK_X });
+    btn.style.setProperty('--hu-van-x', `${PARK_X}px`);
+    btn.style.setProperty('--hu-out-ms', '0ms');
+    btn.style.removeProperty('--hu-out-ease');
+    btn.classList.add('hu-park');
+    btn.classList.add('hu-reopen');
+  };
   btn.addEventListener('animationend', (ev) => {
     const name = /** @type {AnimationEvent} */ (ev).animationName;
     if (name === 'hu-drive-out') outDone();
@@ -482,16 +520,26 @@ export function initHeroVan(doc = document, win = window) {
   };
   btn.addEventListener('pointerenter', () => {
     hovering = true;
-    enteredAt = win.performance ? win.performance.now() : Date.now();
     if (outRunning) {
-      if (vanX() < PARK_X) park();
+      // Still in the bay (the pull-away's wait, before the van has moved): stay. Only for
+      // a pull-away — a rolling exit from a quick leave passes THROUGH the bay on its way
+      // off, and a van at 210 on that path is moving, not parked. Short of the door: park
+      // from here. Past it, or unreadable: let it go, a fresh van arrives once it is off
+      // the plate.
+      const x = readVanX() ?? OFF_X;
+      if (leavingBay && seg && Math.abs(x - seg.from) < 0.5) { stay(); return; }
+      enteredAt = win.performance ? win.performance.now() : Date.now();
+      if (x < PARK_X) park();
       return;
     }
+    enteredAt = win.performance ? win.performance.now() : Date.now();
     btn.classList.remove('hu-quick');
     if (!btn.classList.contains('hu-park')) seg = DRIVE_IN;
   });
   btn.addEventListener('pointerleave', () => {
     hovering = false;
+    // Only ever matters under :hover; the next fresh arrival gets the lantern-then-door timing.
+    btn.classList.remove('hu-reopen');
     if (held) {
       if (!modalOpen()) release();
       return;

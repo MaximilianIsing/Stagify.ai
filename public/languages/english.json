@@ -1344,6 +1344,10 @@
     "plan": {
       "hint": "Every room on this plan is a question. Select one and its answer appears here."
     },
+    "more": {
+      "show": "Show all questions",
+      "hide": "Show fewer questions"
+    },
     "rooms": {
       "basics": {
         "label": "Basics",

@@ -155,10 +155,14 @@ const SIZES = '(min-width: 1180px) 1110px, 94vw';
 /* Bounds for fitSentence(). 769 is the two-column breakpoint in hero-picker.css; below it the
  * side column stacks and there is not enough width to hold the sentence on one line at a size
  * anyone would call a headline (a 390px phone works out to ~17px in English and ~12px in
- * Spanish), so the phone keeps wrapping. FIT_FLOOR_PX is the same judgement applied to a
- * narrow desktop window: below it, wrapping beats a headline smaller than the body copy. */
+ * Spanish), so the phone gets TWO rows instead of one — broken at the fragment seam, so it is
+ * the same two rows for every pair in every language. FIT_FLOOR_PX is the same judgement
+ * applied to a narrow desktop window: below it, wrapping beats a headline smaller than the
+ * body copy. FIT_FLOOR_PHONE_PX is that judgement on a phone, where the rows are half as long
+ * and the clamp bottoms out at 23px — it is a backstop, not a path anything normally takes. */
 const FIT_MIN_WIDTH = 769;
 const FIT_FLOOR_PX = 20;
+const FIT_FLOOR_PHONE_PX = 16;
 /* Sub-pixel slack. Layout rounds, and a sentence measured at exactly the column width is a
  * sentence that wraps on the next reflow. */
 const FIT_SAFETY_PX = 2;
@@ -680,7 +684,8 @@ function initHeroPicker() {
   const sentence = /** @type {HTMLElement|null} */ (roomLabel.closest('.hp-sentence'));
   const mainCol = sentence && /** @type {HTMLElement|null} */ (sentence.closest('.hp-bar__main'));
 
-  /* THE HEADLINE IS ONE LINE ON DESKTOP, AND THE SIZE IS PINNED TO THE LOCALE'S WORST PAIR
+  /* THE HEADLINE IS ONE LINE ON DESKTOP AND TWO ROWS ON A PHONE, AND EITHER WAY THE SIZE IS
+   * PINNED TO THE LOCALE'S WORST PAIR
    * RATHER THAN THE CURRENT ONE. That is the whole design, and the alternative is worse:
    * sizing to what is on screen means the headline changes size every time you pick, and
    * since picking also cross-fades the photo behind it the two reads as a glitch.
@@ -697,6 +702,11 @@ function initHeroPicker() {
    * room in place while it walks the styles, so the last measurement it takes IS the worst
    * pair — 14 reads instead of 48.
    *
+   * The same loop, unchanged, does the phone. With `.is-two-line` on, the room sits on row 1
+   * and the style on row 2, so `max-content` reports the WIDER OF THE TWO ROWS rather than
+   * their sum — and the maximum of a max is still the max of the maxima, reached by the same
+   * walk. Sum or max, the widest room followed by the widest style is the answer.
+   *
    * Nothing here paints. The labels flicker through every candidate inside one synchronous
    * task, and the browser cannot paint until it ends, so none of it reaches the screen. */
   function fitSentence() {
@@ -704,8 +714,10 @@ function initHeroPicker() {
 
     /* Cleared FIRST so the computed size read below is the clamp, not the last fit. */
     sentence.classList.remove('is-fitted');
+    sentence.classList.remove('is-two-line');
     sentence.style.removeProperty('--hp-sentence-fs');
-    if (!window.matchMedia('(min-width: ' + FIT_MIN_WIDTH + 'px)').matches) return;
+
+    const twoLine = !window.matchMedia('(min-width: ' + FIT_MIN_WIDTH + 'px)').matches;
 
     const avail = mainCol.clientWidth;
     const cssFs = parseFloat(window.getComputedStyle(sentence).fontSize);
@@ -713,8 +725,12 @@ function initHeroPicker() {
 
     const room0 = roomLabel.textContent;
     const style0 = styleLabel.textContent;
-    /* `max-content` + nowrap is the natural single-line width, which is what has to fit —
-       the element's own box is still only as wide as the column. */
+    /* The break has to be in place BEFORE the measuring starts, or the phone gets sized for
+       a single line it will never render as one. */
+    if (twoLine) sentence.classList.add('is-two-line');
+    /* `max-content` + nowrap is the natural single-line width (on the phone, the wider of the
+       two rows), which is what has to fit — the element's own box is still only as wide as
+       the column. */
     sentence.style.whiteSpace = 'nowrap';
     sentence.style.width = 'max-content';
 
@@ -740,9 +756,13 @@ function initHeroPicker() {
     if (needed <= avail) { sentence.classList.add('is-fitted'); return; }
 
     const fitted = cssFs * (avail / needed);
-    /* Too small to read as a headline. Leave the class off and let it wrap, because the one
-       thing it must not do is keep `nowrap` and run out through the side of the bar. */
-    if (fitted < FIT_FLOOR_PX) return;
+    /* Too small to read as a headline. Leave both classes off and let it wrap, because the
+       one thing it must not do is keep `nowrap` and run out through the side of the bar —
+       and a break with no nowrap around it is two rows that wrap to four. */
+    if (fitted < (twoLine ? FIT_FLOOR_PHONE_PX : FIT_FLOOR_PX)) {
+      sentence.classList.remove('is-two-line');
+      return;
+    }
     sentence.style.setProperty('--hp-sentence-fs', fitted.toFixed(2) + 'px');
     sentence.classList.add('is-fitted');
   }

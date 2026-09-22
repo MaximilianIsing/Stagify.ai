@@ -1344,6 +1344,10 @@
     "plan": {
       "hint": "Cada cômodo desta planta é uma pergunta. Selecione um e a resposta aparece aqui."
     },
+    "more": {
+      "show": "Ver todas as perguntas",
+      "hide": "Ver menos perguntas"
+    },
     "rooms": {
       "basics": {
         "label": "O básico",

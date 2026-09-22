@@ -305,10 +305,11 @@
    the frame at home's inset, clear of the dots and 10px above the 4px .sdp__bar.
    Home mounts with dots:false and has no row to clear.
 
-   A callout clamped to the frame's bottom-right corner paints OVER it (.sdp__tip is
-   z-index 4 against this button's 2), exactly as it does on the homepage. That is the
-   right way round: lifting the button above the card would float a 44x44 tap target
-   on top of the card's own Next button.
+   z-index 5 puts it above the walkthrough's own callout card (.sdp__tip is z-index 4
+   in demo-player.css), same as on the homepage, so a callout landing in this corner
+   never hides the button — it must always be reachable to escape/rotate the demo.
+   The accepted tradeoff: on the rare frame where a callout's own Next button also
+   lands here, this button's 44x44 tap target can sit over it.
 
    scripts/guides.js hides the button outright when document.fullscreenEnabled is
    false, rather than leaving a control whose only behaviour is a rejected promise. */
@@ -316,7 +317,7 @@
   position: absolute;
   bottom: 31px;
   right: 10px;
-  z-index: 2;
+  z-index: 5;
   display: inline-flex;
   align-items: center;
   justify-content: center;

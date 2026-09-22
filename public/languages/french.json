@@ -1344,6 +1344,10 @@
     "plan": {
       "hint": "Chaque pièce de ce plan est une question. Sélectionnez-en une et sa réponse s’affiche ici."
     },
+    "more": {
+      "show": "Voir toutes les questions",
+      "hide": "Voir moins de questions"
+    },
     "rooms": {
       "basics": {
         "label": "Les bases",

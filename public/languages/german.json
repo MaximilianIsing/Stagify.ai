@@ -1344,6 +1344,10 @@
     "plan": {
       "hint": "Jeder Raum in diesem Grundriss ist eine Frage. Wählen Sie einen aus, und die Antwort erscheint hier."
     },
+    "more": {
+      "show": "Alle Fragen anzeigen",
+      "hide": "Weniger Fragen anzeigen"
+    },
     "rooms": {
       "basics": {
         "label": "Grundlagen",

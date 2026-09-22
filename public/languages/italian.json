@@ -1344,6 +1344,10 @@
     "plan": {
       "hint": "Ogni stanza di questa piantina è una domanda. Selezionane una e la risposta compare qui."
     },
+    "more": {
+      "show": "Mostra tutte le domande",
+      "hide": "Mostra meno domande"
+    },
     "rooms": {
       "basics": {
         "label": "Le basi",

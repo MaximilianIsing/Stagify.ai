@@ -71,6 +71,24 @@ test('every plate is well-formed SVG: unique ids, resolved refs, balanced groups
   }
 });
 
+test('every house has its own street lamp, and the lamp sits where the van and tree expect it', () => {
+  const lamps = new Map();
+  for (const { key, house } of STYLE_HOUSE) {
+    const svg = buildScene(key, key);
+    const m = /<g class="lamp" data-lamp="([a-z]+)">([\s\S]*?)<\/g>/.exec(svg);
+    assert.ok(m, `${key}: no lamp`);
+    assert.equal(m[1], house, `${key}: the lamp is drawn for its own house, not the fallback`);
+    assert.match(m[2], /class="lamplit"/, `${key}: the lamp has a lit head`);
+    lamps.set(m[1], m[2]);
+    // Footprint: nothing left of the tree's crown (118 + 9) or into the van's parking bay (210).
+    for (const [, sx] of m[2].matchAll(/\b(?:x|cx)="(-?[\d.]+)"/g)) {
+      const v = parseFloat(sx);
+      assert.ok(v >= 185 && v <= 214, `${key}: lamp part at x ${v} is outside the lamp's slot`);
+    }
+  }
+  assert.equal(new Set(lamps.values()).size, STYLE_HOUSE.length, 'eight different lamps, not one drawn eight times');
+});
+
 test('two plates in one document never share an entrance clip id', () => {
   const a = buildScene('modern', 1);
   const b = buildScene('modern', 2);
@@ -320,6 +338,8 @@ test('the swap hooks agree across the art, the script and the CSS', () => {
     assert.match(svg, /<path class="road-dash" d="M-2 70h380"[^>]*stroke-dasharray="6 8"/, `${key}: the dash roll below is 27 periods of 14, over a path that runs past both edges`);
   }
   assert.match(css, /#hero-upload\.hu \.home\.hu-in \{ animation: hu-home-in /, 'the swap ends on the home slide-in animation, by name');
+  assert.match(css, /#hero-upload\.hu \.props\.hu-in \{ animation: hu-home-in /, 'the lamp and tree ride the road at the home’s speed, not a crossfade');
+  assert.match(css, /#hero-upload\.hu \.skyline\.hu-in \{ animation: hu-band-in /, 'only the skyline crossfades');
   assert.match(css, /#hero-upload\.hu\.hu-swap \.road-dash \{ animation: hu-road-roll /);
   assert.match(css, /@keyframes hu-road-roll \{\s*from \{ stroke-dashoffset: 0; \}\s*to \{ stroke-dashoffset: 378; \}/);
   assert.match(css, /--hu-swap-ms: 0\.95s;/, 'hero-van.js SWAP_MS mirrors this');
@@ -480,6 +500,73 @@ test('a hover before the van has passed the door cuts the exit and parks from th
   assert.ok(!d.classes.has('hu-park') && d.classes.has('hu-out'), 'past the door: let it go');
 });
 
+test('a hover back while the van is still in the bay cancels the leave and reopens the door', () => {
+  const d = makeDom();
+  let x = 210;
+  d.scene.querySelector = (sel) => (sel === '.van' ? { tag: 'van' } : null);
+  d.win.getComputedStyle = () => ({ transform: `matrix(1, 0, 0, 1, ${x}, 0)` });
+  initHeroVan(/** @type {any} */ (d.doc), /** @type {any} */ (d.win));
+  d.pointer('pointerenter'); d.tick(2000); d.pointer('pointerleave');
+  assert.ok(d.classes.has('hu-out') && !d.classes.has('hu-quick'), 'full visit: the ordered leave');
+
+  // Back within the wait: the van has not moved.
+  d.tick(100); d.pointer('pointerenter');
+  assert.ok(!d.classes.has('hu-out'), 'the leave is cancelled');
+  assert.ok(d.classes.has('hu-park'), 'the van holds the bay (no drive-in from the left)');
+  assert.ok(d.classes.has('hu-reopen'), 'the door reopens without the arrival delays');
+  assert.equal(d.props['--hu-van-x'], '210px');
+  assert.equal(d.props['--hu-out-ms'], '0ms', 'a zero-length park');
+  assert.equal(d.props['--hu-out-ease'], undefined);
+  const from = parseFloat(d.props['--hu-spin-from']);
+  const to = parseFloat(d.props['--hu-spin-to']);
+  assert.equal(from, to, 'the wheels hold their angle');
+  const DEG = 360 / (2 * Math.PI * 7.4);
+  assert.ok(Math.abs(from - ((360 * DEG) % 360)) < 0.2, 'the angle the drive-in left them at');
+
+  // A leave soon after is still a FULL visit: the door was open the whole time.
+  d.tick(200); d.pointer('pointerleave');
+  assert.ok(d.classes.has('hu-out') && !d.classes.has('hu-quick'), 'ordered leave, not quick');
+  assert.ok(!d.classes.has('hu-park') && !d.classes.has('hu-reopen'), 'both go with the leave');
+  assert.equal(d.props['--hu-out-ms'], '850ms', 'the pull-away from a standstill');
+  assert.ok(Math.abs(parseFloat(d.props['--hu-spin-from']) - from) < 0.2, 'the pull-away spins on from the held angle, no snap');
+
+  // Stay again, and again: the angle survives every round.
+  d.tick(100); d.pointer('pointerenter');
+  assert.ok(d.classes.has('hu-park') && Math.abs(parseFloat(d.props['--hu-spin-from']) - from) < 0.2);
+  d.pointer('pointerleave');
+  assert.ok(Math.abs(parseFloat(d.props['--hu-spin-from']) - from) < 0.2);
+
+  // Once the van has left the bay the existing rules apply: park from short of the door.
+  x = 230; d.pointer('animationend', { animationName: 'hu-drive-out' });
+  d.pointer('pointerenter'); d.tick(300); d.pointer('pointerleave');
+  x = 150; d.pointer('pointerenter');
+  assert.ok(d.classes.has('hu-park') && !d.classes.has('hu-reopen'), 'a real park is not a reopen');
+});
+
+test('a rolling exit passing through the bay is not a stay, and a stay makes any later leave ordered', () => {
+  const d = makeDom();
+  let x = 120;
+  d.scene.querySelector = (sel) => (sel === '.van' ? { tag: 'van' } : null);
+  d.win.getComputedStyle = () => ({ transform: `matrix(1, 0, 0, 1, ${x}, 0)` });
+  initHeroVan(/** @type {any} */ (d.doc), /** @type {any} */ (d.win));
+  // Quick leave mid-arrival: the van rolls on and off, through x 210.
+  d.pointer('pointerenter'); d.tick(500); d.pointer('pointerleave');
+  assert.ok(d.classes.has('hu-out') && d.classes.has('hu-quick'));
+  x = 210.1; d.pointer('pointerenter');
+  assert.ok(d.classes.has('hu-out') && !d.classes.has('hu-park') && !d.classes.has('hu-reopen'), 'at the bay but moving: let it go');
+  d.pointer('pointerleave'); d.pointer('animationend', { animationName: 'hu-drive-out' });
+
+  // A full visit whose pull-away is stayed 1.1s after the first arrival: the leave 100ms
+  // later would be "quick" by the original clock, but the door was open, so it is ordered.
+  x = 210; d.pointer('pointerenter'); d.tick(1100); d.pointer('pointerleave');
+  assert.ok(!d.classes.has('hu-quick'));
+  d.tick(50); d.pointer('pointerenter');
+  assert.ok(d.classes.has('hu-park') && d.classes.has('hu-reopen'));
+  d.tick(50); d.pointer('pointerleave');
+  assert.ok(d.classes.has('hu-out') && !d.classes.has('hu-quick'), 'never quick after a stay');
+  assert.equal(d.props['--hu-out-ms'], '850ms');
+});
+
 test('a click holds the end state while the modal it opened is up, and lets go when it closes', () => {
   const d = makeDom();
   initHeroVan(/** @type {any} */ (d.doc), /** @type {any} */ (d.win));
@@ -541,6 +628,7 @@ test('the CSS gate and the script gate are the same media condition', () => {
   assert.equal(SCENE_MEDIA, '(min-width: 769px) and (hover: hover) and (pointer: fine)');
   assert.match(css, /#hero-upload\.hu \{/);
   assert.match(css, /#hero-upload\.hu\.hu-quick/);
+  assert.match(css, /#hero-upload\.hu\.hu-reopen:is\(:hover, \.hu-hold\):not\(\.hu-out\) \.ent \.leaf,[\s\S]*?\{\s*transition-delay: 0s;/, 'the reopen must outrank the hover rule that delays the door by 1s');
   assert.match(css, /#hero-upload\.hu:is\(:hover, \.hu-hold\):not\(\.hu-out\) \.van/, 'the drive must key off the hold class as well as :hover, and wait out a drive-out');
   assert.doesNotMatch(css, /#hero-upload\.hu:is\(:hover, \.hu-hold\) /, 'every hover rule must be gated on :not(.hu-out)');
   assert.doesNotMatch(css, /#hero-upload\.hu:hover/, 'a bare :hover rule would not hold while the modal is up');

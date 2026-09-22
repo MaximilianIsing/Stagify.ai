@@ -817,9 +817,9 @@ body.page-home main {
   position: relative;
 }
 
-/* --- The labelled control. Dots are decoration; these are the real tabs. ---
+/* --- The labelled control. The counter is decoration; these are the real tabs. ---
    Two shapes from one markup. Wide: five pills, wrapped and centred, and the arrows
-   and dots are display:none. Narrow (the ≤900px block near the bottom of this file):
+   and counter are display:none. Narrow (the ≤900px block near the bottom of this file):
    four of the five tabs go display:none and the arrows either side step through them,
    because five labels do not fit on a phone in ANY of the eleven packs. */
 .shw__nav {
@@ -836,7 +836,7 @@ body.page-home main {
 }
 /* Stepper chrome — narrow only; the ≤900px block turns both on. */
 .shw__arrow,
-.shw__dots {
+.shw__count {
   display: none;
 }
 .shw__tab {
@@ -1023,7 +1023,11 @@ body.page-home main {
    clickable — the pointer-events rule on side panels already covers that — so it
    also fades out on the panels behind, where it would be decoration you cannot
    press. studio-showcase.js hides it entirely when document.fullscreenEnabled is
-   false rather than leaving a button that does nothing. */
+   false rather than leaving a button that does nothing.
+
+   z-index 5 puts it above the walkthrough's own callout card (.sdp__tip, z-index 4
+   in demo-player.css) so it is never hidden when a callout lands in the same
+   corner — the button must always be reachable to escape/rotate the demo. */
 .shw__fs {
   position: absolute;
   /* BOTTOM-right, not top-right: the exterior panel's own "After" tag occupies the
@@ -1032,7 +1036,7 @@ body.page-home main {
      the walkthrough player is chrome-free (mounted with dots:false). */
   bottom: 10px;
   right: 10px;
-  z-index: 2;
+  z-index: 5;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1294,6 +1298,9 @@ body.page-home main {
    this replaced. Absolute positioning and the 3D layout only switch on once the
    script is there to drive them, so a dead script degrades to the old page
    rather than to four panels piled on top of each other. */
+/* The whole row, not only its contents: the narrow layout draws .shw__nav itself as the
+   segmented bar, so hiding just the tabs and arrows would leave an empty bordered box. */
+.shw:not(.shw--ready) .shw__nav,
 .shw:not(.shw--ready) .shw__tabs,
 .shw:not(.shw--ready) .shw__arrow {
   display: none;
@@ -2198,78 +2205,93 @@ body.page-home main {
      already means the active one is the only focusable tab, so hiding the rest costs the
      keyboard nothing. Do NOT bring the scroller back; that is what the drift guard in
      test/frontend/studio-showcase.test.js is pinning. */
-  /* Two rows out of one flex line: the label claims a full row, then the arrows and the
-     dots share the next one as `‹ ● ● ● ● ● ›`. `order` does the reordering rather than
-     the markup, because the wide layout wants the tablist BETWEEN the arrows and the
-     source order is the one screen readers and the tab sequence follow. */
+  /* ONE control, not three loose pieces. The arrows, the label and the counter are drawn
+     as a single segmented bar, which is also what stops the label reading as a second
+     heading: a bare line under the h2 landed on the same recipe as .home-section__title
+     (that clamp() bottoms out at 23px here, same --brand-deep) and looked like a twin.
+
+     A grid, not a wrapped flex line, because each arrow spans BOTH rows of the middle
+     column (label over counter) and a flex item cannot span rows. Source order stays
+     prev / tabs / next / counter — the order the tab sequence and screen readers follow —
+     and only the placement below moves the counter beneath the label. */
   .shw__nav {
-    flex-wrap: wrap;
-    row-gap: 2px;
-    column-gap: 4px;
-    margin-bottom: 14px;
+    display: grid;
+    grid-template-columns: 46px minmax(0, 1fr) 46px;
+    align-items: stretch;
+    max-width: 320px;
+    margin: 0 auto 16px;
+    border: 1px solid rgba(30, 58, 138, 0.12);
+    border-radius: 14px;
+    background: var(--bg-elevated);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 10px 22px rgba(30, 58, 138, 0.07);
+    overflow: hidden;
   }
   .shw__arrow--prev {
-    order: 1;
-  }
-  .shw__dots {
-    order: 2;
+    grid-area: 1 / 1 / 3 / 2;
   }
   .shw__arrow--next {
-    order: 3;
+    grid-area: 1 / 3 / 3 / 4;
   }
   .shw__arrow {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    flex: 0 0 auto;
     /* A ~16px chevron is not a touch target, and padding cannot get a glyph this small
-       to a comfortable one — see the share page's 27px-target regression. 40px clears
-       WCAG 2.5.8 with room to spare while staying visually slight, because the button
-       carries NO fill: it is a bare chevron with a generous hit box around it. */
-    min-width: 40px;
-    min-height: 40px;
+       to a comfortable one — see the share page's 27px-target regression. The bar gives
+       each arrow a full 46px column across both rows, which clears WCAG 2.5.8 with room
+       to spare while the button itself stays a bare chevron on a near-white segment. */
+    min-height: 44px;
     padding: 0;
     border: 0;
-    background: none;
+    background: #fbfcfe;
     color: var(--brand-deep);
-    opacity: 0.62;
+    opacity: 0.68;
     cursor: pointer;
+    transition: background 0.2s ease, opacity 0.2s ease;
+  }
+  .shw__arrow:hover {
+    background: var(--brand-wash);
+    opacity: 1;
   }
   .shw__arrow:focus-visible {
     outline: 3px solid var(--brand);
-    outline-offset: 2px;
-    border-radius: 999px;
+    outline-offset: -3px;
+    border-radius: 0;
   }
   .shw__arrow svg {
-    width: 16px;
-    height: 16px;
+    width: 17px;
+    height: 17px;
+  }
+  /* The two middle cells carry the segment dividers between them, so the rules meet as
+     one continuous line down each side of the label without the arrows drawing borders. */
+  .shw__tabs,
+  .shw__count {
+    border-left: 1px solid rgba(30, 58, 138, 0.1);
+    border-right: 1px solid rgba(30, 58, 138, 0.1);
   }
   .shw__tabs {
-    /* The whole first row — `flex-basis: 100%` is what breaks the line before the
-       arrows, which is what puts them beside the dots underneath. */
-    order: 0;
-    flex: 1 0 100%;
+    grid-area: 1 / 2 / 2 / 3;
     flex-wrap: nowrap;
+    align-items: flex-end;
     justify-content: center;
     min-width: 0;
     margin: 0;
+    padding: 9px 8px 0;
   }
   .shw__tab:not(.is-active) {
     display: none;
   }
-  /* The filled brand pill is a SELECTED state, and here there is nothing to be selected
-     against — the other four tabs are hidden, so the fill was a large blue slab saying
-     something the row already said. Strip it to the label alone and let it be BIG: on a
-     phone this line is the section's own heading for whichever studio is on show, not a
-     control label, so it is sized off .home-section__title rather than off .shw__tab. */
+  /* The filled brand pill is a SELECTED state, and inside the bar there is nothing left
+     to be selected against — the other four tabs are hidden. Strip it to the label alone:
+     the bar around it is what now says "control", so the text does not have to. */
   .shw__tab.is-active {
     /* Wraps rather than nowrap: `Estúdio de exteriores` at this size is wider than a
        360px phone, and an unbreakable line would push the section into a sideways scroll. */
     white-space: normal;
-    font-size: 23px;
+    font-size: 16px;
     line-height: 1.2;
-    letter-spacing: -0.02em;
-    padding: 2px 4px;
+    letter-spacing: -0.01em;
+    padding: 0;
     background: none;
     border-color: transparent;
     box-shadow: none;
@@ -2277,26 +2299,21 @@ body.page-home main {
     -webkit-backdrop-filter: none;
     color: var(--brand-deep);
   }
-  /* The label names the studio you are on; the dots are the only thing left saying how
-     many there are and where you are among them. studio-showcase.js builds one per panel,
-     inside .shw__nav so this row can hold the arrows either side of them. */
-  .shw__dots {
+  /* The label names the studio you are on; this is the only thing left saying how many
+     there are and where you are among them. Digits and a slash rather than words, so the
+     one string the stepper renders needs no entry in the eleven language packs
+     (studio-showcase.js builds it from the panel count). */
+  .shw__count {
+    grid-area: 2 / 2 / 3 / 3;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
-    gap: 6px;
-    margin: 0;
-  }
-  .shw__dot {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: rgba(37, 99, 235, 0.24);
-    transition: background 0.22s ease, transform 0.22s ease;
-  }
-  .shw__dot.is-active {
-    background: var(--brand);
-    transform: scale(1.3);
+    padding: 2px 8px 9px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    font-variant-numeric: tabular-nums;
+    color: var(--muted-light);
   }
   .shw__panel-inner {
     padding: 18px 16px 20px;
@@ -3159,7 +3176,15 @@ body.page-home main {
    wash carried the full width at a low level rather than faded out at 60%,
    because the longer packs ("Seguir a @stagify.ai", "@stagify.ai volgen")
    push the label further right than English does. Same reasoning, and same
-   shape, as the Enterprise plate's scrim. */
+   shape, as the Enterprise plate's scrim.
+
+   The pink trim line is the FIRST STOP OF box-shadow, not a border, and must stay
+   that way. All three paint layers above are `inset: 0` under `overflow: hidden`,
+   and both of those resolve to the PADDING box — so a border here is 1px of bare
+   base gradient that the aurora cannot light and the scrim cannot darken, brighter
+   than the face it frames and thickening at the 12px corners where the clip and the
+   border antialias separately. A spread-only shadow is painted outside the clip, so
+   the scene reaches the real edge and the line stays crisp. */
 .ig-follow {
   position: relative;
   overflow: hidden;
@@ -3173,12 +3198,14 @@ body.page-home main {
   border-radius: 12px;
   font-family: inherit;
   text-decoration: none;
-  border: 1px solid rgba(255, 190, 220, 0.4);
   background:
     radial-gradient(circle at 15% 92%, rgba(249, 206, 52, 0.3) 0, transparent 52%),
     radial-gradient(circle at 85% 12%, rgba(98, 40, 215, 0.45) 0, transparent 58%),
     linear-gradient(120deg, #c2185b 0%, #7b1fa2 52%, var(--brand-deep) 100%);
-  box-shadow: 0 10px 26px rgba(60, 12, 50, 0.36), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 0 0 1px rgba(255, 190, 220, 0.4),
+    0 10px 26px rgba(60, 12, 50, 0.36),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 .ig-follow::before,
@@ -3279,7 +3306,10 @@ body.page-home main {
 }
 .ig-follow:hover {
   transform: translateY(-2px);
-  box-shadow: 0 16px 34px rgba(60, 12, 50, 0.44);
+  box-shadow:
+    0 0 0 1px rgba(255, 190, 220, 0.5),
+    0 16px 34px rgba(60, 12, 50, 0.44),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 .ig-follow:hover::before {
   animation-duration: 6s;
@@ -4464,6 +4494,142 @@ body.page-home main {
 }
 .faq-q > p a:hover {
   text-decoration: underline;
+}
+
+/* --- The homepage FAQ on a phone: three questions, then a door ----------------
+   NINE GLASS CARDS COST ABOUT 800px OF SCROLL, which is a long toll to charge a
+   visitor who did not come for the FAQ, between the section they were reading and
+   the blog teaser below. Two changes, in this order, because the first one is free:
+
+     1. the nine cards become ONE sheet of glass with hairline rules between rows,
+        and the type comes down from 17.5px to 15px. That alone is roughly half the
+        height, with all nine questions still on screen and nothing hidden;
+     2. six of the nine are then hidden until the visitor asks for them.
+
+   THE DIVIDERS ARE THE GRID GAP, not a border on each row. A `+` border lands on the
+   DOM-adjacent row, so it draws a stray rule above the first VISIBLE row whenever the
+   row above it is one of the six hidden ones. A 1px gap over the sheet's own darker
+   ground only ever paints between two rows that are actually there, in any combination.
+   It also means the blur runs once, on the sheet, instead of nine times.
+
+   EVERYTHING IS SCOPED TO `.faq-plan`, which only index.html has. guides.html shares
+   `.faq-q` and `.faq-accordion` for its 17 troubleshooting items and keeps the cards.
+
+   WHY 1000px: faq-plan.css turns the sheet back into a drawing at 1001px, so this is
+   exactly the band where the FAQ is a list. It lives HERE rather than in that sheet for
+   the reason its own header gives — faq-plan.css is lazy, and a layout that matters on
+   phones cannot ride on a stylesheet that may lose its race. */
+.faq-more {
+  display: none;
+}
+
+@media (max-width: 1000px) {
+  .faq-plan .faq-accordion {
+    gap: 1px;
+    background: rgba(30, 58, 138, 0.14);
+    backdrop-filter: blur(16px) saturate(170%);
+    -webkit-backdrop-filter: blur(16px) saturate(170%);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(30, 58, 138, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    overflow: hidden;
+  }
+  /* The row keeps the glass COLOUR and gives up the shell: no border, no radius, no
+     shadow, and no second backdrop-filter over the sheet's. */
+  .faq-plan .faq-q {
+    background: rgba(255, 255, 255, 0.52);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .faq-plan .faq-q[open] {
+    background: rgba(255, 255, 255, 0.66);
+    box-shadow: none;
+  }
+  .faq-plan .faq-q > summary {
+    gap: 12px;
+    padding: 13px 16px;
+  }
+  /* Both undo the index-only type bump above. At 360px the 17.5px question wrapped to
+     two lines on five of the nine rooms, which is where a third of the height went. */
+  .faq-plan .faq-q > summary .faq-room__q {
+    font-size: 15px;
+  }
+  .faq-plan .faq-q > .faq-room__a {
+    margin: 0 16px;
+    padding: 0 0 15px;
+    border-top: 0;
+    font-size: 15px;
+  }
+  /* The six that wait. `data-featured` marks cost, speed and MLS disclosure: the three
+     questions that answer an objection rather than describe the product, so a collapsed
+     list still does the section's job. */
+  .faq-plan:not(.is-expanded) .faq-q:not([data-featured]) {
+    display: none;
+  }
+  /* THE THREE STAY WHERE THEY WERE WHEN THE OTHER SIX ARRIVE. In source order the three
+     are 2nd, 3rd and 7th of nine, so expanding used to slide Basics in above them and
+     three more rooms between Pricing and Disclosure: every visible question moved, and
+     the one the visitor was reading moved furthest. `order` pins them to the top in BOTH
+     states, so expanding only ever appends. Source order is untouched, which is what the
+     nine <details> ids, #faq-jsonld and plan mode above 1001px all read.
+
+     The dividers are the grid gap for exactly this reason — a `+` border would still be
+     drawn between DOM neighbours after the grid has reordered them. */
+  .faq-plan .faq-q[data-featured] {
+    order: -1;
+  }
+
+  .faq-more {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    max-width: 820px;
+    margin: 10px auto 0;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(16px) saturate(170%);
+    -webkit-backdrop-filter: blur(16px) saturate(170%);
+    border: 1px solid rgba(37, 99, 235, 0.35);
+    border-radius: 12px;
+    font: inherit;
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--brand);
+    cursor: pointer;
+  }
+  .faq-more:focus-visible {
+    outline: 3px solid var(--brand);
+    outline-offset: 2px;
+  }
+  /* The caret is the shared `.faq-q__caret`, so the button flips the same chevron the
+     rows do. Its open-state rule is keyed to `.faq-q[open]`, which a button is not. */
+  .faq-more[aria-expanded="true"] .faq-q__caret::before {
+    transform: translate(-50%, -30%) rotate(-135deg);
+  }
+  .faq-more__hide,
+  .faq-more[aria-expanded="true"] .faq-more__show {
+    display: none;
+  }
+  .faq-more[aria-expanded="true"] .faq-more__hide {
+    display: inline;
+  }
+}
+/* A SHEET OF PAPER IS ABOUT 816px WIDE, so print matches the block above and would
+   otherwise print three questions and a control nobody can press. The print rule higher
+   up already reduces the FAQ to its nine questions; this keeps it to NINE. */
+@media print {
+  .faq-plan:not(.is-expanded) .faq-q:not([data-featured]) {
+    display: block;
+  }
+  .faq-more {
+    display: none;
+  }
 }
 
 /* --- The closing row (#contact-cta) ------------------------------------------

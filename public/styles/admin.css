@@ -1189,6 +1189,15 @@ body.page-admin main { flex: 0 0 auto; overflow: visible; width: 100% }
 }
 .adm-an-close svg { width: 16px; height: 16px }
 .adm-an-close:hover { background: var(--adm-sunken); border-color: var(--adm-line); color: var(--adm-ink) }
+.adm-an-titles--grow { flex: 1; min-width: 0 }
+.adm-an-clear {
+  flex: none; align-self: center; padding: .3rem .55rem;
+  font-size: .75rem; font-weight: 550; font-family: inherit;
+  color: var(--adm-muted); background: none;
+  border: 1px solid var(--adm-line-strong); border-radius: var(--adm-r-sm); cursor: pointer;
+  transition: background .14s, border-color .14s, color .14s;
+}
+.adm-an-clear:hover { color: var(--adm-ink); background: var(--adm-sunken); border-color: var(--adm-line) }
 
 .adm-an-log { flex: 1; overflow-y: auto; padding: 1.15rem; display: flex; flex-direction: column; gap: .9rem }
 
@@ -1220,6 +1229,45 @@ body.page-admin main { flex: 0 0 auto; overflow: visible; width: 100% }
   background: var(--adm-accent-wash); border-radius: 4px;
 }
 
+/* Lists and tables the model writes. The prompt asks for a table whenever it is
+   genuinely comparing rows, so these are a first-class part of an answer rather
+   than a fallback — see analyst-answer.js. */
+.adm-an-list { margin: .1rem 0 .6rem; padding-left: 1.15rem }
+.adm-an-list:last-child { margin-bottom: 0 }
+.adm-an-item { margin: 0 0 .25rem }
+.adm-an-strong { font-weight: 650; color: var(--adm-ink) }
+.adm-an-code {
+  padding: .05rem .25rem; font-size: .9em; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  background: var(--adm-sunken); border: 1px solid var(--adm-line); border-radius: 4px;
+}
+.adm-an-table {
+  width: 100%; margin: .2rem 0 .65rem; border-collapse: collapse;
+  font-size: .78125rem; font-variant-numeric: tabular-nums;
+}
+.adm-an-table:last-child { margin-bottom: 0 }
+.adm-an-table th, .adm-an-table td {
+  padding: .3rem .45rem; text-align: left; vertical-align: top;
+  border-bottom: 1px solid var(--adm-line);
+}
+.adm-an-table th { font-weight: 600; color: var(--adm-ink); background: var(--adm-sunken) }
+.adm-an-table tbody tr:last-child td { border-bottom: none }
+
+/* The line under an answer: what it queried, and a way to take it elsewhere. */
+.adm-an-foot { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-top: .55rem }
+.adm-an-copy, .adm-an-stop, .adm-an-retry {
+  flex: none; padding: .2rem .45rem;
+  font-size: .6875rem; font-weight: 550; font-family: inherit;
+  color: var(--adm-muted); background: none;
+  border: 1px solid var(--adm-line); border-radius: var(--adm-r-sm); cursor: pointer;
+  transition: background .14s, border-color .14s, color .14s;
+}
+.adm-an-copy:hover, .adm-an-stop:hover, .adm-an-retry:hover {
+  color: var(--adm-ink); background: var(--adm-sunken); border-color: var(--adm-line-strong);
+}
+.adm-an-stop { margin-top: .4rem }
+.adm-an-retry { margin-top: .45rem; color: var(--adm-neg); border-color: var(--adm-neg-line) }
+.adm-an-retry:hover { color: var(--adm-neg); background: var(--adm-surface) }
+
 .adm-an-trace { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; margin-top: .55rem }
 .adm-an-trace-label { font-size: .6875rem; color: var(--adm-faint) }
 .adm-an-tool {
@@ -1237,6 +1285,8 @@ body.page-admin main { flex: 0 0 auto; overflow: visible; width: 100% }
   color: var(--adm-neg); background: var(--adm-neg-wash);
   border: 1px solid var(--adm-neg-line); border-radius: var(--adm-r-md);
 }
+.adm-an-error .adm-an-para { margin: 0 }
+.adm-an-foot .adm-an-trace { margin-top: 0 }
 
 .adm-an-form {
   display: flex; align-items: flex-end; gap: .5rem;
@@ -1249,6 +1299,8 @@ body.page-admin main { flex: 0 0 auto; overflow: visible; width: 100% }
   border-radius: var(--adm-r-md);
 }
 .adm-an-input:focus { outline: none; border-color: var(--adm-accent); background: var(--adm-surface) }
+.adm-an-input:disabled { color: var(--adm-muted); cursor: not-allowed }
+.adm-an-send:disabled { opacity: .5; cursor: not-allowed }
 .adm-an-send {
   flex: none; display: inline-flex; padding: .55rem;
   color: var(--bg-elevated); background: var(--adm-accent); border: 1px solid var(--adm-accent-deep);

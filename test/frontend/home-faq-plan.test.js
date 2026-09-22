@@ -681,7 +681,10 @@ test('the accordion fallback survives on both pages that use it', () => {
   const rooms = roomsInMarkup();
   // .faq-q is what home.css styles; losing it strips the section on every phone.
   assert.equal(rooms.length, 9, 'all nine <details> still carry faq-q alongside faq-room');
-  assert.match(INDEX, /<div class="faq-plan__sheet faq-accordion">/, 'the sheet is still the accordion grid');
+  // The id is what the mobile show-all button's aria-controls points at (faq-more.test.js
+  // owns that half); the two class names are what makes the sheet a list when the drawing
+  // is not there.
+  assert.match(INDEX, /<div class="faq-plan__sheet faq-accordion" id="faq-rooms">/, 'the sheet is still the accordion grid');
   for (const room of rooms) {
     assert.match(room.body, /<p class="faq-room__a"/, `${room.key}'s answer is a <p class="faq-room__a">`);
   }

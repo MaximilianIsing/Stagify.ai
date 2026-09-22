@@ -1172,7 +1172,7 @@ function withDrag(body) {
       stage,
       panels: [new FakeEl(), new FakeEl(), new FakeEl()],
       tabs: [new FakeEl(), new FakeEl(), new FakeEl()],
-      dots: [],
+      count: null,
       active: 0,
       sized: true,
     };
