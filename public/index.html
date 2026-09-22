@@ -176,6 +176,9 @@
     <script type="module" src="scripts/language-loader.js"></script>
     <script type="module" src="scripts/language-switcher.js"></script>
     <script type="module" src="scripts/nav-pill.js"></script>
+    <!-- Not with home-faq-plan.js in index-deferred.js: that one draws, this one is a
+         control, and a control that arrives after `load` swallows taps. -->
+    <script type="module" src="scripts/faq-more.js"></script>
     <script type="module" src="scripts/auth.js"></script>
     <script type="module" src="scripts/profile-menu.js"></script>
     <script type="module" src="scripts/heic-convert.js"></script>
@@ -521,7 +524,7 @@
                may only contain phrasing content, and while browsers happily render a ul in
                there, it is invalid and the roles do the same job on a span. Keep it that way
                if you touch the structure. -->
-          <h1 class="hp-sentence"><span data-lang="hero.sentence.before">Stage this </span><span class="hp-slot"><button type="button" class="hp-slot__btn" id="hero-room-btn" aria-haspopup="listbox" aria-expanded="false" aria-controls="hero-room-menu"><span id="hero-room-label" data-lang="hero.rooms.bedroom">bedroom</span><span class="hp-slot__chev" aria-hidden="true"></span></button><span class="hp-menu" id="hero-room-menu" hidden><span class="hp-menu__list" id="hero-room-list" role="listbox" aria-label="Room type" data-lang-attr="hero.roomMenuLabel|aria-label"></span></span></span><span data-lang="hero.sentence.middle"> in </span><span class="hp-slot"><button type="button" class="hp-slot__btn" id="hero-style-btn" aria-haspopup="listbox" aria-expanded="false" aria-controls="hero-style-menu"><span id="hero-style-label" data-lang="furnitureStyles.modern">Modern</span><span class="hp-slot__chev" aria-hidden="true"></span></button><span class="hp-menu" id="hero-style-menu" hidden><span class="hp-menu__list" id="hero-style-list" role="listbox" aria-label="Furniture style" data-lang-attr="hero.styleMenuLabel|aria-label"></span></span></span><span data-lang="hero.sentence.after"></span></h1>
+          <h1 class="hp-sentence"><span data-lang="hero.sentence.before">Stage this </span><span class="hp-slot"><button type="button" class="hp-slot__btn" id="hero-room-btn" aria-haspopup="listbox" aria-expanded="false" aria-controls="hero-room-menu"><span id="hero-room-label" data-lang="hero.rooms.bedroom">bedroom</span><span class="hp-slot__chev" aria-hidden="true"></span></button><span class="hp-menu" id="hero-room-menu" hidden><span class="hp-menu__list" id="hero-room-list" role="listbox" aria-label="Room type" data-lang-attr="hero.roomMenuLabel|aria-label"></span></span></span><span class="hp-sentence__mid" data-lang="hero.sentence.middle"> in </span><span class="hp-slot"><button type="button" class="hp-slot__btn" id="hero-style-btn" aria-haspopup="listbox" aria-expanded="false" aria-controls="hero-style-menu"><span id="hero-style-label" data-lang="furnitureStyles.modern">Modern</span><span class="hp-slot__chev" aria-hidden="true"></span></button><span class="hp-menu" id="hero-style-menu" hidden><span class="hp-menu__list" id="hero-style-list" role="listbox" aria-label="Furniture style" data-lang-attr="hero.styleMenuLabel|aria-label"></span></span></span><span data-lang="hero.sentence.after"></span></h1>
               <div class="hero-ctas">
                 <div class="hero-cta-button-wrap">
                   <!-- ON DESKTOP THIS IS A DRAWN STREET, not a gradient button. `.hu` picks up the plate
@@ -732,7 +735,7 @@
              double doors with the X bracing on each leaf, and a small side window. The X brace is
              what keeps this from reading as the generic house icon in the site header, and the
              loft window is what makes it a barn rather than a shed. -->
-        <symbol id="hp-ico-farmhouse" viewBox="0 0 32 32" stroke-width="1.7"><path d="M4 13 16 4l12 9v14H4z" fill="#dc2626"/><rect x="13.5" y="9" width="5" height="4" rx="0.5" fill="#ffffff"/><path d="M13.5 11h5M16 9v4"/><rect x="11" y="17.5" width="10" height="9.5" rx="0.5" fill="#ffffff"/><path d="M16 17.5v9.5"/><path d="M11 17.5l10 9.5M21 17.5l-10 9.5"/><rect x="5.5" y="18.5" width="3" height="3" rx="0.5" fill="#ffffff"/></symbol>
+        <symbol id="hp-ico-farmhouse" viewBox="0 0 32 32" stroke-width="1.7"><path d="M5.7 13.35 16 5.6l10.3 7.75v12.05H5.7z" fill="#dc2626"/><rect x="13.85" y="9.9" width="4.3" height="3.45" rx="0.45" fill="#ffffff"/><path d="M13.85 11.62h4.3M16 9.9v3.45"/><rect x="11.7" y="17.2" width="8.6" height="8.2" rx="0.45" fill="#ffffff"/><path d="M16 17.2v8.2"/><path d="M11.7 17.2l8.6 8.2M20.3 17.2l-8.6 8.2"/><rect x="6.95" y="18.05" width="2.6" height="2.6" rx="0.45" fill="#ffffff"/></symbol>
         <!-- Luxury: a three-arm chandelier. Chain, hub, two swept arms and a straight one, a
              candle cup on each with a candle standing in the outer two, and a crystal drop hanging
              under each cup. Marble and brass have no outline you can draw; a chandelier is the
@@ -2134,7 +2137,16 @@
           <h2 class="home-section__title" id="faq-title" data-tx="blur" data-lang="faq.title">Frequently asked questions</h2>
         </div>
         <div class="faq-plan reveal">
-          <div class="faq-plan__sheet faq-accordion">
+          <!-- BELOW 1001px THE LIST STARTS AT THREE QUESTIONS, NOT NINE. Nine glass cards
+               ran about 800px of phone scroll before the blog section, which is a long toll
+               to charge a visitor who did not come for the FAQ. The three carrying
+               `data-featured` are the ones that decide a sale — cost, speed, and whether the
+               photo may go on the MLS — and they are the three the collapsed list shows;
+               home.css hides the rest until `.faq-plan` gets `.is-expanded`. HIDDEN, NEVER
+               REMOVED: all nine stay in the DOM, so #faq-jsonld, the `#faq-…` deep links and
+               plan mode above 1001px are all untouched, and faq-more.js expands the list
+               whenever one of the six is opened from a link. -->
+          <div class="faq-plan__sheet faq-accordion" id="faq-rooms">
             <!-- Hand-authored because none of it depends on the room table, so it
                  cannot drift: the sheet frame, the graph-paper field, the building
                  envelope and its windows, the crossing corridors, the overall dimension
@@ -2276,7 +2288,7 @@
             </summary>
             <p class="faq-room__a" data-lang="faq.rooms.basics.answer">Virtual staging digitally furnishes a photo of an empty or dated room so buyers can see what the space could become. Nothing structural changes: the walls, windows, floors and proportions stay exactly as photographed, and only furniture and decor are added. It does the same job traditional staging does with a moving truck, in seconds instead of weeks. It is now standard practice on listings that would otherwise photograph as empty boxes.</p>
           </details>
-          <details class="faq-q faq-room" id="faq-turnaround" name="faq-room" data-room="turnaround" data-door="e0.45" data-no="02" style="--x:4;--y:26;--w:20;--h:20;--lt:calc(4cqh + 1px)">
+          <details class="faq-q faq-room" data-featured id="faq-turnaround" name="faq-room" data-room="turnaround" data-door="e0.45" data-no="02" style="--x:4;--y:26;--w:20;--h:20;--lt:calc(4cqh + 1px)">
             <summary>
               <span class="faq-room__label" data-lang="faq.rooms.turnaround.label">Turnaround</span>
               <span class="faq-room__q" data-lang="faq.rooms.turnaround.question">How fast is it?</span>
@@ -2284,7 +2296,7 @@
             </summary>
             <p class="faq-room__a" data-lang="faq.rooms.turnaround.answer">About 8 seconds per photo. Complex rooms and heavily detailed styles can take a little longer, but you are waiting seconds, not days, which is long enough to try three styles on the same room while you decide which one sells it. There is no queue, no booking and no back-and-forth with a stager: you upload, pick a look, and download.</p>
           </details>
-          <details class="faq-q faq-room" id="faq-pricing" name="faq-room" data-room="pricing" data-door="w0.55" data-no="03" style="--x:30;--y:7;--w:17;--h:19;--lt:calc(4cqh - 11px)">
+          <details class="faq-q faq-room" data-featured id="faq-pricing" name="faq-room" data-room="pricing" data-door="w0.55" data-no="03" style="--x:30;--y:7;--w:17;--h:19;--lt:calc(4cqh - 11px)">
             <summary>
               <span class="faq-room__label" data-lang="faq.rooms.pricing.label">Pricing</span>
               <span class="faq-room__q" data-lang="faq.rooms.pricing.question">What does it cost?</span>
@@ -2316,7 +2328,7 @@
             </summary>
             <p class="faq-room__a" data-lang="faq.rooms.photos.answer">Wide, bright and level. Shoot from a corner so two walls and plenty of floor are visible, keep the camera roughly chest height, and let in as much natural light as you can. Empty or lightly furnished rooms give the AI the cleanest canvas, though Stagify+ can remove existing furniture first. Avoid tight crops, heavy fisheye distortion, and photos where the floor is barely in frame, since there is nowhere to place furniture convincingly.</p>
           </details>
-          <details class="faq-q faq-room" id="faq-disclosure" name="faq-room" data-room="disclosure" data-door="w0.50" data-no="07" style="--x:30;--y:55;--w:17;--h:18;--lt:calc(4cqh + 5px)">
+          <details class="faq-q faq-room" data-featured id="faq-disclosure" name="faq-room" data-room="disclosure" data-door="w0.50" data-no="07" style="--x:30;--y:55;--w:17;--h:18;--lt:calc(4cqh + 5px)">
             <summary>
               <span class="faq-room__label" data-lang="faq.rooms.disclosure.label">Disclosure</span>
               <span class="faq-room__q" data-lang="faq.rooms.disclosure.question">Can I use these photos in an MLS listing?</span>
@@ -2352,6 +2364,17 @@
               <p class="faq-plan__hint" data-lang="faq.plan.hint">Every room on this plan is a question. Select one and its answer appears here.</p>
             </div>
           </div>
+          <!-- OUTSIDE THE SHEET ON PURPOSE. Above 1001px the sheet is a drawing whose
+               children are absolutely-positioned rooms; a button in there would flow over
+               the plan. Out here it is a sibling home.css shows only below 1001px, where
+               the sheet is a list again. Both labels ship in the markup and CSS picks the
+               one matching `aria-expanded`, so language-loader.js translates the state it
+               is not showing too and a switch mid-expansion cannot leave English behind. -->
+          <button class="faq-more" type="button" aria-expanded="false" aria-controls="faq-rooms">
+            <span class="faq-more__show" data-lang="faq.more.show">Show all questions</span>
+            <span class="faq-more__hide" data-lang="faq.more.hide">Show fewer questions</span>
+            <span class="faq-q__caret" aria-hidden="true"></span>
+          </button>
         </div>
       </section>
       <!-- ========================= BLOG ========================= -->
@@ -2446,7 +2469,7 @@
           <a class="ig-follow" href="https://www.instagram.com/stagify.ai/" target="_blank" rel="noopener noreferrer">
             <span class="ig-follow__scrim" aria-hidden="true"></span>
             <span class="ig-follow__label" data-lang="home.instagram.follow">Follow @stagify.ai</span>
-            <span class="ig-follow__glyph" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.2c3.2 0 3.6 0 4.9.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.43.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s0 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.43.16-1.06.36-2.23.41-1.27.06-1.65.07-4.9.07s-3.63 0-4.9-.07c-1.17-.05-1.8-.25-2.23-.41a3.7 3.7 0 0 1-1.38-.9 3.7 3.7 0 0 1-.9-1.38c-.16-.43-.36-1.06-.41-2.23C2.21 15.58 2.2 15.2 2.2 12s0-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.43-.16 1.06-.36 2.23-.41C8.42 2.21 8.8 2.2 12 2.2zm0 1.8c-3.14 0-3.5 0-4.74.07-.9.04-1.38.19-1.7.32-.43.17-.74.37-1.06.69-.32.32-.52.63-.69 1.06-.13.32-.28.8-.32 1.7C3.42 8.5 3.4 8.86 3.4 12s0 3.5.07 4.74c.04.9.19 1.38.32 1.7.17.43.37.74.69 1.06.32.32.63.52 1.06.69.32.13.8.28 1.7.32 1.24.07 1.6.07 4.74.07s3.5 0 4.74-.07c.9-.04 1.38-.19 1.7-.32.43-.17.74-.37 1.06-.69.32-.32.52-.63.69-1.06.13-.32.28-.8.32-1.7.07-1.24.07-1.6.07-4.74s0-3.5-.07-4.74c-.04-.9-.19-1.38-.32-1.7a2.86 2.86 0 0 0-.69-1.06 2.86 2.86 0 0 0-1.06-.69c-.32-.13-.8-.28-1.7-.32C15.5 4 15.14 4 12 4zm0 3.06A4.94 4.94 0 1 1 12 17a4.94 4.94 0 0 1 0-9.94zm0 1.8a3.14 3.14 0 1 0 0 6.28 3.14 3.14 0 0 0 0-6.28zM17.64 6.95a1.15 1.15 0 1 1 0 2.3 1.15 1.15 0 0 1 0-2.3z"/></svg></span>
+            <span class="ig-follow__glyph" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7.0301.084c-1.2768.0602-2.1487.264-2.911.5634-.7888.3075-1.4575.72-2.1228 1.3877-.6652.6677-1.075 1.3368-1.3802 2.127-.2954.7638-.4956 1.6365-.552 2.914-.0564 1.2775-.0689 1.6882-.0626 4.947.0062 3.2586.0206 3.6671.0825 4.9473.061 1.2765.264 2.1482.5635 2.9107.308.7889.72 1.4573 1.388 2.1228.6679.6655 1.3365 1.0743 2.1285 1.38.7632.295 1.6361.4961 2.9134.552 1.2773.056 1.6884.069 4.9462.0627 3.2578-.0062 3.668-.0207 4.9478-.0814 1.28-.0607 2.147-.2652 2.9098-.5633.7889-.3086 1.4578-.72 2.1228-1.3881.665-.6682 1.0745-1.3378 1.3795-2.1284.2957-.7632.4966-1.636.552-2.9124.056-1.2809.0692-1.6898.063-4.948-.0063-3.2583-.021-3.6668-.0817-4.9465-.0607-1.2797-.264-2.1487-.5633-2.9117-.3084-.7889-.72-1.4568-1.3876-2.1228C21.2982 1.33 20.628.9208 19.8378.6165 19.074.321 18.2017.1197 16.9244.0645 15.6471.0093 15.236-.005 11.977.0014 8.718.0076 8.31.0215 7.0301.0839m.1402 21.6932c-1.17-.0509-1.8053-.2453-2.2287-.408-.5606-.216-.96-.4771-1.3819-.895-.422-.4178-.6811-.8186-.9-1.378-.1644-.4234-.3624-1.058-.4171-2.228-.0595-1.2645-.072-1.6442-.079-4.848-.007-3.2037.0053-3.583.0607-4.848.05-1.169.2456-1.805.408-2.2282.216-.5613.4762-.96.895-1.3816.4188-.4217.8184-.6814 1.3783-.9003.423-.1651 1.0575-.3614 2.227-.4171 1.2655-.06 1.6447-.072 4.848-.079 3.2033-.007 3.5835.005 4.8495.0608 1.169.0508 1.8053.2445 2.228.408.5608.216.96.4754 1.3816.895.4217.4194.6816.8176.9005 1.3787.1653.4217.3617 1.056.4169 2.2263.0602 1.2655.0739 1.645.0796 4.848.0058 3.203-.0055 3.5834-.061 4.848-.051 1.17-.245 1.8055-.408 2.2294-.216.5604-.4763.96-.8954 1.3814-.419.4215-.8181.6811-1.3783.9-.4224.1649-1.0577.3617-2.2262.4174-1.2656.0595-1.6448.072-4.8493.079-3.2045.007-3.5825-.006-4.848-.0608M16.953 5.5864A1.44 1.44 0 1 0 18.39 4.144a1.44 1.44 0 0 0-1.437 1.4424M5.8385 12.012c.0067 3.4032 2.7706 6.1557 6.173 6.1493 3.4026-.0065 6.157-2.7701 6.1506-6.1733-.0065-3.4032-2.771-6.1565-6.174-6.1498-3.403.0067-6.156 2.771-6.1496 6.1738M8 12.0077a4 4 0 1 1 4.008 3.9921A3.9996 3.9996 0 0 1 8 12.0077"/></svg></span>
           </a>
         </div>
       </section>

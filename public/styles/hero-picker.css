@@ -57,10 +57,29 @@
    server-rendered locale URL that is a German or Spanish default — long enough to overflow if
    it could not wrap. No class, no nowrap, and it wraps as it does today.
 
-   `text-wrap: balance` above is left alone: it has no effect on a single line and is still
-   what shapes the wrapped line on a phone. */
+   `text-wrap: balance` above is left alone: it has no effect on a single line, and on the
+   phone the sentence is now broken deliberately (see `.is-two-line` below) rather than
+   balanced. It is what still shapes the no-JS case, which is free to wrap. */
 .hp-sentence.is-fitted {
   white-space: nowrap;
+}
+
+/* THE PHONE GETS TWO ROWS, ALWAYS THE SAME TWO: "Stage this <room>" / "in <style>".
+   Free-wrapped, the row count follows the current pick and the locale — three lines for
+   "dining room" + "Mid-century" at 390px, two for "office" + "Modern" — so the headline
+   reflows on every pick, on top of the photo behind it cross-fading. Breaking it at the
+   fragment seam instead makes it two rows for every pair in every language, and
+   fitSentence() sizes it to the wider of the two rows so it never changes size either.
+
+   `white-space: pre` on the pseudo is the whole trick: it is what lets the "\A" break
+   through the `nowrap` .is-fitted puts on the parent, while the text either side of it
+   keeps that nowrap and stays on its own row.
+
+   ADDED BY JS, AND ONLY BY JS, like .is-fitted and for the same reason — and never
+   without it, so a break can never outlive the measurement that sized it. */
+.hp-sentence.is-two-line .hp-sentence__mid::before {
+  content: "\A";
+  white-space: pre;
 }
 
 .hp-slot {
@@ -712,7 +731,16 @@
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 2;
+  /* ABOVE `.hp-original` (5), AND THAT NUMBER IS THE REASON THIS ONE IS NOT 2. The `z-index:
+     40` on `.hp-menu` sorts it against its siblings INSIDE this bar and nowhere else — the
+     bar is a stacking context, so the menu can never climb past whatever the bar itself
+     loses to. At 2 that was the See original / See staged pill, and on a phone the menu is a
+     sheet that overhangs the bar upwards and reaches it: the pill punched through the open
+     sheet. The bar sits at the bottom of the canvas and the pill at the top, so they never
+     overlap on their own; the only thing this reorders is that overhang, which is exactly
+     what it is for. Anything added to `.hp-canvas` that must cover an OPEN menu has to go
+     above this, not above the 40. */
+  z-index: 6;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 30px;
@@ -1350,13 +1378,13 @@
      right behind the old ones (`.hu-in` on the new, `.hu-leave` on the old) and sets
      `.hu-swap` on the button for the duration; sky, stars, road and the van are the same
      elements throughout, so a drive in progress simply carries on. The two houses slide
-     off left at their parallax depths (mid 0.55 of the home's 378) while the new ones
-     slide in from past the right edge, the road's dashes roll under them by exactly
-     that distance (27 dash periods, so the pattern lands on itself) and the skyline and
-     tree, which sit still, crossfade — a skyline that panned would double up with the
-     one arriving. The lamp is on both props bands at the same spot, so its crossfade is
-     invisible and only the tree changes. `both` fill: the incoming bands are inserted
-     before their animation starts and must not flash at rest first.
+     off left at their parallax depths (mid 0.55 of the home's 378) with the lamp and
+     tree riding along at the road's own speed, while the new ones slide in from past
+     the right edge and the road's dashes roll under them by exactly that distance (27
+     dash periods, so the pattern lands on itself). Only the skyline crossfades: a
+     skyline that panned would double up with the one arriving. `both` fill: the
+     incoming bands are inserted before their animation starts and must not flash at
+     rest first.
      The duration is mirrored in hero-van.js (SWAP_MS) for its fallback timer. */
   #hero-upload.hu {
     --hu-swap-ms: 0.95s;
@@ -1366,8 +1394,10 @@
   #hero-upload.hu .home.hu-in { animation: hu-home-in var(--hu-swap-ms) var(--hu-swap-ease) both; }
   #hero-upload.hu .mid.hu-leave { animation: hu-mid-leave var(--hu-swap-ms) var(--hu-swap-ease) both; }
   #hero-upload.hu .mid.hu-in { animation: hu-mid-in var(--hu-swap-ms) var(--hu-swap-ease) both; }
-  #hero-upload.hu :is(.skyline, .props).hu-leave { animation: hu-band-out var(--hu-swap-ms) ease both; }
-  #hero-upload.hu :is(.skyline, .props).hu-in { animation: hu-band-in var(--hu-swap-ms) ease both; }
+  #hero-upload.hu .props.hu-leave { animation: hu-home-leave var(--hu-swap-ms) var(--hu-swap-ease) both; }
+  #hero-upload.hu .props.hu-in { animation: hu-home-in var(--hu-swap-ms) var(--hu-swap-ease) both; }
+  #hero-upload.hu .skyline.hu-leave { animation: hu-band-out var(--hu-swap-ms) ease both; }
+  #hero-upload.hu .skyline.hu-in { animation: hu-band-in var(--hu-swap-ms) ease both; }
   #hero-upload.hu.hu-swap .road-dash { animation: hu-road-roll var(--hu-swap-ms) var(--hu-swap-ease) both; }
   @keyframes hu-home-leave {
     from { transform: translateX(var(--hu-pan, 0px)); }
@@ -1608,6 +1638,26 @@
   #hero-upload.hu.hu-quick .beam,
   #hero-upload.hu.hu-quick .lampglow {
     transition-delay: calc(var(--hu-out-ms, 0.85s) - 0.1s);
+  }
+
+  /* ---- the pointer came straight back: the door was open, the van never moved ----
+     hero-van.js sets this (with `.hu-park`, so the van holds the bay) when the pointer
+     returns during the leave's 0.25s wait, and clears it on the next leave. The hover
+     rules above stage an ARRIVAL: lantern at 0.9s, door at 1s, hallway at 1.05s, windows at
+     0.8s. Here nothing is arriving — the door is mid-swing and the lantern is already on —
+     so every entrance delay goes to zero and each transition just reverses from where it
+     is. Same selector shape as the hover rules so this outranks them. ---- */
+  #hero-upload.hu.hu-reopen:is(:hover, .hu-hold):not(.hu-out) .ent .leaf,
+  #hero-upload.hu.hu-reopen:is(:hover, .hu-hold):not(.hu-out) .ent .leaf.right,
+  #hero-upload.hu.hu-reopen:is(:hover, .hu-hold):not(.hu-out) .ent[data-k="brownstone"] .leaf,
+  #hero-upload.hu.hu-reopen:is(:hover, .hu-hold):not(.hu-out) .ent[data-k="brownstone"] .leaf.right,
+  #hero-upload.hu.hu-reopen:is(:hover, .hu-hold):not(.hu-out) .ent .spill,
+  #hero-upload.hu.hu-reopen:is(:hover, .hu-hold):not(.hu-out) .ent .lantern,
+  #hero-upload.hu.hu-reopen:is(:hover, .hu-hold):not(.hu-out) .lit {
+    transition-delay: 0s;
+  }
+  #hero-upload.hu.hu-reopen:is(:hover, .hu-hold):not(.hu-out) .ent .up {
+    animation-delay: 0s;
   }
 }
 

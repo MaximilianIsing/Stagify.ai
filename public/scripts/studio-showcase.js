@@ -55,7 +55,7 @@ const FOCUSABLE = 'a[href], button, input, select, textarea, iframe, [tabindex]'
  * @property {HTMLElement} stage
  * @property {HTMLElement[]} panels
  * @property {HTMLElement[]} tabs
- * @property {HTMLElement[]} dots position dots for the narrow stepper; empty if unbuilt
+ * @property {HTMLElement|null} count position counter for the narrow stepper, null if unbuilt
  * @property {number} active
  * @property {boolean} sized whether the stage has been measured at least once
  */
@@ -276,43 +276,40 @@ function reflowDemos(sc) {
 }
 
 /**
- * Position dots for the narrow layout, where the CSS hides every tab but the active one
- * and the strip becomes a `‹ Masking Studio ›` stepper. The label alone says WHICH studio
- * you are on but not that there are five of them, or where in the five you are — the dots
- * are the only thing carrying that, which is what the four hidden tabs used to carry.
+ * The position counter for the narrow layout, where the CSS hides every tab but the active
+ * one and the nav becomes a `‹ Masking Studio ›` stepper. The label alone says WHICH studio
+ * you are on but not that there are five of them, or where in the five you are — this is
+ * the only thing carrying that, which is what the four hidden tabs used to carry.
  *
- * Built here rather than authored in index.html so the count is derived from the panels
- * and cannot drift from them. Decoration, not a control: `aria-hidden`, no roles, no
- * strings — the tabs (wide) and the arrows (narrow) are the real controls, and a screen
- * reader already gets "tab 3 of 5" from the tablist itself.
+ * Built here rather than authored in index.html so the total is derived from the panels and
+ * cannot drift from them. Decoration, not a control: `aria-hidden`, no roles, and the one
+ * string it renders is digits and a slash, so it needs no entry in the language packs —
+ * the tabs (wide) and the arrows (narrow) are the real controls, and a screen reader
+ * already gets "tab 3 of 5" from the tablist itself.
  *
- * Appended INSIDE `.shw__nav`, after both arrows. The narrow layout wraps that flex row
- * and reorders it into `label` / `‹ ● ● ● ● ● ›`, which needs the dots and the arrows to
- * be siblings — an element cannot be flowed into a row belonging to another parent.
+ * Appended INSIDE `.shw__nav`, after both arrows. The narrow layout lays that row out as a
+ * grid and places this on the second line under the label, between the two arrows, which
+ * needs the counter and the arrows to be siblings — an element cannot be placed into a
+ * grid belonging to another parent. It stays out of `.shw__tabs`, which is a `role=tablist`
+ * and may only contain tabs.
  *
  * @param {HTMLElement} root
  * @param {number} count
- * @returns {HTMLElement[]} the dots, in panel order (empty if there is nowhere to put them)
+ * @returns {HTMLElement|null} the counter, or null if there is nowhere to put it
  */
-function buildDots(root, count) {
+function buildCounter(root, count) {
   const nav = root.querySelector('.shw__nav');
-  if (!nav) return [];
-  const wrap = document.createElement('div');
-  wrap.className = 'shw__dots';
-  wrap.setAttribute('aria-hidden', 'true');
-  const dots = [];
-  for (let i = 0; i < count; i += 1) {
-    const dot = document.createElement('span');
-    dot.className = 'shw__dot';
-    wrap.appendChild(dot);
-    dots.push(dot);
-  }
-  nav.appendChild(wrap);
-  return dots;
+  if (!nav) return null;
+  const el = document.createElement('div');
+  el.className = 'shw__count';
+  el.setAttribute('aria-hidden', 'true');
+  el.textContent = `1 / ${count}`;
+  nav.appendChild(el);
+  return el;
 }
 
 /**
- * Reflect `active` in the tablist and its dots, which is the only chrome the carousel
+ * Reflect `active` in the tablist and the counter, which is the only chrome the carousel
  * has: everything else is the panels themselves, plus drag / wheel / click-a-side-panel.
  * @param {Showcase} sc
  */
@@ -326,8 +323,8 @@ function updateChrome(sc) {
     else tab.setAttribute('tabindex', '-1');
   });
   // Every route into select() lands here — arrows, a swipe, a wheel flick, a deep link —
-  // so the dots follow the carousel however it was moved, not only when a tab was clicked.
-  sc.dots.forEach((dot, i) => dot.classList.toggle('is-active', i === sc.active));
+  // so the counter follows the carousel however it was moved, not only on a tab click.
+  if (sc.count) sc.count.textContent = `${sc.active + 1} / ${sc.panels.length}`;
 }
 
 /**
@@ -336,7 +333,7 @@ function updateChrome(sc) {
  * @param {{ focusTab?: boolean }} [opts]
  */
 function select(sc, next, opts) {
-  // The one guard that covers drag, wheel, arrows, tabs, dots AND a deep link, rather
+  // The one guard that covers drag, wheel, arrows, tabs AND a deep link, rather
   // than five copies at five call sites.
   if (expanded()) return;
   const n = sc.panels.length;
@@ -551,7 +548,7 @@ function build(root) {
   const panels = /** @type {HTMLElement[]} */ ([].slice.call(root.querySelectorAll('.shw__panel')));
   const tabs = /** @type {HTMLElement[]} */ ([].slice.call(root.querySelectorAll('.shw__tab')));
   if (!stage || panels.length < 2 || tabs.length !== panels.length) return null;
-  return { root, stage, panels, tabs, dots: buildDots(root, panels.length), active: 0, sized: false };
+  return { root, stage, panels, tabs, count: buildCounter(root, panels.length), active: 0, sized: false };
 }
 
 function init() {

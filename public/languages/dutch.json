@@ -1344,6 +1344,10 @@
     "plan": {
       "hint": "Elke kamer op deze plattegrond is een vraag. Selecteer er een en het antwoord verschijnt hier."
     },
+    "more": {
+      "show": "Alle vragen tonen",
+      "hide": "Minder vragen tonen"
+    },
     "rooms": {
       "basics": {
         "label": "Basis",

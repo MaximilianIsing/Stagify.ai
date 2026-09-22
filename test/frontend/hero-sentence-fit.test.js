@@ -91,6 +91,60 @@ test('the CSS still exposes the two hooks fitSentence() writes', () => {
   );
 });
 
+// THE PHONE IS THE SAME CONTRACT WITH A FOURTH MOVING PART: a class hook in the markup.
+// Below 769px fitSentence() breaks the sentence at the fragment seam and sizes it to the
+// wider of the two rows, so it is "Stage this <room>" / "in <style>" for every pair in
+// every locale instead of two rows for one pick and three for the next. The break is a
+// `content: "\A"` pseudo on the middle fragment; drop the class off that span in
+// index.html and, again, NOTHING ERRORS — the selector matches nothing, the rows silently
+// become one overflowing nowrap line on every phone.
+test('the phone break survives in all three files', () => {
+  const html = read('public', 'index.html');
+  assert.match(
+    html,
+    /<span class="hp-sentence__mid" data-lang="hero\.sentence\.middle">/,
+    'the `hp-sentence__mid` class is gone from the " in " fragment in public/index.html. ' +
+      'That class is the only hook the two-row phone break has — the `data-lang` attribute ' +
+      'is not one, it is i18n wiring. Without it the CSS rule matches nothing and the ' +
+      'sentence keeps `nowrap` with no break in it, which runs out through the side of the bar.'
+  );
+
+  const css = stripCss(read('public', 'styles', 'hero-picker.css'));
+  const rule = blocks(css, '.is-two-line').find((b) => b.selector.includes('hp-sentence__mid'));
+  assert.ok(
+    rule,
+    'the `.hp-sentence.is-two-line .hp-sentence__mid::before` rule is gone from ' +
+      'hero-picker.css, so fitSentence() adds a class that styles nothing and the phone ' +
+      'headline goes back to wrapping wherever the translated text happens to run out.'
+  );
+  assert.match(
+    rule.body,
+    /content\s*:\s*(["'])\\A\1/,
+    'the two-row rule stopped emitting the "\\A" line break, which is the break itself.'
+  );
+  assert.match(
+    rule.body,
+    /white-space\s*:\s*pre/i,
+    'the two-row rule lost `white-space: pre`. The parent carries `nowrap` from .is-fitted ' +
+      'while the rows are measured and rendered; `pre` on the pseudo is the only reason the ' +
+      '"\\A" breaks through it rather than collapsing to a space.'
+  );
+
+  const js = stripJs(read('public', 'scripts', 'hero-picker.js'));
+  assert.match(
+    js,
+    /classList\.add\(\s*'is-two-line'\s*\)/,
+    'hero-picker.js no longer adds is-two-line, so no phone ever gets the break.'
+  );
+  assert.match(
+    js,
+    /classList\.remove\(\s*'is-two-line'\s*\)/,
+    'hero-picker.js no longer removes is-two-line. It has to be cleared before each ' +
+      'measurement and dropped again when the fit lands below the floor — a break left on ' +
+      'without the nowrap that goes with it is two rows that wrap to four.'
+  );
+});
+
 test('hero-picker.js still writes both halves of the contract', () => {
   const js = stripJs(read('public', 'scripts', 'hero-picker.js'));
 
