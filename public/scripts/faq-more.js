@@ -56,7 +56,8 @@ export function initFaqMore(root = document) {
   // the UA scrolled to the room before this ran, and if that room is one of the six it
   // scrolled to something `display: none`. Expanding here, before the toggle listener has
   // anything to hear, is what makes a deep link land on its answer.
-  const view = root.defaultView || (typeof window === 'undefined' ? null : window);
+  // A Document carries its window; a fragment or element does not, so fall back to the global.
+  const view = /** @type {Partial<Document>} */ (root).defaultView || (typeof window === 'undefined' ? null : window);
   const expandForHash = () => {
     const id = String((view && view.location && view.location.hash) || '').replace(/^#/, '');
     if (!id) return;

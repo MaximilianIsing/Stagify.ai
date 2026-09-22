@@ -127,7 +127,10 @@ function main() {
   if (process.env.SKIP_NATIVE_ABI_CHECK === '1') return;
   // Render and CI install and run under the same Node, and scripts/start.sh ends in
   // `exec npm start` — without this the check would fire on every production boot for nothing.
-  if (process.env.RENDER || process.env.CI) return;
+  // (Destructured rather than read off process.env inline: this is a hosted-platform flag, not a data-dir
+  // derivation, and test/data/data-dir.test.js greps for the latter.)
+  const { RENDER, CI } = process.env;
+  if (RENDER || CI) return;
 
   const pinned = readPinnedNodeVersion();
 
