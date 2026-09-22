@@ -3285,7 +3285,14 @@ body.page-home main {
 /* The Instagram mark, in the well the other two plates keep their arrow in.
    It is the logo rather than an arrow because this is the one CTA whose
    destination is a place people recognise by its mark: the label says where
-   you are going, so the well can say whose it is. */
+   you are going, so the well can say whose it is.
+
+   The mark is the SAME path as `.about__profile-icon` on about.html: the
+   canonical 24x24 outline, drawn edge to edge. A hand-rolled approximation
+   shipped here first and was visibly wrong next to it -- near-circular corners
+   instead of the superellipse, a flat notch in the top edge where two curves
+   met, a thin stroke, and an undersized lens and flash. If this mark ever
+   moves into a shared partial, both copies go together. */
 .ig-follow__glyph {
   width: 30px;
   height: 30px;
@@ -3300,9 +3307,12 @@ body.page-home main {
   -webkit-backdrop-filter: blur(3px);
   transition: background 0.2s ease, transform 0.25s ease;
 }
+/* 16px, not the 18px the old path used: that one was inset to 2.2/24 and so drew
+   only ~14.7px of actual ink. This path runs the full 24 box, so the same optical
+   weight needs a smaller frame. */
 .ig-follow__glyph svg {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
 }
 .ig-follow:hover {
   transform: translateY(-2px);

@@ -89,7 +89,8 @@ const SWAP_BANDS = ['.skyline', '.mid', '.home', '.props'];
 /**
  * A motion segment as the CSS plays it: a translateX from `from` to `to` over `ms` on the
  * timing curve `cubic-bezier(x1, y1, x2, y2)`.
- * @typedef {{ from: number, to: number, ms: number, x1: number, y1: number, x2: number, y2: number }} Segment
+ * `spin0` is the wheel angle at `from`, set once the segment is scheduled.
+ * @typedef {{ from: number, to: number, ms: number, x1: number, y1: number, x2: number, y2: number, spin0?: number }} Segment
  */
 
 /**
@@ -230,7 +231,7 @@ export function buildScene(styleKey, seq = 0) {
  * controller so tests can drive it; the page ignores the return value.
  *
  * @param {Document} [doc]
- * @param {Window} [win]
+ * @param {Window & typeof globalThis} [win]
  * @returns {{ current: () => string, setStyle: (key: string) => void } | null}
  */
 export function initHeroVan(doc = document, win = window) {
@@ -442,8 +443,9 @@ export function initHeroVan(doc = document, win = window) {
   const spinAt = (x) => (seg ? ((seg.spin0 || 0) + (x - seg.from) * DEG_PER_UNIT) % 360 : restSpin);
   /** Publish a planned segment's wheel rotation for the CSS `hu-spin-seg` keyframes. */
   const setSpin = (s) => {
-    btn.style.setProperty('--hu-spin-from', `${s.spin0.toFixed(1)}deg`);
-    btn.style.setProperty('--hu-spin-to', `${(s.spin0 + (s.to - s.from) * DEG_PER_UNIT).toFixed(1)}deg`);
+    const spin0 = s.spin0 ?? 0;
+    btn.style.setProperty('--hu-spin-from', `${spin0.toFixed(1)}deg`);
+    btn.style.setProperty('--hu-spin-to', `${(spin0 + (s.to - s.from) * DEG_PER_UNIT).toFixed(1)}deg`);
   };
   /** @param {boolean} [rolling] the van was still moving (a quick leave) */
   const driveOut = (rolling = false) => {
