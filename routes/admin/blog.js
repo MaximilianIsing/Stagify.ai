@@ -1,9 +1,9 @@
 // The admin console's blog-readership endpoint: how often each article under
 // /blog/ is opened, and which ones are working.
 //
-// WHY IT IS A SEPARATE ROUTER FROM routes/admin.js. That file sits at its 650-line
+// WHY IT IS A SEPARATE ROUTER FROM routes/admin/index.js. That file sits at its 650-line
 // lint cap; the repo's answer to a full file is a sibling, not a raised ceiling —
-// the same reason routes/admin-renders.js and routes/admin-api-usage.js exist, and
+// the same reason routes/admin/renders.js and routes/admin/api-usage.js exist, and
 // it is mounted the same way.
 //
 // The two halves come from different places on purpose. The ARTICLE LIST is scanned
@@ -13,10 +13,10 @@
 // with no reads is still a row (the actionable one), and reads for a post that has
 // since been deleted are still reported rather than silently dropped.
 
-import { createAsyncRouter } from '../lib/http/async-router.js';
-import { sendError } from '../lib/http/http-helpers.js';
-import { reportError } from '../lib/http/error-ref.js';
-import { listBlogPosts } from '../lib/content/blog-posts.js';
+import { createAsyncRouter } from '../../lib/http/async-router.js';
+import { sendError } from '../../lib/http/http-helpers.js';
+import { reportError } from '../../lib/http/error-ref.js';
+import { listBlogPosts } from '../../lib/content/blog-posts.js';
 
 /** Window bounds the console may ask for. The reader buckets by day inside this. */
 const MIN_DAYS = 7;

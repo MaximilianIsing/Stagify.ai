@@ -74,7 +74,7 @@ app.use(createPublicRouter({ /* … */ hostedImages, email, /* … */ }));
 Their shapes live in `lib/types/deps.d.ts`, so the five routers reference one typedef
 instead of re-declaring the same JSDoc.
 
-**Why only those two.** `routes/admin.js`, `routes/auth.js` and `routes/public.js`
+**Why only those two.** `routes/admin/index.js`, `routes/auth.js` and `routes/public.js`
 consume `deps` themselves and forward nothing onward, so grouping a name they read is a
 local change. `routes/chat.js` and `routes/staging.js` are different — they pass the
 **whole bag** to sub-factories:

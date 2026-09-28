@@ -1,4 +1,4 @@
-// Tier: route (routes/admin-access.js) — the console's access log.
+// Tier: route (routes/admin/access.js) — the console's access log.
 //
 // The recording itself is covered by test/data/admin-access.test.js and the
 // refusal hook by test/http/admin-access-denied.test.js. What is at stake HERE is
@@ -8,7 +8,7 @@
 //     credential must be refused before the store is touched. Leaking the access
 //     log would hand an attacker the list of addresses that legitimately sign in.
 //   - **The ping falls through.** This router records the console's page-load probe
-//     by matching GET /api/admin/ping ahead of routes/admin.js and calling next().
+//     by matching GET /api/admin/ping ahead of routes/admin/index.js and calling next().
 //     If it ever stopped calling next(), the real handler would never answer and
 //     every operator would be locked out at the login screen — a silent, total
 //     outage of the console. It is pinned here.
@@ -20,7 +20,7 @@
 import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import express from 'express';
-import { createAdminAccessRouter } from '../../routes/admin-access.js';
+import { createAdminAccessRouter } from '../../routes/admin/access.js';
 
 const KEY = 'test-endpoint-key';
 const auth = { 'X-Stagify-Endpoint-Key': KEY };
@@ -57,7 +57,7 @@ async function mount({ adminAccess = makeAccess(), withPingHandler = true } = {}
     req.get('X-Stagify-Endpoint-Key') === KEY ? next() : res.status(403).json({ error: 'Forbidden' })
   );
   app.use(createAdminAccessRouter({ adminAccess, protectLogs }));
-  // Stands in for the real handler in routes/admin.js that the ping falls through to.
+  // Stands in for the real handler in routes/admin/index.js that the ping falls through to.
   if (withPingHandler) app.get('/api/admin/ping', (req, res) => res.json({ ok: true, from: 'admin-router' }));
   const srv = await new Promise((r) => { const s = app.listen(0, () => r(s)); });
   servers.push(srv);

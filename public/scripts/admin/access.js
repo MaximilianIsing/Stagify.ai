@@ -1,6 +1,6 @@
 // Access tab — who opened this console, from where, and what was refused.
 //
-// Reads GET /api/admin/access-log (routes/admin-access.js) over the store in
+// Reads GET /api/admin/access-log (routes/admin/access.js) over the store in
 // lib/data/admin-access.js. Two questions, so two tables: "who has been here"
 // (one row per IP, the recognition view) and "what just happened" (the flat feed).
 //

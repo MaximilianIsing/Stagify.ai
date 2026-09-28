@@ -1,9 +1,9 @@
 // The admin console's analyst endpoint: one turn of a tool-calling conversation
 // about the operator's own data.
 //
-// WHY IT IS A SEPARATE ROUTER FROM routes/admin.js. That file sits at its 650-line
+// WHY IT IS A SEPARATE ROUTER FROM routes/admin/index.js. That file sits at its 650-line
 // lint cap. The repo's answer to a full file is a sibling, not a raised ceiling —
-// the same reason routes/admin-renders.js and routes/admin-api-usage.js exist, and
+// the same reason routes/admin/renders.js and routes/admin/api-usage.js exist, and
 // it is mounted the same way.
 //
 // WHY IT IS STATELESS. The browser owns the conversation and the tool execution:
@@ -19,8 +19,8 @@
 // backstop for that rather than the thing that makes it true.
 
 import express from 'express';
-import { createAsyncRouter } from '../lib/http/async-router.js';
-import { sendError } from '../lib/http/http-helpers.js';
+import { createAsyncRouter } from '../../lib/http/async-router.js';
+import { sendError } from '../../lib/http/http-helpers.js';
 
 /** Matches the service's own cap; rejected here so an oversized body is never parsed twice. */
 const MAX_MESSAGES = 40;

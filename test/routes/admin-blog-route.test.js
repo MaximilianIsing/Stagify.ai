@@ -1,4 +1,4 @@
-// Tier: route (routes/admin-blog.js) — the console's blog-readership endpoint.
+// Tier: route (routes/admin/blog.js) — the console's blog-readership endpoint.
 //
 // The counting itself is covered by test/data/blog-views.test.js and the article
 // scan by test/content/blog-posts.test.js. What is at stake HERE is the HTTP edge:
@@ -18,7 +18,7 @@ import assert from 'node:assert/strict';
 import express from 'express';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createAdminBlogRouter } from '../../routes/admin-blog.js';
+import { createAdminBlogRouter } from '../../routes/admin/blog.js';
 
 const KEY = 'test-endpoint-key';
 const auth = { 'X-Stagify-Endpoint-Key': KEY };

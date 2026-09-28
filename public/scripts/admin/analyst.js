@@ -8,7 +8,7 @@
 // hand it over directly — `askAbout` opens the drawer with the finding already
 // written into the composer, editable before it is sent.
 //
-// WHERE THE LOOP LIVES. Here. The server (routes/admin-analyst.js) is a single
+// WHERE THE LOOP LIVES. Here. The server (routes/admin/analyst.js) is a single
 // stateless turn: it is handed a transcript and answers with either a message or a
 // set of tool calls. This file runs those calls against `ctx.data` via
 // analyst-tools.js, appends the results, and posts again — up to MAX_ROUNDS, which

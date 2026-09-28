@@ -7,7 +7,7 @@
 // console at all. `staged_renders` has held the parameters and `render_blobs` the
 // bytes since the gallery shipped; nothing operator-facing ever read them.
 //
-// WHY IT IS A SEPARATE ROUTER FROM routes/admin.js. That file sits at its 650-line
+// WHY IT IS A SEPARATE ROUTER FROM routes/admin/index.js. That file sits at its 650-line
 // lint cap. The repo's answer to a full file is a sibling, not a raised ceiling —
 // the same reason lib/data/session-revocation.js is its own module.
 //
@@ -24,8 +24,8 @@
 // `storage_key` and the owner's `user_id` never appear in the body — this router
 // shapes its output field by field and never spreads a database row.
 
-import { createAsyncRouter } from '../lib/http/async-router.js';
-import { readRenderExtra } from '../lib/data/render-extra.js';
+import { createAsyncRouter } from '../../lib/http/async-router.js';
+import { readRenderExtra } from '../../lib/data/render-extra.js';
 
 /**
  * How long an admin-minted URL stays good.
@@ -96,7 +96,7 @@ export function shapeAdminRender({ render, blobs, presign }) {
  *
  * @param {{
  *   stagedRenders: any,
- *   objectStore: import('../lib/data/object-store.js').ObjectStore,
+ *   objectStore: import('../../lib/data/object-store.js').ObjectStore,
  *   protectLogs: import('express').RequestHandler,
  *   setSensitiveHeaders: (res: import('express').Response) => void,
  * }} deps

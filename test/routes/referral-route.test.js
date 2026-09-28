@@ -236,7 +236,7 @@ test('RESERVED_ROUTE_ROOTS covers every route root the app registers', () => {
   // would happily mint, producing a link that silently never counts — so the list
   // is checked against the routers themselves.
   const found = new Set();
-  for (const file of ['public.js', 'admin.js', 'auth.js', 'billing.js', 'staging.js', 'chat.js']) {
+  for (const file of ['public.js', 'admin/index.js', 'auth.js', 'billing.js', 'staging.js', 'chat.js']) {
     const src = fs.readFileSync(path.join(ROOT, 'routes', file), 'utf8');
     for (const m of src.matchAll(/router\.(?:get|post|put|delete|all)\(\s*['"`]\/([^/'"`:)\s]+)/g)) {
       found.add(m[1].toLowerCase());

@@ -125,7 +125,7 @@ test('the /getpro and /admin pages keep their stricter no-store policy', () => {
   // no-store, which is stronger, and downgrading them to no-cache would let a grant
   // page and the admin shell be stored. Pinned so a well-meaning "make it consistent"
   // sweep cannot quietly relax them.
-  for (const [file, route] of [['auth.js', '/getpro'], ['admin.js', '/admin']]) {
+  for (const [file, route] of [['auth.js', '/getpro'], ['admin/index.js', '/admin']]) {
     const src = stripComments(fs.readFileSync(path.join(ROOT, 'routes', file), 'utf8'));
     const at = src.indexOf(`router.get('${route}'`);
     assert.notEqual(at, -1, `${route} route not found in routes/${file}`);

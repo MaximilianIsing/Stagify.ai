@@ -11,7 +11,7 @@
 // posts the header directly. This is the server-side half.
 //
 // WHERE IT LIVES, and why not on the router. The limiter runs in the two guards, not
-// as middleware on routes/admin.js, because (a) only the guard knows whether a key was
+// as middleware on routes/admin/index.js, because (a) only the guard knows whether a key was
 // actually REJECTED — counting requests instead would let an operator working in the
 // dashboard rate-limit themselves — and (b) the same secret also opens
 // POST /api/stage-by-endpoint-key, so a limiter bolted onto the admin router alone

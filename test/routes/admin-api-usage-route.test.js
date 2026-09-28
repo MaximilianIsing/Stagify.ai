@@ -1,4 +1,4 @@
-// Tier: route (routes/admin-api-usage.js) — the console's API usage endpoint.
+// Tier: route (routes/admin/api-usage.js) — the console's API usage endpoint.
 //
 // The aggregation itself is covered by test/analytics/api-usage.test.js. What is at
 // stake HERE is the HTTP edge:
@@ -17,7 +17,7 @@
 import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import express from 'express';
-import { createAdminApiUsageRouter } from '../../routes/admin-api-usage.js';
+import { createAdminApiUsageRouter } from '../../routes/admin/api-usage.js';
 
 const KEY = 'test-endpoint-key';
 const auth = { 'X-Stagify-Endpoint-Key': KEY };

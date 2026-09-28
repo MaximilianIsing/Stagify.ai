@@ -1,14 +1,14 @@
 // admin routes, extracted verbatim from server.js.
 import express from 'express';
-import { createAsyncRouter } from '../lib/http/async-router.js';
-import { sendError, resolveAppOrigin, getStagingClientIp } from '../lib/http/http-helpers.js';
-import { ADMIN_SESSION_HEADER } from '../lib/http/http-guards.js';
-import { reportError } from '../lib/http/error-ref.js';
+import { createAsyncRouter } from '../../lib/http/async-router.js';
+import { sendError, resolveAppOrigin, getStagingClientIp } from '../../lib/http/http-helpers.js';
+import { ADMIN_SESSION_HEADER } from '../../lib/http/http-guards.js';
+import { reportError } from '../../lib/http/error-ref.js';
 import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
-import { logger } from '../lib/logger.js';
-import { statusPayload } from '../lib/health/service-health.js';
+import { logger } from '../../lib/logger.js';
+import { statusPayload } from '../../lib/health/service-health.js';
 
 /**
  * Build the admin router (dashboard, hosted-image upload/list/delete, CSV log
@@ -17,27 +17,27 @@ import { statusPayload } from '../lib/health/service-health.js';
  * @param {{
  *   authStore: any,
  *   uptimeMonitor: any,
- *   serviceHealth?: ReturnType<typeof import('../lib/health/service-health.js').createServiceHealth> | null,
+ *   serviceHealth?: ReturnType<typeof import('../../lib/health/service-health.js').createServiceHealth> | null,
  *   enterpriseStore: any,
  *   hostImageUpload: import('express').RequestHandler,
  *   DEBUG_MODE: boolean,
  *   setSensitiveHeaders: (res: import('express').Response) => void,
  *   exportAllMemories: Function,
  *   resetAllMemories: Function,
- *   deleteUser: ReturnType<typeof import('../lib/data/user-deletion.js').createUserDeletion>['deleteUser'],
- *   getDataLogDir: ReturnType<typeof import('../lib/services/logging.js').createLogging>['getDataLogDir'],
- *   hostedImages: import('../lib/types/deps.js').HostedImagesDeps,
+ *   deleteUser: ReturnType<typeof import('../../lib/data/user-deletion.js').createUserDeletion>['deleteUser'],
+ *   getDataLogDir: ReturnType<typeof import('../../lib/services/logging.js').createLogging>['getDataLogDir'],
+ *   hostedImages: import('../../lib/types/deps.js').HostedImagesDeps,
  *   protectLogs: import('express').RequestHandler,
  *   requireEndpointKey: import('express').RequestHandler,
- *   adminSessions?: ReturnType<typeof import('../lib/data/admin-sessions.js').createAdminSessions>,
+ *   adminSessions?: ReturnType<typeof import('../../lib/data/admin-sessions.js').createAdminSessions>,
  *   __dirname: string,
  *   HOSTED_IMAGE_MIME_EXT: Record<string, string>,
- *   emailCatalog: ReturnType<typeof import('../lib/services/email-catalog.js').createEmailCatalog>,
+ *   emailCatalog: ReturnType<typeof import('../../lib/services/email-catalog.js').createEmailCatalog>,
  *   sendTestEmail: (arg: { id: string, toEmail: string }) => Promise<{ ok: boolean, status?: number, error?: string }>,
- *   referralLinks?: ReturnType<typeof import('../lib/data/referral-links.js').createReferralLinks>,
- *   adminMetrics?: ReturnType<typeof import('../lib/analytics/admin-metrics.js').createAdminMetrics>,
- *   adminBrief?: ReturnType<typeof import('../lib/services/admin-brief.js').createAdminBrief>,
- *   adminAccess?: ReturnType<typeof import('../lib/data/admin-access.js').createAdminAccess> | null,
+ *   referralLinks?: ReturnType<typeof import('../../lib/data/referral-links.js').createReferralLinks>,
+ *   adminMetrics?: ReturnType<typeof import('../../lib/analytics/admin-metrics.js').createAdminMetrics>,
+ *   adminBrief?: ReturnType<typeof import('../../lib/services/admin-brief.js').createAdminBrief>,
+ *   adminAccess?: ReturnType<typeof import('../../lib/data/admin-access.js').createAdminAccess> | null,
  * }} deps - Stores, the hosted-image upload middleware + log-access guard, data-dir
  *   and manifest helpers, memory/uptime admin actions, the mime→ext map, the
  *   user-facing email catalog + test-send helper for the Emails tab, the
@@ -147,7 +147,7 @@ router.post('/api/admin/session', requireEndpointKey, (req, res) => {
   if (!adminSessions) return sendError(res, 503, 'Sessions unavailable');
   const { token, expiresAt } = adminSessions.create(req.get('X-Stagify-Endpoint-Key') || '');
   // The one moment the master key is actually typed. Page opens are recorded
-  // separately, off /api/admin/ping (routes/admin-access.js).
+  // separately, off /api/admin/ping (routes/admin/access.js).
   if (adminAccess) adminAccess.record({ ip: getStagingClientIp(req), outcome: 'signin', path: '/admin', userAgent: req.get('user-agent') });
   logger.info('[admin] session issued, expires ' + new Date(expiresAt).toISOString());
   return res.json({ token, expiresAt });

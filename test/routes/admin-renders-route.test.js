@@ -1,4 +1,4 @@
-// Tier: route (routes/admin-renders.js) — the operator's render inspector.
+// Tier: route (routes/admin/renders.js) — the operator's render inspector.
 //
 // This endpoint is pointed at the production database and hands back presigned
 // URLs, so the risks are not "does it return rows":
@@ -17,7 +17,7 @@
 import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import express from 'express';
-import { createAdminRendersRouter, shapeAdminRender } from '../../routes/admin-renders.js';
+import { createAdminRendersRouter, shapeAdminRender } from '../../routes/admin/renders.js';
 
 const KEY = 'test-endpoint-key';
 const auth = { 'X-Stagify-Endpoint-Key': KEY };

@@ -12,7 +12,7 @@
 // below undo that for the factories whose consumers are confined to the routers
 // that do NOT forward their bag onward.
 //
-// `routes/admin.js`, `routes/auth.js` and `routes/public.js` consume `deps`
+// `routes/admin/index.js`, `routes/auth.js` and `routes/public.js` consume `deps`
 // themselves and forward nothing, so grouping is a local change. `routes/chat.js`
 // and `routes/staging.js` pass the WHOLE bag to sub-factories
 // (createChatPipeline, createMaskEditHandler, …), each of which destructures its

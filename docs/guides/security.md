@@ -476,7 +476,7 @@ Two design points worth not undoing:
   only, so a request carrying the right key never touches the bucket. That is what
   lets the ceiling be as low as 10: an operator working in the dashboard cannot
   rate-limit themselves no matter how many requests the page makes. A limiter mounted
-  as ordinary middleware on `routes/admin.js` would count *every* request and would
+  as ordinary middleware on `routes/admin/index.js` would count *every* request and would
   have to be loose enough to be useless. The 500 "key not configured" path doesn't
   count either — that is our misconfiguration, not somebody guessing.
 - **Both guards share ONE limiter instance.** `protectLogs` and

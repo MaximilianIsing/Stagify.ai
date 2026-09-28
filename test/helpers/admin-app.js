@@ -1,4 +1,4 @@
-// Mounts the real admin router (routes/admin.js) on a bare Express app. Unlike the
+// Mounts the real admin router (routes/admin/index.js) on a bare Express app. Unlike the
 // other harnesses this keeps the REAL protectLogs guard (built from the real
 // createHttpGuards) so the access-key gate on every admin endpoint is genuinely
 // exercised — that gate is the whole security story of this router. The stores,
@@ -11,7 +11,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import createAdminRouter from '../../routes/admin.js';
+import createAdminRouter from '../../routes/admin/index.js';
 import { createHttpGuards } from '../../lib/http/http-guards.js';
 import { setSensitiveHeaders } from '../../lib/http/http-helpers.js';
 import { createEmailCatalog } from '../../lib/services/email-catalog.js';
@@ -100,7 +100,7 @@ export async function mountAdmin(options = {}) {
   // tests from having to build multipart bodies. That default HID a real gap: nothing
   // asserted the production multer instance still carries `fileFilter:
   // hostedImageFileFilter`, so deleting that line kept the whole suite green — and the
-  // route does not re-check the mime (routes/admin.js saves an unknown type as .bin
+  // route does not re-check the mime (routes/admin/index.js saves an unknown type as .bin
   // and routes/public.js serves it back INLINE with that Content-Type). Pass
   // `realUpload: true` to drive lib/http/uploads.js itself; see
   // test/routes/admin-upload-filter.test.js.

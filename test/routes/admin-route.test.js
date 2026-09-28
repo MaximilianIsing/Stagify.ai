@@ -1,4 +1,4 @@
-// Tier: route contract (real guard, faked stores) — routes/admin.js.
+// Tier: route contract (real guard, faked stores) — routes/admin/index.js.
 //
 // WHAT THIS COVERS
 // Every admin endpoint is protected by the same access-key guard, and the router

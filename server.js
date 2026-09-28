@@ -43,12 +43,12 @@ import createReferralRouter from './routes/referrals.js';
 import createObjectLocalRouter from './routes/object-local.js';
 import createChatRouter from './routes/chat.js';
 import createStagingRouter from './routes/staging.js';
-import createAdminRouter from './routes/admin.js';
-import { createAdminRendersRouter } from './routes/admin-renders.js';
-import { createAdminApiUsageRouter } from './routes/admin-api-usage.js';
-import { createAdminAnalystRouter } from './routes/admin-analyst.js';
-import { createAdminBlogRouter } from './routes/admin-blog.js';
-import { createAdminAccessRouter } from './routes/admin-access.js';
+import createAdminRouter from './routes/admin/index.js';
+import { createAdminRendersRouter } from './routes/admin/renders.js';
+import { createAdminApiUsageRouter } from './routes/admin/api-usage.js';
+import { createAdminAnalystRouter } from './routes/admin/analyst.js';
+import { createAdminBlogRouter } from './routes/admin/blog.js';
+import { createAdminAccessRouter } from './routes/admin/access.js';
 import createAuthRouter from './routes/auth.js';
 import { DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, IS_STAGING, HIDE_STAGING_BANNER, SHOW_STAGING_BANNER, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS } from './lib/config/runtime-flags.js';
 import createNotFoundHandler from './lib/http/not-found.js';
@@ -457,7 +457,7 @@ const MAX_SEGMENT_QUERY_LENGTH = 200;
 // auth routes (routes/auth.js)
 app.use(createAuthRouter({ authStore, googleOAuthClient, resend, LOGS_ACCESS_KEY, authLimiter, emailLimiter, RESEND_FROM_EMAIL, EMAIL_DEBUG_MODE, DEBUG_EMAIL, IS_STAGING, SHOW_STAGING_BANNER, endpointKeyMatches, setSensitiveHeaders, getAuthUserFromRequest, toPublicAuthUser, email, __dirname, googleClientId }));
 
-// admin routes (routes/admin.js)
+// admin routes (routes/admin/index.js)
 //
 // adminMetrics is built here rather than inside the router because it prepares
 // its statements once, at construction — see the N+1 guard in
@@ -483,9 +483,9 @@ const adminAnalyst = createAdminAnalyst({ openai });
 // construction, so it must come after the stores that create the tables it reads.
 const apiUsageStats = createApiUsageStats({ db: getDb(__dirname) });
 // The render inspector rides beside the admin router rather than inside it —
-// routes/admin.js is at its line cap. Same guard, same tab, separate file.
+// routes/admin/index.js is at its line cap. Same guard, same tab, separate file.
 app.use(createAdminRendersRouter({ stagedRenders, objectStore, protectLogs, setSensitiveHeaders }));
-// Same reasoning again: routes/admin.js is full, so the API usage tab's one endpoint
+// Same reasoning again: routes/admin/index.js is full, so the API usage tab's one endpoint
 // rides beside it rather than inside it.
 app.use(createAdminApiUsageRouter({ apiUsageStats, protectLogs, setSensitiveHeaders }));
 // And once more: the analyst drawer's single endpoint is a sibling for the same
@@ -494,7 +494,7 @@ app.use(createAdminApiUsageRouter({ apiUsageStats, protectLogs, setSensitiveHead
 app.use(createAdminAnalystRouter({ adminAnalyst, protectLogs, setSensitiveHeaders }));
 app.use(createAdminBlogRouter({ blogViews, protectLogs, __dirname }));
 // MUST stay above createAdminRouter: it records GET /api/admin/ping by matching it
-// first and falling through to the real handler there. See routes/admin-access.js.
+// first and falling through to the real handler there. See routes/admin/access.js.
 app.use(createAdminAccessRouter({ adminAccess, protectLogs }));
 app.use(createAdminRouter({ authStore, uptimeMonitor, serviceHealth, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, deleteUser, getDataLogDir, hostedImages, protectLogs, requireEndpointKey, adminSessions, __dirname, HOSTED_IMAGE_MIME_EXT, emailCatalog, sendTestEmail, referralLinks, adminMetrics, adminBrief, adminAccess }));
 

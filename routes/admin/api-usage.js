@@ -1,9 +1,9 @@
 // The admin console's API-usage endpoint: one site-wide read of the public render
 // API's traffic, its customers, and its prepaid credit economics.
 //
-// WHY IT IS A SEPARATE ROUTER FROM routes/admin.js. That file sits at its 650-line
+// WHY IT IS A SEPARATE ROUTER FROM routes/admin/index.js. That file sits at its 650-line
 // lint cap. The repo's answer to a full file is a sibling, not a raised ceiling — the
-// same reason routes/admin-renders.js exists, and it is mounted the same way.
+// same reason routes/admin/renders.js exists, and it is mounted the same way.
 //
 // WHAT IT DOES NOT RETURN. No key ids, no key prefixes, no idempotency keys and no
 // request fingerprints. A key prefix is the half of a credential a support ticket
@@ -11,9 +11,9 @@
 // it"; the account email and its counts are. The aggregate never touches the
 // `api_requests` rows individually, so there is no row here to leak field by field.
 
-import { createAsyncRouter } from '../lib/http/async-router.js';
-import { sendError } from '../lib/http/http-helpers.js';
-import { reportError } from '../lib/http/error-ref.js';
+import { createAsyncRouter } from '../../lib/http/async-router.js';
+import { sendError } from '../../lib/http/http-helpers.js';
+import { reportError } from '../../lib/http/error-ref.js';
 
 /** Window bounds the console may ask for. The reader clamps too; this is the HTTP edge. */
 const MIN_DAYS = 1;

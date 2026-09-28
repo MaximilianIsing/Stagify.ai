@@ -1,5 +1,5 @@
 // Tier: route contract (real guard, REAL uptime monitor) — the server-status and
-// incident endpoints in routes/admin.js.
+// incident endpoints in routes/admin/index.js.
 //
 // WHY THE REAL MONITOR (mountAdmin's `realUptime: true`). These four routes are CRUD
 // over persisted monitor state, and the interesting behaviour — that a posted

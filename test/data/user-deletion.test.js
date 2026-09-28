@@ -188,7 +188,7 @@ test('an account can be erased by email as well as by id', () => {
   assert.equal(authStore.findUserByEmail('byemail@example.com'), null);
 });
 
-// routes/admin.js forwards BOTH fields straight from the dashboard body, so this is
+// routes/admin/index.js forwards BOTH fields straight from the dashboard body, so this is
 // the shape a real erasure request arrives in. The lookup used to be a ternary —
 // `userId ? findById : findByEmail` — so a stale id (the account was recreated) or a
 // typo meant the address was never tried and the operator got NOT_FOUND while every

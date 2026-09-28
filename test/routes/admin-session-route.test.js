@@ -1,5 +1,5 @@
 // Tier: route contract (real guard + real store, faked everything else) —
-// the admin-console session endpoints in routes/admin.js and the second credential
+// the admin-console session endpoints in routes/admin/index.js and the second credential
 // they add to `protectLogs`.
 //
 // WHY A SEPARATE FILE FROM admin-route.test.js. That suite's premise is one

@@ -1,4 +1,4 @@
-// Tier: route (routes/admin-analyst.js) — the console's analyst endpoint.
+// Tier: route (routes/admin/analyst.js) — the console's analyst endpoint.
 //
 // WHY A SEPARATE FILE, AND WHAT IT IS ACTUALLY FOR. This is the second admin route
 // that sends anything to a third party, and the first that does so repeatedly, in a
@@ -23,7 +23,7 @@
 import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import express from 'express';
-import { createAdminAnalystRouter } from '../../routes/admin-analyst.js';
+import { createAdminAnalystRouter } from '../../routes/admin/analyst.js';
 
 const KEY = 'test-endpoint-key';
 const auth = { 'X-Stagify-Endpoint-Key': KEY, 'Content-Type': 'application/json' };
