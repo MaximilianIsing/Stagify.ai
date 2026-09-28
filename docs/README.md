@@ -132,8 +132,9 @@ and fill in what you need. At minimum, staging requires a Gemini key:
 GOOGLE_AI_API_KEY=your_key_here
 ```
 
-Secrets can alternatively be supplied as local `.txt` files (e.g. `key.txt`,
-`stripe_secret_key.txt`) — see the env doc for the full mapping. `load-env.js` never
+Some secrets can alternatively be supplied as local `.txt` files (e.g.
+`stripe_secret_key.txt`, `resendkey.txt`) — see the env doc for the full mapping. The
+Gemini and OpenAI keys and `DEBUG` are env-only. `load-env.js` never
 overwrites a variable already present in the real environment, so host-provided
 config always wins.
 

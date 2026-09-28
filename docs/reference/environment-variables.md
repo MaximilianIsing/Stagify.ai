@@ -47,17 +47,18 @@ GOOGLE_PUBLISHER_ID=
 
 # --- AI providers ---
 # Google Generative AI (Gemini) key. Powers the core staging pipeline — staging
-# fails without it. This is the ONLY Gemini key variable (file fallback: key.txt).
+# fails without it. This is the ONLY Gemini key variable. No file fallback: a
+# key.txt used to be read when this was unset, and it outlived the key it held.
 # A GEMINI_API_KEY alias used to be honored by the CAD-to-3D helper alone, because
 # that module built its own client; it now shares the one client every other
 # Gemini-backed feature uses, so GEMINI_API_KEY is no longer read anywhere.
 # Set to an EMPTY value to disable the client outright (same rule as GPT_KEY and
-# RESEND_API_KEY): an empty key skips the key.txt fallback and leaves genAI null, so
+# RESEND_API_KEY): an empty (or whitespace) key leaves genAI null, so
 # every Gemini-backed feature cleanly no-ops instead of making calls that 400. This is
 # how tests switch the AI off — see docs/guides/testing.md.
 GOOGLE_AI_API_KEY=
 # OpenAI key. Powers the chat assistant only; the rest of the app works without
-# it (chat is simply disabled). File fallback: gpt-key.txt
+# it (chat is simply disabled). No file fallback (gpt-key.txt is no longer read).
 GPT_KEY=
 # Per-request ceilings (ms) for the AI SDKs, set in lib/services/ai-clients.js.
 # Gemini defaults to 120000 (a normal image render takes ~57s) with one SDK retry;
@@ -132,7 +133,7 @@ R2_SECRET_ACCESS_KEY=
 # PRO_GALLERY_LIMIT=200
 
 # --- Debug flags — all default OFF. Set true ONLY for local dev, never in production. ---
-# Verbose server logging (startup, key loading, etc.). true/false. File fallback: debug.txt
+# Verbose server logging (startup, key loading, etc.). true/false. No file fallback (debug.txt is no longer read).
 # Raises the diagnostic-logger floor to `debug` unless LOG_LEVEL (below) overrides it.
 DEBUG=false
 # Diagnostic-logger verbosity (lib/logger.js): debug | info | warn | error | silent.

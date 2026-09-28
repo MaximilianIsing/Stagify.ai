@@ -64,7 +64,7 @@ to-build/disclosure-badges/fonts/
 !public/robots.txt
 # Two more SERVED text files, routed explicitly in routes/public.js (/llms.txt and
 # /.well-known/security.txt). The *.txt rule was written for the legacy secret files
-# at the repo root (key.txt, gpt-key.txt); left ignored, these two ship absent and
+# at the repo root (resendkey.txt, stripe_*.txt, …); left ignored, these two ship absent and
 # both routes 404 — and test/seo/organization-jsonld.test.js reads llms.txt, so the
 # build fails before it gets that far.
 !public/llms.txt
@@ -76,7 +76,7 @@ to-build/disclosure-badges/fonts/
 !public/brand/README.txt
 # The instagram/ hand-off files are plain text BY DESIGN (caption, hashtags, alt text)
 # and are meant to be committed. The *.txt rule above was written for the legacy
-# secret files at the repo root (key.txt, gpt-key.txt), not for these. Re-inclusion
+# secret files at the repo root (resendkey.txt, stripe_*.txt, …), not for these. Re-inclusion
 # works here because no ANCESTOR DIRECTORY is excluded, only the files themselves.
 !instagram/posts/**/*.txt
 

@@ -12,8 +12,8 @@
 // Both AI keys are still blanked as a belt-and-braces guard: if the gate ever
 // regressed, these requests would reach a disabled reviewer rather than a live API.
 // GOOGLE_AI_API_KEY='' is the one that matters — the stageability grader is Gemini,
-// not GPT, and an empty value also skips the key.txt / gpt-key.txt fallbacks, so a
-// real local key can't sneak in and make this test bill a live call.
+// not GPT, and the key is env-only, so a real local key can't sneak in and make this
+// test bill a live call.
 
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';

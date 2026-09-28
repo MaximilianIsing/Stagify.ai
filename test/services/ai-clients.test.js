@@ -1,7 +1,7 @@
 // AI/email client boot factory (lib/services/ai-clients.js). This pins the exact
 // key-resolution contract createAiClients relies on: each of the three clients
-// (genAI / openai / resend) is constructed once from an env var (Render) or a
-// local *-key.txt fallback (dev), and the factory NEVER throws even when a key is
+// (genAI / openai / resend) is constructed once from its env var (only resend keeps
+// a resendkey.txt file fallback), and the factory NEVER throws even when a key is
 // missing — a failed lookup leaves that client absent. Internally the client is
 // left `undefined`, but createAiClients normalizes absent → `null` at the return
 // (every consumer gates on `if (!client)`, and its dep typedefs spell absence as
@@ -15,7 +15,7 @@
 // them, so it costs nothing and touches no network — no key needs to be real.
 //
 // Isolation: every test runs against an EMPTY temp dir as __dirname (so the
-// key.txt / gpt-key.txt / resendkey.txt file fallback finds nothing) and snapshots
+// resendkey.txt file fallback finds nothing) and snapshots
 // + restores process.env.{GOOGLE_AI_API_KEY,GPT_KEY,RESEND_API_KEY} in an
 // afterEach hook, because those may already be set on a dev machine and must not
 // leak into (or out of) other test files.
@@ -78,22 +78,17 @@ test('all three env keys unset with no key files leaves every client null and th
 
   let clients;
   assert.doesNotThrow(() => {
-    // genAI's fallback reads key.txt directly (no existsSync) so a missing file
-    // throws inside its try/catch; openai/resend use readKeyFile which returns
-    // undefined for a missing file. Either way the factory must not throw.
     clients = createAiClients({ __dirname: emptyDir(), DEBUG_MODE: false });
   });
 
-  assert.equal(clients.genAI, null, 'missing key.txt read throws and is caught → genAI null');
-  assert.equal(clients.openai, null, 'no gpt-key.txt and no env → openai null');
+  assert.equal(clients.genAI, null, 'no GOOGLE_AI_API_KEY → genAI null');
+  assert.equal(clients.openai, null, 'no GPT_KEY → openai null');
   assert.equal(clients.resend, null, 'no resendkey.txt and no env → resend null');
 });
 
-test('positive file fallback: all env keys unset, real *-key.txt files present → genAI, openai and resend all construct', () => {
-  // Env unset for all three so each init block takes its local-file branch. We
-  // write real key files into the temp __dirname: genAI reads key.txt directly,
-  // openai/resend read gpt-key.txt/resendkey.txt via readKeyFile. All three
-  // resolve a non-empty key and construct. Still no method is ever called.
+test('key.txt and gpt-key.txt are ignored; only resendkey.txt is still a file fallback', () => {
+  // The Gemini and OpenAI file fallbacks were removed: a stale key.txt kept a revoked
+  // key on disk long after .env held the live one. A leftover file must not revive them.
   setEnv({ GOOGLE_AI_API_KEY: undefined, GPT_KEY: undefined, RESEND_API_KEY: undefined });
   const dir = emptyDir();
   fs.writeFileSync(path.join(dir, 'key.txt'), 'g-file');
@@ -101,15 +96,21 @@ test('positive file fallback: all env keys unset, real *-key.txt files present �
   fs.writeFileSync(path.join(dir, 'resendkey.txt'), 're-file');
   const { genAI, openai, resend } = createAiClients({ __dirname: dir, DEBUG_MODE: false });
 
-  assert.ok(genAI, 'genAI constructed from key.txt file fallback');
-  assert.ok(openai, 'openai constructed from gpt-key.txt file fallback');
+  assert.equal(genAI, null, 'key.txt is not read');
+  assert.equal(openai, null, 'gpt-key.txt is not read');
   assert.ok(resend, 'resend constructed from resendkey.txt file fallback');
 });
 
+test('a whitespace-only key counts as unset', () => {
+  setEnv({ GOOGLE_AI_API_KEY: '   ', GPT_KEY: ' \n', RESEND_API_KEY: undefined });
+  const { genAI, openai } = createAiClients({ __dirname: emptyDir(), DEBUG_MODE: false });
+  assert.equal(genAI, null);
+  assert.equal(openai, null);
+});
+
 test('an empty key leaves its client null — same rule for all three, no empty-string asymmetry', () => {
-  // Both keys are defined-but-empty, so BOTH skip the `=== undefined` file fallback
-  // (an empty __dirname would have nothing anyway) and then fail their truthiness
-  // guard. GPT_KEY is a fake non-empty key here only so its block isn't under test.
+  // Both keys are defined-but-empty, so both fail their truthiness guard (resend also
+  // skips its `=== undefined` file fallback; an empty __dirname has nothing anyway). GPT_KEY is a fake non-empty key here only so its block isn't under test.
   //
   // genAI used to be the odd one out: it passed '' straight to
   // new GoogleGenerativeAI('') (the old SDK), which constructs a TRUTHY handle that 400s on every
@@ -125,8 +126,8 @@ test('an empty key leaves its client null — same rule for all three, no empty-
 });
 
 test('empty-string GPT_KEY disables the OpenAI client while genAI and resend still construct', () => {
-  // GPT_KEY defined-but-empty: the `=== undefined` file fallback is skipped, then
-  // the `if (gptApiKey)` truthiness guard fails, so openai is deliberately left
+  // GPT_KEY defined-but-empty: the `if (gptApiKey)` truthiness guard fails, so openai
+  // is deliberately left
   // absent (null). This pins the "empty GPT_KEY disables the chat/reviewer client"
   // contract distinct from an unset key.
   setEnv({ GOOGLE_AI_API_KEY: 'g-test', GPT_KEY: '', RESEND_API_KEY: 're-test' });

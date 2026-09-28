@@ -71,7 +71,7 @@ async function regionOutsideMaskIsIdentical({ originalBuffer, resultBuffer, mask
  */
 export function createStagifyImages({ debug = false, config }) {
   // DEBUG_MODE false on purpose: this is a local tool and the server's debug plumbing
-  // (debug.txt, LOG_LEVEL) is not its concern.
+  // (DEBUG, LOG_LEVEL) is not its concern.
   const { genAI, openai } = createAiClients({ __dirname: REPO_ROOT, DEBUG_MODE: debug });
   const {
     reviewImageQuality, reviewMaskEdit, validateStageableImage, validateExteriorImage,
@@ -121,7 +121,7 @@ export function createStagifyImages({ debug = false, config }) {
 
   function requireGemini(what) {
     if (!genAI) {
-      throw new Error(`${what} needs GOOGLE_AI_API_KEY (or key.txt at the repo root). It is not set.`);
+      throw new Error(`${what} needs GOOGLE_AI_API_KEY (in .env or the environment). It is not set.`);
     }
   }
 

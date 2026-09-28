@@ -38,7 +38,7 @@ dropdowns, the reveal animations and the language loader. The server also serves
 root rather than `public/`, which is what lets a clone two directories away resolve
 `href="styles/home.css"`: a miss under `previews/<dir>/` is retried against `public/`. It
 serves `previews/` and `public/` only, deliberately, so that rooting at the repo does not
-expose `.env`, `key.txt` or `data/auth-store.db` over localhost.
+expose `.env`, the `*.txt` secret files or `data/auth-store.db` over localhost.
 
 With `npm run dev` also running, `/api/*` is proxied to it and the clone gets live data;
 without it those calls answer 503 and the page still renders.

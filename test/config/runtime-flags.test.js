@@ -3,7 +3,7 @@
 // PURPOSE
 // This module is the single source of truth for the process-wide runtime flags
 // (debug / email-debug / staging / hero-stat overrides). Most of it is one-shot
-// module-load side effect: it reads process.env (and a couple of fallback .txt
+// module-load side effect: it reads process.env (and the email-debug fallback .txt
 // files) exactly once and freezes the derived constants. Two building blocks are,
 // however, exported as *pure* functions so they can be exercised without any of
 // that boot machinery:
@@ -209,6 +209,29 @@ test('EMAIL_DEBUG enabled with a whitespace-only DEBUG_EMAIL fails the same way'
     () => loadFlags('debug-email-blank'),
     /EMAIL_DEBUG is enabled but DEBUG_EMAIL is empty/,
   );
+});
+
+// --- DEBUG_MODE ---------------------------------------------------------------
+// From the DEBUG env var only; the debug.txt fallback was removed.
+
+test('DEBUG_MODE follows the DEBUG env var, and reads no debug.txt', async () => {
+  const saved = process.env.DEBUG;
+  // Module load fails closed on EMAIL_DEBUG without DEBUG_EMAIL; keep that out of the way.
+  setEmailEnv({ EMAIL_DEBUG: 'false' });
+  try {
+    process.env.DEBUG = 'true';
+    assert.equal((await loadFlags('debug-on')).DEBUG_MODE, true);
+    process.env.DEBUG = 'false';
+    assert.equal((await loadFlags('debug-off')).DEBUG_MODE, false);
+  } finally {
+    if (saved === undefined) delete process.env.DEBUG;
+    else process.env.DEBUG = saved;
+  }
+  const src = fs.readFileSync(
+    path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'lib', 'config', 'runtime-flags.js'),
+    'utf8',
+  );
+  assert.doesNotMatch(src, /computeFlag\('DEBUG',/, 'DEBUG must not name a fallback file');
 });
 
 // --- Drift guard: no address may creep back into the source ------------------
