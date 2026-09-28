@@ -86,7 +86,6 @@ ds-bundle/
 
 # instagram/ scratch renders. Fixtures and dry runs land here; real posts do not.
 instagram/posts/_scratch/
-CLAUDE.md
 # instagram/ per-run working files. Regenerable, and not part of the hand-off.
 instagram/posts/_work/
 eval-out/
