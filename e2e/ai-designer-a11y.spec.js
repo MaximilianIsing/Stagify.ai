@@ -98,27 +98,29 @@ test.describe('AI Designer — bug-report dialog accessibility', () => {
     await expect(page.locator('#chat-input')).toBeVisible();
   });
 
+  // The studio's bug button opens the site-wide "Report an issue" dialog from the
+  // account menu (public/scripts/profile-menu/report-issue-modal.js); the studio's own
+  // popup was retired in favour of it.
   test('announces as a named dialog and takes focus to the first field', async ({ page }) => {
     await page.locator('#bug-report-btn').click();
-    const popup = page.locator('#bug-report-popup');
-    await expect(popup).toHaveClass(/active/);
-    await expect(popup).toHaveAttribute('role', 'dialog');
-    await expect(popup).toHaveAttribute('aria-modal', 'true');
-    await expect(popup).toHaveAttribute('aria-labelledby', 'bug-report-popup-title');
-    await expect(page.locator('#bug-report-popup-title')).not.toBeEmpty();
+    await expect(page.locator('#report-issue-modal')).toBeVisible();
+    const dialog = page.locator('#report-issue-modal [role="dialog"]');
+    await expect(dialog).toHaveAttribute('aria-modal', 'true');
+    await expect(dialog).toHaveAttribute('aria-labelledby', 'report-issue-title');
+    await expect(page.locator('#report-issue-title')).not.toBeEmpty();
 
     // A form dialog opens on its first field, not on Close.
-    await expect(page.locator('#bug-report-description')).toBeFocused();
+    await expect(page.locator('#report-issue-description')).toBeFocused();
 
-    const label = await page.locator('#bug-report-popup-close').getAttribute('aria-label');
+    const label = await page.locator('#report-issue-close').getAttribute('aria-label');
     expect(label).toBeTruthy();
     expect(label).not.toBe('×');
   });
 
   test('returns focus to the button that opened it', async ({ page }) => {
     await page.locator('#bug-report-btn').click();
-    await expect(page.locator('#bug-report-popup')).toHaveClass(/active/);
-    await page.locator('#bug-report-cancel').click();
+    await expect(page.locator('#report-issue-modal')).toBeVisible();
+    await page.locator('#report-issue-cancel').click();
     await expect(page.locator('#bug-report-btn')).toBeFocused();
   });
 });
