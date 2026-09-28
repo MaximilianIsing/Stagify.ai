@@ -68,7 +68,6 @@ const EXCLUDED_PREFIXES = ['vendor/'];
 const UNTESTED = [
   'fx/card-spotlight.js',
   'fx/hover-glow.js',
-  'fx/star-border.js',
   'home/home-reveal.js',
   'home/home-text-animate.js',
   'home/sponsors-scroll.js',
