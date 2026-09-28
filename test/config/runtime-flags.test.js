@@ -3,8 +3,7 @@
 // PURPOSE
 // This module is the single source of truth for the process-wide runtime flags
 // (debug / email-debug / staging / hero-stat overrides). Most of it is one-shot
-// module-load side effect: it reads process.env (and the email-debug fallback .txt
-// files) exactly once and freezes the derived constants. Two building blocks are,
+// module-load side effect: it reads process.env exactly once and freezes the derived constants. Two building blocks are,
 // however, exported as *pure* functions so they can be exercised without any of
 // that boot machinery:
 //   - isTruthyFlag(v)      — normalises an env-style flag to a boolean
@@ -156,9 +155,8 @@ test('SHOW_STAGING_BANNER: true only when IS_STAGING is truthy and HIDE_STAGING_
 // module throws at load instead, and these tests are what stop that regressing.
 //
 // Each case sets BOTH env vars explicitly (rather than deleting one and relying on
-// the ambient environment) so the .txt file fallbacks in the repo root cannot
-// influence the result — except the two "unset" cases, which must delete the var
-// by definition. Still no network, mailer or cost: this only reads exported
+// the ambient environment) so the developer's own .env cannot influence the result,
+// except the two "unset" cases, which must delete the var by definition. Still no network, mailer or cost: this only reads exported
 // constants from a re-imported module.
 
 const EMAIL_KEYS = ['EMAIL_DEBUG', 'DEBUG_EMAIL'];

@@ -28,18 +28,18 @@ afterEach(() => {
   }
 });
 
-function setup() {
+async function setup() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'stagify-refs-'));
   dirs.push(dir);
   const authStore = createAuthStore(dir);
   stores.push(authStore);
   const refs = createRenderRefs(dir);
   const renders = createStagedRenders(dir);
-  const mk = (email) => {
-    const start = authStore.startRegistration(email, 'CorrectHorse9!');
+  const mk = async (email) => {
+    const start = await authStore.startRegistration(email, 'CorrectHorse9!');
     return authStore.completeRegistration(email, start.code).user;
   };
-  return { dir, db: getDb(dir), refs, renders, user: mk('seller@example.com'), other: mk('other@example.com') };
+  return { dir, db: getDb(dir), refs, renders, user: await mk('seller@example.com'), other: await mk('other@example.com') };
 }
 
 /** Record one render carrying the given reference hashes. */
@@ -58,8 +58,8 @@ function renderWithRefs(renders, refs, userId, refHashes, { at = 1_000 } = {}) {
 
 const SOFA = Buffer.from('a photo of a sofa');
 
-test('the same photo from one account is stored once', () => {
-  const { refs, user } = setup();
+test('the same photo from one account is stored once', async () => {
+  const { refs, user } = await setup();
   const hash = refs.hashFor(user.id, SOFA);
 
   const first = refs.ensureRef({ userId: user.id, refHash: hash, bytes: 30_000 });
@@ -72,11 +72,11 @@ test('the same photo from one account is stored once', () => {
   assert.equal(refs.countForUser(user.id), 1);
 });
 
-test('the same photo from two accounts is stored twice, deliberately', () => {
+test('the same photo from two accounts is stored twice, deliberately', async () => {
   // Cross-user dedupe of a stock furniture photo would be a rounding error. Being able
   // to say "erasure deleted their bytes, full stop" — with no "is anyone else still
   // using this?" question — is not.
-  const { refs, user, other } = setup();
+  const { refs, user, other } = await setup();
   const mine = refs.hashFor(user.id, SOFA);
   const theirs = refs.hashFor(other.id, SOFA);
   assert.notEqual(mine, theirs);
@@ -87,8 +87,8 @@ test('the same photo from two accounts is stored twice, deliberately', () => {
   assert.equal(refs.countForUser(other.id), 1);
 });
 
-test('references come back in the order the user attached them', () => {
-  const { refs, renders, user } = setup();
+test('references come back in the order the user attached them', async () => {
+  const { refs, renders, user } = await setup();
   const hashes = ['sofa', 'lamp', 'rug'].map((s) => refs.hashFor(user.id, Buffer.from(s)));
   for (const h of hashes) refs.ensureRef({ userId: user.id, refHash: h });
   const renderId = renderWithRefs(renders, refs, user.id, hashes);
@@ -98,8 +98,8 @@ test('references come back in the order the user attached them', () => {
   assert.deepEqual(got.map((r) => r.seq), [0, 1, 2]);
 });
 
-test('more references than the upload allows are dropped, not stored', () => {
-  const { refs, renders, user } = setup();
+test('more references than the upload allows are dropped, not stored', async () => {
+  const { refs, renders, user } = await setup();
   const many = Array.from({ length: MAX_REFS_PER_RENDER + 3 }, (_, i) => refs.hashFor(user.id, Buffer.from(`ref${i}`)));
   for (const h of many) refs.ensureRef({ userId: user.id, refHash: h });
   const renderId = renderWithRefs(renders, refs, user.id, many);
@@ -112,10 +112,10 @@ function tombstoned(db) {
   return db.prepare('SELECT storage_key FROM blob_tombstones').all().map((r) => r.storage_key);
 }
 
-test('a reference survives while ANY render still uses it', () => {
+test('a reference survives while ANY render still uses it', async () => {
   // The case a broken ref_count gets wrong: two renders share one sofa photo, one is
   // deleted, and the photo must stay because the other still shows it.
-  const { db, refs, renders, user } = setup();
+  const { db, refs, renders, user } = await setup();
   const hash = refs.hashFor(user.id, SOFA);
   refs.ensureRef({ userId: user.id, refHash: hash });
   const a = renderWithRefs(renders, refs, user.id, [hash], { at: 1_000 });
@@ -128,8 +128,8 @@ test('a reference survives while ANY render still uses it', () => {
   assert.equal(refs.forRender(b).length, 1, 'the surviving render still shows it');
 });
 
-test('a reference is swept once the last render using it goes', () => {
-  const { db, refs, renders, user } = setup();
+test('a reference is swept once the last render using it goes', async () => {
+  const { db, refs, renders, user } = await setup();
   const hash = refs.hashFor(user.id, SOFA);
   refs.ensureRef({ userId: user.id, refHash: hash });
   const a = renderWithRefs(renders, refs, user.id, [hash], { at: 1_000 });
@@ -142,8 +142,8 @@ test('a reference is swept once the last render using it goes', () => {
   assert.ok(tombstoned(db).includes(keyForRef({ refHash: hash })), 'now the bytes are owed a deletion');
 });
 
-test('one account\'s sweep never touches another account\'s references', () => {
-  const { db, refs, renders, user, other } = setup();
+test('one account\'s sweep never touches another account\'s references', async () => {
+  const { db, refs, renders, user, other } = await setup();
   const mine = refs.hashFor(user.id, SOFA);
   const theirs = refs.hashFor(other.id, SOFA);
   refs.ensureRef({ userId: user.id, refHash: mine });
@@ -157,10 +157,10 @@ test('one account\'s sweep never touches another account\'s references', () => {
   assert.ok(!tombstoned(db).includes(keyForRef({ refHash: theirs })));
 });
 
-test('eviction sweeps orphaned references too, not just explicit deletes', () => {
+test('eviction sweeps orphaned references too, not just explicit deletes', async () => {
   // Free-tier eviction and a user-initiated delete go down different paths; both have to
   // reach the references, or a capped account slowly accumulates unreferenced bytes.
-  const { db, refs, renders, user } = setup();
+  const { db, refs, renders, user } = await setup();
   const hash = refs.hashFor(user.id, SOFA);
   refs.ensureRef({ userId: user.id, refHash: hash });
   // One old render holds the only link to it, then push it past the cap.

@@ -70,7 +70,7 @@ export default function createBillingRouter(deps) {
   router.post('/api/billing/stripe-webhook', express.raw({ type: 'application/json' }), async (req, res) => {
     if (!stripe || !stripeWebhookSecret) {
       logger.warn(
-        '[stripe] Webhook ignored: add stripe_secret_key.txt + stripe_webhook_secret.txt (searched: STRIPE_SECRETS_DIR, server dir, cwd, /etc/secrets) or set STRIPE_SECRET_KEY + STRIPE_WEBHOOK_SECRET',
+        '[stripe] Webhook ignored: set STRIPE_SECRET_KEY + STRIPE_WEBHOOK_SECRET',
       );
       return res.status(503).send('Stripe billing not configured');
     }

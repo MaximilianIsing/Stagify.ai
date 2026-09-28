@@ -30,13 +30,13 @@ afterEach(() => {
   }
 });
 
-function setup() {
+async function setup() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'stagify-renders-'));
   dirs.push(dir);
   const authStore = createAuthStore(dir);
   stores.push(authStore);
   const renders = createStagedRenders(dir);
-  const start = authStore.startRegistration('seller@example.com', 'CorrectHorse9!');
+  const start = await authStore.startRegistration('seller@example.com', 'CorrectHorse9!');
   const { user } = authStore.completeRegistration('seller@example.com', start.code);
   return { dir, db: getDb(dir), authStore, renders, user };
 }
@@ -63,8 +63,8 @@ function tombstoned(db) {
 
 // ---- the basics -------------------------------------------------------------------
 
-test('a recorded render is pending until its bytes land', () => {
-  const { renders, user } = setup();
+test('a recorded render is pending until its bytes land', async () => {
+  const { renders, user } = await setup();
   const id = newRenderId();
   renders.record({ render: { id, userId: user.id }, blobs: [], isPro: true });
 
@@ -76,16 +76,16 @@ test('a recorded render is pending until its bytes land', () => {
   assert.equal(renders.get(id).width, 1024);
 });
 
-test('a failed render never appears, so a dead upload is absent rather than broken', () => {
-  const { renders, user } = setup();
+test('a failed render never appears, so a dead upload is absent rather than broken', async () => {
+  const { renders, user } = await setup();
   const id = newRenderId();
   renders.record({ render: { id, userId: user.id }, blobs: [], isPro: true });
   renders.markFailed(id);
   assert.deepEqual(renders.listForUser({ userId: user.id }), []);
 });
 
-test('the prompt and settings are kept, which is what the gallery is for', () => {
-  const { renders, user } = setup();
+test('the prompt and settings are kept, which is what the gallery is for', async () => {
+  const { renders, user } = await setup();
   const id = newRenderId();
   renders.record({
     render: {
@@ -110,14 +110,14 @@ test('the prompt and settings are kept, which is what the gallery is for', () =>
 // meaning "unnamed" — a rename that wrote '' would freeze every reset render into a row
 // the gallery then labels with an empty string.
 
-test('a render starts with no name of its own', () => {
-  const { renders, user } = setup();
+test('a render starts with no name of its own', async () => {
+  const { renders, user } = await setup();
   const { id } = addRender(renders, user.id);
   assert.equal(renders.get(id).custom_name, null, 'the default is derived, never stored');
 });
 
-test('naming a render keeps what was typed', () => {
-  const { renders, user } = setup();
+test('naming a render keeps what was typed', async () => {
+  const { renders, user } = await setup();
   const { id } = addRender(renders, user.id);
 
   const res = renders.rename({ id, userId: user.id, name: '412 Rosewood Lane' });
@@ -126,8 +126,8 @@ test('naming a render keeps what was typed', () => {
   assert.equal(renders.listForUser({ userId: user.id })[0].custom_name, '412 Rosewood Lane');
 });
 
-test('an empty name is a RESET, not a render called ""', () => {
-  const { renders, user } = setup();
+test('an empty name is a RESET, not a render called ""', async () => {
+  const { renders, user } = await setup();
   const { id } = addRender(renders, user.id);
   renders.rename({ id, userId: user.id, name: 'Wilson viewing' });
 
@@ -139,10 +139,10 @@ test('an empty name is a RESET, not a render called ""', () => {
   }
 });
 
-test('a name is trimmed, collapsed and stripped of control characters', () => {
+test('a name is trimmed, collapsed and stripped of control characters', async () => {
   // It goes into the grid, the dialog heading and a card's aria-label. A newline or a bidi
   // override in any of those is a display bug at best.
-  const { renders, user } = setup();
+  const { renders, user } = await setup();
   const { id } = addRender(renders, user.id);
 
   const { name } = renders.rename({ id, userId: user.id, name: '  412  Rosewood\nLane‮  ' });
@@ -150,9 +150,9 @@ test('a name is trimmed, collapsed and stripped of control characters', () => {
   assert.equal(renders.get(id).custom_name, '412 Rosewood Lane');
 });
 
-test('a name is clamped at MAX_RENDER_NAME, by code point', () => {
+test('a name is clamped at MAX_RENDER_NAME, by code point', async () => {
   // `.slice()` would cut an astral character between its surrogates and store half of it.
-  const { renders, user } = setup();
+  const { renders, user } = await setup();
   const { id } = addRender(renders, user.id);
 
   const long = `${'a'.repeat(MAX_RENDER_NAME - 1)}🏠 and a great deal more text`;
@@ -162,8 +162,8 @@ test('a name is clamped at MAX_RENDER_NAME, by code point', () => {
   assert.equal([...renders.get(id).custom_name].length, MAX_RENDER_NAME);
 });
 
-test('a non-string name clears rather than storing "[object Object]"', () => {
-  const { renders, user } = setup();
+test('a non-string name clears rather than storing "[object Object]"', async () => {
+  const { renders, user } = await setup();
   const { id } = addRender(renders, user.id);
   renders.rename({ id, userId: user.id, name: 'Wilson viewing' });
 
@@ -174,9 +174,9 @@ test('a non-string name clears rather than storing "[object Object]"', () => {
   }
 });
 
-test("one account cannot name another's render", () => {
+test("one account cannot name another's render", async () => {
   // `user_id` is in the UPDATE's WHERE, so there is no check-then-write to disagree with.
-  const { renders, user } = setup();
+  const { renders, user } = await setup();
   const { id } = addRender(renders, user.id);
 
   const res = renders.rename({ id, userId: 'someone-else', name: 'Mine now' });
@@ -184,15 +184,15 @@ test("one account cannot name another's render", () => {
   assert.equal(renders.get(id).custom_name, null, 'a stranger renamed a render');
 });
 
-test('renaming a render that does not exist reports it rather than throwing', () => {
-  const { renders, user } = setup();
+test('renaming a render that does not exist reports it rather than throwing', async () => {
+  const { renders, user } = await setup();
   assert.equal(renders.rename({ id: newRenderId(), userId: user.id, name: 'Ghost' }).ok, false);
 });
 
-test('an evicted render cannot be renamed', () => {
+test('an evicted render cannot be renamed', async () => {
   // It is gone from the gallery, so a successful rename would report a write against a row
   // nothing can show.
-  const { renders, user } = setup();
+  const { renders, user } = await setup();
   const { id } = addRender(renders, user.id);
   assert.equal(renders.remove({ id, userId: user.id }), true);
 
@@ -200,10 +200,10 @@ test('an evicted render cannot be renamed', () => {
   assert.equal(renders.get(id).custom_name, null);
 });
 
-test('the name survives a reopen of the store', () => {
+test('the name survives a reopen of the store', async () => {
   // The guarded ALTER runs on every open. A second open must not lose the column or the
   // rows in it — which is the failure mode `ensureColumn`'s PRAGMA check exists to avoid.
-  const { dir, renders, user } = setup();
+  const { dir, renders, user } = await setup();
   const { id } = addRender(renders, user.id);
   renders.rename({ id, userId: user.id, name: '412 Rosewood Lane' });
 
@@ -229,8 +229,8 @@ const namesOf = (renders, userId, q) => renders
   .listForUser({ userId, q })
   .map((r) => r.custom_name ?? `${r.furniture_style} ${r.room_type}`);
 
-test('a term matches the room type, the style, the name or the prompt', () => {
-  const { renders, user } = setup();
+test('a term matches the room type, the style, the name or the prompt', async () => {
+  const { renders, user } = await setup();
   addSearchable(renders, user.id, { roomType: 'Bedroom', furnitureStyle: 'luxury' }, 1_000);
   addSearchable(renders, user.id, { roomType: 'Kitchen', furnitureStyle: 'coastal' }, 2_000);
   const named = addSearchable(renders, user.id, { roomType: 'Office', furnitureStyle: 'modern' }, 3_000);
@@ -243,11 +243,11 @@ test('a term matches the room type, the style, the name or the prompt', () => {
   assert.deepEqual(renders.listForUser({ userId: user.id, q: 'skylight' }).map((r) => r.id), [prompted]);
 });
 
-test('the DERIVED default name is searchable, which a per-column match would not be', () => {
+test('the DERIVED default name is searchable, which a per-column match would not be', async () => {
   // The card for an unnamed render reads "Luxury Bedroom". Neither column contains that
   // string, so matching the whole phrase against each one in turn finds nothing — and
   // typing what is on the card and getting no results is what makes a search feel broken.
-  const { renders, user } = setup();
+  const { renders, user } = await setup();
   addSearchable(renders, user.id, { roomType: 'Bedroom', furnitureStyle: 'luxury' });
   addSearchable(renders, user.id, { roomType: 'Bedroom', furnitureStyle: 'coastal' });
 
@@ -257,8 +257,8 @@ test('the DERIVED default name is searchable, which a per-column match would not
   assert.equal(renders.countForUser(user.id, { q: 'luxury bedroom' }), 1);
 });
 
-test('terms are ANDed, and their order does not matter', () => {
-  const { renders, user } = setup();
+test('terms are ANDed, and their order does not matter', async () => {
+  const { renders, user } = await setup();
   addSearchable(renders, user.id, { roomType: 'Bedroom', furnitureStyle: 'luxury' });
 
   assert.equal(renders.countForUser(user.id, { q: 'bedroom luxury' }), 1, 'order must not matter');
@@ -266,18 +266,18 @@ test('terms are ANDed, and their order does not matter', () => {
   assert.equal(renders.countForUser(user.id, { q: 'luxury kitchen' }), 0, 'one missing term excludes the row');
 });
 
-test('matching ignores ASCII case', () => {
-  const { renders, user } = setup();
+test('matching ignores ASCII case', async () => {
+  const { renders, user } = await setup();
   addSearchable(renders, user.id, { roomType: 'Bedroom', furnitureStyle: 'luxury' });
   for (const q of ['BEDROOM', 'BeDrOoM', 'bedroom']) {
     assert.equal(renders.countForUser(user.id, { q }), 1, q);
   }
 });
 
-test('LIKE wildcards in the query are literal, not a match-everything', () => {
+test('LIKE wildcards in the query are literal, not a match-everything', async () => {
   // Unescaped, `%` matches every row and `_` matches any character — so a user typing
   // punctuation would silently get the wrong set rather than no set.
-  const { renders, user } = setup();
+  const { renders, user } = await setup();
   const pct = addSearchable(renders, user.id, { roomType: 'Office', additionalPrompt: '100% linen' }, 1_000);
   addSearchable(renders, user.id, { roomType: 'Bedroom', furnitureStyle: 'luxury' }, 2_000);
 
@@ -289,8 +289,8 @@ test('LIKE wildcards in the query are literal, not a match-everything', () => {
   assert.equal(renders.countForUser(user.id, { q: '\\' }), 0, 'a lone backslash must not break the pattern');
 });
 
-test('an empty or blank query is not a search at all', () => {
-  const { renders, user } = setup();
+test('an empty or blank query is not a search at all', async () => {
+  const { renders, user } = await setup();
   addSearchable(renders, user.id, { roomType: 'Bedroom' }, 1_000);
   addSearchable(renders, user.id, { roomType: 'Kitchen' }, 2_000);
 
@@ -300,8 +300,8 @@ test('an empty or blank query is not a search at all', () => {
   }
 });
 
-test('search respects tenancy, so it cannot read across accounts', () => {
-  const { renders, user } = setup();
+test('search respects tenancy, so it cannot read across accounts', async () => {
+  const { renders, user } = await setup();
   addSearchable(renders, user.id, { roomType: 'Bedroom', furnitureStyle: 'luxury' });
   addSearchable(renders, 'someone-else', { roomType: 'Bedroom', furnitureStyle: 'luxury' });
 
@@ -309,10 +309,10 @@ test('search respects tenancy, so it cannot read across accounts', () => {
   assert.equal(renders.countForUser('someone-else', { q: 'bedroom' }), 1);
 });
 
-test('search sees neither evicted nor unfinished renders', () => {
+test('search sees neither evicted nor unfinished renders', async () => {
   // The same two predicates the plain listing uses. A search that surfaced a render the
   // grid cannot show would be a result you can never open.
-  const { renders, user } = setup();
+  const { renders, user } = await setup();
   const gone = addSearchable(renders, user.id, { roomType: 'Bedroom', furnitureStyle: 'luxury' }, 1_000);
   renders.remove({ id: gone, userId: user.id });
   const pendingId = newRenderId();
@@ -322,10 +322,10 @@ test('search sees neither evicted nor unfinished renders', () => {
   assert.deepEqual(renders.listForUser({ userId: user.id, q: 'bedroom' }), []);
 });
 
-test('search pages, and its count is the MATCHING total', () => {
+test('search pages, and its count is the MATCHING total', async () => {
   // The count sits above the grid. Printing the account's whole total over a filtered grid
   // would be the page contradicting itself.
-  const { renders, user } = setup();
+  const { renders, user } = await setup();
   for (let i = 0; i < 5; i += 1) addSearchable(renders, user.id, { roomType: 'Bedroom', furnitureStyle: 'luxury' }, 1_000 + i);
   addSearchable(renders, user.id, { roomType: 'Kitchen', furnitureStyle: 'coastal' }, 9_000);
 
@@ -338,10 +338,10 @@ test('search pages, and its count is the MATCHING total', () => {
   assert.deepEqual([...page].sort((a, b) => b.created_at - a.created_at).map((r) => r.id), page.map((r) => r.id));
 });
 
-test('a query past the term cap still searches, on the terms it kept', () => {
+test('a query past the term cap still searches, on the terms it kept', async () => {
   // The WHERE grows one LIKE per term, so an unbounded query is an unbounded statement
   // built from user input. Terms past the cap are dropped, never the whole search.
-  const { renders, user } = setup();
+  const { renders, user } = await setup();
   addSearchable(renders, user.id, { roomType: 'Bedroom', furnitureStyle: 'luxury' });
 
   assert.equal(searchTerms('a b c d e f g h i j k').length, MAX_SEARCH_TERMS);
@@ -350,8 +350,8 @@ test('a query past the term cap still searches, on the terms it kept', () => {
   assert.doesNotThrow(() => renders.countForUser(user.id, { q: many }));
 });
 
-test('a query past the length cap is truncated rather than refused', () => {
-  const { renders, user } = setup();
+test('a query past the length cap is truncated rather than refused', async () => {
+  const { renders, user } = await setup();
   addSearchable(renders, user.id, { roomType: 'Bedroom', furnitureStyle: 'luxury' });
   assert.equal(searchTerms('x'.repeat(MAX_SEARCH_QUERY + 40))[0].length, MAX_SEARCH_QUERY);
   assert.equal(renders.countForUser(user.id, { q: 'x'.repeat(MAX_SEARCH_QUERY + 40) }), 0);
@@ -359,14 +359,14 @@ test('a query past the length cap is truncated rather than refused', () => {
 
 // ---- the eviction matrix ----------------------------------------------------------
 
-test('a free account exactly at the cap loses nothing', () => {
-  const { renders, user } = setup();
+test('a free account exactly at the cap loses nothing', async () => {
+  const { renders, user } = await setup();
   for (let i = 0; i < FREE_GALLERY_LIMIT; i += 1) addRender(renders, user.id, { at: 1_000 + i });
   assert.equal(renders.countForUser(user.id), FREE_GALLERY_LIMIT);
 });
 
-test('one over the cap evicts exactly the oldest one', () => {
-  const { renders, user } = setup();
+test('one over the cap evicts exactly the oldest one', async () => {
+  const { renders, user } = await setup();
   const ids = [];
   for (let i = 0; i < FREE_GALLERY_LIMIT; i += 1) ids.push(addRender(renders, user.id, { at: 1_000 + i }).id);
   const last = addRender(renders, user.id, { at: 9_000 });
@@ -376,11 +376,11 @@ test('one over the cap evicts exactly the oldest one', () => {
   assert.equal(renders.get(ids[0]).evicted_at, 9_000, 'soft delete — the row stays so the UI can say what went');
 });
 
-test('an account far over the cap converges in ONE pass', () => {
+test('an account far over the cap converges in ONE pass', async () => {
   // The reason the query is `LIMIT -1 OFFSET cap` and not "delete one when count = cap+1".
   // A lapsed Pro account arrives hundreds over; evicting one per insert would never
   // catch up, and the user would sit permanently over their limit.
-  const { renders, user } = setup();
+  const { renders, user } = await setup();
   for (let i = 0; i < FREE_GALLERY_LIMIT + 30; i += 1) addRender(renders, user.id, { at: 1_000 + i, isPro: true });
   assert.equal(renders.countForUser(user.id), FREE_GALLERY_LIMIT + 30, 'well under the pro cap');
 
@@ -389,8 +389,8 @@ test('an account far over the cap converges in ONE pass', () => {
   assert.equal(renders.countForUser(user.id), FREE_GALLERY_LIMIT);
 });
 
-test('eviction tombstones exactly the evicted entry\'s bytes', () => {
-  const { db, renders, user } = setup();
+test('eviction tombstones exactly the evicted entry\'s bytes', async () => {
+  const { db, renders, user } = await setup();
   const ids = [];
   for (let i = 0; i < FREE_GALLERY_LIMIT; i += 1) ids.push(addRender(renders, user.id, { at: 1_000 + i }).id);
   addRender(renders, user.id, { at: 9_000 });
@@ -405,8 +405,8 @@ test('eviction tombstones exactly the evicted entry\'s bytes', () => {
   assert.equal(queued.length, 2);
 });
 
-test('a shared entry evicts LAST, so the link the agent just sent keeps working', () => {
-  const { db, renders, user } = setup();
+test('a shared entry evicts LAST, so the link the agent just sent keeps working', async () => {
+  const { db, renders, user } = await setup();
   const ids = [];
   for (let i = 0; i < FREE_GALLERY_LIMIT; i += 1) ids.push(addRender(renders, user.id, { at: 1_000 + i }).id);
   // Share the OLDEST — the one that would otherwise fall off next.
@@ -418,9 +418,9 @@ test('a shared entry evicts LAST, so the link the agent just sent keeps working'
   assert.equal(renders.get(ids[0]).evicted_at, null);
 });
 
-test('a shared entry still COUNTS against the cap', () => {
+test('a shared entry still COUNTS against the cap', async () => {
   // Otherwise a free user grows their gallery without limit by sharing everything.
-  const { db, renders, user } = setup();
+  const { db, renders, user } = await setup();
   const ids = [];
   for (let i = 0; i < FREE_GALLERY_LIMIT; i += 1) {
     const { id } = addRender(renders, user.id, { at: 1_000 + i });
@@ -433,11 +433,11 @@ test('a shared entry still COUNTS against the cap', () => {
   assert.equal(renders.countForUser(user.id), FREE_GALLERY_LIMIT);
 });
 
-test('evicting a shared entry revokes its link in the same transaction', () => {
+test('evicting a shared entry revokes its link in the same transaction', async () => {
   // A live link pointing at bytes that are about to be tombstoned would 404 with no
   // explanation. Revoking makes it the SAME uniform 404 as a deliberate revoke — correct,
   // but it must not be silent, which is why `hadLiveShare` comes back to the caller.
-  const { db, renders, user } = setup();
+  const { db, renders, user } = await setup();
   const ids = [];
   for (let i = 0; i < FREE_GALLERY_LIMIT; i += 1) {
     const { id } = addRender(renders, user.id, { at: 1_000 + i });
@@ -452,7 +452,7 @@ test('evicting a shared entry revokes its link in the same transaction', () => {
   assert.equal(share.revoked_at, 9_000);
 });
 
-test('a pro gallery is never evicted from, at any size', () => {
+test('a pro gallery is never evicted from, at any size', async () => {
   // Stagify+ keeps every finished render — the compare table on stagify-plus.html says
   // "Unlimited" and this is the assertion behind that word.
   //
@@ -461,7 +461,7 @@ test('a pro gallery is never evicted from, at any size', () => {
   // of renders reaches a ceiling. A test that stopped at 199 would have passed against
   // the old 200 too, and would therefore have proved nothing about this change.
   assert.equal(PRO_GALLERY_LIMIT, Infinity, 'the paid gallery has no ceiling');
-  const { renders, user } = setup();
+  const { renders, user } = await setup();
   const ids = [];
   for (let i = 0; i < FREE_GALLERY_LIMIT * 4; i += 1) {
     const res = addRender(renders, user.id, { at: 1_000 + i, isPro: true });
@@ -473,23 +473,23 @@ test('a pro gallery is never evicted from, at any size', () => {
   assert.equal(renders.get(ids[0]).evicted_at, null, 'the oldest entry survives');
 });
 
-test('enforceCap on a pro account is a no-op however much history it has', () => {
+test('enforceCap on a pro account is a no-op however much history it has', async () => {
   // The other entry point. A grace window closing calls this directly, and a pro account
   // that lapsed and then RESUBSCRIBED inside the window would go through it as pro.
-  const { renders, user } = setup();
+  const { renders, user } = await setup();
   for (let i = 0; i < FREE_GALLERY_LIMIT + 40; i += 1) addRender(renders, user.id, { at: 1_000 + i, isPro: true });
 
   assert.deepEqual(renders.enforceCap({ userId: user.id, isPro: true, now: 9_000 }), []);
   assert.equal(renders.countForUser(user.id), FREE_GALLERY_LIMIT + 40);
 });
 
-test('an explicit cap still evicts — the operator override has to work', () => {
+test('an explicit cap still evicts — the operator override has to work', async () => {
   // PRO_GALLERY_LIMIT is env-overridable precisely so a ceiling can be re-imposed without
   // a deploy if one account's history ever threatens the storage bill. That path shares
   // evictBeyondCap with the free tier, and this is what keeps it exercised now that no
   // default sends a pro account through it. Driven at a lowered cap so the test does not
   // have to create hundreds of rows.
-  const { renders, user } = setup();
+  const { renders, user } = await setup();
   const cap = 5;
   const ids = [];
   for (let i = 0; i < cap; i += 1) ids.push(addRender(renders, user.id, { at: 1_000 + i, isPro: true }).id);
@@ -509,9 +509,9 @@ test('capFor reports the tier ceilings', () => {
   assert.ok(Number.isFinite(capFor(false)), 'the free tier is still capped');
 });
 
-test('one account\'s cap never touches another\'s entries', () => {
-  const { dir, renders, user, authStore } = setup();
-  const start = authStore.startRegistration('other@example.com', 'CorrectHorse9!');
+test('one account\'s cap never touches another\'s entries', async () => {
+  const { dir, renders, user, authStore } = await setup();
+  const start = await authStore.startRegistration('other@example.com', 'CorrectHorse9!');
   const other = authStore.completeRegistration('other@example.com', start.code).user;
   void dir;
 
@@ -524,10 +524,10 @@ test('one account\'s cap never touches another\'s entries', () => {
 
 // ---- the downgrade grace window ---------------------------------------------------
 
-test('the grace window suppresses eviction ENTIRELY, not per row', () => {
+test('the grace window suppresses eviction ENTIRELY, not per row', async () => {
   // Evicting 480 entries on a lapsed subscriber's next render is brutal, silent, and
   // lands at the worst moment. During the window the cap simply does not apply.
-  const { renders, user } = setup();
+  const { renders, user } = await setup();
   for (let i = 0; i < FREE_GALLERY_LIMIT + 40; i += 1) addRender(renders, user.id, { at: 1_000 + i, isPro: true });
 
   renders.startGrace(user.id, 10_000);
@@ -538,8 +538,8 @@ test('the grace window suppresses eviction ENTIRELY, not per row', () => {
   assert.equal(renders.countForUser(user.id), FREE_GALLERY_LIMIT + 41);
 });
 
-test('when the grace window expires the cap applies in one pass', () => {
-  const { renders, user } = setup();
+test('when the grace window expires the cap applies in one pass', async () => {
+  const { renders, user } = await setup();
   for (let i = 0; i < FREE_GALLERY_LIMIT + 40; i += 1) addRender(renders, user.id, { at: 1_000 + i, isPro: true });
   renders.startGrace(user.id, 10_000);
 
@@ -550,11 +550,11 @@ test('when the grace window expires the cap applies in one pass', () => {
   assert.equal(renders.countForUser(user.id), FREE_GALLERY_LIMIT);
 });
 
-test('the render being inserted is never its own eviction victim', () => {
+test('the render being inserted is never its own eviction victim', async () => {
   // Regression. With share-protection sorting shared entries ahead of everything else,
   // a free account whose entries were ALL shared inserted a new render and the new
   // render — the generation the user had just spent — was what fell off the end.
-  const { renders, user, db } = setup();
+  const { renders, user, db } = await setup();
   const ids = [];
   for (let i = 0; i < FREE_GALLERY_LIMIT; i += 1) {
     const { id } = addRender(renders, user.id, { at: 1_000 + i });
@@ -571,8 +571,8 @@ test('the render being inserted is never its own eviction victim', () => {
 
 // ---- explicit delete, and the stale sweep -----------------------------------------
 
-test('a user can delete one entry, and it is the HARD revoke', () => {
-  const { db, renders, user } = setup();
+test('a user can delete one entry, and it is the HARD revoke', async () => {
+  const { db, renders, user } = await setup();
   const { id } = addRender(renders, user.id, { isPro: true });
   db.prepare('INSERT INTO gallery_shares (token_hash, render_id, user_id, created_at) VALUES (?, ?, ?, ?)')
     .run('sha256$x', id, user.id, 1_000);
@@ -585,10 +585,10 @@ test('a user can delete one entry, and it is the HARD revoke', () => {
   assert.deepEqual(renders.listForUser({ userId: user.id }), []);
 });
 
-test('deleting somebody else\'s entry does nothing at all', () => {
+test('deleting somebody else\'s entry does nothing at all', async () => {
   // Ownership is keyed on the validated session id inside the WHERE, never on a body.
-  const { db, renders, user, authStore } = setup();
-  const start = authStore.startRegistration('other@example.com', 'CorrectHorse9!');
+  const { db, renders, user, authStore } = await setup();
+  const start = await authStore.startRegistration('other@example.com', 'CorrectHorse9!');
   const other = authStore.completeRegistration('other@example.com', start.code).user;
   const { id } = addRender(renders, user.id, { isPro: true });
 
@@ -597,8 +597,8 @@ test('deleting somebody else\'s entry does nothing at all', () => {
   assert.equal(tombstoned(db).length, 0, 'a refused delete must not queue anything');
 });
 
-test('a render stuck mid-upload is swept, and whatever landed is queued', () => {
-  const { db, renders, user } = setup();
+test('a render stuck mid-upload is swept, and whatever landed is queued', async () => {
+  const { db, renders, user } = await setup();
   const id = newRenderId();
   renders.record({
     render: { id, userId: user.id },
@@ -613,9 +613,9 @@ test('a render stuck mid-upload is swept, and whatever landed is queued', () => 
   assert.equal(tombstoned(db).length, 1, 'bytes that did land are not orphaned');
 });
 
-test('the sweep is measured against the row, not process uptime', () => {
+test('the sweep is measured against the row, not process uptime', async () => {
   // A restart in the middle of a sweep must not be able to mark a live render failed.
-  const { renders, user } = setup();
+  const { renders, user } = await setup();
   const id = newRenderId();
   renders.record({ render: { id, userId: user.id }, isPro: true, now: 1_000_000 });
   assert.equal(renders.sweepStalePending({ now: 1_000_500 }), 0);
@@ -624,11 +624,11 @@ test('the sweep is measured against the row, not process uptime', () => {
 
 // ── the naming payload is searchable ─────────────────────────────────────────
 
-test('a render is findable by its stored qualifier and its source filename', () => {
+test('a render is findable by its stored qualifier and its source filename', async () => {
   // The card reads "Exterior — Golden hour · 412-rosewood-front". Typing what is on the
   // card and getting no results is the failure that makes a search box feel broken, and
   // neither term is in any of the columns the haystack used to cover.
-  const { renders, user } = setup();
+  const { renders, user } = await setup();
   const id = newRenderId();
   renders.record({
     render: {
@@ -648,10 +648,10 @@ test('a render is findable by its stored qualifier and its source filename', () 
   assert.equal(renders.countForUser(user.id, { q: 'nothing-like-this' }), 0);
 });
 
-test('a damaged extra_json cannot break the listing or the search', () => {
+test('a damaged extra_json cannot break the listing or the search', async () => {
   // json_extract would RAISE on this, 500-ing a whole page of the gallery over one row.
   // A LIKE against the raw text has no error mode at all, which is why it is a LIKE.
-  const { renders, db, user } = setup();
+  const { renders, db, user } = await setup();
   const { id } = addRender(renders, user.id, { isPro: true });
   db.prepare('UPDATE staged_renders SET extra_json = ? WHERE id = ?').run('{not json', id);
   assert.doesNotThrow(() => renders.listForUser({ userId: user.id, limit: 10, offset: 0 }));
@@ -678,8 +678,8 @@ function addInState(renders, userId, state, at) {
   return id;
 }
 
-test('listAllForUser returns the rows the owner gallery deliberately hides', () => {
-  const { renders, user } = setup();
+test('listAllForUser returns the rows the owner gallery deliberately hides', async () => {
+  const { renders, user } = await setup();
   const ok = addInState(renders, user.id, 'ok', 1000);
   const failed = addInState(renders, user.id, 'failed', 2000);
   const pending = addInState(renders, user.id, 'pending', 3000);
@@ -696,10 +696,10 @@ test('listAllForUser returns the rows the owner gallery deliberately hides', () 
   assert.equal(renders.countForUser(user.id), 1);
 });
 
-test('listAllForUser still returns a render whose bytes were reaped', () => {
+test('listAllForUser still returns a render whose bytes were reaped', async () => {
   // An evicted row keeps every parameter and loses only its objects. It is the
   // answer to "where did my render go", so hiding it defeats the whole feature.
-  const { renders, user } = setup();
+  const { renders, user } = await setup();
   addInState(renders, user.id, 'ok', 1000);
   renders.enforceCap({ userId: user.id, isPro: false, cap: 0, now: 5000 });
 
@@ -709,8 +709,8 @@ test('listAllForUser still returns a render whose bytes were reaped', () => {
   assert.ok(rows[0].evicted_at, 'and marked as evicted rather than merely absent');
 });
 
-test('listAllForUser never crosses accounts', () => {
-  const { renders, user } = setup();
+test('listAllForUser never crosses accounts', async () => {
+  const { renders, user } = await setup();
   const mine = addInState(renders, user.id, 'ok', 1000);
   addInState(renders, 'someone-else', 'ok', 1000);
 
@@ -719,8 +719,8 @@ test('listAllForUser never crosses accounts', () => {
   assert.equal(renders.countAllForUser('nobody'), 0);
 });
 
-test('listAllForUser is newest-first and pages', () => {
-  const { renders, user } = setup();
+test('listAllForUser is newest-first and pages', async () => {
+  const { renders, user } = await setup();
   const ids = [];
   for (let i = 0; i < 5; i++) ids.push(addInState(renders, user.id, 'ok', 1000 + i * 1000));
 

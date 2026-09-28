@@ -17,7 +17,7 @@ from Supademo, plus a standalone preview harness:
 | Source here | Ships as (served) |
 |---|---|
 | `demos.json` (`SUPADEMO_DEMOS`) | `public/scripts/guides/demo-data.js` (`STAGIFY_DEMOS`) |
-| `demo-player.js` | `public/scripts/guides/demo-player.js` (diverged: the served copy adds localized step-dot labels) |
+| `demo-player.js` | `public/scripts/guides/demo-player.js` (byte-identical copy) |
 | `demo-player.css` | `public/styles/demo-player.css` (byte-identical copy) |
 | `assets/**` (`assets/free/step-01.webp`) | `public/media-webp/demos/**` (`media-webp/demos/free/step-01.webp`) |
 
@@ -28,10 +28,9 @@ served — so a grep for references finds **zero**. That is expected. These are
 
 ### Canonical vs. copy
 The **served** file is `public/scripts/guides/demo-player.js`; the copy here is the
-authoring/preview master. **The served player is now ahead of this copy**: it adds
-localized step-dot labels (`stepLabel()` and a `languagechange` listener). Port those
-changes back here before copying `demo-player.js` across, or the export will regress
-them. No test enforces the pair. `demo-player.css` is still byte-identical.
+authoring/preview master. Both `demo-player.js` and `demo-player.css` must stay
+byte-identical to their served copies (CRLF ignored); edit both together.
+`test/content/demo-player-copies.test.js` fails the deploy if they drift.
 
 If you edit the walkthrough data here, re-export the matching `public/` files:
 regenerate `demo-data.js` from `demos.json`, and export any new `assets/**` frames to

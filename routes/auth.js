@@ -78,7 +78,7 @@ router.post('/api/getpro', (req, res, next) => {
 router.post('/api/auth/register', authLimiter, express.json(), async (req, res) => {
   try {
     const { email, password } = req.body || {};
-    const result = authStore.startRegistration(email, password);
+    const result = await authStore.startRegistration(email, password);
     if (!result.ok) {
       // Only genuine input errors (bad email / weak password) reach here now —
       // a "this email is taken" result is intentionally reported as ok:true with
@@ -145,10 +145,10 @@ router.post('/api/auth/register/resend', emailLimiter, express.json(), async (re
   }
 });
 
-router.post('/api/auth/login', authLimiter, express.json(), (req, res) => {
+router.post('/api/auth/login', authLimiter, express.json(), async (req, res) => {
   try {
     const { email, password } = req.body || {};
-    const result = authStore.login(email, password);
+    const result = await authStore.login(email, password);
     if (!result.ok) {
       return sendError(res, 401, result.error);
     }
@@ -301,7 +301,7 @@ router.post('/api/auth/reset-password', authLimiter, express.json(), async (req,
   try {
     const token = (req.body && req.body.token) || '';
     const password = (req.body && req.body.password) || '';
-    const out = authStore.completePasswordReset(token, password);
+    const out = await authStore.completePasswordReset(token, password);
     if (!out.ok) {
       return sendError(res, 400, out.error);
     }

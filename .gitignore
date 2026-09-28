@@ -93,3 +93,8 @@ instagram/posts/_scratch/
 # instagram/ per-run working files. Regenerable, and not part of the hand-off.
 instagram/posts/_work/
 eval-out/
+
+# Throwaway design previews (/preview) and prototypes (/prototype): local only
+previews/*
+!previews/README.md
+prototypes/

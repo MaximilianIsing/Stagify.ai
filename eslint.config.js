@@ -251,6 +251,11 @@ export default [
         module: 'readonly',
       },
     },
+    // demo-player.js is a byte-identical copy of the served player, whose own lint block
+    // needs its `/* global module */` header; here `module` is already declared above.
+    rules: {
+      'no-redeclare': ['error', { builtinGlobals: false }],
+    },
   },
 
   {

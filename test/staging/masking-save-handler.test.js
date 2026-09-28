@@ -325,7 +325,7 @@ afterEach(() => {
   }
 });
 
-function realHandler() {
+async function realHandler() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'stagify-masking-save-'));
   dirs.push(dir);
   const authStore = createAuthStore(dir);
@@ -333,7 +333,7 @@ function realHandler() {
   const renderRefs = createRenderRefs(dir);
   const store = createLocalObjectStore({ baseDir: dir, secret: 's' });
   const renderPersistence = createRenderPersistence({ objectStore: store, stagedRenders, renderRefs });
-  const start = authStore.startRegistration('masker@example.com', 'CorrectHorse9!');
+  const start = await authStore.startRegistration('masker@example.com', 'CorrectHorse9!');
   const { user } = authStore.completeRegistration('masker@example.com', start.code);
   const { handleMaskingSave } = createMaskingSaveHandler({ renderPersistence });
   return { handleMaskingSave, stagedRenders, store, user: { id: user.id, email: user.email, plan: 'pro' } };
@@ -346,7 +346,7 @@ async function afterBlobIsTagged(stagedRenders, store, renderId) {
 }
 
 test('the stored gallery master carries provenance metadata with the badge OFF', async () => {
-  const { handleMaskingSave, stagedRenders, store, user } = realHandler();
+  const { handleMaskingSave, stagedRenders, store, user } = await realHandler();
   const after = await realPhoto();
   const res = fakeRes();
   await handleMaskingSave(/** @type {any} */ (req({ after })), /** @type {any} */ (res), user);
@@ -358,7 +358,7 @@ test('the stored gallery master carries provenance metadata with the badge OFF',
 });
 
 test('the stored gallery master carries provenance metadata with the badge ON', async () => {
-  const { handleMaskingSave, stagedRenders, store, user } = realHandler();
+  const { handleMaskingSave, stagedRenders, store, user } = await realHandler();
   const after = await realPhoto();
   const res = fakeRes();
   await handleMaskingSave(

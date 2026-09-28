@@ -51,8 +51,8 @@ function setup() {
 }
 
 /** Register + verify an account, returning the user row. */
-function makeUser(authStore, email = 'seller@example.com') {
-  const start = authStore.startRegistration(email, 'CorrectHorse9!');
+async function makeUser(authStore, email = 'seller@example.com') {
+  const start = await authStore.startRegistration(email, 'CorrectHorse9!');
   const done = authStore.completeRegistration(email, start.code);
   assert.ok(done.ok, 'fixture user must register');
   return done.user;
@@ -195,10 +195,10 @@ test('fresh work sorts ahead of repeatedly-failing work', async () => {
 
 // ---- the erasure integration, which is the reason any of this exists ---------------
 
-test('erasing an account tombstones every object it owns', () => {
+test('erasing an account tombstones every object it owns', async () => {
   const { dir, db, authStore, logDir } = setup();
-  const user = makeUser(authStore);
-  const other = makeUser(authStore, 'someone@example.com');
+  const user = await makeUser(authStore);
+  const other = await makeUser(authStore, 'someone@example.com');
 
   const rid = 'b'.repeat(32);
   for (const role of ['after', 'before', 'thumb']) {
@@ -239,7 +239,7 @@ test('an erasure still succeeds when the object store is unreachable', async () 
   // The bytes are in someone else's datacentre. An outage there must not be able to
   // fail a right-to-erasure request — the obligation is durable, so it can wait.
   const { dir, db, authStore, logDir, tombstones } = setup();
-  const user = makeUser(authStore);
+  const user = await makeUser(authStore);
   db.prepare('INSERT INTO render_blobs (render_id, role, storage_key, user_id) VALUES (?, ?, ?, ?)')
     .run('e'.repeat(32), 'after', keyForRender({ renderId: 'e'.repeat(32), role: 'after' }), user.id);
 
@@ -259,11 +259,11 @@ test('an erasure still succeeds when the object store is unreachable', async () 
   assert.equal(tombstones.pending(), 0);
 });
 
-test('a reference shared by two renders is queued once', () => {
+test('a reference shared by two renders is queued once', async () => {
   // ref_objects is content-addressed, one row per distinct image, so the PRIMARY KEY on
   // blob_tombstones is what keeps a shared reference from being queued twice.
   const { dir, db, authStore, logDir } = setup();
-  const user = makeUser(authStore);
+  const user = await makeUser(authStore);
   const hash = 'f'.repeat(64);
   db.prepare('INSERT INTO ref_objects (ref_hash, storage_key, created_at, user_id) VALUES (?, ?, 0, ?)')
     .run(hash, keyForRef({ refHash: hash }), user.id);
@@ -275,7 +275,7 @@ test('a reference shared by two renders is queued once', () => {
   assert.equal(db.prepare('SELECT COUNT(*) AS n FROM blob_tombstones').get().n, 1);
 });
 
-test('erasure works in a database that has no gallery tables at all', () => {
+test('erasure works in a database that has no gallery tables at all', async () => {
   // Erasure is the one path that cannot fail with "no such table". A deployment that
   // has never opened the gallery store — or any of the existing tests — must still be
   // able to erase an account.
@@ -286,7 +286,7 @@ test('erasure works in a database that has no gallery tables at all', () => {
   createMemory({ __dirname: dir, DEBUG_MODE: false });
   const logDir = path.join(dir, 'data');
   fs.mkdirSync(logDir, { recursive: true });
-  const user = makeUser(authStore, 'nobody@example.com');
+  const user = await makeUser(authStore, 'nobody@example.com');
 
   const { deleteUser } = createUserDeletion({ baseDir: dir, getDataLogDir: () => logDir });
   const res = deleteUser({ userId: user.id });

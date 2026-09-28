@@ -1,9 +1,8 @@
 # previews/ — generated change previews (KEEP the folder, not the contents)
 
 **This folder is scratch, and that is intentional.** Only this README is meant to be
-committed, but the contents are **not** gitignored: `.gitignore` has no `previews/` rule, so a
-`git add -A` with a preview on disk will stage it. Delete each preview once its change is
-applied. Deleting any `<date>-<slug>/` subfolder is always safe.
+committed; `.gitignore` ignores everything else here (`previews/*` plus
+`!previews/README.md`). Deleting any `<date>-<slug>/` subfolder is always safe.
 
 Each subfolder is one proposed change to a real page, rendered inside a clone of that page so
 it can be looked at before anything under `public/` is edited. They are produced by the

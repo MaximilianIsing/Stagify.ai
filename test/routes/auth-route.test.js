@@ -212,7 +212,7 @@ test('a failing notice does not fail the reset — the password is already chang
     assert.deepEqual(await res.json(), { ok: true });
 
     // The reset really did take effect, which is why reporting failure would be wrong.
-    assert.equal(app.store.login(email, 'BrandN3wPass!').ok, true, 'new password works');
+    assert.equal((await app.store.login(email, 'BrandN3wPass!')).ok, true, 'new password works');
     await app.close();
     app = null;
   }

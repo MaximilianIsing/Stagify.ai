@@ -31,8 +31,8 @@ afterEach(() => {
 });
 
 // Register + verify a user; returns { ok, token, user }.
-function verifyUser(store, email, password = 'CorrectHorse9!') {
-  const start = store.startRegistration(email, password);
+async function verifyUser(store, email, password = 'CorrectHorse9!') {
+  const start = await store.startRegistration(email, password);
   return store.completeRegistration(email, start.code);
 }
 
@@ -45,10 +45,10 @@ function seedLegacyJson(dir, data) {
 
 const EMPTY = { sessions: {}, mobileIpUsage: {}, passwordResetTokens: {}, pendingRegistrations: {} };
 
-test('persists users to disk across a close + reopen', () => {
+test('persists users to disk across a close + reopen', async () => {
   const dir = tempDir();
   const s1 = storeAt(dir);
-  verifyUser(s1, 'persist@example.com');
+  await verifyUser(s1, 'persist@example.com');
   s1.close();
 
   const s2 = storeAt(dir);
@@ -81,7 +81,7 @@ test('imports a legacy auth-store.json on first open, preserving unknown fields'
   );
 });
 
-test('the legacy import is one-time — a restart never clobbers live SQLite data', () => {
+test('the legacy import is one-time — a restart never clobbers live SQLite data', async () => {
   const dir = tempDir();
   seedLegacyJson(dir, {
     users: [{ id: 'u_legacy', email: 'old@example.com', plan: 'free', createdAt: '2024-01-01T00:00:00.000Z' }],
@@ -90,7 +90,7 @@ test('the legacy import is one-time — a restart never clobbers live SQLite dat
 
   const s1 = storeAt(dir);
   assert.equal(s1.getUserCount(), 1);
-  verifyUser(s1, 'new@example.com'); // mutate SQLite after the import
+  await verifyUser(s1, 'new@example.com'); // mutate SQLite after the import
   assert.equal(s1.getUserCount(), 2);
   s1.close();
 
@@ -101,10 +101,10 @@ test('the legacy import is one-time — a restart never clobbers live SQLite dat
   assert.ok(s2.findUserByEmail('new@example.com'), 'the post-migration user survived the restart');
 });
 
-test('a legacy JSON that appears after the first boot is ignored', () => {
+test('a legacy JSON that appears after the first boot is ignored', async () => {
   const dir = tempDir();
   const s1 = storeAt(dir); // fresh DB, no JSON → migration is marked done
-  verifyUser(s1, 'live@example.com');
+  await verifyUser(s1, 'live@example.com');
   s1.close();
 
   // Someone drops a stale JSON next to the DB later.
@@ -117,9 +117,9 @@ test('a legacy JSON that appears after the first boot is ignored', () => {
   assert.equal(s2.findUserByEmail('stale@example.com'), null, 'the later-appearing JSON was not imported');
 });
 
-test('exportStore / importStore round-trips all state', () => {
+test('exportStore / importStore round-trips all state', async () => {
   const a = storeAt(tempDir());
-  const reg = verifyUser(a, 'rt@example.com');
+  const reg = await verifyUser(a, 'rt@example.com');
   const snap = a.exportStore();
   assert.ok(snap.users.some((x) => x.email === 'rt@example.com'));
 
@@ -136,11 +136,11 @@ test('exportStore / importStore round-trips all state', () => {
 // exportRedacted() is the browser-facing view; these tests are the line between
 // them. If one starts failing, do not "fix" it by widening the export.
 
-test('exportRedacted omits every credential: hashes, session tokens, reset tokens, pendings', () => {
+test('exportRedacted omits every credential: hashes, session tokens, reset tokens, pendings', async () => {
   const s = storeAt(tempDir());
-  const reg = verifyUser(s, 'secret@example.com');
+  const reg = await verifyUser(s, 'secret@example.com');
   const reset = s.startPasswordReset('secret@example.com');
-  s.startRegistration('pending@example.com', 'CorrectHorse9!'); // leaves a pending row
+  await s.startRegistration('pending@example.com', 'CorrectHorse9!'); // leaves a pending row
 
   const full = s.exportStore();
   const redacted = s.exportRedacted();
@@ -166,9 +166,9 @@ test('exportRedacted omits every credential: hashes, session tokens, reset token
   assert.equal(user.passwordSalt, undefined);
 });
 
-test('exportRedacted keeps the fields the dashboard renders', () => {
+test('exportRedacted keeps the fields the dashboard renders', async () => {
   const s = storeAt(tempDir());
-  verifyUser(s, 'shown@example.com');
+  await verifyUser(s, 'shown@example.com');
   const [u] = s.exportRedacted().users;
   for (const k of ['id', 'email', 'plan', 'createdAt']) {
     assert.ok(u[k] !== undefined, `${k} is still available to the admin UI`);
@@ -208,9 +208,9 @@ test('importStore replaces all prior state (transactional, not a merge)', () => 
 
 const sha256 = (s) => `sha256$${crypto.createHash('sha256').update(s).digest('hex')}`;
 
-test('session and reset tokens are stored hashed, never in the clear', () => {
+test('session and reset tokens are stored hashed, never in the clear', async () => {
   const s = storeAt(tempDir());
-  const reg = verifyUser(s, 'atrest@example.com');
+  const reg = await verifyUser(s, 'atrest@example.com');
   const reset = s.startPasswordReset('atrest@example.com');
 
   const snap = s.exportStore();
@@ -226,31 +226,31 @@ test('session and reset tokens are stored hashed, never in the clear', () => {
 
   // Nothing about the surface behavior changes — both tokens still work.
   assert.equal(s.validateSession(reg.token)?.email, 'atrest@example.com');
-  assert.equal(s.completePasswordReset(reset.token, 'BrandNewPass9!').ok, true);
-  assert.equal(s.login('atrest@example.com', 'BrandNewPass9!').ok, true);
+  assert.equal((await s.completePasswordReset(reset.token, 'BrandNewPass9!')).ok, true);
+  assert.equal((await s.login('atrest@example.com', 'BrandNewPass9!')).ok, true);
 });
 
-test('a forged digest is not a session — only the raw token authenticates', () => {
+test('a forged digest is not a session — only the raw token authenticates', async () => {
   const s = storeAt(tempDir());
-  const reg = verifyUser(s, 'forge@example.com');
+  const reg = await verifyUser(s, 'forge@example.com');
   // Someone who read the DB holds the stored value. Presenting it must fail: the
   // lookup hashes what it is given, so the digest hashes to something else.
   assert.equal(s.validateSession(sha256(reg.token)), null, 'the stored value is not replayable');
   assert.equal(s.validateSession(reg.token)?.email, 'forge@example.com', 'the real token still works');
 });
 
-test('logout and expiry still find the row through the hash', () => {
+test('logout and expiry still find the row through the hash', async () => {
   const s = storeAt(tempDir());
-  const reg = verifyUser(s, 'bye@example.com');
+  const reg = await verifyUser(s, 'bye@example.com');
   s.logout(reg.token);
   assert.equal(s.validateSession(reg.token), null, 'logout deleted the hashed row');
   assert.equal(Object.keys(s.exportStore().sessions).length, 0, 'no orphan row left behind');
 });
 
-test('tokens written before hashing are migrated on open, without signing anyone out', () => {
+test('tokens written before hashing are migrated on open, without signing anyone out', async () => {
   const dir = tempDir();
   const s1 = storeAt(dir);
-  const reg = verifyUser(s1, 'preexisting@example.com');
+  const reg = await verifyUser(s1, 'preexisting@example.com');
   const reset = s1.startPasswordReset('preexisting@example.com');
   s1.close();
 
@@ -270,13 +270,13 @@ test('tokens written before hashing are migrated on open, without signing anyone
     'preexisting@example.com',
     'the cookie the user already holds still works — nobody is signed out by the migration'
   );
-  assert.equal(s2.completePasswordReset(reset.token, 'AnotherPass9!').ok, true, 'an in-flight reset link still works');
+  assert.equal((await s2.completePasswordReset(reset.token, 'AnotherPass9!')).ok, true, 'an in-flight reset link still works');
 });
 
-test('the migration is idempotent — reopening does not double-hash', () => {
+test('the migration is idempotent — reopening does not double-hash', async () => {
   const dir = tempDir();
   const s1 = storeAt(dir);
-  const reg = verifyUser(s1, 'twice@example.com');
+  const reg = await verifyUser(s1, 'twice@example.com');
   const first = s1.exportStore().sessions;
   s1.close();
 
@@ -321,10 +321,10 @@ test('the non-token session/reset lookups are indexed rather than full scans', (
   raw.close();
 });
 
-test('an existing database gains the indexes on the next open, without touching rows', () => {
+test('an existing database gains the indexes on the next open, without touching rows', async () => {
   const dir = tempDir();
   const s1 = storeAt(dir);
-  const reg = verifyUser(s1, 'indexed@example.com');
+  const reg = await verifyUser(s1, 'indexed@example.com');
   s1.close();
 
   // Emulate a database written before these indexes existed — which is every
@@ -404,9 +404,9 @@ test('the redundant users(email) index is gone, and stays gone on an existing da
 // all — the very question the lifecycle emails branch on. Widening an allowlist
 // is exactly the change that leaks something, so the shape is pinned.
 
-test('exportRedacted carries trial state, projected to a fixed shape', () => {
+test('exportRedacted carries trial state, projected to a fixed shape', async () => {
   const s = storeAt(tempDir());
-  verifyUser(s, 'trial@example.com');
+  await verifyUser(s, 'trial@example.com');
   const user = s.findUserByEmail('trial@example.com');
   s.beginTrial(user.id, '2026-07-25T00:00:00.000Z');
   s.markTrialEmailSent(user.id, 'welcome');
@@ -461,9 +461,9 @@ test('a malformed trial bag degrades to absent rather than throwing', () => {
   assert.equal(noSent.trialLifecycle.sent.welcome, null, 'a bag with no sent map still reports every slot');
 });
 
-test('exportRedacted omits trialLifecycle entirely for an account that never trialed', () => {
+test('exportRedacted omits trialLifecycle entirely for an account that never trialed', async () => {
   const s = storeAt(tempDir());
-  verifyUser(s, 'free@example.com');
+  await verifyUser(s, 'free@example.com');
   const row = s.exportRedacted().users.find((u) => u.email === 'free@example.com');
   assert.equal('trialLifecycle' in row, false, 'absent stays absent, rather than becoming an empty shell');
 });

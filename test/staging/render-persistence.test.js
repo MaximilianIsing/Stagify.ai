@@ -41,7 +41,7 @@ async function png(width = 1024, height = 683) {
     .toBuffer();
 }
 
-function setup({ objectStore } = {}) {
+async function setup({ objectStore } = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'stagify-persist-'));
   dirs.push(dir);
   const authStore = createAuthStore(dir);
@@ -50,7 +50,7 @@ function setup({ objectStore } = {}) {
   const renderRefs = createRenderRefs(dir);
   const store = objectStore ?? createLocalObjectStore({ baseDir: dir, secret: 's' });
   const persistence = createRenderPersistence({ objectStore: store, stagedRenders, renderRefs });
-  const start = authStore.startRegistration('seller@example.com', 'CorrectHorse9!');
+  const start = await authStore.startRegistration('seller@example.com', 'CorrectHorse9!');
   const { user } = authStore.completeRegistration('seller@example.com', start.code);
   return { dir, db: getDb(dir), stagedRenders, renderRefs, persistence, store, user };
 }
@@ -58,7 +58,7 @@ function setup({ objectStore } = {}) {
 // ---- the happy path ---------------------------------------------------------------
 
 test('a render becomes a visible gallery entry once its bytes land', async () => {
-  const { persistence, stagedRenders, store, user } = setup();
+  const { persistence, stagedRenders, store, user } = await setup();
   const native = await png();
 
   const pending = persistence.recordPending({
@@ -90,7 +90,7 @@ test('the stored result is the NATIVE buffer, not a delivery upscale', async () 
   // The whole storage argument. upscaleForDelivery enlarges the ~1 MP output to as much
   // as 4096px for the download; storing that would be ~6x the bytes of pure lanczos
   // interpolation carrying no extra detail.
-  const { persistence, stagedRenders, store, user } = setup();
+  const { persistence, stagedRenders, store, user } = await setup();
   const native = await png(1024, 683);
   const pending = persistence.recordPending({ user, isPro: true, natives: [{ buffer: native }], params: {} });
   await persistence.uploadInBackground({ entries: pending.entries, user });
@@ -105,7 +105,7 @@ test('the stored result is the NATIVE buffer, not a delivery upscale', async () 
 test('the before photo is never stored larger than the after', async () => {
   // A 1600px "before" beside a 1024px "after" is backwards: it is only ever viewed in a
   // comparison against the result.
-  const { persistence, stagedRenders, store, user } = setup();
+  const { persistence, stagedRenders, store, user } = await setup();
   const pending = persistence.recordPending({
     user, isPro: true, natives: [{ buffer: await png(1024, 683) }], params: {},
   });
@@ -117,7 +117,7 @@ test('the before photo is never stored larger than the after', async () => {
 });
 
 test('after and thumb carry Stagify provenance metadata; before does NOT (it is the honest, unedited source)', async () => {
-  const { persistence, stagedRenders, store, user } = setup();
+  const { persistence, stagedRenders, store, user } = await setup();
   const pending = persistence.recordPending({
     user, isPro: true, natives: [{ buffer: await png(1024, 683) }], params: {},
   });
@@ -139,7 +139,7 @@ test('after and thumb carry Stagify provenance metadata; before does NOT (it is 
 });
 
 test('every variation of one request gets its own entry', async () => {
-  const { persistence, stagedRenders, user } = setup();
+  const { persistence, stagedRenders, user } = await setup();
   const natives = [{ buffer: await png() }, { buffer: await png() }, { buffer: await png() }];
   const pending = persistence.recordPending({ user, isPro: true, natives, params: {}, batchId: 'batch-1' });
   await persistence.uploadInBackground({ entries: pending.entries, user });
@@ -161,7 +161,7 @@ test('a store that throws on every put leaves the render untouched', async () =>
     async head() { return null; },
     presignGet() { return ''; },
   };
-  const { persistence, stagedRenders, user } = setup({ objectStore: throwing });
+  const { persistence, stagedRenders, user } = await setup({ objectStore: throwing });
   const pending = persistence.recordPending({ user, isPro: true, natives: [{ buffer: await png() }], params: {} });
 
   const res = await persistence.uploadInBackground({ entries: pending.entries, user });
@@ -183,7 +183,7 @@ test('uploadInBackground NEVER rejects, whatever the store does', async () => {
     async head() { return null; },
     presignGet() { return ''; },
   };
-  const { persistence, user } = setup({ objectStore: nasty });
+  const { persistence, user } = await setup({ objectStore: nasty });
   const pending = persistence.recordPending({ user, isPro: true, natives: [{ buffer: await png() }], params: {} });
   await assert.doesNotReject(() => persistence.uploadInBackground({ entries: pending.entries, user }));
 
@@ -193,7 +193,7 @@ test('uploadInBackground NEVER rejects, whatever the store does', async () => {
 });
 
 test('a source photo that will not decode costs the slider, not the entry', async () => {
-  const { persistence, stagedRenders, user } = setup();
+  const { persistence, stagedRenders, user } = await setup();
   const pending = persistence.recordPending({ user, isPro: true, natives: [{ buffer: await png() }], params: {} });
 
   const res = await persistence.uploadInBackground({
@@ -205,7 +205,7 @@ test('a source photo that will not decode costs the slider, not the entry', asyn
 });
 
 test('a failed reference upload does not fail the entry', async () => {
-  const { persistence, stagedRenders, user } = setup();
+  const { persistence, stagedRenders, user } = await setup();
   const pending = persistence.recordPending({ user, isPro: true, natives: [{ buffer: await png() }], params: {} });
   const res = await persistence.uploadInBackground({
     entries: pending.entries,
@@ -218,7 +218,7 @@ test('a failed reference upload does not fail the entry', async () => {
 
 test('references are deduped across the variations of one request', async () => {
   // Three variations share one sofa photo: one object, three links.
-  const { persistence, renderRefs, user, store } = setup();
+  const { persistence, renderRefs, user, store } = await setup();
   const natives = [{ buffer: await png() }, { buffer: await png() }, { buffer: await png() }];
   const pending = persistence.recordPending({ user, isPro: true, natives, params: {} });
   const sofa = await png(800, 800);
@@ -247,7 +247,7 @@ test('recordPending SANITIZES extra, so no call site can skip it', async () => {
   // Every writer goes through this one door, which is where the cleaning belongs — the
   // same argument rename() makes in lib/data/staged-renders.js. Here the handler passes a
   // raw filename with a path and a hostile character, and neither survives.
-  const { persistence, stagedRenders, user } = setup();
+  const { persistence, stagedRenders, user } = await setup();
   const pending = persistence.recordPending({
     user,
     isPro: true,
@@ -268,7 +268,7 @@ test('recordPending SANITIZES extra, so no call site can skip it', async () => {
 });
 
 test('an unrecognised source costs the render its NAME, never its row', async () => {
-  const { persistence, stagedRenders, user } = setup();
+  const { persistence, stagedRenders, user } = await setup();
   const pending = persistence.recordPending({
     user,
     isPro: true,
@@ -284,7 +284,7 @@ test('a writer that passes no extra at all still records the render', async () =
   // Back-compat with every row already in production, and the shape a fifth writer will
   // have on the day someone forgets. The drift guard is what catches the omission; this
   // asserts it is not ALSO a crash.
-  const { persistence, stagedRenders, user } = setup();
+  const { persistence, stagedRenders, user } = await setup();
   const pending = persistence.recordPending({ user, isPro: true, natives: [{ buffer: await png() }], params: {} });
   assert.equal(stagedRenders.get(pending.entries[0].id).extra_json, null);
 });
@@ -293,7 +293,7 @@ test('variationBase offsets the variation column for a multi-call batch', async 
   // The AI Designer stages up to three DIFFERENT photos per turn, so it calls this once per
   // result rather than once with three natives. Without the offset all three would land as
   // variation 0 of the same batch.
-  const { persistence, stagedRenders, user } = setup();
+  const { persistence, stagedRenders, user } = await setup();
   const ids = [];
   for (let i = 0; i < 3; i++) {
     const pending = persistence.recordPending({
@@ -308,22 +308,22 @@ test('variationBase offsets the variation column for a multi-call batch', async 
 test('a disabled object store makes the whole thing a no-op', async () => {
   // On Render with no R2 the store is disabled. Persistence must not write rows for
   // bytes that will never exist.
-  const { persistence, stagedRenders, user } = setup({ objectStore: createDisabledObjectStore() });
+  const { persistence, stagedRenders, user } = await setup({ objectStore: createDisabledObjectStore() });
   assert.equal(persistence.enabled(), false);
   assert.equal(persistence.recordPending({ user, isPro: true, natives: [{ buffer: await png() }], params: {} }), null);
   assert.deepEqual(await persistence.uploadInBackground({ entries: [], user }), { ok: 0, failed: 0 });
   assert.deepEqual(stagedRenders.listForUser({ userId: user.id }), []);
 });
 
-test('an anonymous or absent user stores nothing', () => {
-  const { persistence } = setup();
+test('an anonymous or absent user stores nothing', async () => {
+  const { persistence } = await setup();
   assert.equal(persistence.recordPending({ user: null, isPro: false, natives: [{ buffer: Buffer.from('x') }], params: {} }), null);
 });
 
 test('the free-tier cap still applies through the persistence path', async () => {
   // The cap lives in the store, but this is the path that actually reaches it, so pin
   // that recordPending passes `isPro` through rather than defaulting somebody to Pro.
-  const { persistence, stagedRenders, user } = setup();
+  const { persistence, stagedRenders, user } = await setup();
   const native = await png(64, 64);
   for (let i = 0; i < 25; i += 1) {
     const pending = persistence.recordPending({ user, isPro: false, natives: [{ buffer: native }], params: {} });
@@ -333,7 +333,7 @@ test('the free-tier cap still applies through the persistence path', async () =>
 });
 
 test('eviction is reported back so the UI can say a link stopped working', async () => {
-  const { db, persistence, stagedRenders, user } = setup();
+  const { db, persistence, stagedRenders, user } = await setup();
   const native = await png(64, 64);
   const ids = [];
   for (let i = 0; i < stagedRenders.FREE_GALLERY_LIMIT; i += 1) {
@@ -354,7 +354,7 @@ test('the planned keys match what actually gets stored', async () => {
   // recordPending writes the after/thumb keys up front so a crash mid-upload leaves rows
   // the stale sweep can tombstone. If the upload used different keys, those rows would
   // point at nothing and the real bytes would be orphaned.
-  const { persistence, stagedRenders, store, user } = setup();
+  const { persistence, stagedRenders, store, user } = await setup();
   const pending = persistence.recordPending({ user, isPro: true, natives: [{ buffer: await png() }], params: {} });
   const planned = stagedRenders.blobsFor(pending.entries[0].id).map((b) => b.storage_key).sort();
   assert.deepEqual(planned, [
@@ -372,7 +372,7 @@ test('an API render persists its source, so it is not pooled with pre-history ro
   // reject it — nulling extra_json entirely. The render still succeeded and was still
   // billed, so nothing failed; the paid API simply became invisible, bucketed as 'unknown'
   // in renders.bySource alongside rows written before the column existed.
-  const { persistence, stagedRenders, user } = setup();
+  const { persistence, stagedRenders, user } = await setup();
   const pending = persistence.recordPending({
     user,
     isPro: true,

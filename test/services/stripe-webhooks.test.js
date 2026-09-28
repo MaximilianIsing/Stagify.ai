@@ -33,8 +33,8 @@ afterEach(() => {
   while (tempDirs.length) fs.rmSync(tempDirs.pop(), { recursive: true, force: true });
 });
 
-function registerUser(store, email = 'buyer@example.com') {
-  const start = store.startRegistration(email, 'CorrectHorse9!');
+async function registerUser(store, email = 'buyer@example.com') {
+  const start = await store.startRegistration(email, 'CorrectHorse9!');
   const done = store.completeRegistration(email, start.code);
   return done.user; // { id, email, plan, ... }
 }
@@ -59,7 +59,7 @@ const subscriptionEvent = (type, { sub = 'sub_test', cus = 'cus_test', status })
 
 test('checkout.session.completed upgrades the referenced user to pro', async () => {
   const store = freshStore();
-  const user = registerUser(store);
+  const user = await registerUser(store);
   assert.equal(user.plan, 'free', 'user starts on the free plan');
 
   const res = await handleStripeEvent(checkoutCompleted({ userId: user.id }), store);
@@ -70,7 +70,7 @@ test('checkout.session.completed upgrades the referenced user to pro', async () 
 
 test('checkout falls back to matching the customer email when there is no client_reference_id', async () => {
   const store = freshStore();
-  const user = registerUser(store, 'email-match@example.com');
+  const user = await registerUser(store, 'email-match@example.com');
 
   await handleStripeEvent(checkoutCompleted({ email: user.email }), store);
   assert.equal(store.findUserByEmail(user.email).plan, 'pro', 'email fallback should upgrade the user');
@@ -83,7 +83,7 @@ test('checkout falls back to matching the customer email when there is no client
 
 test('a checkout in a paying customer\'s name cannot steal their subscription link', async () => {
   const store = freshStore();
-  const victim = registerUser(store, 'paying@example.com');
+  const victim = await registerUser(store, 'paying@example.com');
   await handleStripeEvent(
     checkoutCompleted({ userId: victim.id, sub: 'sub_victim', cus: 'cus_victim' }),
     store,
@@ -110,7 +110,7 @@ test('and therefore cannot downgrade them by cancelling the attacker\'s own tria
   // attacker cancels their trial and `customer.subscription.deleted` downgrades a
   // customer who is still being billed. This is the assertion that matters.
   const store = freshStore();
-  const victim = registerUser(store, 'paying@example.com');
+  const victim = await registerUser(store, 'paying@example.com');
   await handleStripeEvent(
     checkoutCompleted({ userId: victim.id, sub: 'sub_victim', cus: 'cus_victim' }),
     store,
@@ -134,7 +134,7 @@ test('and therefore cannot downgrade them by cancelling the attacker\'s own tria
 
 test('an email checkout cannot swallow an admin comp grant either', async () => {
   const store = freshStore();
-  const granted = registerUser(store, 'comped@example.com');
+  const granted = await registerUser(store, 'comped@example.com');
   assert.equal(store.grantProMonth({ email: granted.email }).ok, true);
   assert.equal(store.findUserByEmail(granted.email).plan, 'pro');
 
@@ -154,7 +154,7 @@ test('a refusal is logged loudly, with the Stripe ids and without the typed emai
   // ever quietly falls back to the generic "could not map to user" warn, the operator
   // loses the only signal that a paid checkout is stranded.
   const store = freshStore();
-  const victim = registerUser(store, 'paying@example.com');
+  const victim = await registerUser(store, 'paying@example.com');
   await handleStripeEvent(
     checkoutCompleted({ userId: victim.id, sub: 'sub_victim', cus: 'cus_victim' }),
     store,
@@ -184,7 +184,7 @@ test('a client_reference_id match still relinks — it is the unguessable identi
   // The reference is a 96-bit account id nothing exposes, so it is not a targeting
   // vector the way an address is. A signed-in user re-subscribing must still work.
   const store = freshStore();
-  const user = registerUser(store, 'resubscriber@example.com');
+  const user = await registerUser(store, 'resubscriber@example.com');
   await handleStripeEvent(checkoutCompleted({ userId: user.id, sub: 'sub_1', cus: 'cus_1' }), store);
 
   const res = await handleStripeEvent(
@@ -202,7 +202,7 @@ test('a signed-out buyer with no prior entitlement is still activated by email',
   // out, so this is an ordinary purchase, not an edge case. Breaking it would leave
   // real buyers paying with no plan.
   const store = freshStore();
-  const buyer = registerUser(store, 'signed-out@example.com');
+  const buyer = await registerUser(store, 'signed-out@example.com');
 
   const res = await handleStripeEvent(
     checkoutCompleted({ email: buyer.email, sub: 'sub_new', cus: 'cus_new' }),
@@ -224,7 +224,7 @@ test('checkout for an unknown user is acknowledged but grants nobody', async () 
 
 test('subscription.deleted downgrades the user back to free', async () => {
   const store = freshStore();
-  const user = registerUser(store);
+  const user = await registerUser(store);
   await handleStripeEvent(checkoutCompleted({ userId: user.id, sub: 'sub_x', cus: 'cus_x' }), store);
   assert.equal(store.findUserByEmail(user.email).plan, 'pro');
 
@@ -238,7 +238,7 @@ test('subscription.deleted downgrades the user back to free', async () => {
 
 test('subscription.updated to an active status restores pro (renewal)', async () => {
   const store = freshStore();
-  const user = registerUser(store);
+  const user = await registerUser(store);
   await handleStripeEvent(checkoutCompleted({ userId: user.id, sub: 'sub_a', cus: 'cus_a' }), store);
   await handleStripeEvent(
     subscriptionEvent('customer.subscription.deleted', { sub: 'sub_a', cus: 'cus_a', status: 'canceled' }),

@@ -70,8 +70,8 @@ afterEach(() => {
 });
 
 /** Register + verify an account, returning { user, token }. */
-function makeUser(authStore, email = 'gone@example.com') {
-  const start = authStore.startRegistration(email, 'CorrectHorse9!');
+async function makeUser(authStore, email = 'gone@example.com') {
+  const start = await authStore.startRegistration(email, 'CorrectHorse9!');
   const done = authStore.completeRegistration(email, start.code);
   assert.ok(done.ok, 'fixture user must register');
   return done;
@@ -79,13 +79,13 @@ function makeUser(authStore, email = 'gone@example.com') {
 
 // ---- the erasure itself ---------------------------------------------------
 
-test('deleting a user removes the account row AND everything keyed to it', () => {
+test('deleting a user removes the account row AND everything keyed to it', async () => {
   const { authStore, memory, deleteUser, db } = setup();
-  const { user, token } = makeUser(authStore);
+  const { user, token } = await makeUser(authStore);
   memory.saveMemories(user.id, [{ id: 'm1', text: 'lives in Berlin' }]);
   authStore.startPasswordReset(user.email);
   // A second account must survive untouched.
-  const other = makeUser(authStore, 'stays@example.com');
+  const other = await makeUser(authStore, 'stays@example.com');
   memory.saveMemories(other.user.id, [{ id: 'm2', text: 'someone else' }]);
 
   const countFor = (table, column, id) =>
@@ -111,10 +111,10 @@ test('deleting a user removes the account row AND everything keyed to it', () =>
   assert.ok(authStore.findUserByEmail('stays@example.com'), 'another user keeps their account');
 });
 
-test('erasure kills the API keys and the credit rows, so an erased account cannot still call', () => {
+test('erasure kills the API keys and the credit rows, so an erased account cannot still call', async () => {
   const { authStore, deleteUser, db, dir } = setup();
-  const { user } = makeUser(authStore);
-  const other = makeUser(authStore, 'stays@example.com');
+  const { user } = await makeUser(authStore);
+  const other = await makeUser(authStore, 'stays@example.com');
 
   const keys = createApiKeys(dir);
   const billing = createApiBilling(dir);
@@ -144,13 +144,13 @@ test('erasure kills the API keys and the credit rows, so an erased account canno
   assert.equal(billing.getBalance(other.user.id).balance, 4);
 });
 
-test('an unverified signup can be erased by address alone', () => {
+test('an unverified signup can be erased by address alone', async () => {
   // `pending_registrations` holds a scrypt hash + the address before any `users` row
   // exists. Without this path the only way that credential leaves disk is if someone
   // happens to retry the signup — an erasure request for the address would answer
   // NOT_FOUND while the data sat there.
   const { authStore, deleteUser, db } = setup();
-  authStore.startRegistration('unverified@example.com', 'CorrectHorse9!');
+  await authStore.startRegistration('unverified@example.com', 'CorrectHorse9!');
   const pending = () =>
     db.prepare('SELECT COUNT(*) AS n FROM pending_registrations WHERE email = ?').get('unverified@example.com').n;
   assert.equal(pending(), 1, 'precondition: the hash is on disk');
@@ -161,9 +161,9 @@ test('an unverified signup can be erased by address alone', () => {
   assert.equal(pending(), 0, 'the unverified credential is gone');
 });
 
-test('erasing an account also clears a pending registration for its address', () => {
+test('erasing an account also clears a pending registration for its address', async () => {
   const { authStore, deleteUser, db } = setup();
-  const { user } = makeUser(authStore, 'reuse@example.com');
+  const { user } = await makeUser(authStore, 'reuse@example.com');
   // The front door cannot produce this state (startRegistration on a verified
   // address deliberately creates nothing, to stay non-enumerating), but a legacy
   // import or a hand-edited row can — and it would be a live credential for an
@@ -180,9 +180,9 @@ test('erasing an account also clears a pending registration for its address', ()
   );
 });
 
-test('an account can be erased by email as well as by id', () => {
+test('an account can be erased by email as well as by id', async () => {
   const { authStore, deleteUser } = setup();
-  makeUser(authStore, 'byemail@example.com');
+  await makeUser(authStore, 'byemail@example.com');
   const res = deleteUser({ email: 'ByEmail@Example.com  ' });
   assert.equal(res.ok, true, 'the lookup normalises case and whitespace like the login path');
   assert.equal(authStore.findUserByEmail('byemail@example.com'), null);
@@ -194,9 +194,9 @@ test('an account can be erased by email as well as by id', () => {
 // typo meant the address was never tried and the operator got NOT_FOUND while every
 // row, CSV cell and legacy-JSON entry survived. Exactly the wrong answer to give
 // someone processing a right-to-erasure request.
-test('a stale id does not stop the erasure when a valid email came with it', () => {
+test('a stale id does not stop the erasure when a valid email came with it', async () => {
   const { authStore, deleteUser } = setup();
-  makeUser(authStore, 'both@example.com');
+  await makeUser(authStore, 'both@example.com');
   const res = deleteUser({ userId: 'stale-id-that-matches-nothing', email: 'Both@Example.com' });
   assert.equal(res.ok, true, 'the email must be tried when the id resolves to nothing');
   assert.equal(res.email, 'both@example.com');
@@ -212,9 +212,9 @@ test('an unknown user and a missing identifier are refused, not silently "ok"', 
   assert.equal(deleteUser({ userId: 'nope', email: 'nobody@example.com' }).code, 'NOT_FOUND');
 });
 
-test('an account with a live Stripe subscription is refused unless forced', () => {
+test('an account with a live Stripe subscription is refused unless forced', async () => {
   const { authStore, deleteUser, db } = setup();
-  const { user } = makeUser(authStore, 'paying@example.com');
+  const { user } = await makeUser(authStore, 'paying@example.com');
   db.prepare('UPDATE users SET stripe_subscription_id = ? WHERE id = ?').run('sub_123', user.id);
 
   const refused = deleteUser({ userId: user.id });
@@ -227,12 +227,12 @@ test('an account with a live Stripe subscription is refused unless forced', () =
   assert.equal(authStore.findUserByEmail('paying@example.com'), null);
 });
 
-test('a failure part-way through rolls the whole erasure back', () => {
+test('a failure part-way through rolls the whole erasure back', async () => {
   // Half an erasure is the exact state that produces the orphans this module exists
   // to prevent. `users` is deleted LAST, so aborting on it proves the earlier
   // deletes were inside the transaction and came back.
   const { authStore, memory, deleteUser, db } = setup();
-  const { user } = makeUser(authStore, 'atomic@example.com');
+  const { user } = await makeUser(authStore, 'atomic@example.com');
   memory.saveMemories(user.id, [{ id: 'm1', text: 'still here' }]);
   const countFor = (table, column, id) =>
     db.prepare(`SELECT COUNT(*) AS n FROM ${table} WHERE ${column} = ?`).get(id).n;
@@ -250,9 +250,9 @@ test('a failure part-way through rolls the whole erasure back', () => {
 
 // ---- the CSV logs ---------------------------------------------------------
 
-test('the CSV logs lose that person\'s identifying cells, keeping every row', () => {
+test('the CSV logs lose that person\'s identifying cells, keeping every row', async () => {
   const { authStore, deleteUser, logDir } = setup();
-  const { user } = makeUser(authStore, 'logged@example.com');
+  const { user } = await makeUser(authStore, 'logged@example.com');
 
   fs.writeFileSync(
     path.join(logDir, 'prompt_logs.csv'),
@@ -284,9 +284,9 @@ test('the CSV logs lose that person\'s identifying cells, keeping every row', ()
   assert.equal(res.logs.find((l) => l.file.endsWith('contact_logs.csv')).present, false, 'absent logs are reported, not an error');
 });
 
-test('a log that cannot be rewritten does not roll back or throw the erasure', () => {
+test('a log that cannot be rewritten does not roll back or throw the erasure', async () => {
   const { authStore, deleteUser, logDir } = setup();
-  const { user } = makeUser(authStore, 'partial@example.com');
+  const { user } = await makeUser(authStore, 'partial@example.com');
   // A directory where a CSV is expected: reading it throws EISDIR.
   fs.mkdirSync(path.join(logDir, 'prompt_logs.csv'));
 
@@ -306,12 +306,12 @@ function seedStore(logDir, file, doc) {
   return full;
 }
 
-test('the frozen auth-store.json fallback loses the address and every credential', () => {
+test('the frozen auth-store.json fallback loses the address and every credential', async () => {
   // auth-store.js imports this file once and then only ever reads it, so an erasure
   // that stops at SQLite leaves the whole account sitting here: address, scrypt hash,
   // and session digests that would come back live if the fallback were replayed.
   const { authStore, deleteUser, logDir } = setup();
-  const { user } = makeUser(authStore, 'legacy@example.com');
+  const { user } = await makeUser(authStore, 'legacy@example.com');
   const file = seedStore(logDir, 'auth-store.json', {
     users: [
       {
@@ -370,12 +370,12 @@ test('the frozen auth-store.json fallback loses the address and every credential
   assert.ok(report.matched >= 4, `the operator is told what changed, got ${report.matched}`);
 });
 
-test('erasing by address alone still reaches the legacy sessions of that account', () => {
+test('erasing by address alone still reaches the legacy sessions of that account', async () => {
   // No `users` row exists (an unverified signup), so the erasure carries no id — the
   // legacy users[] entry is the only thing that can supply one, and without it the
   // session/reset maps keyed to that id would be unreachable.
   const { authStore, deleteUser, logDir } = setup();
-  authStore.startRegistration('ghost@example.com', 'CorrectHorse9!');
+  await authStore.startRegistration('ghost@example.com', 'CorrectHorse9!');
   const file = seedStore(logDir, 'auth-store.json', {
     users: [{ id: 'u_ghost', email: 'ghost@example.com', passwordHash: 'scrypt-of-the-ghost' }],
     sessions: { digestoftheghost: { userId: 'u_ghost', exp: 1 } },
@@ -391,9 +391,9 @@ test('erasing by address alone still reaches the legacy sessions of that account
   assert.ok(!raw.includes('digestoftheghost'), 'the id came from the users[] entry matched by address');
 });
 
-test('the frozen memories.json fallback loses that user\'s bucket', () => {
+test('the frozen memories.json fallback loses that user\'s bucket', async () => {
   const { authStore, memory, deleteUser, logDir } = setup();
-  const { user } = makeUser(authStore, 'remembered@example.com');
+  const { user } = await makeUser(authStore, 'remembered@example.com');
   memory.saveMemories(user.id, [{ id: 'm1', content: 'lives in Berlin' }]);
   // The real file on disk has keys that are the id JSON-stringified a second time —
   // that is what the old writer produced, and a plain key === userId comparison walks
@@ -411,9 +411,9 @@ test('the frozen memories.json fallback loses that user\'s bucket', () => {
   assert.deepEqual(Object.keys(JSON.parse(raw)), ['u_bystander'], 'nobody else lost their memories');
 });
 
-test('the email-open map loses the address it is keyed by', () => {
+test('the email-open map loses the address it is keyed by', async () => {
   const { authStore, deleteUser, logDir } = setup();
-  makeUser(authStore, 'opened@example.com');
+  await makeUser(authStore, 'opened@example.com');
   const file = seedStore(logDir, 'email_opened.json', {
     'Opened@Example.com': '2026-01-01T00:00:00.000Z',
     'other@example.com': '2026-01-02T00:00:00.000Z',
@@ -425,9 +425,9 @@ test('the email-open map loses the address it is keyed by', () => {
   assert.deepEqual(Object.keys(doc), ['other@example.com'], 'the key is the address, so the entry goes');
 });
 
-test('a JSON store that is absent or holds nobody is a no-op, not an error', () => {
+test('a JSON store that is absent or holds nobody is a no-op, not an error', async () => {
   const { authStore, deleteUser, logDir } = setup();
-  const { user } = makeUser(authStore, 'nofiles@example.com');
+  const { user } = await makeUser(authStore, 'nofiles@example.com');
   // memories.json exists but names someone else: it must come out byte-identical.
   const untouched = seedStore(logDir, 'memories.json', { u_bystander: [{ id: 'm1', content: 'not theirs' }] });
   const before = fs.readFileSync(untouched, 'utf8');
@@ -446,9 +446,9 @@ test('a JSON store that is absent or holds nobody is a no-op, not an error', () 
   assert.equal(fs.readFileSync(untouched, 'utf8'), before, 'a store with no match is not rewritten at all');
 });
 
-test('an unreadable JSON store is reported, not thrown, like the CSVs', () => {
+test('an unreadable JSON store is reported, not thrown, like the CSVs', async () => {
   const { authStore, deleteUser, logDir } = setup();
-  const { user } = makeUser(authStore, 'broken@example.com');
+  const { user } = await makeUser(authStore, 'broken@example.com');
   fs.writeFileSync(path.join(logDir, 'memories.json'), '{ not json');
   fs.mkdirSync(path.join(logDir, 'auth-store.json')); // reading a directory throws EISDIR
 

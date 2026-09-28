@@ -28,8 +28,8 @@ afterEach(() => {
   while (tempDirs.length) fs.rmSync(tempDirs.pop(), { recursive: true, force: true });
 });
 
-function registerUser(store, email = 'buyer@example.com') {
-  const start = store.startRegistration(email, 'CorrectHorse9!');
+async function registerUser(store, email = 'buyer@example.com') {
+  const start = await store.startRegistration(email, 'CorrectHorse9!');
   return store.completeRegistration(email, start.code).user;
 }
 
@@ -45,7 +45,7 @@ function spyLifecycle() {
 
 test('checkout.session.completed invokes onTrialCheckout with the mapped user', async () => {
   const store = freshStore();
-  const user = registerUser(store);
+  const user = await registerUser(store);
   const lifecycle = spyLifecycle();
 
   const event = {
@@ -76,7 +76,7 @@ test('customer.subscription.trial_will_end is handled and calls onTrialWillEnd',
 
 test('subscription.deleted calls onSubscriptionCanceled; subscription.updated does NOT', async () => {
   const store = freshStore();
-  const user = registerUser(store);
+  const user = await registerUser(store);
   const lifecycle = spyLifecycle();
   await handleStripeEvent(
     { type: 'checkout.session.completed', data: { object: { mode: 'subscription', metadata: {}, subscription: 'sub_x', customer: 'cus_x', client_reference_id: user.id } } },
@@ -102,7 +102,7 @@ test('a stale subscription.deleted sends no win-back to a customer who is still 
   // cancelled and resubscribed would otherwise be told "sorry to see you go" while
   // their new subscription is being charged.
   const store = freshStore();
-  const user = registerUser(store);
+  const user = await registerUser(store);
   const lifecycle = spyLifecycle();
   const checkout = (subscription) => handleStripeEvent(
     { type: 'checkout.session.completed', data: { object: { mode: 'subscription', metadata: {}, subscription, customer: 'cus_r', client_reference_id: user.id } } },
@@ -129,7 +129,7 @@ test('a stale subscription.deleted sends no win-back to a customer who is still 
 
 test('a throwing lifecycle side-effect does not fail the webhook', async () => {
   const store = freshStore();
-  const user = registerUser(store);
+  const user = await registerUser(store);
   const boom = { onTrialCheckout: async () => { throw new Error('mail down'); } };
 
   const event = {
@@ -144,7 +144,7 @@ test('a throwing lifecycle side-effect does not fail the webhook', async () => {
 
 test('omitting the lifecycle bag keeps the original behaviour (no crash)', async () => {
   const store = freshStore();
-  const user = registerUser(store);
+  const user = await registerUser(store);
   const res = await handleStripeEvent(
     { type: 'checkout.session.completed', data: { object: { mode: 'subscription', metadata: {}, subscription: 'sub_1', customer: 'cus_1', client_reference_id: user.id } } },
     store,

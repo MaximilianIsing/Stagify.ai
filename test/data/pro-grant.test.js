@@ -43,8 +43,8 @@ afterEach(async () => {
 const EMPTY = { sessions: {}, mobileIpUsage: {}, passwordResetTokens: {}, pendingRegistrations: {} };
 const auth = { 'X-Stagify-Endpoint-Key': ADMIN_KEY };
 
-function verifyUser(store, email, password = 'CorrectHorse9!') {
-  const start = store.startRegistration(email, password);
+async function verifyUser(store, email, password = 'CorrectHorse9!') {
+  const start = await store.startRegistration(email, password);
   return store.completeRegistration(email, start.code);
 }
 
@@ -79,9 +79,9 @@ test('isGrantActive is false for a missing, malformed, or past expiry', () => {
 
 // ---- Granting --------------------------------------------------------------
 
-test('grants a free account one month of pro with no Stripe subscription', () => {
+test('grants a free account one month of pro with no Stripe subscription', async () => {
   const store = storeAt(tempDir());
-  const reg = verifyUser(store, 'gift@example.com');
+  const reg = await verifyUser(store, 'gift@example.com');
 
   const res = store.grantProMonth({ userId: reg.user.id });
   assert.equal(res.ok, true);
@@ -97,10 +97,10 @@ test('grants a free account one month of pro with no Stripe subscription', () =>
   assert.ok(days > 27 && days < 32, `expiry is about a month out (got ${days.toFixed(1)} days)`);
 });
 
-test('a grant can be given by email and survives a close + reopen', () => {
+test('a grant can be given by email and survives a close + reopen', async () => {
   const dir = tempDir();
   const s1 = storeAt(dir);
-  verifyUser(s1, 'byemail@example.com');
+  await verifyUser(s1, 'byemail@example.com');
   assert.equal(s1.grantProMonth({ email: 'byemail@example.com' }).ok, true);
   s1.close();
 
@@ -150,9 +150,9 @@ test('a lapsed grant never downgrades a real Stripe subscriber', () => {
 
 // ---- Refusals --------------------------------------------------------------
 
-test('refuses an account that already has Stagify+', () => {
+test('refuses an account that already has Stagify+', async () => {
   const store = storeAt(tempDir());
-  const reg = verifyUser(store, 'already@example.com');
+  const reg = await verifyUser(store, 'already@example.com');
   assert.equal(store.grantProMonth({ userId: reg.user.id }).ok, true);
 
   const second = store.grantProMonth({ userId: reg.user.id });
@@ -172,9 +172,9 @@ test('refuses a Stripe subscriber and leaves the record untouched', () => {
 
 // ---- Revoking + Stripe takeover -------------------------------------------
 
-test('revoking a grant drops the account back to free immediately', () => {
+test('revoking a grant drops the account back to free immediately', async () => {
   const store = storeAt(tempDir());
-  const reg = verifyUser(store, 'revoke@example.com');
+  const reg = await verifyUser(store, 'revoke@example.com');
   store.grantProMonth({ userId: reg.user.id });
 
   assert.equal(store.revokeProGrant(reg.user.id).ok, true);
@@ -194,9 +194,9 @@ test('revoking refuses an unknown user and a Stripe subscriber', () => {
   assert.match(store.revokeProGrant('u_seed').error, /Stripe/);
 });
 
-test('subscribing during a grant clears the expiry so the account is never downgraded', () => {
+test('subscribing during a grant clears the expiry so the account is never downgraded', async () => {
   const store = storeAt(tempDir());
-  const reg = verifyUser(store, 'converts@example.com');
+  const reg = await verifyUser(store, 'converts@example.com');
   store.grantProMonth({ userId: reg.user.id });
 
   store.activateProFromStripeCheckout({

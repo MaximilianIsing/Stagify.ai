@@ -1,3 +1,4 @@
+/* global module */
 /* ==========================================================================
    Stagify local walkthrough player — faithful rebuild of the Supademo embed.
 
@@ -12,6 +13,18 @@
    ========================================================================== */
 (function (global) {
   'use strict';
+
+  // "Go to step 3", in the visitor's language. This file is a CLASSIC script, so it
+  // cannot import the i18n helper; LanguageSystem is read off window the way the other
+  // classic scripts do, and the English text is the fallback when the pack has not
+  // loaded yet (or on a page that loads no pack at all).
+  function stepLabel(idx) {
+    var n = idx + 1;
+    var tpl = 'Go to step {n}';
+    var ls = global.LanguageSystem;
+    if (ls && typeof ls.getText === 'function') tpl = ls.getText('guides.goToStep') || tpl;
+    return String(tpl).replace('{n}', n);
+  }
 
   var GAP = 14;     // px between anchor and callout card
   var G = 10;       // px min gap from frame edge
@@ -96,9 +109,17 @@
       this.dots = this.steps.map(function (st, idx) {
         var b = el('button', 'sdp__dot', dots);
         b.type = 'button';
-        b.setAttribute('aria-label', 'Go to step ' + (idx + 1));
+        b.setAttribute('aria-label', stepLabel(idx));
         return b;
       });
+      // The pack may land after the player mounts (guides.html builds these from
+      // demo-data.js on DOMContentLoaded), and the visitor can switch language while
+      // the page is open — so the dots are relabelled rather than labelled once.
+      var self = this;
+      this._onLanguageChange = function () {
+        self.dots.forEach(function (b, idx) { b.setAttribute('aria-label', stepLabel(idx)); });
+      };
+      global.addEventListener('languagechange', this._onLanguageChange);
     } else {
       this.dots = [];
     }
@@ -308,6 +329,7 @@
 
   SupademoPlayer.prototype.destroy = function () {
     global.removeEventListener('resize', this._onResize);
+    if (this._onLanguageChange) global.removeEventListener('languagechange', this._onLanguageChange);
     this.root.innerHTML = '';
     this.root.classList.remove('sdp');
   };

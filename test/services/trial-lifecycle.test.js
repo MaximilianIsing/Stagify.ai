@@ -46,8 +46,8 @@ function fakeEmails(over = {}) {
   };
 }
 
-function proUser(store, email, { sub = 'sub_1', cus = 'cus_1' } = {}) {
-  const start = store.startRegistration(email, 'CorrectHorse9!');
+async function proUser(store, email, { sub = 'sub_1', cus = 'cus_1' } = {}) {
+  const start = await store.startRegistration(email, 'CorrectHorse9!');
   const done = store.completeRegistration(email, start.code);
   store.activateProFromStripeCheckout({ userId: done.user.id, stripeCustomerId: cus, stripeSubscriptionId: sub });
   return done.user;
@@ -55,7 +55,7 @@ function proUser(store, email, { sub = 'sub_1', cus = 'cus_1' } = {}) {
 
 test('onTrialCheckout starts tracking, sends welcome once (idempotent)', async () => {
   const store = freshStore();
-  const user = proUser(store, 'welcome@example.com');
+  const user = await proUser(store, 'welcome@example.com');
   const emails = fakeEmails();
   const life = createTrialLifecycle({ authStore: store, emails, now: () => NOW });
 
@@ -70,7 +70,7 @@ test('onTrialCheckout starts tracking, sends welcome once (idempotent)', async (
 
 test('sweep: day-2 user who has not staged gets the activation nudge (once)', async () => {
   const store = freshStore();
-  const user = proUser(store, 'inactive@example.com');
+  const user = await proUser(store, 'inactive@example.com');
   store.beginTrial(user.id, new Date(NOW - 2 * DAY).toISOString());
   const emails = fakeEmails();
   const life = createTrialLifecycle({ authStore: store, emails, now: () => NOW });
@@ -86,7 +86,7 @@ test('sweep: day-2 user who has not staged gets the activation nudge (once)', as
 
 test('sweep: day-4 user who IS staging gets the value email, not activation', async () => {
   const store = freshStore();
-  const user = proUser(store, 'active@example.com');
+  const user = await proUser(store, 'active@example.com');
   store.beginTrial(user.id, new Date(NOW - 4 * DAY).toISOString());
   store.recordStagingActivity(user.id); // lastStagedAt = now → "activated"
   const emails = fakeEmails();
@@ -101,7 +101,7 @@ test('sweep: day-4 user who IS staging gets the value email, not activation', as
 
 test('sweep: a fresh (day-0) trial gets nothing yet', async () => {
   const store = freshStore();
-  const user = proUser(store, 'fresh@example.com');
+  const user = await proUser(store, 'fresh@example.com');
   store.beginTrial(user.id, new Date(NOW - 2 * 60 * 60 * 1000).toISOString()); // 2 hours ago
   const emails = fakeEmails();
   const life = createTrialLifecycle({ authStore: store, emails, now: () => NOW });
@@ -112,7 +112,7 @@ test('sweep: a fresh (day-0) trial gets nothing yet', async () => {
 
 test('sweep: a failed send leaves the flag unset so the next pass retries', async () => {
   const store = freshStore();
-  const user = proUser(store, 'retry@example.com');
+  const user = await proUser(store, 'retry@example.com');
   store.beginTrial(user.id, new Date(NOW - 2 * DAY).toISOString());
   let firstTry = true;
   const emails = fakeEmails({
@@ -130,7 +130,7 @@ test('sweep: a failed send leaves the flag unset so the next pass retries', asyn
 
 test('onTrialWillEnd emails the mapped user with a daysLeft from trial_end (once)', async () => {
   const store = freshStore();
-  const user = proUser(store, 'ending@example.com', { sub: 'sub_end', cus: 'cus_end' });
+  const user = await proUser(store, 'ending@example.com', { sub: 'sub_end', cus: 'cus_end' });
   store.beginTrial(user.id, new Date(NOW - 5 * DAY).toISOString());
   store.recordStagingActivity(user.id);
   store.recordStagingActivity(user.id); // lifetimeStaged = 2
@@ -148,7 +148,7 @@ test('onTrialWillEnd emails the mapped user with a daysLeft from trial_end (once
 
 test('onSubscriptionCanceled sends the win-back with access-until (once)', async () => {
   const store = freshStore();
-  const user = proUser(store, 'cancel@example.com', { sub: 'sub_c', cus: 'cus_c' });
+  const user = await proUser(store, 'cancel@example.com', { sub: 'sub_c', cus: 'cus_c' });
   store.beginTrial(user.id, new Date(NOW - 3 * DAY).toISOString());
   const emails = fakeEmails();
   const life = createTrialLifecycle({ authStore: store, emails, now: () => NOW });
@@ -169,7 +169,7 @@ test('start() runs an immediate sweep and is idempotent; stop() clears the timer
   const store = freshStore();
   // A day-2 user who has not staged is due the activation nudge, so the immediate
   // sweep is OBSERVABLE — with an empty store it was indistinguishable from no sweep.
-  const user = proUser(store, 'startsweep@example.com');
+  const user = await proUser(store, 'startsweep@example.com');
   store.beginTrial(user.id, new Date(NOW - 2 * DAY).toISOString());
   const emails = fakeEmails();
   const life = createTrialLifecycle({ authStore: store, emails, now: () => NOW });
@@ -210,7 +210,7 @@ test('start() runs an immediate sweep and is idempotent; stop() clears the timer
 
 test('sweep ignores users with no trial tracking', async () => {
   const store = freshStore();
-  proUser(store, 'untracked@example.com'); // pro, but beginTrial never called
+  await proUser(store, 'untracked@example.com'); // pro, but beginTrial never called
   const emails = fakeEmails();
   const life = createTrialLifecycle({ authStore: store, emails, now: () => NOW });
   const r = await life.runSweep();

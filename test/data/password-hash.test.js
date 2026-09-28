@@ -39,8 +39,8 @@ function legacyHash(password, salt) {
   return crypto.scryptSync(password, salt, 64).toString('hex');
 }
 
-test('a stored hash carries its algorithm and cost parameters', () => {
-  const stored = hashPassword('correct horse battery staple', SALT);
+test('a stored hash carries its algorithm and cost parameters', async () => {
+  const stored = await hashPassword('correct horse battery staple', SALT);
   const [algorithm, params, digest] = stored.split('$');
 
   assert.equal(algorithm, PASSWORD_HASH_ALGORITHM);
@@ -54,65 +54,65 @@ test('a stored hash carries its algorithm and cost parameters', () => {
   assert.equal(parsed.legacy, false);
 });
 
-test('the same password and salt hash identically; a different salt does not', () => {
-  assert.equal(hashPassword('pw', SALT), hashPassword('pw', SALT));
-  assert.notEqual(hashPassword('pw', SALT), hashPassword('pw', 'ffffffffffffffff'));
-  assert.notEqual(hashPassword('pw', SALT), hashPassword('pw ', SALT));
+test('the same password and salt hash identically; a different salt does not', async () => {
+  assert.equal(await hashPassword('pw', SALT), await hashPassword('pw', SALT));
+  assert.notEqual(await hashPassword('pw', SALT), await hashPassword('pw', 'ffffffffffffffff'));
+  assert.notEqual(await hashPassword('pw', SALT), await hashPassword('pw ', SALT));
 });
 
-test('verifyPassword accepts the right password and rejects everything else', () => {
-  const stored = hashPassword('s3cret-pass', SALT);
-  assert.deepEqual(verifyPassword('s3cret-pass', SALT, stored), { ok: true, needsRehash: false });
-  assert.equal(verifyPassword('S3cret-pass', SALT, stored).ok, false, 'case matters');
-  assert.equal(verifyPassword('', SALT, stored).ok, false);
-  assert.equal(verifyPassword('s3cret-pass', 'other-salt', stored).ok, false, 'wrong salt cannot verify');
+test('verifyPassword accepts the right password and rejects everything else', async () => {
+  const stored = await hashPassword('s3cret-pass', SALT);
+  assert.deepEqual(await verifyPassword('s3cret-pass', SALT, stored), { ok: true, needsRehash: false });
+  assert.equal((await verifyPassword('S3cret-pass', SALT, stored)).ok, false, 'case matters');
+  assert.equal((await verifyPassword('', SALT, stored)).ok, false);
+  assert.equal((await verifyPassword('s3cret-pass', 'other-salt', stored)).ok, false, 'wrong salt cannot verify');
 });
 
-test('a legacy bare-hex row still verifies, and is flagged for rehashing', () => {
+test('a legacy bare-hex row still verifies, and is flagged for rehashing', async () => {
   // Nobody is signed out by the format change — this is the row every existing
   // account has today.
   const stored = legacyHash('old-password', SALT);
   assert.ok(!stored.includes('$'), 'precondition: the legacy form is untagged');
 
-  const result = verifyPassword('old-password', SALT, stored);
+  const result = await verifyPassword('old-password', SALT, stored);
   assert.equal(result.ok, true, 'a pre-existing account can still sign in');
   assert.equal(result.needsRehash, true, 'and is marked for upgrade');
 
-  assert.equal(verifyPassword('wrong', SALT, stored).ok, false);
-  assert.equal(verifyPassword('wrong', SALT, stored).needsRehash, false,
+  assert.equal((await verifyPassword('wrong', SALT, stored)).ok, false);
+  assert.equal((await verifyPassword('wrong', SALT, stored)).needsRehash, false,
     'a failed attempt must never invite a rehash — the caller would be writing an unverified password');
 });
 
-test('parsePasswordHash reads a legacy row as the parameters it was actually made with', () => {
+test('parsePasswordHash reads a legacy row as the parameters it was actually made with', async () => {
   const parsed = parsePasswordHash(legacyHash('x', SALT));
   assert.equal(parsed.legacy, true);
   assert.deepEqual(parsed.params, { ...LEGACY_PARAMS });
 });
 
-test('a row written at a different cost verifies under ITS cost, not the current one', () => {
+test('a row written at a different cost verifies under ITS cost, not the current one', async () => {
   // This is the mixed-state the format exists for: raise N, and rows still on the
   // old N keep working until their owner next signs in.
-  const stored = hashPassword('pw', SALT, CHEAP);
+  const stored = await hashPassword('pw', SALT, CHEAP);
   assert.ok(stored.startsWith(`${PASSWORD_HASH_ALGORITHM}$N=1024,`));
 
-  const result = verifyPassword('pw', SALT, stored);
+  const result = await verifyPassword('pw', SALT, stored);
   assert.equal(result.ok, true, 'verification uses the parameters on the row');
   assert.equal(result.needsRehash, true, 'and notices they are not the current ones');
 
   // Verifying it against the CURRENT parameters would produce a different digest —
   // i.e. reading the cost off the row is load-bearing, not decorative.
-  const atCurrentCost = hashPassword('pw', SALT);
+  const atCurrentCost = await hashPassword('pw', SALT);
   assert.notEqual(atCurrentCost.split('$')[2], stored.split('$')[2]);
 });
 
-test('every keylen the envelope declares is honoured', () => {
-  const short = hashPassword('pw', SALT, { ...CHEAP, keylen: 32 });
+test('every keylen the envelope declares is honoured', async () => {
+  const short = await hashPassword('pw', SALT, { ...CHEAP, keylen: 32 });
   assert.ok(short.includes('keylen=32'));
   assert.equal(short.split('$')[2].length, 64);
-  assert.equal(verifyPassword('pw', SALT, short).ok, true);
+  assert.equal((await verifyPassword('pw', SALT, short)).ok, true);
 });
 
-test('malformed, empty, and unknown-algorithm values never verify', () => {
+test('malformed, empty, and unknown-algorithm values never verify', async () => {
   for (const bad of [
     '',
     null,
@@ -126,30 +126,30 @@ test('malformed, empty, and unknown-algorithm values never verify', () => {
   ]) {
     assert.equal(parsePasswordHash(/** @type {any} */ (bad)), null, `must not parse: ${String(bad)}`);
     assert.deepEqual(
-      verifyPassword('anything', SALT, /** @type {any} */ (bad)),
+      await verifyPassword('anything', SALT, /** @type {any} */ (bad)),
       { ok: false, needsRehash: false },
       `must not verify: ${String(bad)}`,
     );
   }
 });
 
-test('an odd-length or non-hex legacy string is refused rather than guessed at', () => {
+test('an odd-length or non-hex legacy string is refused rather than guessed at', async () => {
   assert.equal(parsePasswordHash('abc'), null, 'odd length is not a digest');
   assert.equal(parsePasswordHash('zz'), null, 'not hex');
 });
 
-test('burnPasswordHash does the work and returns nothing', () => {
+test('burnPasswordHash does the work and returns nothing', async () => {
   // Login's miss paths call this so a nonexistent account costs the same wall-clock
   // as a real check. If it were ever optimized away, the generic error message would
   // become an enumeration oracle by the clock.
   const started = process.hrtime.bigint();
-  const out = burnPasswordHash('whatever', SALT);
+  const out = await burnPasswordHash('whatever', SALT);
   const elapsedMs = Number(process.hrtime.bigint() - started) / 1e6;
 
   assert.equal(out, undefined);
-  const reference = (() => {
+  const reference = await (async () => {
     const t = process.hrtime.bigint();
-    hashPassword('whatever', SALT);
+    await hashPassword('whatever', SALT);
     return Number(process.hrtime.bigint() - t) / 1e6;
   })();
   // Same order of magnitude as a real hash — a no-op would be orders faster. Loose
@@ -157,7 +157,7 @@ test('burnPasswordHash does the work and returns nothing', () => {
   assert.ok(elapsedMs > reference / 10, `burn took ${elapsedMs}ms vs a real hash's ${reference}ms`);
 });
 
-test('raising the cost is a one-line change that new writes pick up', () => {
+test('raising the cost is a one-line change that new writes pick up', async () => {
   // Documents the actual upgrade procedure: bump PASSWORD_PARAMS, and every new
   // write uses it while old rows keep verifying and get rehashed on sign-in. The
   // frozen export is what makes "one line" true — nothing else hard-codes N.
@@ -165,4 +165,16 @@ test('raising the cost is a one-line change that new writes pick up', () => {
   assert.equal(typeof PASSWORD_PARAMS.N, 'number');
   assert.ok(PASSWORD_PARAMS.N >= 16384, 'never quietly drop below the Node default cost');
   assert.equal(PASSWORD_PARAMS.N & (PASSWORD_PARAMS.N - 1), 0, 'scrypt requires N to be a power of two');
+});
+
+test('hashing runs off the event loop', async () => {
+  // scrypt is ~100ms of CPU per call. Run synchronously, it froze every other request
+  // for that long on each login. On the threadpool the call hands back a promise
+  // almost at once, and the wait happens while the loop keeps serving.
+  const t0 = process.hrtime.bigint();
+  const pending = hashPassword('pw', SALT);
+  const returnedMs = Number(process.hrtime.bigint() - t0) / 1e6;
+  assert.match(await pending, /^scrypt\$/);
+  const totalMs = Number(process.hrtime.bigint() - t0) / 1e6;
+  assert.ok(returnedMs < totalMs / 2, `the call blocked for ${returnedMs}ms of a ${totalMs}ms hash`);
 });

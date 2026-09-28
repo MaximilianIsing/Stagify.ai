@@ -453,7 +453,7 @@ router.post('/api/send-email', emailLimiter, async (req, res) => {
     // Check if Resend is initialized
     if (!resend) {
       return sendError(res, 500, 'Email service not configured', {
-        details: 'Resend API key not found. Please set RESEND_API_KEY environment variable or create resendkey.txt file',
+        details: 'Resend API key not found. Please set the RESEND_API_KEY environment variable.',
       });
     }
 

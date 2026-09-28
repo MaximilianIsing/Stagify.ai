@@ -44,8 +44,8 @@ afterEach(() => {
   while (tempDirs.length) fs.rmSync(tempDirs.pop(), { recursive: true, force: true });
 });
 
-function registerUser(store, email) {
-  const start = store.startRegistration(email, 'CorrectHorse9!');
+async function registerUser(store, email) {
+  const start = await store.startRegistration(email, 'CorrectHorse9!');
   return store.completeRegistration(email, start.code).user;
 }
 
@@ -66,10 +66,10 @@ function seedUser(store, email, extra) {
 
 // ── matching ─────────────────────────────────────────────────────────────────
 
-test('a reference match wins over the email, and reports how it matched', () => {
+test('a reference match wins over the email, and reports how it matched', async () => {
   const store = freshStore();
-  const owner = registerUser(store, 'owner@example.com');
-  const other = registerUser(store, 'other@example.com');
+  const owner = await registerUser(store, 'owner@example.com');
+  const other = await registerUser(store, 'other@example.com');
 
   // Both identifiers present and pointing at different accounts: the unguessable
   // one decides, so a tampered `prefilled_email` cannot redirect the grant.
@@ -86,9 +86,9 @@ test('a reference match wins over the email, and reports how it matched', () => 
   assert.equal(store.findUserByEmail(other.email).plan, 'free', 'the other account is untouched');
 });
 
-test('the email match is case- and whitespace-insensitive', () => {
+test('the email match is case- and whitespace-insensitive', async () => {
   const store = freshStore();
-  const user = registerUser(store, 'mixed@example.com');
+  const user = await registerUser(store, 'mixed@example.com');
 
   const res = store.activateProFromStripeCheckout({
     email: '  MiXeD@Example.COM ',
@@ -109,9 +109,9 @@ test('neither identifier matching is a plain no_user, not a refusal', () => {
 
 // ── the email path may start a relationship, never replace one ────────────────
 
-test('email: activates a free account that holds nothing', () => {
+test('email: activates a free account that holds nothing', async () => {
   const store = freshStore();
-  const buyer = registerUser(store, 'fresh@example.com');
+  const buyer = await registerUser(store, 'fresh@example.com');
 
   const res = store.activateProFromStripeCheckout({
     email: buyer.email,
@@ -126,9 +126,9 @@ test('email: activates a free account that holds nothing', () => {
   assert.equal(after.stripeSubscriptionId, 'sub_new');
 });
 
-test('email: refuses when the account already holds a different subscription', () => {
+test('email: refuses when the account already holds a different subscription', async () => {
   const store = freshStore();
-  const victim = registerUser(store, 'paying@example.com');
+  const victim = await registerUser(store, 'paying@example.com');
   store.activateProFromStripeCheckout({
     userId: victim.id,
     stripeCustomerId: 'cus_victim',
@@ -148,11 +148,11 @@ test('email: refuses when the account already holds a different subscription', (
   assert.equal(after.stripeCustomerId, 'cus_victim');
 });
 
-test('email: refuses when the account holds an admin comp grant', () => {
+test('email: refuses when the account holds an admin comp grant', async () => {
   // A grant is an entitlement too — letting a checkout absorb it means its buyer can
   // end someone else's comped month by cancelling.
   const store = freshStore();
-  const granted = registerUser(store, 'comped@example.com');
+  const granted = await registerUser(store, 'comped@example.com');
   assert.equal(store.grantProMonth({ email: granted.email }).ok, true);
 
   const res = store.activateProFromStripeCheckout({
@@ -194,12 +194,12 @@ test('email: a LAPSED comp grant does not block a genuine purchase', () => {
   assert.equal(after.stripeSubscriptionId, 'sub_paid');
 });
 
-test('email: a genuine re-purchase after a cancellation still goes through', () => {
+test('email: a genuine re-purchase after a cancellation still goes through', async () => {
   // The false-positive this guard must not create. `subscription.deleted` clears the
   // subscription id but leaves the old customer id behind, so "has a stale customer
   // id" cannot be the test — only a LIVE subscription blocks.
   const store = freshStore();
-  const returning = registerUser(store, 'returning@example.com');
+  const returning = await registerUser(store, 'returning@example.com');
   store.activateProFromStripeCheckout({
     userId: returning.id,
     stripeCustomerId: 'cus_old',
@@ -218,11 +218,11 @@ test('email: a genuine re-purchase after a cancellation still goes through', () 
   assert.equal(store.findUserByEmail(returning.email).plan, 'pro');
 });
 
-test('email: redelivery of the same checkout is not mistaken for a takeover', () => {
+test('email: redelivery of the same checkout is not mistaken for a takeover', async () => {
   // Stripe delivers at-least-once. The second copy carries the SAME subscription id,
   // so it must stay a no-op re-apply rather than tripping the guard.
   const store = freshStore();
-  const buyer = registerUser(store, 'again@example.com');
+  const buyer = await registerUser(store, 'again@example.com');
   const args = { email: buyer.email, stripeCustomerId: 'cus_1', stripeSubscriptionId: 'sub_1' };
 
   assert.equal(store.activateProFromStripeCheckout(args).ok, true);
@@ -232,9 +232,9 @@ test('email: redelivery of the same checkout is not mistaken for a takeover', ()
   assert.equal(store.findUserByEmail(buyer.email).stripeSubscriptionId, 'sub_1');
 });
 
-test('a reference match may relink freely — it is not the spoofable identifier', () => {
+test('a reference match may relink freely — it is not the spoofable identifier', async () => {
   const store = freshStore();
-  const user = registerUser(store, 'signed-in@example.com');
+  const user = await registerUser(store, 'signed-in@example.com');
   store.activateProFromStripeCheckout({
     userId: user.id,
     stripeCustomerId: 'cus_1',
@@ -253,9 +253,9 @@ test('a reference match may relink freely — it is not the spoofable identifier
 
 // ── applyStripeSubscriptionState (moved with the checkout mapping) ────────────
 
-test('subscription state is applied by subscription id, falling back to customer id', () => {
+test('subscription state is applied by subscription id, falling back to customer id', async () => {
   const store = freshStore();
-  const user = registerUser(store, 'lifecycle@example.com');
+  const user = await registerUser(store, 'lifecycle@example.com');
   store.activateProFromStripeCheckout({
     userId: user.id,
     stripeCustomerId: 'cus_1',
@@ -274,14 +274,14 @@ test('a subscription nobody holds is a no_user, and a junk payload is bad_payloa
   assert.equal(store.applyStripeSubscriptionState(null).reason, 'bad_payload');
 });
 
-test('a stale cancellation for a REPLACED subscription does not downgrade the payer', () => {
+test('a stale cancellation for a REPLACED subscription does not downgrade the payer', async () => {
   // The customer-id fallback above is what makes this reachable: cancel-and-resubscribe
   // reuses the Stripe customer, so a late 'deleted' for the DEAD subscription still
   // finds the account — which by then holds the live one. Stripe does not order its
   // deliveries and retries a failed one for ~3 days, and the stripe_events ledger
   // dedupes by event id, so it stops replays but not reordering.
   const store = freshStore();
-  const user = registerUser(store, 'resubscribed@example.com');
+  const user = await registerUser(store, 'resubscribed@example.com');
   store.activateProFromStripeCheckout({ userId: user.id, stripeCustomerId: 'cus_1', stripeSubscriptionId: 'sub_a' });
   store.applyStripeSubscriptionState({ id: 'sub_a', customer: 'cus_1', status: 'canceled' });
   store.activateProFromStripeCheckout({ userId: user.id, stripeCustomerId: 'cus_1', stripeSubscriptionId: 'sub_b' });
@@ -295,12 +295,12 @@ test('a stale cancellation for a REPLACED subscription does not downgrade the pa
   assert.equal(after.stripeSubscriptionId, 'sub_b');
 });
 
-test('the stale guard still lets a real cancellation through, and stays idempotent', () => {
+test('the stale guard still lets a real cancellation through, and stays idempotent', async () => {
   // The guard keys on "is this the subscription the account holds", so the two cases
   // it must NOT swallow are the held one being cancelled, and a replay arriving once
   // nothing is held at all.
   const store = freshStore();
-  const user = registerUser(store, 'cancelling@example.com');
+  const user = await registerUser(store, 'cancelling@example.com');
   store.activateProFromStripeCheckout({ userId: user.id, stripeCustomerId: 'cus_2', stripeSubscriptionId: 'sub_z' });
 
   assert.equal(store.applyStripeSubscriptionState({ id: 'sub_z', customer: 'cus_2', status: 'canceled' }).ok, true);
@@ -314,9 +314,9 @@ test('the stale guard still lets a real cancellation through, and stays idempote
   assert.equal(store.findUserByEmail(user.email).plan, 'free');
 });
 
-test('past_due keeps access — the guard did not narrow the dunning grace', () => {
+test('past_due keeps access — the guard did not narrow the dunning grace', async () => {
   const store = freshStore();
-  const user = registerUser(store, 'dunning@example.com');
+  const user = await registerUser(store, 'dunning@example.com');
   store.activateProFromStripeCheckout({ userId: user.id, stripeCustomerId: 'cus_3', stripeSubscriptionId: 'sub_p' });
 
   assert.equal(store.applyStripeSubscriptionState({ id: 'sub_p', customer: 'cus_3', status: 'past_due' }).ok, true);

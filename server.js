@@ -93,7 +93,7 @@ import { createStripeCreditTopup } from './lib/services/stripe-credit-topup.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const { readStripeSecretKey, readStripeWebhookSecret, readStripePublishableKey, readEnterprisePriceId, readGoogleClientId, readGoogleClientSecret, readEndpointAccessKey, endpointKeyMatches, readEnterpriseMeterEventName, readApiCreditPriceIds } = createConfig({ __dirname });
+const { readStripeSecretKey, readStripeWebhookSecret, readStripePublishableKey, readEnterprisePriceId, readGoogleClientId, readGoogleClientSecret, readEndpointAccessKey, endpointKeyMatches, readEnterpriseMeterEventName, readApiCreditPriceIds } = createConfig();
 
 const authStore = createAuthStore(__dirname);
 const enterpriseStore = createEnterpriseStore(__dirname);
@@ -194,7 +194,7 @@ applyEdgeMiddleware(app);
 // Constructed HERE (before the billing router) because the Stripe webhook drives
 // the trial-email lifecycle, which needs the Resend client. genAI/openai are just
 // held for the routers mounted further down.
-const { genAI, openai, resend } = createAiClients({ __dirname, DEBUG_MODE });
+const { genAI, openai, resend } = createAiClients({ DEBUG_MODE });
 const RESEND_FROM_EMAIL = String(process.env.RESEND_FROM_EMAIL || 'team@stagify.ai').trim();
 const APP_URL = String(process.env.PUBLIC_APP_URL || process.env.APP_URL || 'https://stagify.ai').replace(/\/$/, '');
 
