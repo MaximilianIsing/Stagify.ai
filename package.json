@@ -20,7 +20,7 @@
   "license": "UNLICENSED",
   "description": "AI virtual-staging web app (Node/Express).",
   "dependencies": {
-    "@google/generative-ai": "^0.24.1",
+    "@google/genai": "^2.24.0",
     "@sentry/node": "^10.63.0",
     "aws4fetch": "^1.0.20",
     "better-sqlite3": "^12.11.1",

@@ -18,7 +18,7 @@ const roomBuffer = () =>
 
 // Fake Gemini client: getGenerativeModel().generateContent() returns a scripted
 // `response.text()` (or throws, to drive the fail-OPEN error paths). Matches how
-// lib/image/image-review.js calls the @google/generative-ai SDK.
+// lib/image/image-review.js calls Gemini through lib/services/gemini-client.js.
 function fakeGrader(content) {
   return {
     getGenerativeModel() {
