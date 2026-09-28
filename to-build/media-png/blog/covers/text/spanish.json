@@ -89,5 +89,13 @@
       "Cortijo",
       "Lujo"
     ]
+  },
+  "cover-17": {
+    "eyebrow": "Antes y después",
+    "headline": "La misma habitación. Nada retocado.",
+    "labels": [
+      "Antes",
+      "Después"
+    ]
   }
 }

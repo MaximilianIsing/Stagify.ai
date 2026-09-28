@@ -89,5 +89,13 @@
       "Campagne",
       "Luxe"
     ]
+  },
+  "cover-17": {
+    "eyebrow": "Avant et après",
+    "headline": "La même pièce. Zéro retouche.",
+    "labels": [
+      "Avant",
+      "Après"
+    ]
   }
 }

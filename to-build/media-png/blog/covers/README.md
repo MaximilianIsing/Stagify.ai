@@ -11,7 +11,7 @@ node scripts/build-blog-covers.js --cover=cover-10 --lang=es   # one, while iter
 
 ## What this solves
 
-Nine of the seventeen blog covers have English words burned into the picture. Served unchanged
+Ten of the seventeen blog covers have English words burned into the picture. Served unchanged
 under `/es/blog/…` they put English type on the most widely-seen asset the article has — the
 `og:image` a reader meets in a Slack unfurl or a search result *before* the page itself. The
 script repaints those regions and redraws the type per language.
@@ -22,7 +22,7 @@ time; a cover with no variant for a language keeps its English image.
 
 ## Every cover with words is localized
 
-All eight. Two of them were written off at first as impossible, and both turned out not to
+All of them. Two were written off at first as impossible, and both turned out not to
 be — the note is kept because the reasoning was wrong in an instructive way:
 
 - **cover-11** (`fsbo-listing-photos`) looks like lettering on a yard sign inside the
@@ -41,7 +41,18 @@ The lesson for the next cover: sample the pixels before concluding a region cann
 repainted. "Text inside the artwork" and "text on a flat plate that happens to sit over
 artwork" look identical at a glance and are completely different jobs.
 
-Eight covers are pure photography with no text, so there is nothing to localize. cover-17 (`virtual-staging-before-and-after`) is one of them on purpose: its before/after split carries a wordless slider handle instead of labels, so the English image serves every language.
+Seven covers are pure photography with no text, so there is nothing to localize.
+
+**cover-17** (`virtual-staging-before-and-after`) is cover-16's layout as a diptych: white
+header, the empty room and its Modern staging edge to edge, white footer with numbered
+Before / After labels. Its recipe and text are here like every other cover's, but the
+shipped variants were drawn by `tools/render-cover-17.cjs`, not by `build-blog-covers.js`.
+On the machine that made them, `@napi-rs/canvas` ignored the variable Noto build's weight
+axis inside the renderer, so every localized headline came out regular next to the English
+Inter Bold. The tool sets Latin and Cyrillic in static Inter Bold from `public/fonts/` (the
+English face; the Cyrillic subset falls back to the Latin one for digits and punctuation)
+and CJK in Noto with a 1.6 px same-colour stroke. Re-running `build-blog-covers.js` over
+cover-17 overwrites them with the lighter render, so check the weight before committing.
 
 **cover-16** (`which-virtual-staging-style`) was authored for this pipeline rather than
 retro-fitted to it: a white header bar and a dark footer band, with the three photographs

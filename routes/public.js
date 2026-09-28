@@ -167,73 +167,23 @@ router.get('/status', (req, res) => {
 // The blog hub is served as a static directory index at /blog/ (public/blog/index.html);
 // express.static (mounted ahead of this router) 301-redirects /blog → /blog/. Individual
 // articles have no matching file/dir, so they fall through to these clean, extensionless routes.
-router.get('/blog/is-virtual-staging-allowed-on-the-mls', (req, res) => {
-  sendPost(req, res, 'is-virtual-staging-allowed-on-the-mls');
-});
-
-router.get('/blog/masking-studio-and-ai-designer', (req, res) => {
-  sendPost(req, res, 'masking-studio-and-ai-designer');
-});
-
-router.get('/blog/does-virtual-staging-help-sell-homes', (req, res) => {
-  sendPost(req, res, 'does-virtual-staging-help-sell-homes');
-});
-
-router.get('/blog/stagify-vs-other-virtual-staging-tools', (req, res) => {
-  sendPost(req, res, 'stagify-vs-other-virtual-staging-tools');
-});
-
-router.get('/blog/top-10-ai-virtual-staging-sites-2026', (req, res) => {
-  sendPost(req, res, 'top-10-ai-virtual-staging-sites-2026');
-});
-
-router.get('/blog/dorm-room-design-ai-college-freshmen', (req, res) => {
-  sendPost(req, res, 'dorm-room-design-ai-college-freshmen');
-});
-
-router.get('/blog/prepare-your-listing-for-the-fall-market', (req, res) => {
-  sendPost(req, res, 'prepare-your-listing-for-the-fall-market');
-});
-
-router.get('/blog/curb-appeal-real-estate-photos', (req, res) => {
-  sendPost(req, res, 'curb-appeal-real-estate-photos');
-});
-
-router.get('/blog/free-virtual-staging', (req, res) => {
-  sendPost(req, res, 'free-virtual-staging');
-});
-
-router.get('/blog/virtual-staging-disclosure-laws-by-state', (req, res) => {
-  sendPost(req, res, 'virtual-staging-disclosure-laws-by-state');
-});
-
-router.get('/blog/fsbo-listing-photos', (req, res) => {
-  sendPost(req, res, 'fsbo-listing-photos');
-});
-
-router.get('/blog/new-construction-listing-photos', (req, res) => {
-  sendPost(req, res, 'new-construction-listing-photos');
-});
-
-router.get('/blog/virtual-staging-api', (req, res) => {
-  sendPost(req, res, 'virtual-staging-api');
-});
-
-router.get('/blog/home-staging-cost', (req, res) => {
-  sendPost(req, res, 'home-staging-cost');
-});
-
-router.get('/blog/remove-furniture-from-listing-photos', (req, res) => {
-  sendPost(req, res, 'remove-furniture-from-listing-photos');
-});
-
-router.get('/blog/which-virtual-staging-style', (req, res) => {
-  sendPost(req, res, 'which-virtual-staging-style');
-});
-
-router.get('/blog/virtual-staging-before-and-after', (req, res) => {
-  sendPost(req, res, 'virtual-staging-before-and-after');
-});
+router.get('/blog/is-virtual-staging-allowed-on-the-mls', (req, res) => sendPost(req, res, 'is-virtual-staging-allowed-on-the-mls'));
+router.get('/blog/masking-studio-and-ai-designer', (req, res) => sendPost(req, res, 'masking-studio-and-ai-designer'));
+router.get('/blog/does-virtual-staging-help-sell-homes', (req, res) => sendPost(req, res, 'does-virtual-staging-help-sell-homes'));
+router.get('/blog/stagify-vs-other-virtual-staging-tools', (req, res) => sendPost(req, res, 'stagify-vs-other-virtual-staging-tools'));
+router.get('/blog/top-10-ai-virtual-staging-sites-2026', (req, res) => sendPost(req, res, 'top-10-ai-virtual-staging-sites-2026'));
+router.get('/blog/dorm-room-design-ai-college-freshmen', (req, res) => sendPost(req, res, 'dorm-room-design-ai-college-freshmen'));
+router.get('/blog/prepare-your-listing-for-the-fall-market', (req, res) => sendPost(req, res, 'prepare-your-listing-for-the-fall-market'));
+router.get('/blog/curb-appeal-real-estate-photos', (req, res) => sendPost(req, res, 'curb-appeal-real-estate-photos'));
+router.get('/blog/free-virtual-staging', (req, res) => sendPost(req, res, 'free-virtual-staging'));
+router.get('/blog/virtual-staging-disclosure-laws-by-state', (req, res) => sendPost(req, res, 'virtual-staging-disclosure-laws-by-state'));
+router.get('/blog/fsbo-listing-photos', (req, res) => sendPost(req, res, 'fsbo-listing-photos'));
+router.get('/blog/new-construction-listing-photos', (req, res) => sendPost(req, res, 'new-construction-listing-photos'));
+router.get('/blog/virtual-staging-api', (req, res) => sendPost(req, res, 'virtual-staging-api'));
+router.get('/blog/home-staging-cost', (req, res) => sendPost(req, res, 'home-staging-cost'));
+router.get('/blog/remove-furniture-from-listing-photos', (req, res) => sendPost(req, res, 'remove-furniture-from-listing-photos'));
+router.get('/blog/which-virtual-staging-style', (req, res) => sendPost(req, res, 'which-virtual-staging-style'));
+router.get('/blog/virtual-staging-before-and-after', (req, res) => sendPost(req, res, 'virtual-staging-before-and-after'));
 
 router.get('/bimi-logo.svg', (req, res) => {
   res.setHeader('Content-Type', 'image/svg+xml');

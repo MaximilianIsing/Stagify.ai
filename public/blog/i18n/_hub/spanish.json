@@ -1,10 +1,10 @@
 {
   "_meta": {
-    "sourceHash": "sha256:90f67dddc33524db8b141401d836a51d8e94ccab3730616f434ee848cfdf4513",
+    "sourceHash": "sha256:6f342374843beb1d2e5a3f58b27d56125ea616ae68c1b0d532dd0a6ac273d578",
     "slug": null,
     "lang": "spanish",
     "hreflang": "es",
-    "translatedAt": "2026-09-20",
+    "translatedAt": "2026-09-28",
     "reviewed": false
   },
   "meta": {
@@ -16,6 +16,13 @@
     "body": "Guías prácticas sobre home staging virtual, la divulgación en el MLS y cómo comercializar tus inmuebles más rápido, para agentes, vendedores y fotógrafos."
   },
   "cards": {
+    "virtual-staging-before-and-after": {
+      "tag": "Ejemplos",
+      "title": "Staging virtual antes y después: seis habitaciones, nada retocado",
+      "excerpt": "Una habitación vacía amueblada de cuatro formas, una habitación sencilla con staging y un exterior, todo tal como sale de Stagify. Qué cambió en cada foto, qué no se movió nunca y la que no debería haberse hecho.",
+      "meta": "27 de septiembre de 2026 · 6 min de lectura",
+      "alt": "Dos fotografías de la misma habitación esquinera de un rascacielos, una junto a otra: vacía a la izquierda, con la etiqueta «Antes», y amueblada como salón con un sofá rinconero gris y una alfombra geométrica a la derecha, con la etiqueta «Después»"
+    },
     "which-virtual-staging-style": {
       "tag": "Guías",
       "title": "Una habitación, siete estilos. Solo uno de ellos vende la casa.",

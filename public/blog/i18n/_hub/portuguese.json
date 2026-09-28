@@ -1,10 +1,10 @@
 {
   "_meta": {
-    "sourceHash": "sha256:90f67dddc33524db8b141401d836a51d8e94ccab3730616f434ee848cfdf4513",
+    "sourceHash": "sha256:6f342374843beb1d2e5a3f58b27d56125ea616ae68c1b0d532dd0a6ac273d578",
     "slug": null,
     "lang": "portuguese",
     "hreflang": "pt-BR",
-    "translatedAt": "2026-09-20",
+    "translatedAt": "2026-09-28",
     "reviewed": false
   },
   "meta": {
@@ -16,6 +16,13 @@
     "body": "Guias práticos sobre home staging virtual, divulgação no MLS e como anunciar seus imóveis mais rápido, para corretores, vendedores e fotógrafos."
   },
   "cards": {
+    "virtual-staging-before-and-after": {
+      "tag": "Exemplos",
+      "title": "Home staging virtual antes e depois: seis cômodos, nada retocado",
+      "excerpt": "Um cômodo vazio decorado de quatro formas, um cômodo simples com staging e um exterior, tudo direto do Stagify. O que mudou em cada foto, o que nunca saiu do lugar e aquele que não deveria ter sido feito.",
+      "meta": "27 de setembro de 2026 · 6 min de leitura",
+      "alt": "Duas fotografias do mesmo cômodo de canto de um arranha-céu, lado a lado: vazio à esquerda, com o rótulo “Antes”, e mobiliado como sala de estar com um sofá de canto cinza e um tapete geométrico à direita, com o rótulo “Depois”"
+    },
     "which-virtual-staging-style": {
       "tag": "Guias",
       "title": "Um ambiente, sete estilos. Só um deles vende a casa.",

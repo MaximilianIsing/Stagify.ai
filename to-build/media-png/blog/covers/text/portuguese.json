@@ -89,5 +89,13 @@
       "Rústico",
       "Luxo"
     ]
+  },
+  "cover-17": {
+    "eyebrow": "Antes e depois",
+    "headline": "O mesmo cômodo. Nada retocado.",
+    "labels": [
+      "Antes",
+      "Depois"
+    ]
   }
 }

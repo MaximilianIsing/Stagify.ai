@@ -863,5 +863,97 @@
         ]
       }
     ]
+  },
+  "cover-17": {
+    "base": "cover-17.webp",
+    "slug": "virtual-staging-before-and-after",
+    "note": "Same layout as cover-16, as a diptych: a white header bar over two photographs of one room (empty, then staged in the Modern preset) running edge to edge, and a white footer band with numbered Before / After labels. Both plates are whole bars, so no plate ever touches a photograph. The second label starts 64 px into the right-hand photograph (x = 866).",
+    "plates": [
+      {
+        "x": 0,
+        "y": 0,
+        "w": 1600,
+        "h": 168,
+        "rowFrom": 160
+      },
+      {
+        "x": 0,
+        "y": 812,
+        "w": 1600,
+        "h": 88,
+        "rowFrom": 890
+      }
+    ],
+    "items": [
+      {
+        "key": "eyebrow",
+        "x": 64,
+        "y": 62,
+        "maxW": 1400,
+        "size": 25,
+        "weight": 700,
+        "tracking": 3.4,
+        "fill": "#2563eb",
+        "upper": true,
+        "noWrap": true
+      },
+      {
+        "key": "headline",
+        "x": 64,
+        "y": 136,
+        "maxW": 1472,
+        "maxH": 76,
+        "size": 54,
+        "minSize": 28,
+        "weight": 700,
+        "lineHeight": 1.05,
+        "fill": "#0f1729",
+        "anchor": "bottom"
+      },
+      {
+        "x": 64,
+        "y": 860,
+        "maxW": 700,
+        "runs": [
+          {
+            "text": "01",
+            "size": 30,
+            "weight": 700,
+            "fill": "#2563eb"
+          },
+          {
+            "key": "labels.0",
+            "size": 30,
+            "weight": 700,
+            "tracking": 2.2,
+            "fill": "#0f1729",
+            "upper": true,
+            "gapBefore": 18
+          }
+        ]
+      },
+      {
+        "x": 866,
+        "y": 860,
+        "maxW": 700,
+        "runs": [
+          {
+            "text": "02",
+            "size": 30,
+            "weight": 700,
+            "fill": "#2563eb"
+          },
+          {
+            "key": "labels.1",
+            "size": 30,
+            "weight": 700,
+            "tracking": 2.2,
+            "fill": "#0f1729",
+            "upper": true,
+            "gapBefore": 18
+          }
+        ]
+      }
+    ]
   }
 }

@@ -89,5 +89,13 @@
       "Farmhouse",
       "Luxury"
     ]
+  },
+  "cover-17": {
+    "eyebrow": "Before & after",
+    "headline": "Same room. Nothing retouched.",
+    "labels": [
+      "Before",
+      "After"
+    ]
   }
 }

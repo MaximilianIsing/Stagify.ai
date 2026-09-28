@@ -89,5 +89,13 @@
       "Landhaus",
       "Luxus"
     ]
+  },
+  "cover-17": {
+    "eyebrow": "Vorher & nachher",
+    "headline": "Derselbe Raum. Nichts retuschiert.",
+    "labels": [
+      "Vorher",
+      "Nachher"
+    ]
   }
 }

@@ -1,0 +1,136 @@
+{
+  "planForModel": {
+    "url": "/instagram/assets/sources/8fbe67b4a327c018648dc961876996586d9b260b0a747a8c3bd5e4deeb4081dc.png",
+    "sha256": "8fbe67b4a327c018648dc961876996586d9b260b0a747a8c3bd5e4deeb4081dc",
+    "width": 1088,
+    "height": 992
+  },
+  "planForFrame": {
+    "url": "/instagram/assets/sources/7cc149e857d90b94ceb8765bd4c29e1807b9fff0c94937c92bd6e2e60f2df62a.png",
+    "sha256": "7cc149e857d90b94ceb8765bd4c29e1807b9fff0c94937c92bd6e2e60f2df62a"
+  },
+  "additionalPrompt": "Style it midcentury modern: flat slab walnut cabinetry, a warm white terrazzo floor, a white quartz worktop, mustard yellow accents in a pendant shade and a tea towel, brass handles. No bar stools, no chairs and no seating of any kind anywhere in the room. Stand in the corner beside the doorway and look toward the window wall, so the island, the window with the sink under it and the run down the left wall are all in frame, with the island near the centre of the picture.",
+  "runs": [
+    {
+      "run": 1,
+      "url": "/instagram/assets/sources/b773ed664281408304c6560942e9036eaa89784f0be5a9798f3a58fce7b4c87d.webp",
+      "sha256": "b773ed664281408304c6560942e9036eaa89784f0be5a9798f3a58fce7b4c87d",
+      "width": 2528,
+      "height": 1696,
+      "quality": {
+        "perfect": false,
+        "attempts": 3,
+        "bestScore": 80,
+        "defects": [
+          "PERFECT: false\nSCORE: 70\nWHY: The reflection on the island countertop is distorted and does not accurately represent the room.",
+          "PERFECT: false\nSCORE: 80\nWHY: The reflection on the island countertop is distorted and appears to be a duplicate of the window frame.",
+          "PERFECT: false\nSCORE: 70\nWHY: The island countertop has a distorted perspective, making it appear warped and unnatural."
+        ],
+        "reviewerUnavailable": false
+      },
+      "params": {
+        "fn": "blueprintTo3D",
+        "view": "eye-level",
+        "room": "kitchen",
+        "additionalPrompt": "Style it midcentury modern: flat slab walnut cabinetry, a warm white terrazzo floor, a white quartz worktop, mustard yellow accents in a pendant shade and a tea towel, brass handles. No bar stools, no chairs and no seating of any kind anywhere in the room. Stand in the corner beside the doorway and look toward the window wall, so the island, the window with the sink under it and the run down the left wall are all in frame, with the island near the centre of the picture."
+      },
+      "model": "gemini-3-pro-image",
+      "seconds": 55
+    },
+    {
+      "run": 2,
+      "url": "/instagram/assets/sources/f0cac4f9a362f04f65e4ef62d36d49c6154d98534a8afd89f65c89ff6556bc5a.webp",
+      "sha256": "f0cac4f9a362f04f65e4ef62d36d49c6154d98534a8afd89f65c89ff6556bc5a",
+      "width": 2528,
+      "height": 1696,
+      "quality": {
+        "perfect": false,
+        "attempts": 3,
+        "bestScore": 85,
+        "defects": [
+          "PERFECT: false\nSCORE: 70\nWHY: The faucet is duplicated, with two identical faucets appearing over the sink.",
+          "PERFECT: false\nSCORE: 80\nWHY: The faucet in the sink appears to have an extra, distorted handle.",
+          "PERFECT: false\nSCORE: 85\nWHY: The reflection on the countertop of the island appears to be distorted and shows objects that are not present in the actual scene."
+        ],
+        "reviewerUnavailable": false
+      },
+      "params": {
+        "fn": "blueprintTo3D",
+        "view": "eye-level",
+        "room": "kitchen",
+        "additionalPrompt": "Style it midcentury modern: flat slab walnut cabinetry, a warm white terrazzo floor, a white quartz worktop, mustard yellow accents in a pendant shade and a tea towel, brass handles. No bar stools, no chairs and no seating of any kind anywhere in the room. Stand in the corner beside the doorway and look toward the window wall, so the island, the window with the sink under it and the run down the left wall are all in frame, with the island near the centre of the picture."
+      },
+      "model": "gemini-3-pro-image",
+      "seconds": 53
+    },
+    {
+      "run": 3,
+      "url": "/instagram/assets/sources/e743d3796a4bd22ae0c0122d12fde7b3f98d36b3d34784c0b1cc9859b0d2a9d1.webp",
+      "sha256": "e743d3796a4bd22ae0c0122d12fde7b3f98d36b3d34784c0b1cc9859b0d2a9d1",
+      "width": 2528,
+      "height": 1696,
+      "quality": {
+        "perfect": false,
+        "attempts": 3,
+        "bestScore": 70,
+        "defects": [
+          "PERFECT: false\nSCORE: 70\nWHY: The countertop on the island appears to be warped and not level.",
+          "PERFECT: false\nSCORE: 70\nWHY: The lighting on the island is unnaturally bright and flat, making it look like a separate object pasted into the scene.",
+          "PERFECT: false\nSCORE: 70\nWHY: The reflection on the island countertop is distorted and appears to be a duplicate of the window, creating an unnatural look."
+        ],
+        "reviewerUnavailable": false
+      },
+      "params": {
+        "fn": "blueprintTo3D",
+        "view": "eye-level",
+        "room": "kitchen",
+        "additionalPrompt": "Style it midcentury modern: flat slab walnut cabinetry, a warm white terrazzo floor, a white quartz worktop, mustard yellow accents in a pendant shade and a tea towel, brass handles. No bar stools, no chairs and no seating of any kind anywhere in the room. Stand in the corner beside the doorway and look toward the window wall, so the island, the window with the sink under it and the run down the left wall are all in frame, with the island near the centre of the picture."
+      },
+      "model": "gemini-3-pro-image",
+      "seconds": 56
+    }
+  ],
+  "best": {
+    "run": 2,
+    "url": "/instagram/assets/sources/f0cac4f9a362f04f65e4ef62d36d49c6154d98534a8afd89f65c89ff6556bc5a.webp",
+    "sha256": "f0cac4f9a362f04f65e4ef62d36d49c6154d98534a8afd89f65c89ff6556bc5a",
+    "width": 2528,
+    "height": 1696,
+    "quality": {
+      "perfect": false,
+      "attempts": 3,
+      "bestScore": 85,
+      "defects": [
+        "PERFECT: false\nSCORE: 70\nWHY: The faucet is duplicated, with two identical faucets appearing over the sink.",
+        "PERFECT: false\nSCORE: 80\nWHY: The faucet in the sink appears to have an extra, distorted handle.",
+        "PERFECT: false\nSCORE: 85\nWHY: The reflection on the countertop of the island appears to be distorted and shows objects that are not present in the actual scene."
+      ],
+      "reviewerUnavailable": false
+    },
+    "params": {
+      "fn": "blueprintTo3D",
+      "view": "eye-level",
+      "room": "kitchen",
+      "additionalPrompt": "Style it midcentury modern: flat slab walnut cabinetry, a warm white terrazzo floor, a white quartz worktop, mustard yellow accents in a pendant shade and a tea towel, brass handles. No bar stools, no chairs and no seating of any kind anywhere in the room. Stand in the corner beside the doorway and look toward the window wall, so the island, the window with the sink under it and the run down the left wall are all in frame, with the island near the centre of the picture."
+    },
+    "model": "gemini-3-pro-image",
+    "seconds": 53
+  },
+  "frames": {
+    "diagonal": {
+      "leftY": 66,
+      "rightY": 36
+    },
+    "before": {
+      "url": "/instagram/assets/sources/648f1a6ced60cf872ffd900cd98350b45fd0d1fa69352e27185c5daff35807e3.png",
+      "sha256": "648f1a6ced60cf872ffd900cd98350b45fd0d1fa69352e27185c5daff35807e3"
+    },
+    "after": {
+      "url": "/instagram/assets/sources/1af8c0ad9850c91632c52255ef9f7a24db7f800ee0cf792dc2a1565f3bcc3f87.webp",
+      "sha256": "1af8c0ad9850c91632c52255ef9f7a24db7f800ee0cf792dc2a1565f3bcc3f87",
+      "fromRender": "e743d3796a4bd22ae0c0122d12fde7b3f98d36b3d34784c0b1cc9859b0d2a9d1",
+      "scaledHeight": 880,
+      "cropLeft": 104
+    }
+  }
+}

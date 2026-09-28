@@ -1,10 +1,10 @@
 {
   "_meta": {
-    "sourceHash": "sha256:90f67dddc33524db8b141401d836a51d8e94ccab3730616f434ee848cfdf4513",
+    "sourceHash": "sha256:6f342374843beb1d2e5a3f58b27d56125ea616ae68c1b0d532dd0a6ac273d578",
     "slug": null,
     "lang": "dutch",
     "hreflang": "nl",
-    "translatedAt": "2026-09-20",
+    "translatedAt": "2026-09-28",
     "reviewed": false
   },
   "meta": {
@@ -16,6 +16,13 @@
     "body": "Praktische gidsen over virtuele woningstyling, vermelding op de MLS en het sneller vermarkten van je woningen, voor makelaars, verkopers en fotografen."
   },
   "cards": {
+    "virtual-staging-before-and-after": {
+      "tag": "Voorbeelden",
+      "title": "Virtuele woningstyling voor en na: zes kamers, niets geretoucheerd",
+      "excerpt": "Eén lege kamer op vier manieren ingericht, een eenvoudige kamer opnieuw gestyled en een buitenfoto, allemaal rechtstreeks uit Stagify. Wat er op elke foto veranderde, wat nooit verschoof, en de ene die nooit gemaakt had moeten worden.",
+      "meta": "27 september 2026 · 6 min leestijd",
+      "alt": "Twee foto’s van dezelfde hoekkamer in een hoogbouw naast elkaar: links leeg, met het label “Voor”, rechts ingericht als woonkamer met een grijze hoekbank en een geometrisch vloerkleed, met het label “Na”"
+    },
     "which-virtual-staging-style": {
       "tag": "Gidsen",
       "title": "Eén kamer, zeven stijlen. Slechts één ervan verkoopt het huis.",

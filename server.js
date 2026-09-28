@@ -347,7 +347,7 @@ const { roomIsAlreadyEmpty, eraseFurniture } = createErase({ genAI, openai });
 // the full 3 attempts and settled at 80/100, each time on a real but minor defect the
 // reviewer named correctly (a floating bathtub; an armchair leg melting into the floor).
 // So the gate degenerates from "usually one call" into "always three calls for best-of-3"
-// — on gemini-3-pro-image, the priciest model in the app, at ~57s per attempt.
+// — on gemini-3-pro-image (the CAD model at the time), the priciest model in the app, at ~57s per attempt.
 //
 // maxAttempts is deliberately left alone (see the same note in staging-generation.js): the
 // loop only re-enters on a THROW, so a passing reviewer means ONE generation in the happy

@@ -551,7 +551,7 @@ test('a CAD-only turn writes a gallery row', async () => {
   // delivery copy, and the CAD path used to hand it the wrong one.
   assert.equal(recorded[0].natives[0].buffer.toString(), 'cad-native');
   assert.equal(recorded[0].isPro, true, 'both chat endpoints sit behind requireProAccount');
-  assert.equal(recorded[0].model, 'gemini-3-pro-image');
+  assert.equal(recorded[0].model, 'gemini-3.1-flash-image');
   assert.equal(recorded[0].extra.source, 'designer');
   assert.equal(recorded[0].extra.qualifier, 'Floor plan');
   assert.equal(uploads.length, 1, 'and the bytes are uploaded in the background');

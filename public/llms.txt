@@ -160,6 +160,10 @@ Interactive walkthroughs at https://stagify.ai/guides.html, plus troubleshooting
   Stagify gives you seven furniture styles and most people pick the one they like. What
   should decide it is the architecture, the floor, the light and the buyer. Here is how to
   read all four, and how each of the seven goes wrong.
+- [Virtual Staging Before and After: Six Rooms, Nothing Retouched](https://stagify.ai/blog/virtual-staging-before-and-after):
+  Six real before-and-after virtual staging examples: one empty room staged four ways, a
+  plain room restaged, and an exterior. What changed in each photo, what never moved, and
+  why each version sells.
 
 ## Reference
 

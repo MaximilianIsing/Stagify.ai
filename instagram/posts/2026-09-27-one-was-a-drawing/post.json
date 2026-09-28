@@ -1,0 +1,105 @@
+{
+  "id": "2026-09-27-one-was-a-drawing",
+  "date": "2026-09-27",
+  "publishedAt": null,
+  "origin": "pipeline",
+  "formats": [
+    "single"
+  ],
+  "template": "diagonal-reveal",
+  "featureShown": "cad-to-3d",
+  "hookArchetype": "side-by-side-comparison",
+  "audience": "design",
+  "roomType": "Kitchen",
+  "style": "midcentury",
+  "palette": "walnut and mustard against white terrazzo",
+  "ctaStyle": "link-in-bio-plain",
+  "topic": "a flat kitchen floor plan built into a photoreal midcentury kitchen",
+  "angle": "A line drawing is the least persuasive thing a designer can hand a client. The same plan, rendered as an eye-level photograph, is a room they can react to, and every feature in it can be checked against the drawing.",
+  "visualSummary": "Full bleed 4:5 frame cut by a brand blue diagonal wipe rising left to right. Above the wipe, on off white paper, a black line floor plan of a single 4.80 by 4.20 m kitchen: an L shaped worktop run along the top and left walls, a double sink under a window in the top wall, four hob rings on the left run, a tall unit marked with a cross at the end of that run, a rectangular island in the middle, dimension lines and the word KITCHEN; a PLAN pill top left and the logo lockup top right. Below the wipe, the eye-level photograph rendered from that plan, shot square on from the wall opposite the window: flat slab walnut cabinetry with brass bar handles, a white quartz worktop, a double sink and chrome tap under a centred white framed window onto a garden, an induction hob with copper pans on the left run, tall walnut units with X braced doors at the near end of it, a walnut island with a white top seen broadside in the foreground, a mustard dome pendant, a mustard tea towel on the sink run and a white terrazzo floor. RENDER pill above the bottom block, two tone headline over a dark scrim, disclosure line and a Link in bio pill.",
+  "copy": {
+    "headline": "Same kitchen. One was a drawing.",
+    "caption": "The top half is a floor plan. The bottom half is the kitchen Stagify built from it. Nobody photographed this room.\n\nIt does not exist. We drew a 4.8 by 4.2 metre kitchen as a flat plan: an L shaped run down the left wall and along the window wall, a double sink under the window, a hob on the side run, an island in the middle. Then we asked for it in midcentury walnut and terrazzo, seen from the wall opposite the window.\n\nCheck it against the drawing. The window is centred on its wall. The double sink sits under it. The hob is on the left run. The island stands in the middle, long side to the window.\n\nClients do not read plans. They read rooms. Floor plan to 3D gives them the room before anyone has picked a tile.\n\nIt lives in the AI Designer on Stagify+. Upload the plan and ask for the room you want to stand in.\n\nLink in bio.\n\nVirtually staged with Stagify.ai",
+    "altText": "A kitchen floor plan above a photo of the walnut and terrazzo kitchen rendered from it."
+  },
+  "hashtagSet": [
+    "#interiordesign",
+    "#kitchendesign",
+    "#midcenturymodern",
+    "#floorplan",
+    "#beforeandafter",
+    "#designinspo",
+    "#interiors",
+    "#homeinspo",
+    "#virtualstaging",
+    "#aistaging",
+    "#stagify"
+  ],
+  "data": {
+    "headline": {
+      "lead": "Same kitchen.",
+      "accent": "One was a drawing."
+    },
+    "beforeImage": "/instagram/assets/sources/648f1a6ced60cf872ffd900cd98350b45fd0d1fa69352e27185c5daff35807e3.png",
+    "afterImage": "/instagram/assets/sources/a92677d4fe24ba9ce4ba2814640bfb19fbc237df6881ccc709b1e7376ba575bf.webp",
+    "beforeLabel": "PLAN",
+    "afterLabel": "RENDER",
+    "diagonal": {
+      "leftY": 66,
+      "rightY": 36
+    },
+    "cta": "Link in bio",
+    "disclosure": "Virtually staged with Stagify.ai"
+  },
+  "images": [
+    {
+      "role": "before",
+      "source": "drawn",
+      "sha256": "648f1a6ced60cf872ffd900cd98350b45fd0d1fa69352e27185c5daff35807e3",
+      "sourceSha256": "8fbe67b4a327c018648dc961876996586d9b260b0a747a8c3bd5e4deeb4081dc",
+      "license": {
+        "type": "original",
+        "licenseName": "Drawn for this post as SVG, no third-party rights",
+        "attributionRequired": false
+      },
+      "altText": "A 2D floor plan of a kitchen with an L shaped run, a window over the sink and an island.",
+      "note": "Drawn at exact metric scale by work/build-images.js so the render can be checked against it. sourceSha256 is the tight plan the model was given; this frame is the same drawing (planSvg, identical geometry) at 100 px per metre on a 4:5 sheet, placed by work/compose-frames.js so the whole plan sits above the wipe."
+    },
+    {
+      "role": "after",
+      "source": "stagify",
+      "sha256": "a92677d4fe24ba9ce4ba2814640bfb19fbc237df6881ccc709b1e7376ba575bf",
+      "license": {
+        "type": "generated",
+        "licenseName": "Stagify render",
+        "attributionRequired": false
+      },
+      "altText": "A midcentury walnut kitchen with a white island, a window over the sink and a terrazzo floor.",
+      "sourceSha256": "a71e216528e300baab71b37b1ed21e406965e1e87980adca1e89225f262704a2",
+      "note": "The round 2 render (sourceSha256) scaled to 880 px tall and cropped to 1080 wide by work/compose-frames.js, so the template cover-fit does not crop it to the island alone. Scaled and cropped only, never retouched."
+    }
+  ],
+  "generation": [
+    {
+      "step": "cad-render",
+      "fn": "blueprintTo3D",
+      "model": "IMAGE_MODEL_CAD",
+      "params": {
+        "view": "eye-level",
+        "room": "kitchen",
+        "additionalPrompt": "Style it midcentury modern: flat slab walnut cabinetry, a warm white terrazzo floor, a white quartz worktop, mustard yellow accents in a pendant shade and a tea towel, brass handles. No bar stools, no chairs and no seating of any kind anywhere in the room. The island is a simple rectangular box 2.2 m long and 1.0 m deep, its LONG side parallel to the window wall, square to the room, centred in front of the sink, with the worktop sitting centred on its base and an equal small overhang on every side. Stand against the middle of the wall opposite the window and look straight at the window wall, so the island is seen broadside in the foreground, the window with the double sink under it is centred behind it, and the run with the hob is on the left."
+      },
+      "note": "Two rounds through the product blueprintTo3D, QA gate on (the shipped CAD route runs it off). Round 1 (work/images-round1.json): three runs from the door corner, none QA perfect (best 85), and the independent image reviewer blocked the chosen one because the island came back turned 90 degrees to the plan with its worktop sheared off the base. Round 2 (work/images.json): camera moved to the middle of the wall opposite the window and the island size and orientation spelled out; run 1 failed QA at 70 on all three attempts (island overhang, ceiling vent), run 2 passed QA perfect at 100 on its first attempt and matches the plan: window centred over the double sink, L run with the hob on the left run, tall units at the near end of it, island square to the room with its long side parallel to the window wall. The model drew the plan cross on the tall unit literally, as X braced doors."
+    }
+  ],
+  "devilsAdvocate": {
+    "winner": "i01",
+    "consideredCount": 20,
+    "clearedTheGate": 20,
+    "whyThisOne": "A designer already has the input, a floor plan, and cannot cheaply make the output, a photograph of a room that does not exist. An empty room before and after is used up in a second; this makes the reader wonder what their own plan looks like from inside, and the only way to find out is to upload it. None of the last ten posts involve a floor plan, and legacy-06 was a top-down render rather than an eye-level photograph.",
+    "whyNotTheOtherFour": "i19 reruns the 08-18 design audience bathroom too closely. i02 wins shares but not clicks. i16 is i01 with the picture shrunk and a lecture added. i20 makes a claim a scrolling viewer cannot check.",
+    "residualRisk": "Plan fidelity. If the rendered kitchen does not match the plan above the wipe, the post argues the product ignores your drawing.",
+    "howTheRiskLanded": "The plan was drawn here rather than sourced, so there is a ground truth, and the render was picked by matching it feature by feature rather than by QA score. The CTA was moved from free-first-render to link-in-bio-plain because floor plan rendering sits in the AI Designer, which needs a Stagify+ account."
+  },
+  "layoutFamily": "fullbleed"
+}
