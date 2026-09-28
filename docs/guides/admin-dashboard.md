@@ -828,7 +828,9 @@ that the tab suppressed, on the same data, in the same session.
    sweeps there (empty dataset, tiny dataset, junk input, action present) cover a
    new rule automatically; add a case for its own behaviour.
 
-## Emails tab
+<a id="emails-tab"></a>
+
+## Email templates tab
 
 A gallery of **every email a user can receive**, each rendered exactly as it arrives, with
 a per-template **"Send test"** button that mails a live copy to an address the operator
@@ -946,7 +948,9 @@ what explains the gap. Same rule the auto side follows.
 
 **Reset wipes posted entries too.** The confirm dialog says it wipes everything, so it does.
 
-## Referrals tab
+<a id="referrals-tab"></a>
+
+## Referral links tab
 
 Campaign short-URLs — `stagify.ai/columbia` and any sibling — that **302 to the home page
 while counting the arrival**, so you can hand a different link to each channel and see which
@@ -1023,7 +1027,7 @@ per process and takes each title from the article's own `<h1>` and its date from
 appears in the tab on the next deploy. Reads for a slug whose file is gone are still reported,
 marked `removed` — a deleted article's readership is still a fact about the site.
 
-**Bots are flagged, not dropped**, exactly as on the Referrals tab: a blog URL is crawled and
+**Bots are flagged, not dropped**, exactly as on the Referral links tab: a blog URL is crawled and
 unfurled well before a human opens it. `isBotUserAgent` (reused from
 `lib/data/referral-links.js`) classifies on the user-agent; everything called a "read" is
 `is_bot = 0`, and the excluded count is shown beside it.
@@ -1149,7 +1153,7 @@ label on this table.
 | Outcome | Where | Why there |
 |---|---|---|
 | `signin` | `POST /api/admin/session` in [`routes/admin/index.js`](../../routes/admin/index.js) | The one moment the master key is actually typed. |
-| `open` | `GET /api/admin/ping` | The probe the console already fires once per page load before revealing the dashboard. A fresh sign-in deliberately does **not** ping (pinned by `admin-shell.test.js`), so the two partition cleanly and nothing is double counted. It is instrumented by a **pass-through handler in `admin-access.js` that calls `next()`**, mounted ahead of the main admin router — `routes/admin/index.js` had no room left. If that handler ever stops calling `next()`, the real handler never answers and every operator is locked out at the login screen; `admin-access-route.test.js` pins it. |
+| `open` | `GET /api/admin/ping` | The probe the console already fires once per page load before revealing the dashboard. A fresh sign-in deliberately does **not** ping (pinned by `admin-shell.test.js`), so the two partition cleanly and nothing is double counted. It is instrumented by a **pass-through handler in `routes/admin/access.js` that calls `next()`**, mounted ahead of the main admin router — `routes/admin/index.js` had no room left. If that handler ever stops calling `next()`, the real handler never answers and every operator is locked out at the login screen; `admin-access-route.test.js` pins it. |
 | `denied` | `rejectWith()` in [`lib/http/http-guards.js`](../../lib/http/http-guards.js) | The single funnel every refusal passes through, so one hook covers `protectLogs`, `requireEndpointKey`, `stagingEndpointKeyGuard` **and** the module-level `rejectEndpointKey` that `POST /api/getpro` uses. Instrumenting routes instead would have missed the two endpoints holding the same secret — one of which grants Pro. The store is installed process-wide by `createHttpGuards` because `rejectEndpointKey` has no factory closure. |
 
 Recording happens **before** the rate limiter, not after: over the per-IP ceiling the
@@ -1170,8 +1174,8 @@ a sustained scan cannot fill the volume `auth-store.db` lives on. This is the op
 opposite reason: it counts strangers, this counts key-holders.
 
 **Locations are approximate, lazy and optional.** Resolved from `ipwho.is` (keyless,
-HTTPS, no dependency — Node 22 has global `fetch`), cached per address forever, and looked
-up **after** the response is sent, never before it: no operator waits on a third party to
+HTTPS, no dependency — Node 22 has global `fetch`). A successful lookup is cached per address forever; a failed
+one is retried at most once a day. Lookups happen **after** the response is sent, never before it: no operator waits on a third party to
 read their own access log, and a refused request never costs the attacker a round-trip.
 Private and loopback addresses are never sent anywhere. A new address therefore shows an
 em dash until the next refresh, and `—` means "could not be located", not "located
@@ -1185,8 +1189,7 @@ credentials.
 - Build DOM with `helpers.js#el` and set `textContent`, never `innerHTML`, for anything
   derived from logged data — prompts, emails and user agents are user-supplied. If you
   genuinely must assemble markup, `helpers.js#esc` is the shared
-  [`escapeHtml`](../../public/scripts/shared/escape-html.js) (it was a no-op returning its input
-  until 2026-07-28 — anything written against the old behaviour is now escaped for real).
+  [`escapeHtml`](../../public/scripts/shared/escape-html.js).
 - Style through a class in `admin.css`, not an inline `style` attribute. The tokens are
   declared once on `.page-admin`.
 - The 650-line ESLint cap applies here like everywhere else — split into a sibling island

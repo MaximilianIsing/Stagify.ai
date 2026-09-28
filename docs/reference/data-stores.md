@@ -58,7 +58,8 @@ store factory. It began as the auth store, so the file is still named `auth-stor
     results and keeps owning its slug. `referral_hits` is one row per arrival
     (`slug`, `ts`, `referer`, `is_bot`), indexed `(slug, ts)` — the shape of every read
     (one slug, one window) and every prune (one slug, oldest first).
-    It is the only table written by **unauthenticated** requests, so it carries a ceiling:
+    It is one of several tables written by **unauthenticated** requests (with `blog_views`,
+    `email_optouts` and `admin_access_events`), so it carries a ceiling:
     hits older than 400 days and anything past 100k rows per slug are pruned every 500
     inserts, on top of the per-IP `referralLimiter`. Deliberately **not** stored: the
     visitor's IP, their user-agent (read in memory to set `is_bot`, then dropped), and the
@@ -75,6 +76,17 @@ store factory. It began as the auth store, so the file is still named `auth-stor
     it, so **rotating `endpoint_key` invalidates every outstanding session** on the next
     request. Tokens are hashed at rest with the same scheme as `sessions`.
   - `meta` — key/value bookkeeping (e.g. the one-time-import guards).
+  - `stripe_events` ([`lib/data/stripe-events.js`](../../lib/data/stripe-events.js)): the
+    webhook idempotency ledger (`id` PK, `type`, `status`, `claimed_at`, `completed_at`).
+  - `email_optouts` ([`lib/data/email-optout.js`](../../lib/data/email-optout.js)): `email`
+    PK, `token` UNIQUE, `opted_out_at`, `created_at`. Written by the unauthenticated
+    `/email/unsubscribe` route.
+  - `blog_views` ([`lib/data/blog-views.js`](../../lib/data/blog-views.js)): one row per
+    blog page view (`slug`, `ts`, `referer`, `is_bot`), indexed `(slug, ts)`. Written by
+    public blog page loads.
+  - `admin_access_events` + `admin_ip_geo` ([`lib/data/admin-access.js`](../../lib/data/admin-access.js)):
+    the admin console access log and its IP geo cache. `ADMIN_ACCESS_LOG=off` and
+    `ADMIN_ACCESS_GEO=off` turn them off.
 - **Indexes** cover the lookups a table actually performs, not just its primary key:
   `users` by `email` / `google_sub` / both Stripe ids (in `auth-store.js`'s `SCHEMA`), and
   `sessions` / `password_reset_tokens` by `user_id` and `exp` (in
@@ -119,13 +131,23 @@ store factory. It began as the auth store, so the file is still named `auth-stor
 
 `auth-store.json`, `enterprise-domains.json`, `memories.json`, and `uptime.json` are the
 **pre-SQLite** stores. Each was imported once into `auth-store.db` and is now a
-read-only fallback — the app neither reads nor writes them anymore. Keep them until a
+read-only fallback: the app no longer reads them after the guarded one-time import.
+Account erasure still scrubs `auth-store.json` and `memories.json` in place
+(`JSON_REDACTIONS` in `lib/data/user-deletion.js`). Keep them until a
 migration is confirmed good; they double as a rollback source.
+
+## Email open tracking (`email_opened.json`)
+
+The per-address open-tracking map from [`lib/services/email.js`](../../lib/services/email.js).
+It is held in memory and rewritten whole on each new open, capped at
+`EMAIL_OPEN_MAX_ENTRIES` addresses, and scrubbed (file and in-memory map) on account erasure.
 
 ## CSV logs (append-only)
 
-Written by [`lib/services/logging.js`](../../lib/services/logging.js) (and the contact/bug handlers in
-[`routes/public.js`](../../routes/public.js)). Each is created with a header row on
+Written by [`lib/services/logging.js`](../../lib/services/logging.js),
+[`routes/public.js`](../../routes/public.js) (contact),
+[`lib/http/bug-report-row.js`](../../lib/http/bug-report-row.js) (bug reports) and
+[`lib/services/email.js`](../../lib/services/email.js) (`email_open_logs.csv`). Each is created with a header row on
 first write, then appended to. Exposed (read-only) through the `endpoint_key`-gated
 admin/log endpoints — see [`endpoints.md`](endpoints.md).
 
@@ -187,9 +209,10 @@ bearer token for an account that no longer exists), `password_reset_tokens` and
 the single place that knows the full set, run by
 `POST /api/admin/delete-user` — see [`endpoints.md`](endpoints.md).
 
-- **SQLite** — one transaction over `sessions`, `password_reset_tokens`, `memories`,
-  `users` (last), plus `pending_registrations` for the same address (it holds a scrypt
-  hash for an unverified signup). An address with *only* a pending registration can be
+- **SQLite** — one transaction over `USER_ID_TABLES` (`sessions`, `password_reset_tokens`,
+  `memories`, the five user-keyed gallery tables, the four API tables, then `users` last)
+  plus `USER_EMAIL_TABLES` for the same address: `pending_registrations` (it holds a
+  scrypt hash for an unverified signup) and `email_optouts`. An address with *only* a pending registration can be
   erased on its own; otherwise the whole thing rolls back on failure, so an account is
   never half-erased.
 - **CSV logs** — the identifying cells (`email` / `userId` / `ipAddress` / `userAgent`)
@@ -201,7 +224,8 @@ the single place that knows the full set, run by
   `rejection_logs.csv` is covered too — its `kind` / `code` / `detail` cells are
   non-identifying and are left alone, so the drop-off analytics survive an erasure.
 - **Not touched:** `mobile_ip_usage` (keyed by IP, no account link), `enterprise_domains`
-  (a company's own billing record), `stripe_events`, `uptime_state`. Each is listed with
+  (a company's own billing record), `stripe_events`, `uptime_state`, `meta`,
+  `blob_tombstones`. Each is listed with
   its reason in `NOT_USER_KEYED`.
 
 `test/data/user-deletion.test.js` introspects the live schema and **fails the build** if
@@ -215,15 +239,16 @@ typed about themselves. Nothing can match those automatically; they are left as-
 
 ## Uploaded images (`hosted-images/`)
 
-User-hosted images (`POST /api/host-image`) are written under
+Operator-hosted images (`POST /api/host-image`, `endpoint_key`-gated) are written under
 `hosted-images/` with a small JSON manifest; each is served back via `GET /i/:id`.
 The uploader is capped at 25 MB and restricted to raster types (no SVG) — see
 [`security.md`](../guides/security.md).
 
 ## The gallery tables
 
-Six tables, all created from one schema constant in
-[`lib/data/gallery-schema.js`](../../lib/data/gallery-schema.js) rather than per-factory —
+Six tables. Five (all but `blob_tombstones`) are created from one schema constant in
+[`lib/data/gallery-schema.js`](../../lib/data/gallery-schema.js) rather than per-factory
+(`blob_tombstones` is created by `blob-tombstones.js`) —
 the same reason `auth-store.js` holds the DDL for tables `session-tokens.js` queries: they
 reference each other across store boundaries, so per-factory creation would make
 construction **order** load-bearing.

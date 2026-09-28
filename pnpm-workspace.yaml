@@ -1,4 +1,0 @@
-allowBuilds:
-  '@google/genai': false
-  better-sqlite3: true
-  protobufjs: false

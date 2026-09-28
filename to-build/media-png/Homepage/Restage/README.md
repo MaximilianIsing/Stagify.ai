@@ -31,13 +31,7 @@ reversed here:
   same image. It buys editability, not detail. Sharpening or upscaling one will amplify WebP
   artifacts, not recover anything.
 
-**The served WebP is the only copy of every render's pixels.** The first sixty were once
-mirrored as `pNN-*.webp` inside `studio-section-concepts/`, a prototype folder that has since
-been deleted; batches 2–4 were never mirrored there. Nothing is lost by that — those files
-were byte-identical duplicates of what `public/media-webp/Homepage/Restage/` already serves,
-and the eight belonging to replaced slots had stopped matching anything shipped. The recipes
-behind all of them survive in `manifest.json`, where the retired rows are marked
-`supersededBy`.
+**The served WebP is the original of every render's pixels**, and `manifest.json` keeps the recipe behind each one (retired rows are marked `supersededBy`).
 
 `empty.png` is the exception: it is a genuine lossless master, and `empty.webp` is its export.
 

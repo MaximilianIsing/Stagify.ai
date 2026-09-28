@@ -24,18 +24,20 @@ Open a session in `instagram/` and say "make me a post." The agent follows `PLAY
 Reference by hand:
 
 ```
-node instagram/bin/render.js --fixture instagram/fixtures/sample.json   # render a post record
+node instagram/bin/render.js --fixture instagram/fixtures/diagonal-reveal.json   # render a post record
 node instagram/bin/check.js  <candidate.json>                            # uniqueness gate
-node instagram/bin/metrics.js                                            # record performance
+node instagram/bin/metrics.js --post <id> --likes N --views N --saves N  # record performance
 node --test "instagram/**/*.test.js"                                     # the tool's own tests
 ```
 
 ## Two rules that are enforced in code, not by asking nicely
 
 1. **No em dashes.** `lib/validate/rules.js` scans the copy *and* the generated HTML before it
-   ever reaches the renderer. U+2012, U+2013, U+2014, U+2015 and a bare ` -- ` all fail hard.
+   ever reaches the renderer. U+2012, U+2013, U+2014, U+2015, U+2E3A, U+2E3B and a bare ` -- `
+   all fail hard.
 2. **Posts must not all look the same.** `lib/history/cooldown.js` blocks a candidate that
-   reuses a template, hook, room, style, audience, CTA or product feature inside its cooldown
+   reuses a template, layout family, hook, room, style, palette, audience, CTA or product
+   feature inside its cooldown
    window, and a reviewer subagent compares the finished image against the last five thumbnails
    for the kind of sameness a counter cannot see.
 
@@ -44,11 +46,12 @@ poster design. Nothing enforces those, which is the whole reason they are writte
 
 ## Deliberately outside the deploy gate
 
-`instagram/**` is in the `ignores` array of `eslint.config.js`, the `test/**/*.test.js` glob
-does not reach here, and `tsconfig.json` uses an explicit include allowlist that omits it. A
-bug in this tool can never fail `npm test`, `npm run lint`, or a Render build. The tradeoff is
-that this folder is unlinted, so it follows the repo's conventions by discipline: plain ESM,
-`import '../load-env.js'` when secrets are needed, and its own tests run by hand.
+The `test/**/*.test.js` glob does not reach here, and `tsconfig.json` uses an explicit
+include allowlist that omits it, so a bug in this tool cannot fail `npm test` or a Render
+build (`scripts/build.sh` runs only `npm test`). It is linted, though: `eslint.config.js` has
+a tooling block for `instagram/**/*.{js,mjs}` and stylelint covers its CSS, so `npm run lint`
+in CI does see it. Otherwise it follows the repo's conventions: plain ESM, an import of the
+repo-root `load-env.js` when secrets are needed, and its own tests run by hand.
 
 ## Layout
 
@@ -63,8 +66,6 @@ bin/             the CLIs the agent drives
 posts/           one directory per generated post, the hand-off
 ```
 
-`CLAUDE.md` in this folder is untracked, because `.gitignore` ignores that filename at any
-depth. It points at `PLAYBOOK.md` and restates the fifteen hard rules at one line each, so a
-session starts with them in context. **Nothing recreates it.** A fresh clone has no
-`CLAUDE.md` here at all, and if it goes missing, rewrite it by hand from the "The hard rules"
-section of `PLAYBOOK.md`, which is the tracked source of truth.
+`CLAUDE.md` in this folder is tracked. It points at `PLAYBOOK.md` and restates the fifteen
+hard rules at one line each, so a session starts with them in context. `PLAYBOOK.md` stays
+the source of truth, so change a rule there first and keep the one-liner in step.

@@ -25,8 +25,8 @@ post 07-27 shipped with "Coastal preset — staged in ~8 seconds" because a care
 wrote it without noticing, which is exactly why the check exists.
 
 **2. Posts must not all look the same.** Enforced by `bin/check.js` against the history
-ledger. A candidate that reuses a template, **layout family**, hook, room, style, audience,
-CTA or product feature inside its cooldown window is blocked outright, and near-duplicate
+ledger. A candidate that reuses a template, **layout family**, hook, room, style, palette,
+audience, CTA or product feature inside its cooldown window is blocked outright, and near-duplicate
 topics, headlines and visual descriptions are blocked by similarity.
 
 Layout family is the coarse visual shape sitting one level above template, and it exists
@@ -67,8 +67,8 @@ stop again after they do, with the single exception of the two-round cap in step
 context.** Never you: an author defends their own work, and a reviewer who has read the
 caption confirms it instead of looking at the pixels.
 
-**8. On-image text is plain Latin, digits and basic punctuation.** `public/fonts/` ships
-Inter latin and latin-ext only, so an arrow, an emoji or a typographic symbol renders in a
+**8. On-image text is plain Latin, digits and basic punctuation.** `brand-css.js` loads
+only Inter's latin and latin-ext faces, so an arrow, an emoji or a typographic symbol renders in a
 fallback system face and looks subtly wrong. Caption emoji is fine; we never render the
 caption.
 
@@ -93,7 +93,7 @@ stopping a post shipping in last quarter's blue.
 
 **13. Use the shared chrome rather than restyling a lookalike.** `lockup()`, `eyebrow()`,
 `cta()`, `disclosure()`, `headline()`, `photoCard()`, `fieldHeader()` and `fieldFooter()`
-exist so ten layouts cannot drift into ten slightly different logo treatments.
+exist so eleven layouts cannot drift into ten slightly different logo treatments.
 
 **14. Respect the safe margins.** 52px gutters at 4:5; story and reel are 570px taller and
 the platform draws its own UI top and bottom, so chrome moves inward there (`.frame--tall`
@@ -140,7 +140,7 @@ For each stale key, spawn a **researcher subagent** with WebSearch:
 > and `retrievedAt`. Do not propose post ideas; that is a different role. Do not return a
 > claim you cannot attribute to a URL.
 
-Write results back with `bin/research.js --write <key>`.
+Write results back with `node instagram/bin/research.js --write <key> <findings.json>`.
 
 ### 3. Generate a long idea list
 
@@ -179,12 +179,12 @@ Rules for the list:
 - `roomType` must be one of the 8 in `config.json`. Map friendly names through
   `roomTypes.aliases`. A nursery is a `Bedroom`; a patio is `Outdoors`.
 
-Write them to `posts/<slug>/work/ideas.json`.
+Write them to `instagram/posts/<slug>/work/ideas.json`.
 
 ### 4. Gate the list
 
 ```
-node instagram/bin/check.js posts/<slug>/work/ideas.json --json
+node instagram/bin/check.js instagram/posts/<slug>/work/ideas.json --json
 ```
 
 Discard everything blocked and regenerate replacements until you have at least 10 that
@@ -241,7 +241,7 @@ Write the copy. Acquire the images. Render.
 first, then fal, then Gemini) and stages it through the actual product. The "after" in a
 post is always a genuine `processStaging` render.
 
-**Render:** `node instagram/bin/render.js --record posts/<slug>/post.json`
+**Render:** `node instagram/bin/render.js --record instagram/posts/<slug>/post.json`
 
 ### 8. Review
 
@@ -333,6 +333,7 @@ node instagram/bin/smoke-images.js                 prove the image chain with re
 node instagram/bin/finalize.js <slug>              step 9: put a post into history
 node instagram/bin/finalize.js --check             find posts rendered but not in history
 node instagram/bin/metrics.js --pending            which posts need numbers
+node instagram/bin/metrics.js --post <id> --likes N ...   record numbers for one post
 node instagram/bin/metrics.js --top                what has performed best so far
 node instagram/bin/templates.js --list             the layout library and what each is for
 node --test "instagram/**/*.test.js"               the tool's own tests

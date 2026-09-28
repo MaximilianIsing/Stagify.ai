@@ -52,9 +52,9 @@ export default function createPublicRouter(deps) {
 }
 ```
 
-Why it's built this way: `server.js` grew very large, so routes and helpers are being
-**extracted verbatim** into modules while preserving behavior. The DI object keeps each
-extracted piece working without turning shared state into globals. When you add a
+Why it's built this way: `server.js` is capped at 650 lines (ESLint `max-lines`), so
+logic lives in `routes/` and `lib/` factories. The DI object keeps each piece working
+without turning shared state into globals. When you add a
 route, you add its dependency to the factory's `deps` at the `server.js` call site.
 
 ### Some deps are grouped, most are flat — and that split is deliberate
@@ -71,7 +71,8 @@ const { forgetEmailOpenState } = email;   // a createUserDeletion FACTORY input,
 app.use(createPublicRouter({ /* … */ hostedImages, email, /* … */ }));
 ```
 
-Their shapes live in `lib/types/deps.d.ts`, so the five routers reference one typedef
+Their shapes live in `lib/types/deps.d.ts`, so the three routers that take them (`routes/admin/index.js`, `routes/auth.js`,
+`routes/public.js`) reference one typedef
 instead of re-declaring the same JSDoc.
 
 **Why only those two.** `routes/admin/index.js`, `routes/auth.js` and `routes/public.js`
@@ -86,7 +87,7 @@ router.post('/api/mask-edit', genLimiter, createMaskEditHandler(deps));  // rout
 
 Each sub-factory (`lib/chat/chat-dispatch.js`, `lib/staging/mask-edit.js`, …)
 destructures its own slice, so grouping a name *they* read means changing every one of
-them plus their tests — `mask-edit.js` alone is referenced by 18 test files. That is why
+them plus their tests — `mask-edit` alone is referenced by ~30 test files. That is why
 the logging writers, the memory helpers and the `image-primitives.js` functions are
 still flat, even though they come from equally cohesive factories.
 
@@ -107,17 +108,25 @@ across ~242 call sites; nesting a hot dep breaks all of them at once.
 
 ## Request lifecycle
 
-Middleware runs in registration order, wired from `server.js` (steps 1–2 via
-`applyEdgeMiddleware(app)` and step 5 via `applyBodyAndStatic(app)`, both in
+Middleware runs in registration order, wired from `server.js` (steps 1-2 via
+`applyEdgeMiddleware(app)` and steps 4-5 via `applyBodyAndStatic(app)`, both in
 [`lib/http/app-middleware.js`](../../lib/http/app-middleware.js); the billing router is
 mounted between them so the Stripe webhook still sees the raw body):
 
 1. **`helmet`** — security headers + Content-Security-Policy (toggle with `DISABLE_CSP=1`).
-2. **`cors`** — restricted to `ALLOWED_ORIGINS`.
-3. **Body parsing** — the Stripe webhook is registered with `express.raw()` **before**
-   `express.json()` so signature verification sees the exact bytes; everything else
+2. **`cors`** — restricted to `ALLOWED_ORIGINS`; then `compression`.
+3. **Vanity redirects** (`applyVanityRedirects`, `lib/http/vanity-redirects.js`), e.g.
+   `/brand`. Before static because `public/brand/` is a real directory.
+4. **Static assets.** First the text-asset middleware (`lib/http/text-assets.js`: serves
+   `.html`/`.css` with comments stripped and injects the live hero counts) and the
+   `llms.txt` middleware (`lib/http/llms-txt-asset.js`), then
+   **`express.static('public')`**. Cache headers: long-lived immutable for
+   images/fonts/media, `no-cache` for html/css/js/json/txt/xml. This is why `/` serves
+   `public/index.html`. Static runs before body parsing so asset requests skip the parser.
+5. **Body parsing:** the Stripe webhook (billing router, mounted earlier) uses
+   `express.raw()` so signature verification sees the exact bytes; everything else
    gets parsed JSON.
-4. **Rate limiters** (`express-rate-limit`) — applied to auth (`RL_AUTH`), email
+6. **Rate limiters** (`express-rate-limit`) — applied to auth (`RL_AUTH`), email
    (`RL_EMAIL`), AI-generation (`RL_GEN`), and enterprise-checkout (`RL_CHECKOUT`)
    routes, among others; `lib/http/rate-limiters.js` holds the full set. The odd one
    out is `RL_ENDPOINT_KEY`, which is applied inside the guards in
@@ -134,17 +143,14 @@ mounted between them so the Stripe webhook still sees the raw body):
    `emailPixelLimiter` and `referralLimiter` are deliberately excluded: neither refuses
    anything — they flag the request and call `next()`, which is what makes them
    write-ceilings rather than rate limits.
-5. **`express.static('public')`** — if a file matches the URL it is served here (with
-   long-lived immutable cache headers for images/fonts/media, `no-cache` for
-   html/css/js/json). This is why `/` serves `public/index.html`.
-6. **Routers** (`app.use(createXRouter(...))`) — the API and dynamic routes.
-7. **The 404 handler** (`createNotFoundHandler`, [`lib/http/not-found.js`](../../lib/http/not-found.js))
+7. **Routers** (`app.use(createXRouter(...))`) — the API and dynamic routes.
+8. **The 404 handler** (`createNotFoundHandler`, [`lib/http/not-found.js`](../../lib/http/not-found.js))
    — nothing claimed the path, so it answers. Mounted after every router (including the
    referral router, which is otherwise last) and before the error middleware. It is a
    **normal** middleware, not a 4-arg error handler: Express only reaches those via
    `next(err)`, and an unmatched route never produces one. See
    [The 404 handler](#the-404-handler).
-8. **Error-handling middleware** (registered last, see [Error handling](#error-handling)):
+9. **Error-handling middleware** (registered last, see [Error handling](#error-handling)):
    the JSON body-parse handler, the multer upload handler (after the routers so Express
    reaches it), the Sentry capture hook, and a final catch-all that returns a clean JSON
    `500` instead of leaking a stack-trace page.
@@ -158,7 +164,7 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 
 | Module | Responsibility |
 |---|---|
-| `config.js` | Reads secrets/config from env vars, falling back to local `stripe_*.txt` / `*.txt` files. |
+| `config.js` | Reads Stripe, Google OAuth, `endpoint_key` and API-credit price secrets from a `.txt` file **first** (`STRIPE_SECRETS_DIR`, repo root, cwd, `/etc/secrets`), then the env var. A stray file overrides the Render env. |
 | `model-config.js` | Model selection + per-model temperature for the AI calls. |
 | `runtime-flags.js` | Computes the boot flags once (`DEBUG_MODE`, `IS_STAGING`, `HIDE_STAGING_BANNER`, stats overrides). The bootstrap layer beneath the logger. |
 
@@ -176,9 +182,23 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 | `enterprise-store.js` | Enterprise domain activation + metered usage, kept in sync with Stripe. Because an active domain is a blanket `pro` grant to every address under it, both `activateDomain` (write) and `isActiveDomain` (read) refuse public mailbox providers. |
 | `public-email-domains.js` | The list of free consumer + disposable mail domains that can **not** be sold as an enterprise domain, and the normalizing matcher (`isPublicEmailDomain`). Used by the enterprise store and `/api/enterprise/create-checkout` — **not** by signup. Rationale: [`security.md`](security.md#enterprise-domains-are-a-blanket-grant). |
 | `stripe-events.js` | The Stripe **webhook idempotency ledger** (`stripe_events`). Stripe delivers at-least-once, so `routes/billing.js` claims each `event.id` before handling it and drops a redelivery. A failed handler *releases* its claim (so Stripe's retry still runs), and a claim abandoned by a killed process becomes re-claimable after 5 minutes. |
-| `memory.js` | Per-user AI-chat memory storage and LLM-driven memory-action evaluation. |
+| `memory.js` | Per-user AI-chat memory storage (storage only; see `chat-memory.js`). |
 | `counters.js` | The prompt/contact counters shown in the hero stats. |
+| `public-stats.js` | `readPublicStats`: the one reader behind every published usage figure. |
 | `uptime-monitor.js` | Self-hosted uptime tracking (heartbeat → the `uptime_state` row in `auth-store.db`); powers `/api/status` and the status page. |
+| `auth-redaction.js` | The two read-out shapes of the auth store: full backup vs browser-safe. |
+| `session-revocation.js` | Operator "sign this account out everywhere". |
+| `trial-tracking.js` | State behind the trial-email sequence (in `users.extra_json`). |
+| `user-deletion.js` | Erases one account everywhere: SQLite rows, CSV cells, R2 bytes (via tombstones). |
+| `csv-redaction.js` | Quote-aware CSV parsing + per-person cell redaction for `user-deletion.js`. |
+| `admin-sessions.js` | Scoped admin console token traded for `endpoint_key` at sign-in. |
+| `admin-access.js` | Admin console access log: who opened `/admin`, from where, what was refused. |
+| `api-keys.js` | API keys: the account identity behind `/api/v1/*`. |
+| `api-billing.js` | Prepaid API credits: balance, append-only ledger, `api_requests` idempotency record. |
+| `credit-packs.js` | Purchasable credit packs and their Stripe price mapping. |
+| `referral-links.js` | Campaign short URLs (`/columbia`) and their hit counts. |
+| `blog-views.js` | Server-side blog article open counts for the admin Blog tab. |
+| `email-optout.js` | Marketing-email unsubscribes and their tokens. |
 
 **`lib/health/`** — per-subsystem health, deliberately **beside** the uptime monitor rather than inside it.
 
@@ -190,7 +210,7 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 
 | Module | Responsibility |
 |---|---|
-| `gallery-schema.js` | The DDL for **all six** gallery tables in one constant, plus `ensureColumn`/`tableExists`. One place rather than per-factory, for the same reason `auth-store.js` holds the DDL for tables `session-tokens.js` queries: these tables reference each other across store boundaries, so per-factory creation would make construction **order** load-bearing. |
+| `gallery-schema.js` | The DDL for **all five** gallery tables in one constant, plus `ensureColumn`/`tableExists`. One place rather than per-factory, for the same reason `auth-store.js` holds the DDL for tables `session-tokens.js` queries: these tables reference each other across store boundaries, so per-factory creation would make construction **order** load-bearing. |
 | `object-store.js` | Picks the byte backend at boot: **R2** when configured, the **local disk** off Render, and **disabled** on Render when unconfigured — falling back there would put render bytes on the same volume as `auth-store.db`. Never throws; a storage misconfiguration turns the gallery off rather than failing the boot. |
 | `object-store-r2.js` / `object-store-local.js` | The two backends behind one interface. `presignGet` is **pure and synchronous** on both — a manifest mints one URL per blob on the request path, and an async signature invites a cache, which would be a revocation bug. |
 | `s3-presign.js` | Synchronous SigV4 query-signing for GET only. Hand-rolled *because* it must be sync; kept honest by a differential test asserting byte-identical output to `aws4fetch` (which signs the network verbs, where async costs nothing). |
@@ -200,6 +220,8 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 | `gallery-shares.js` | Share tokens: sha256 for lookup, plaintext alongside it so the owner can copy the link again, one live link per render enforced in a transaction. Minted a page at a time by the gallery listing — there is no create step and no off switch — and revoked rather than deleted, because a delete would take the view count with it. |
 | `gallery-page-reads.js` | The three batched SQL reads behind one gallery page (blobs, references, live share links), as **text only** — each store prepares them against its own handle. Together because they share one non-obvious decision: `json_each(?)` rather than a generated `?, ?, ?` run, so the SQL text (and better-sqlite3's statement cache entry) does not vary with the page size. Exported as strings so a drift test can `EXPLAIN` the query actually prepared rather than a retyped copy. |
 | `blob-tombstones.js` | The queue of object bytes owed a deletion, and the reaper that drains it. This is what lets `deleteUser` stay **synchronous** while the bytes live in someone else's datacentre: the transaction commits the *obligation*, not the deletion. |
+| `render-extra.js` | Pure render metadata: which studio made it, its name-worthy setting, its source photo. |
+| `render-search.js` | Gallery search: query tokenizing and the prepared search statements. |
 
 **`lib/http/`** — request/response plumbing
 
@@ -211,7 +233,16 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 | `http-guards.js` | The `endpoint_key` guards (`protectLogs`, `stagingEndpointKeyGuard`) and the `/health` handler. |
 | `rate-limiters.js` | The `express-rate-limit` configs (`RL_AUTH` / `RL_EMAIL` / `RL_GEN` / `RL_CHECKOUT` / `RL_ENDPOINT_KEY` / …). |
 | `uploads.js` | The multer upload configs (staging / chat / hosted-image). |
-| `app-middleware.js` | The base HTTP middleware, lifted out of `server.js`. `applyEdgeMiddleware(app)` (helmet/CSP, CORS allow-list, compression — mounted **before** the billing router) and `applyBodyAndStatic(app)` (JSON body parsing + its error handler, `express.static` — mounted **after**, so Stripe's webhook still sees the raw body). |
+| `app-middleware.js` | The base HTTP middleware, lifted out of `server.js`. `applyEdgeMiddleware(app)` (helmet/CSP, CORS allow-list, compression — mounted **before** the billing router) and `applyBodyAndStatic(app)` (text-asset + `llms.txt` middleware and `express.static`, then JSON body parsing + its error handler — mounted **after**, so Stripe's webhook still sees the raw body). |
+| `text-assets.js` | Serves `.html`/`.css` with comments stripped; writes live hero counts into the home page. |
+| `llms-txt-asset.js` | Serves `/llms.txt` with the live usage figures substituted. |
+| `vanity-redirects.js` | Short URLs like `/brand`, mounted before static. |
+| `stats-endpoint.js` | `GET /api/stats`, the canonical public usage figures. |
+| `api-key-auth.js` | Bearer-key authentication for `/api/v1/*`. |
+| `api-concurrency.js` | In-flight cap for API renders (3 per key, 12 per process). |
+| `multer-errors.js` | Multer upload error → HTTP response mapping. |
+| `bug-report-row.js` | Row builder for the unauthenticated `/api/bug-report`. |
+| `csv-escape.js` | Shared CSV field escaper (quoting + formula-injection guard). |
 | `not-found.js` | `createNotFoundHandler({ __dirname, DEBUG_MODE })` — the terminal 404. Deliberately a plain handler rather than a `createXRouter` factory, so it does not trip the "the referral router is mounted last" guard it sits behind. See [The 404 handler](#the-404-handler). |
 
 **`lib/image/`** — image processing
@@ -223,15 +254,27 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 | `image-review.js` | The quality-gate reviewer + mask-edit / stageable-image validation. All three reviewers **fail open**. The upload gatekeeper answers with a digit from the fixed taxonomy in `lib/staging/unstageable.js`, which maps to a stable `code` the browser localizes — see [`i18n.md`](i18n.md). |
 | `erase.js` | Furniture-removal ("empty the room") pass. |
 | `hosted-images.js` | The admin-hosted image store + manifest served at `/i/:id`. |
+| `stamp-disclosure.js` | Burns the visible "virtually staged" badge into a finished render. |
+| `output-metadata.js` | Invisible EXIF/XMP provenance marking output as AI-generated. |
+| `disclosure-preview.js` | The staging modal's badge preview image. |
+| `badges/` | Generated per-language badge PNGs (recipe in `to-build/disclosure-badges/`). |
 
 **`lib/services/`** — external providers
 
 | Module | Responsibility |
 |---|---|
-| `ai-clients.js` | Constructs the Gemini / OpenAI / Resend clients once at boot from env (or `.txt` fallbacks). |
+| `ai-clients.js` | Constructs the Gemini / OpenAI / Resend clients once at boot from env; only Resend still falls back to `resendkey.txt`. Sets `GEMINI_TIMEOUT_MS` / `OPENAI_TIMEOUT_MS` ceilings. |
+| `gemini-client.js` | Gemini on `@google/genai`, behind the call shape the codebase was written against. |
+| `lifecycle-emails.js` | Trial-lifecycle email renderers (welcome, nudge, ending, win-back). |
+| `trial-lifecycle.js` | Decides which lifecycle email fires when, and records it. |
+| `email-catalog.js` | Every user-facing email, rendered for the admin Emails tab. |
+| `admin-analyst.js` / `admin-analyst-tools.js` | The admin console's tool-calling analyst and its tool catalogue. |
+| `admin-brief.js` | The written brief on the admin Signals tab. |
+| `csv-append.js` | Race-free CSV row append, header on first write. |
+| `stripe-credit-topup.js` | Stripe events that move a prepaid API credit balance. |
 | `auth-helpers.js` | Cross-cutting auth/enterprise helpers (resolve user from request, enterprise domain, usage reporting, Pro gating). |
 | `email.js` | Sends registration-verification email; serves the email-open tracking pixel. |
-| `logging.js` | Append-only **CSV** business-event writer (prompts, chats, contacts, masks, bug reports, email opens). Not a diagnostic logger — that's `lib/logger.js`. |
+| `logging.js` | Append-only **CSV** business-event writer (prompts, chats, contacts, masks, bug reports, email opens, rejections). Not a diagnostic logger — that's `lib/logger.js`. |
 | `stripe-webhooks.js` | Applies Stripe subscription lifecycle events (checkout/updated/deleted) to accounts & domains. |
 
 **`lib/staging/`** — staging & AI Designer
@@ -247,7 +290,19 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 | `virtual-staging-handler.js` | The `/api/process-image` + `/api/stage-by-endpoint-key` multipart handler (`handleVirtualStagingMultipart`), lifted out of `server.js`: free-tier cap, two-stage furniture removal, per-variation staging, enterprise metering. |
 | `mask-edit.js` | The `/api/mask-edit` request pipeline (locator overlay, reference letterboxing, quality-retry review), lifted out of `routes/staging.js`. |
 | `segment.js` | The `/api/segment` magic-wand handler (Gemini box detection → normalized `box_2d`), lifted out of `routes/staging.js`. |
-| `cad-handling.js` | Renders a floor plan (AI Designer), via Gemini. **Two views**, chosen by the routing model's `cad[].view`: `top-down` (default — a furnished 3D plan seen from above) and `eye-level` (a photorealistic interior photo taken standing inside the room named by `cad[].room`). `createCadHandling({ genAI })` — takes the **shared** client from `server.js`; it must not build its own (it used to, from a `lib/staging/key.txt` that never existed). PDFs are rasterized in the **browser** (`public/scripts/shared/pdf-page-to-image.js`), so this module only ever sees an image. **The quality gate is deliberately OFF here** (no `reviewImageQuality` injected): measured on a clean five-room plan, both views ran the full 3 attempts and settled at 80/100, so the gate degenerated from "usually one call" into "always three calls for best-of-3" on the priciest model — and the single un-selected draw was no worse. `maxAttempts` stays at 3 so a transient provider error is still retried; the reviewer branch stays wired and specced so re-enabling is one word in `server.js`. |
+| `cad-handling.js` | Renders a floor plan (AI Designer), via Gemini. **Two views**, chosen by the routing model's `cad[].view`: `top-down` (default — a furnished 3D plan seen from above) and `eye-level` (a photorealistic interior photo taken standing inside the room named by `cad[].room`). `createCadHandling({ genAI })` — takes the **shared** client from `server.js`; it must not build its own. PDFs are rasterized in the **browser** (`public/scripts/shared/pdf-page-to-image.js`), so this module only ever sees an image. **The quality gate is deliberately OFF here** (no `reviewImageQuality` injected): measured on a clean five-room plan, both views ran the full 3 attempts and settled at 80/100, so the gate degenerated from "usually one call" into "always three calls for best-of-3" on the priciest model — and the single un-selected draw was no worse. `maxAttempts` stays at 3 so a transient provider error is still retried; the reviewer branch stays wired and specced so re-enabling is one word in `server.js`. |
+| `unstageable.js` | Upload gatekeeper prompt + fixed rejection taxonomy (stable codes). |
+| `exterior-prompts.js` | Exterior Studio vocabulary, prompt builder, QA rubric and gatekeeper. |
+| `exterior-handler.js` | `/api/enhance-exterior` multipart handler. |
+| `review-prompts.js` | QA reviewer rubrics and their shared reply format. |
+| `designer-rules.js` | AI Designer system-instruction rule blocks. |
+| `disclosure-rules.js` | AI Designer's "label as virtually staged" schema fragment + prose. |
+| `staging-disclosure.js` | The virtual-staging disclosure sentence. |
+| `render-persistence.js` | Turns a finished staging request into a gallery entry. |
+| `masking-save-handler.js` | Masking Studio "Looks Good" → gallery entry. |
+| `api-options.js` | Machine-readable option vocabulary for `POST /api/v1/renders`. |
+| `api-render-billing.js` | Debit-before, settle-after credit band around one API render. |
+| `data-url.js` | Shape validation for base64 image data URLs in JSON bodies. |
 
 **`lib/chat/`** — AI Designer chat orchestration
 
@@ -257,7 +312,9 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 | `chat-request-prep.js` | Pre-routing prep for `/api/chat` (the JSON mirror of `chat-upload-prep`): dedup diagnostics, history-image detection, message-tag application, OpenAI message assembly, payload logging, and the routing call (`runChatRouting` — the counterpart to `runUploadRouting`, minus the image-format retry, which only makes sense where a file was uploaded). It returns `{ routingError }` rather than throwing, because `/api/chat` answers a model outage with its own 500 body carrying a user-facing `response` string. |
 | `welcome-message-handler.js` | The `GET /api/welcome-message` handler (generic vs. AI-personalized greeting). |
 | `chat-upload-error.js` | Pure helper building the "unsupported file type" body for the `/api/chat-upload` catch block. |
-| `chat-pipeline.js` | **Pure wiring**: composes the five dispatch sub-modules below into the 7-method interface both chat handlers consume (`applyMemoryActions` / `runGenerateRequests` / `resolveRecalledImage` / `resolveRequestedImage` / `runCadRequests` / `runStagingRequests` / `buildDesignerResponse`). |
+| `chat-pipeline.js` | **Pure wiring**: composes `chat-memory` / `chat-image-retrieval` / `chat-image-dispatch` / `chat-staging` / `chat-dispatch` (+ `chat-response`) into the 11-method interface both chat handlers consume (`applyMemoryActions` / `runGenerateRequests` / `resolveRecalledImage` / `resolveRequestedImage` / `runCadRequests` / `runStagingRequests` / `buildDesignerResponse` / `applyPostRoutingSuppression` / `logRoutingOutcome` / `beginChatStream` / `sendChatResponse`). |
+| `chat-dispatch.js` | Shared post-routing glue: action suppression, outcome logging, SSE begin/finish. |
+| `chat-post-routing.js` | Post-routing dispatch sequencing. |
 | `chat-memory.js` | Applies the model's memory store/forget decisions. **The routing model decides**: `memories: { stores, forgets }` is a required field of `DESIGNER_ROUTING_SCHEMA`, so remembering costs no extra model call. `lib/data/memory.js` is storage only — it once held a second OpenAI call for this and never used it. Change memory *behaviour* in the schema + system instruction, not in the store. |
 | `chat-image-retrieval.js` | Retrieves an existing history image by index (recall for display; request for optional GPT analysis). |
 | `chat-image-dispatch.js` | Produces new images: text-to-image generation and floor plan → render. The CAD half also owns that render's **accounting** — `incPromptCount`, the gallery row, and the disclosure stamp params — because none of it happens anywhere else on this path (staging's copies live in `chat-staging.js`). |
@@ -271,6 +328,37 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 | `chat-base-image-staging.js` | Folds the user's thumbnail selection + text intent into the staging params; resolves which history image a CAD/add-furniture request targets. |
 | `chat-routing.js` | Parses the model's routing completion and classifies chat intent. |
 | `chat-sse.js` | Server-Sent Events plumbing for streamed chat responses. |
+| `chat-context-limit.js` | Per-conversation user-message cap. |
+| `chat-current-image.js` | Current-turn inline image extraction for `/api/chat`. |
+| `chat-upload-context.js` | Rebuilds `/api/chat-upload` context from form fields. |
+| `chat-upload-annotations.js` | Per-upload image-annotation map for `/api/chat-upload`. |
+| `chat-staging-fallback.js` | Endpoint-specific final-image fallback for staging requests. |
+| `chat-image-context-log.js` | DEBUG-only image-context dump. |
+
+**`lib/i18n/`**: localized URLs (full guide: [`i18n.md`](i18n.md))
+
+| Module | Responsibility |
+|---|---|
+| `locales.js` | Single source of truth for the language set and `LOCALIZED_PAGES`. |
+| `render-page.js` | `renderLocalizedPage`: the pure string transform. |
+| `page-renderer.js` | Caches in front of `render-page.js`. |
+| `sitemap.js` | Builds `public/sitemap.xml`. |
+| `locale-data.js` | Generates `public/scripts/i18n/locale-data.js`. |
+| `blog-packs.js` / `blog-i18n-manifest.js` | Per-article blog language availability (manifest is generated). |
+| `blog-langs.js` / `blog-hub.js` / `blog-covers.js` / `blog-covers-manifest.js` | Blog language picker, hub pruning, localized covers. |
+
+**`lib/analytics/`**, **`lib/content/`**, **`lib/seo/`**, **`lib/types/`**
+
+| Module | Responsibility |
+|---|---|
+| `analytics/admin-metrics.js` | Read-only SQLite aggregates for the admin Signals tab. |
+| `analytics/api-usage.js` | Site-wide public API usage for the admin console. |
+| `content/blog-posts.js` | Blog catalog: slug, title, date per article. |
+| `content/article-extract.js` | Extracts and fingerprints translatable blog strings. |
+| `seo/live-stats.js` | Writes live usage counts into served HTML. |
+| `seo/llms-txt.js` | Source of truth for `public/llms.txt`. |
+| `seo/organization.js` | Organization JSON-LD identity. |
+| `types/*.d.ts` | Ambient declarations for the `checkJs` typecheck; no runtime code. |
 
 **`lib/logger.js`** (root) — the diagnostic logger
 
@@ -305,10 +393,8 @@ shape (`{ error }`, optionally `code` / `details` / `ref`).
 
 A 5xx says *that* something broke, never *what*. `details` is for fixed strings written in
 the source (an operator hint, a validation reason); it is **not** a channel for
-`error.message`. That was the house style at ~19 sites, and it handed the caller whatever
-`sharp`, the Gemini/OpenAI SDKs, `better-sqlite3`, `fs` or Stripe had put there — absolute
-server paths, table names, model and quota state, upstream prose. The AI Designer's SSE
-error handler did not even read the field; it renders a fixed localized apology.
+`error.message`, which leaks whatever `sharp`, the AI SDKs, `better-sqlite3`, `fs` or
+Stripe put there (server paths, table names, quota state).
 
 Instead, log the error under a reference and return only the reference:
 
@@ -338,10 +424,12 @@ Each is a factory returning a router (built with `createAsyncRouter()`), mounted
 | `public.js` | SEO files (`robots.txt`, `sitemap.xml`), landing/status pages, `/health`, hero-stat counts (`/api/prompt-count`, `/api/contact-count`, and the canonical `/api/stats` that `llms.txt` points at), contact/bug logging, `/api/send-email`, hosted-image serving (`/i/:id`), email-open pixel. |
 | `i18n.js` | The localized-URL pages: `/es`, `/fr/guides.html`, … rendered server-side per language from `public/languages/*.json` (`lib/i18n/`). Mounted before `public.js`; prefixes are disjoint from every other route. See [`i18n.md`](i18n.md). |
 | `auth.js` | `register` / `verify` / `login` / `logout` / `me` / `forgot-password` / `reset-password` / `google`, plus the staging-banner controls. |
-| `admin.js` | `endpoint_key`-gated log/data exports and hosted-image management (see [`endpoints.md`](../reference/endpoints.md)). |
-| `staging.js` | Core AI: `process-image`, `mask-edit`, `segment`, `validate-image`, `stage-by-endpoint-key`. |
+| `admin/index.js` | `endpoint_key`-gated log/data exports and hosted-image management (see [`endpoints.md`](../reference/endpoints.md)). Siblings `admin/access.js`, `analyst.js`, `api-usage.js`, `blog.js`, `renders.js` are mounted just before it. |
+| `staging.js` | Core AI: `process-image`, `mask-edit`, `segment`, `validate-image`, `stage-by-endpoint-key`, `enhance-exterior`, `masking-studio/save`, `stamp-image`, `download-result`, `disclosure-preview`. |
+| `api-keys.js` | Session-authed API key CRUD, credit balance/packs/checkout, usage. |
+| `api-v1.js` | Public render API `/api/v1/*` (Bearer key; see [below](#the-public-api-is-synchronous-on-purpose)). |
 | `chat.js` | AI Designer chat: `/api/chat`, `/api/chat-upload`, `welcome-message`. |
-| `billing.js` | Stripe checkout, customer portal, `stripe-webhook`, enterprise checkout. |
+| `billing.js` | `stripe-webhook`, customer portal, enterprise config + checkout. |
 | `gallery.js` | The signed-in owner's render history, and the share link carried by every entry. Ownership is keyed on the **validated session**, never on a body. |
 | `share-public.js` | `/s/:token` — the anonymous share page. The token is the only credential, and every refusal is the same `404` so nothing leaks which tokens were once real. |
 | `object-local.js` | **Dev/CI only.** Serves the locally-stored gallery blobs that `lib/data/object-store-local.js` presigns; in production R2 presigns straight at the bucket and no render byte passes through this process. Mounted only when the local object backend answered at boot. |
@@ -395,8 +483,15 @@ handler defined by its position in the pipeline proves nothing when mounted alon
 ## Configuration & secrets
 
 Loaded by [`load-env.js`](../../load-env.js) (imported first in `server.js`, before any
-secret is read). Every secret resolves from its env var, falling back to a gitignored
-`.txt` file. Full reference: [`environment-variables.md`](../reference/environment-variables.md).
+secret is read). Precedence depends on the secret:
+
+- **`.txt` file first, then env:** the `lib/config/config.js` secrets (Stripe keys and
+  price IDs, Google OAuth, `endpoint_key`), searched in `STRIPE_SECRETS_DIR`, the repo
+  root, the cwd and `/etc/secrets`. A stray file overrides the Render env.
+- **Env first, then file:** `RESEND_API_KEY`, `EMAIL_DEBUG`, `DEBUG_EMAIL`.
+- **Env only:** `GOOGLE_AI_API_KEY`, `GPT_KEY`, `DEBUG`.
+
+Full reference: [`environment-variables.md`](../reference/environment-variables.md).
 
 ## Data & persistence
 
@@ -405,12 +500,13 @@ State lives under `data/` (or the Render `/data` disk when present, detected via
 
 - **SQLite (`better-sqlite3`, one shared connection via `lib/data/db.js`):** `auth-store.db`
   holds all structured state — auth (`users`, `sessions`, …; **sensitive**),
-  `enterprise_domains`, `memories`, `uptime_state`, `stripe_events`, plus the gallery's
-  render/blob/share rows. WAL + transactions, so writes are
+  `enterprise_domains`, `memories`, `uptime_state`, `stripe_events`, the gallery's
+  render/blob/share rows, API keys/credits/requests, referral links, admin
+  sessions/access log, `blog_views` and `email_optouts`. WAL + transactions, so writes are
   atomic and per-row. Each store imports its legacy JSON (`auth-store.json`,
   `enterprise-domains.json`, `memories.json`, `uptime.json`) once on first boot, then
   keeps it as a frozen rollback fallback.
-- **Append-only CSV logs:** prompts, chats, contacts, masks, bug reports, email opens.
+- **Append-only CSV logs:** prompts, chats, contacts, masks, bug reports, email opens, rejections.
 - **Uploads:** `hosted-images/`, served via `GET /i/:id`.
 - **Not on this disk — gallery render bytes:** they go to Cloudflare R2 and are read back
   through short-TTL presigned URLs, so no render byte passes through this process in
@@ -440,8 +536,8 @@ standing decision to use vanilla ES modules instead of a component framework —
 decision — not a stage we simply haven't finished.** The browser receives exactly what
 lives in `public/`: hand-written HTML, CSS, and native ES-module JavaScript
 (`<script type="module">`). There is no bundler, transpiler, or minifier and no
-`npm run build`; the pipeline is `npm install` → `npm test` → `start`, with nothing in
-between.
+`npm run build`; the pipeline is `npm ci` → `npm test` → `npm audit` → `start`, with
+nothing in between.
 
 Two generators exist and neither contradicts that, because neither runs at deploy time:
 `scripts/build-i18n-seo.js` (hreflang clusters, `sitemap.xml`, `scripts/i18n/locale-data.js`)
@@ -463,8 +559,9 @@ narrower sense.
 - **What ships is what you debug.** Browser line numbers match the repo, there are no
   source maps to generate, and you can edit a file and refresh. This also keeps the
   "extraction is behaviour-preserving" refactors honest.
-- **Per-file caching stays granular.** Static assets are served
-  `Cache-Control: public, max-age=31536000, immutable` and busted by rename / `?v=`
+- **Per-file caching stays granular.** Images, fonts and media are served
+  `Cache-Control: public, max-age=31536000, immutable` and busted by rename / `?v=`;
+  HTML/CSS/JS revalidate per file (`no-cache`, cheap 304s)
   (see [`caching.md`](../reference/caching.md)). A bundle would fold unrelated files
   into one cache key, so a one-line change would re-download everything.
 - **The wire cost is already covered** by `compression` (gzip/brotli, `lib/http/app-middleware.js`) plus
@@ -548,25 +645,13 @@ The block is **two-tier**, mirroring `EXTERIOR_PRESERVATION_RULES` in
   openings … in the same positions") rather than as a list of nouns to "keep as they appear"
   — a model can check a count against itself, and cannot check a vague resemblance.
 
-  Framing sits in this block rather than in its own section for a reason worth remembering:
-  it *was* a separate section (`CRITICAL — IMAGE FRAMING`), built from a constant
-  (`IMAGE_FRAMING_PRESERVATION_RULES`) **shared by both studios**, and that section let the
-  camera move "ONLY if the user explicitly asked for a closer or different crop" while the
-  preservation block denied it outright. The preservation block speaks last, so it won an
-  argument nobody knew was happening. Two blocks owning the same rule is how that happens.
-
-  The sharing was wrong in a second way that only showed on the exterior path: the wording
-  was interior-only, so the Exterior Studio's prompt — about a photograph of a *building* —
-  asked the model to keep "the entire ceiling line, floor line, and all walls" in frame and
-  to "fit every staging change inside the existing frame, scaling and placing **new
-  furniture**", while its own rules forbid adding furniture or staging of any kind.
-
-  The constant is **deleted**. Each studio now states its own framing rules inside its own
-  preservation block — `INTERIOR_PRESERVATION_RULES` and `EXTERIOR_PRESERVATION_RULES` — where
-  they have authority and nothing below can contradict them, and where the wording can suit
-  the subject (roofline and ground line on one, ceiling line and floor line on the other).
-  Both lock the camera absolutely; both state it exactly once, which is what the drift tests
-  in `prompts.test.js` and `exterior-prompts.test.js` pin.
+  Framing lives **inside** each studio's own preservation block, stated exactly once. Do
+  not reintroduce a shared framing constant: the old `IMAGE_FRAMING_PRESERVATION_RULES`
+  section contradicted the preservation block (it allowed a crop the block forbade) and
+  used interior wording ("ceiling line", "new furniture") on the Exterior Studio's building
+  photos. Each studio now words its own rules for its subject (roofline and ground line vs
+  ceiling line and floor line), and the drift tests in `prompts.test.js` and
+  `exterior-prompts.test.js` pin that each states it once.
 - **Tier 2 — `DEFAULT-PRESERVE`.** Wall colour, paint, wallpaper, floor and fixture
   finishes. Preserved by default, but an explicit request may change them — which is what
   keeps the free-text box worth having ("paint the walls sage" still works).
@@ -649,18 +734,18 @@ staging *invents* a room. `buildExteriorPrompt(options)` in
 3. **The realism block** — the failure modes *this* edit produces (halos along the
    roofline, sky showing through solid walls, shadows that disagree with the new sky), not
    the interior ones.
-4. **`IMAGE_FRAMING_PRESERVATION_RULES`**, shared with `generatePrompt` — one definition of
-   "do not move the camera".
-5. **`EXTERIOR_PRESERVATION_RULES`, last**, and last is the point: it claims to override
+4. **`EXTERIOR_PRESERVATION_RULES`, last**, and last is the point: it claims to override
    everything above it, including the user's own words, which is only true if nothing
-   follows it. Same ordering contract `ROOM_TYPE_CONSTRAINTS` relies on.
+   follows it. Same ordering contract `INTERIOR_PRESERVATION_RULES` relies on. It also
+   carries the exterior framing rules.
 
 `EXTERIOR_PRESERVATION_RULES` has **two tiers**, and the split is the product decision.
 Tier 1 is the property itself — structure, roofline, windows, landscaping, power lines,
 resurfacing, neighbouring land — and **no request may reach it**, because those change what
 a buyer walks up to and the listing agent answers for it under NAR Article 12. Tier 2 is
 surface finish (paint, cladding), which the free-text box *may* override, mirroring
-`generatePrompt`'s own "unless the user explicitly requested it".
+the interior lock's own `DEFAULT-PRESERVE` tier ("change these ONLY if the user explicitly
+asked for it").
 
 Two more things differ from the interior path, both on `StagingParams`:
 
@@ -696,9 +781,9 @@ ties them together.
 - **No frontend build — on purpose.** Write browser-native HTML/CSS/ESM; don't reach
   for a bundler, transpiler, or npm frontend package. The reasoning and the (narrow)
   conditions that would reopen it are in [Decision: no frontend build step](#decision-no-frontend-build-step).
-- **Extraction is ongoing.** `server.js` is being split into `routes/` + `lib/`;
-  changes are meant to be behavior-preserving. The `route-inventory` test guards
-  against accidentally dropping a route during a refactor.
+- **`server.js` is at its line cap** (650, ESLint `max-lines`). New logic goes in a
+  `routes/` or `lib/` factory. The `route-inventory` test guards against accidentally
+  dropping a route during a refactor.
 - **Deploys are manual.** `render.yaml` sets `autoDeploy: false`, so a push does **not**
   ship — you deploy from the Render dashboard. The build still runs the test suite, so a
   red test blocks the deploy. See [`../operations/deployment.md`](../operations/deployment.md)

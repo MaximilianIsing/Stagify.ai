@@ -1,8 +1,6 @@
 # Restage pool generator
 
-Grows or repairs the `#restage` pool on the home page. Consolidated here from
-`studio-section-concepts/tools/`, which held four near-identical batch scripts and was
-deleted; this is the single surviving path.
+Grows or repairs the `#restage` pool on the home page. This is the only generator for it.
 
 ```
 node to-build/media-png/Homepage/Restage/tools/generate.mjs --add 20
@@ -25,7 +23,8 @@ ceremony. Of the four ways a render comes back unusable, **only one has a numeri
 | The room is furnished so sparsely it reads as unstaged | **eye only** |
 | Lettering in frame comes back mangled | **eye only** |
 
-Ten renders have been replaced across the pool's life. Every one was caught by looking;
+Eight shipped renders have been replaced across the pool's life (the `supersededBy` rows in
+`../manifest.json`). Every one was caught by looking;
 none by a metric. `--accept` therefore refuses to be the default.
 
 The two eye-only architecture failures are the reason a coverage metric was tried and

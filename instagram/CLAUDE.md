@@ -24,6 +24,5 @@ cleanly, exits zero and still ships wrong:
 14. Respect the safe margins. Story and reel move their chrome further in.
 15. One headline and one CTA per frame.
 
-This file is gitignored (the repo ignores `CLAUDE.md` at any depth), so it is a pointer
-only. The tracked source of truth is `PLAYBOOK.md`, which carries the reasoning behind
+This file is a pointer only. The source of truth is `PLAYBOOK.md`, which carries the reasoning behind
 every rule above.

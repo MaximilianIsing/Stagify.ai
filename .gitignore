@@ -1,6 +1,10 @@
 # Dependencies
 node_modules/
 npm-debug.log*
+# npm-only repo: CI and Render run `npm ci` against package-lock.json
+pnpm-lock.yaml
+pnpm-workspace.yaml
+yarn.lock
 
 # Environment variables (real secrets for local dev live in .env — never commit it)
 .env

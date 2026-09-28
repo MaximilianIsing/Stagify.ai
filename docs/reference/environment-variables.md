@@ -1,8 +1,12 @@
 # Environment variables
 
 ```dotenv
-# For any key with a "file fallback", the server reads the env var first and only
-# falls back to the gitignored .txt file if the var is unset — use one or the other.
+# For any key with a "file fallback", use one source or the other. Precedence differs:
+# the Stripe keys, ENTERPRISE_PRICE_ID, API_CREDIT_PRICE_*, GOOGLE_CLIENT_ID/SECRET,
+# endpoint_key and ENTERPRISE_METER_EVENT_NAME read the FILE first (searched in
+# STRIPE_SECRETS_DIR, the repo root, cwd, then /etc/secrets), so a stray file beats the
+# env var. RESEND_API_KEY, EMAIL_DEBUG and DEBUG_EMAIL read the env var first and only
+# fall back to the gitignored .txt file when the var is unset.
 
 # --- Stripe ---
 # Secret API key (starts with sk_). Powers all billing; billing endpoints return
@@ -42,16 +46,11 @@ GOOGLE_CLIENT_ID=
 # OAuth client secret. Only required for OAuth authorization-code flows — plain
 # ID-token sign-in works without it. File fallback: googlesecret.txt
 GOOGLE_CLIENT_SECRET=
-# Not read by the server today; preserved here so the value isn't lost.
-GOOGLE_PUBLISHER_ID=
 
 # --- AI providers ---
 # Google Generative AI (Gemini) key. Powers the core staging pipeline — staging
-# fails without it. This is the ONLY Gemini key variable. No file fallback: a
-# key.txt used to be read when this was unset, and it outlived the key it held.
-# A GEMINI_API_KEY alias used to be honored by the CAD-to-3D helper alone, because
-# that module built its own client; it now shares the one client every other
-# Gemini-backed feature uses, so GEMINI_API_KEY is no longer read anywhere.
+# fails without it. This is the ONLY Gemini key variable. No file fallback.
+# GEMINI_API_KEY is not read.
 # Set to an EMPTY value to disable the client outright (same rule as GPT_KEY and
 # RESEND_API_KEY): an empty (or whitespace) key leaves genAI null, so
 # every Gemini-backed feature cleanly no-ops instead of making calls that 400. This is
@@ -75,6 +74,16 @@ RESEND_API_KEY=
 # Access key that guards the protected log/admin endpoints (see endpoints.md).
 # Compared in constant time. Note the lowercase name. File fallback: endpointkey.txt
 endpoint_key=
+# Admin console access log (lib/data/admin-access.js). "off" disables recording /
+# the IP geo lookup. Both are also off when NODE_ENV=test.
+# ADMIN_ACCESS_LOG=
+# ADMIN_ACCESS_GEO=
+# Admin analyst (lib/config/model-config.js): model (default gpt-5), max output tokens
+# (default 6000, clamped 256-32000), reasoning effort (minimal | low | medium | high,
+# default low; ignored for non-gpt-5 models).
+# ADMIN_ANALYST_MODEL=gpt-5
+# ADMIN_ANALYST_MAX_TOKENS=6000
+# ADMIN_ANALYST_REASONING_EFFORT=low
 
 # --- Monitoring (Sentry) ---
 # Sentry DSN for production error tracking. Unset → the SDK is fully disabled (no
@@ -170,8 +179,9 @@ HIDE_STAGING_BANNER=false
 # Default: https://stagify.ai,https://www.stagify.ai,http://localhost:3000
 # ALLOWED_ORIGINS=
 # Absolute base URL for building return links (e.g. the Stripe portal).
-# Defaults to the incoming request's host. APP_URL is the fallback for PUBLIC_APP_URL,
-# and APP_ORIGIN is the fallback for that.
+# Share and portal links fall back PUBLIC_APP_URL, then APP_URL, then APP_ORIGIN, then
+# the incoming request's host. Email links use PUBLIC_APP_URL, then APP_URL, then
+# https://stagify.ai (server.js).
 # PUBLIC_APP_URL=
 # APP_URL=
 # Third in the same chain, and also injected directly into routes/gallery.js as the origin
@@ -245,9 +255,13 @@ HIDE_STAGING_BANNER=false
 # Referral campaign short-URLs (/columbia), per IP / 15 min. One university's NAT
 # gateway is a single IP carrying a whole campus's clicks, so keep this generous:
 # RL_REFERRAL=120
-# Extra directory searched first for the stripe_*.txt secret files.
+# Extra directory searched first for every config.js secret file (stripe_*.txt,
+# priceid.txt, googleclientID.txt, googlesecret.txt, endpointkey.txt,
+# api-credit-price-*.txt, enterprise_meter_event.txt). The search then continues
+# through the repo root, cwd and /etc/secrets.
 # STRIPE_SECRETS_DIR=
 # Stripe meter event name for enterprise usage billing. Default user_generation.
+# File fallback, which wins over the env var: enterprise_meter_event.txt
 # ENTERPRISE_METER_EVENT_NAME=user_generation
 # "From" address for outbound Resend email. Default team@stagify.ai.
 # RESEND_FROM_EMAIL=team@stagify.ai
@@ -264,6 +278,14 @@ HIDE_STAGING_BANNER=false
 # EMAIL_OPEN_LOG_MAX_BYTES=4194304
 # EMAIL_OPEN_MAX_ENTRIES=20000
 
+# --- Tooling (not read by the server) ---
+# SKIP_NATIVE_ABI_CHECK=1   skips scripts/check-native-abi.js (prestart/predev/pretest hook)
+# E2E_PORT=4599             Playwright server port (playwright.config.js)
+# BADGE_FONT_DIR=           font dir for scripts/build-disclosure-badges.js and build-blog-covers.js
+# EVAL_JUDGE_MODEL=gemini-2.5-pro   judge model for scripts/eval-staging.js
+# The instagram/ tooling keys (FAL_AI_API_KEY, PEXELS_API_KEY, UNSPLASH_ACCESS_KEY, ...)
+# are documented in instagram/PLAYBOOK.md.
+
 # --- Platform (set automatically — do not set these yourself) ---
 # RENDER is set by Render; the app reads it to use the /data persistent disk.
 # NODE_ENV is NOT set on deploy. See the note below before "fixing" that.
@@ -272,7 +294,7 @@ HIDE_STAGING_BANNER=false
 ### NODE_ENV is deliberately unset in production
 
 `render.yaml` declares no `envVars` at all, so the deployed app runs with
-`NODE_ENV` unset — **not** `"production"`. This file used to claim the opposite.
+`NODE_ENV` unset — **not** `"production"`.
 
 That is safe today, and the code says so: the catch-all error handler in
 `server.js` exists precisely because `NODE_ENV` isn't `production`. Without it,

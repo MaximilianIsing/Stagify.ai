@@ -9,7 +9,7 @@ Two suites, deliberately kept separate:
   (see [End-to-end (browser) tests](#end-to-end-browser-tests) below).
 
 ```bash
-npm test         # npm run typecheck, then node --test "test/**/*.test.js"  (both gate deploy)
+npm test         # pretest ABI check, then npm run typecheck, then node --test "test/**/*.test.js"  (all gate deploy)
 npm run typecheck # tsc --noEmit (backend) + scripts/typecheck-frontend.js (frontend) — see Type-checking below
 npm run test:e2e # playwright test                   — browser smokes of every interactive page
 npm run lint     # eslint (all JS) + stylelint (all CSS, inline <style>) — see Linting below
@@ -23,6 +23,9 @@ npm run lint     # eslint (all JS) + stylelint (all CSS, inline <style>) — see
 > checkJs pass), so a *type* error blocks the deploy exactly like a failing test does —
 > see [Type-checking](#type-checking). (Lint isn't part of the Render build, but it **is**
 > an enforced, blocking CI check — see below.)
+> The full `scripts/build.sh` sequence is `npm ci`, then `npm test`, then
+> `npm audit --omit=dev --audit-level=high` (also a deploy gate), then the Litestream
+> binary download.
 
 ## Philosophy
 
@@ -49,10 +52,13 @@ so a new folder needs no registration — just drop the file in.
 | `test/health/` | The per-subsystem health checks: the decision table (`service-health`) and the runner around it (`service-health-runner`) — caching, single-flight, timeouts, and the rule that a probe `detail` never reaches a public payload. | `lib/health/` |
 | `test/services/` | AI clients, auth helpers, email + lifecycle emails, CSV logging, Stripe webhooks, trial lifecycle. | `lib/services/` |
 | `test/http/` | Async router, guards, helpers, error references + the error-leak scan, rate limiters (including the rejection log they write), uploads, CSV escaping. Also `upload-limit-consistency`, which pins the browser's ceiling to the one multer enforces — note `test/server/upload-limits` is a different thing, covering the 413 itself. | `lib/http/` |
-| `test/config/` | Runtime flags, model config, the diagnostic logger. | `lib/config/`, `lib/logger.js` |
+| `test/config/` | Runtime flags, model config, the diagnostic logger, plus repo-config guards (`package-manager`, `node-env-build-coupling`). | `lib/config/`, `lib/logger.js` |
 | `test/i18n/` | The localized-URL layer **and** the translation **drift guards** (`room-types-i18n`, `unstageable-i18n`, `status-components-i18n`, `locale-data`). | `lib/i18n/` |
-| `test/seo/` | Whole-site markup guards that belong to no one module: `robots-meta` (indexed vs `noindex` vs redirect stub), `resource-hints` (preload/preconnect tags earning their download), `blog-dates`. | `public/**/*.html` |
-| `test/frontend/` | Browser logic, split **by area** rather than by exact path: `admin/`, `ai-designer/`, `app/`, `masking-studio/` (which also holds `mask-core`, the shared engine that lives a level up in the source), `mask/` for the cross-page mask-editor subsystem (`public/scripts/mask/`), and `profile-menu/` for the account dropdown + auth modal, and `exterior-studio/` for the curb-appeal tool. Standalone modules and page-level guards stay at the top: `count-up`, `heic-convert`, `language-loader`, `unstageable-message`, `escape-html`, `css-tokens`, `plus-welcome`, `classic-scripts-parse`, `pricing-copy` (the free-tier cap the pricing page advertises vs the one `FREE_DAILY_LIMIT` enforces). | `public/scripts/` |
+| `test/seo/` | Whole-site markup guards that belong to no one module: `robots-meta` (indexed vs `noindex` vs redirect stub), `resource-hints` (preload/preconnect tags earning their download), `blog-dates`, `live-stats`, `llms-txt`, `organization-jsonld`. | `public/**/*.html`, `lib/seo/` |
+| `test/frontend/` | Browser logic, split **by area** rather than by exact path: `admin/`, `ai-designer/`, `app/`, `masking-studio/` (which also holds `mask-core`, whose source is now `public/scripts/mask/mask-core.js`), `mask/` for the cross-page mask-editor subsystem (`public/scripts/mask/`), and `profile-menu/` for the account dropdown + auth modal, and `exterior-studio/` for the curb-appeal tool, plus `api-keys/`, `developers/`, `gallery/`, `guides/` and `share/` for those pages. Standalone modules and page-level guards stay at the top: `count-up`, `heic-convert`, `language-loader`, `unstageable-message`, `escape-html`, `css-tokens`, `plus-welcome`, `classic-scripts-parse`, `pricing-copy` (the free-tier cap the pricing page advertises vs the one `FREE_DAILY_LIMIT` enforces). | `public/scripts/` |
+| `test/analytics/` | Admin metrics and API-usage aggregation. | `lib/analytics/` |
+| `test/content/` | Blog posts, blog packs, article extraction. | `lib/content/` |
+| `test/scripts/` | `check-native-abi`. | `scripts/` |
 | `test/helpers/` | Shared harnesses — **not** specs. | — |
 
 Two rules of thumb when a spec could sit in two places — both are about **what is under
@@ -71,7 +77,7 @@ test**, never which harness it happens to use:
 specs). Three styles, cheapest first:
 
 **Router-mount** — `staging-app.js`, `chat-app.js`, `auth-app.js`, `billing-app.js`,
-`admin-app.js`. Each mounts **one real router factory** (`routes/*.js`) on a bare
+`admin-app.js`. Each mounts **one real router factory** (`routes/*.js`; `admin-app.js` mounts `routes/admin/index.js`) on a bare
 `express()` app with its dependency bag faked, listens on an ephemeral port, and returns
 `{ baseUrl, …, close }` so the test drives it with `fetch`. This exercises the actual
 handlers — auth gate, body parsing, validation, response shaping, error mapping — with the
@@ -94,7 +100,7 @@ varies with what's under test:
 
 `fake-ai.js` provides the scripted AI stub the staging/chat harnesses use.
 
-**Full-boot** — `server.js` (not a `*.test.js`) exports `startServer(extraEnv)`, which:
+**Full-boot** — `test/helpers/server.js` (not a `*.test.js`) exports `startServer(extraEnv)`, which:
 
 - picks a free port from the OS (so tests never collide with a dev server),
 - spawns the **real** `server.js` as a child process with `NODE_ENV=test` and any
@@ -165,7 +171,7 @@ The files are informally tiered from cheapest/most-fundamental to broader:
 | — | `i18n/room-types-i18n.test.js` | **Drift guard** across the four places a room type must exist at once: `promptMatrix`, the `#room-type-select` options in `index.html`, the AI Designer routing enum (schema **and** the prose copy of it in both system instructions), and `roomTypes.*` in all 11 packs. Every one of these fails quietly on its own — a missing routing enum entry just reroutes to `Other` and the generic prompt, which is exactly how `Outdoors` went unreachable from chat until this guard was added. |
 
 The table is a **representative selection**, not the full list — the suite has grown to
-~90 files as `server.js` is extracted into `lib/` and pure frontend logic is pulled into
+~400 files as `server.js` is extracted into `lib/` and pure frontend logic is pulled into
 testable helpers. Most `lib/` modules now have a matching `*.test.js` (e.g. `logger`,
 `logging`, `http-helpers`, `erase`, `image-review`, `image-annotation`, `hosted-images`),
 as do the extracted frontend helpers — the `masking-studio-*` islands plus pure slices like
@@ -244,7 +250,7 @@ sign-in → staging hand-off could sit **dead** in all three sign-in paths. The 
 half now has its own spec, driven with `stubAnonymousAuth(page)` — the mirror of
 `seedProSession` that mocks the auth endpoints but seeds **no** token.
 
-What's covered today (all green — 237 tests across 38 specs; `npm run test:e2e` is the
+What's covered today (250 tests across 42 specs; `npm run test:e2e` is the
 authoritative list, this table is the map):
 
 | Spec | Covers |
@@ -288,6 +294,10 @@ authoritative list, this table is the map):
 | `gallery-i18n.spec.js` | Switching language **on the gallery** — the only page with a switcher and no localized URL. The shared switcher would resolve to the locale *home* and throw the visitor off their own gallery onto the marketing page; it opts out with `[data-lang-inplace]`. Asserts both halves, since simply breaking navigation everywhere would pass the first test alone. |
 | `gallery-search.spec.js` | Gallery search, specifically the half that is **CSS**: the box is revealed by an attribute `gallery-app.js` sets from the listing, and a free account must end up with it genuinely off screen rather than merely marked off. A rule that never matched would leave a paid feature visible to everyone with nothing in the unit suite noticing. |
 | `gallery-share.spec.js` | Copying a **share link**. Every entry arrives with its link, so there is no mint to drive — what a browser adds is that the URL is *usable* (absolute, not a bare `/s/<token>`; it shipped that way, because `routes/gallery.js` read an `APP_ORIGIN` set nowhere) and that pressing copy really reaches the clipboard. |
+| `api-keys.spec.js` | The **developer surface** (`api-keys.html`, `developers.html`): the composition roots mount, the signed-in and signed-out halves paint, and the create-key dialog's one-time reveal reaches the screen. |
+| `immersive-rotate.spec.js` | The **rotate-to-landscape** view: the portaled node fills the viewport once it leaves the 3D-transformed carousel, and the before/after wipe still tracks a finger after the 90deg turn. |
+| `legal-menu.spec.js` | The footer's **Legal** disclosure: it opens, its rows stay hidden until it does, it stays on screen, and Escape, outside click and the arrow keys work. |
+| `perf-lcp.spec.js` | Opt-in throttled **LCP harness** for the home page (`PERF_LCP=1`); skips otherwise. It measures, it does not pass or fail. |
 
 **Writing an e2e spec.** Name it `e2e/<thing>.spec.js`, call `seedProSession(page)` in a
 `beforeEach` if the page is gated, `page.route('**/api/…')` **every** backend call it makes
@@ -310,10 +320,11 @@ a type error **blocks the Render deploy** just like a red test. There are **zero
 checked from day one.
 
 Two scopes, one per environment (both deliberately loose for now — `strict: false`,
-`noImplicitAny: false` — to be tightened once stable):
+`noImplicitAny: false` — to be tightened once stable; the backend additionally sets
+`strictNullChecks: true`):
 
 - **Backend** — [`tsconfig.json`](../../tsconfig.json), Node types. Covers `server.js`,
-  `instrument.js`, `load-env.js`, `lib/**`, `routes/**`, plus the shared ambient typedefs
+  `instrument.js`, `load-env.js`, `lib/**`, `routes/**`, `scripts/**`, plus the shared ambient typedefs
   in [`lib/types/*.d.ts`](../../lib/types/). Run directly as `tsc --noEmit`.
 - **Frontend** — [`tsconfig.frontend.json`](../../tsconfig.frontend.json), DOM libs +
   [`public/scripts/globals.d.ts`](../../public/scripts/globals.d.ts) (ambient `Window`
@@ -386,13 +397,7 @@ that file. It runs in CI only — `npm test` (the deploy gate) does not measure 
   denominator. A falling percentage there means more code is measured, not less tested —
   which is why breadth is tracked by the untested ledger below, not by these floors.
   `scripts/test-coverage.js` carries the full reasoning; keep it and this paragraph in step.
-- **Measure before you raise.** Node only enforces coverage thresholds on **>= 22.8**; on an
-  older local Node the script prints the report and skips enforcement (`.node-version` pins
-  an exact 22.x that CI installs via `node-version-file`, so the gate always holds there —
-  and fnm/nvm/Volta users get the same version locally). It also needs **>= 22.5** for `--test-coverage-exclude`, so on
-  an older Node the printed summary still includes `test/` rows and reads several points high.
-  To get the real number locally, emit lcov (`--test-reporter=lcov`) and sum `LF/LH`, `BRF/BRH`
-  and `FNF/FNH` across the records whose `SF:` path is **not** under `test/`.
+- **Measure before you raise.** Floors are enforced on Node >= 22.8, which `engines` and `.node-version` already require; on an older Node `scripts/test-coverage.js` prints the report without enforcing.
 
 ### The blind spot these floors have
 
@@ -403,7 +408,7 @@ untested frontend file lands without moving the aggregate at all.
 
 [`test/frontend/untested-frontend-modules.test.js`](../../test/frontend/untested-frontend-modules.test.js)
 is the guard for that. It walks the import graph from `test/` into `public/scripts/` and pins the
-exact set of never-loaded modules as a **debt ledger** — 38 of 169 files, excluding vendored
+exact set of never-loaded modules as a **debt ledger** — 41 of 214 files, excluding vendored
 bundles.
 
 The walk is rooted at `test/` **only**; it never enters `e2e/`, so Playwright coverage is
@@ -413,9 +418,9 @@ a list of untested code — a mistake already made once in review, which is why 
 
 | List | Size | What it holds |
 | --- | --- | --- |
-| `UNTESTED` | 21 | Real, recoverable debt: exported logic nothing exercises. |
+| `UNTESTED` | 22 | Real, recoverable debt: exported logic nothing exercises. |
 | `E2E_COVERED` | 8 | Side-effect entry points and composition roots with no unit-testable surface, driven by Playwright instead. A guard in the same spec keeps this from becoming a rubber stamp. |
-| `BLOCKED_CLASSIC` | 9 | Classic `<script>` files (IIFEs, no exports). Node cannot import these at all — blocked on ESM conversion, not on someone writing a test. |
+| `BLOCKED_CLASSIC` | 11 | Classic `<script>` files (IIFEs, no exports). Node cannot import these at all — blocked on ESM conversion, not on someone writing a test. |
 
 The assertion is set equality, so it fails three ways: a new frontend module with no test must
 be listed (visible debt); a listed module that gains a test must be delisted (the ratchet); and
@@ -438,11 +443,11 @@ Two independent pipelines run on the default branch:
   - `e2e` — `npm ci`, installs Chromium (`npx playwright install --with-deps chromium`),
     then `npm run test:e2e`. Isolated in its own job so the heavier, occasionally-flaky
     browser run doesn't slow the fast unit gate. Blocking in CI, but see the deploy note.
-- **Render** — the deploy build runs `sh scripts/build.sh` (which runs `npm test`), so a
+- **Render** — the deploy build runs `sh scripts/build.sh` (which runs `npm test` and then `npm audit --omit=dev --audit-level=high`), so a
   failing **unit** test **blocks the production deploy**. Neither the Playwright e2e job nor
   lint is part of the Render build.
 
-Net: a **type error or a red unit test** blocks both CI and the deploy (both run inside
-`npm test`). A lint finding, a **coverage** dip, a dependency advisory, or a failing **e2e**
+Net: a **type error, a red unit test, or a new high/critical runtime advisory** blocks both
+CI and the deploy. A lint finding, a **coverage** dip, or a failing **e2e**
 test blocks CI (so it can't reach a clean `main`) but does **not** block the Render deploy —
 by design, so browser flake can never wedge a release.

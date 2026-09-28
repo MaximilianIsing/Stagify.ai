@@ -46,7 +46,8 @@ Seven covers are pure photography with no text, so there is nothing to localize.
 **cover-17** (`virtual-staging-before-and-after`) is cover-16's layout as a diptych: white
 header, the empty room and its Modern staging edge to edge, white footer with numbered
 Before / After labels. Its recipe and text are here like every other cover's, but the
-shipped variants were drawn by `tools/render-cover-17.cjs`, not by `build-blog-covers.js`.
+shipped variants were drawn by `tools/render-cover-17.cjs` (the English master by
+`tools/render-cover-17-english.cjs`), not by `build-blog-covers.js`.
 On the machine that made them, `@napi-rs/canvas` ignored the variable Noto build's weight
 axis inside the renderer, so every localized headline came out regular next to the English
 Inter Bold. The tool sets Latin and Cyrillic in static Inter Bold from `public/fonts/` (the

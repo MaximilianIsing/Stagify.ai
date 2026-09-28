@@ -9,13 +9,13 @@ Do not delete them because a grep finds no usages.
 | File | What it is |
 | --- | --- |
 | `Original.png` | The one empty room every other image in this folder is a render of. **The source of truth.** Its WebP is also what the hero's "See original" button shows, so it is live, not just a build input. |
-| `<style>-<room>.png` (36) | The hero grid: every furniture style crossed with every room type. |
+| `<style>-<room>.png` (48) | The hero grid: every furniture style crossed with every room type. |
 
 The six standalone style renders that used to sit beside `Original` (`Modern.png`,
 `Coastal.png`, …) were the hero carousel's slides. The carousel is gone and the grid
 supersedes them, so they were deleted along with it.
 
-The 36 grid files are `{modern, scandinavian, coastal, farmhouse, luxury, midcentury}` x
+The 48 grid files are `{standard, modern, scandinavian, coastal, farmhouse, luxury, midcentury, custom}` x
 `{bedroom, living-room, dining-room, kitchen, office, bathroom}`. `Outdoors` and `Dorm` are
 absent deliberately: `Outdoors` belongs to Exterior Studio and reads as broken in the hero
 sentence ("Stage this Outdoors in Modern"), and `Dorm` was excluded by product decision.
@@ -28,6 +28,7 @@ node to-build/media-png/example/tools/generate-combos.mjs            # fill any 
 node to-build/media-png/example/tools/generate-combos.mjs --only kitchen
 node to-build/media-png/example/tools/generate-combos.mjs --redo luxury-kitchen
 node to-build/media-png/example/tools/generate-combos.mjs --list
+node to-build/media-png/example/tools/generate-combos.mjs --rebuild   # re-cut served WebPs from the PNGs, no API calls
 ```
 
 The script drives the repo's own pipeline (`createStagingGeneration().processStaging`), so
@@ -78,12 +79,12 @@ needs walls this photo does not have.
 ### `removeFurniture: true` is load-bearing
 
 The script passes `removeFurniture: true` even though the source room is already empty, and
-that is not a formality. With `false`, `generatePrompt()` appends *"treat any furniture and
-decor named above as a guide to the desired STYLE only, NOT a checklist of items to place
-from scratch"* — correct when the photo contains the owner's furniture, wrong here. It demotes
+that is not a formality. With `false`, `generatePrompt()` (`lib/staging/prompts.js`) appends *"treat the
+furniture and decor listed above FOR YOU TO ADD as a guide to the desired STYLE only, NOT a
+checklist of items to place from scratch"* — correct when the photo contains the owner's furniture, wrong here. It demotes
 "clawfoot bathtub, wooden vanity, farmhouse sink" to mood words, and farmhouse `Bathroom` came
 back as a tastefully rustic **living room** twice in a row before this was spotted. Note that
-the same prompt also says an empty room should be *"staged from scratch as normal"*, so the
+the same prompt also says an empty room should be *"stage it from scratch as normal"*, so the
 two halves contradict each other; `true` is the branch that behaves.
 
 The 30 images that predate this change were generated with `false` and were kept because they
@@ -92,15 +93,15 @@ result across the board — that is the flag, not the model drifting.
 
 **Renders are not deterministic.** Re-running does not reproduce these pixels, it produces
 new ones. That is why the masters are committed rather than treated as regenerable output.
-They cost about 1 MB each (roughly 36 MB for the grid); if that becomes a problem the served
-WebP is the same 900x600 image and the masters can be dropped, but then a rejected render
+They cost about 2 MB each (roughly 94 MB for the grid); if that becomes a problem the
+canonical served WebP is the same 1248x832 image and the masters can be dropped, but then a rejected render
 cannot be re-encoded, only re-rolled.
 
 ## Two room types render differently from the rest
 
 `Original.png` is a corner living room with floor-to-ceiling glass, a structural column and a
 herringbone floor. Staging it as a bedroom, living room, dining room or office keeps all of
-that intact, so those 24 images read as one room wearing different furniture, which is what
+that intact, so those 32 images read as one room wearing different furniture, which is what
 the hero needs.
 
 `Kitchen` and `Bathroom` push harder, and since 2026-08-18 they push in different directions.

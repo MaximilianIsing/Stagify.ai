@@ -254,8 +254,9 @@ Everything the browser loads is under `public/`:
   [`guides/frontend.md`](guides/frontend.md#paid-pages-reshape-they-do-not-redirect)) —
   `stagify-plus.html`, `plus-welcome.html` (post-checkout
   "Welcome to Stagify+" confirmation — the Stripe Payment Link's after-payment
-  redirect target), `enterprise.html`,
-  `guides.html`, `contact.html`, `admin.html`, `gallery.html` (the signed-in render
+  redirect target), `enterprise.html`, `about.html`, `getpro.html`,
+  `developers.html` (public API docs), `api-keys.html` (API keys + credits),
+  `reset-password.html`, `guides.html`, `contact.html`, `admin.html`, `gallery.html` (the signed-in render
   history), `listing-share.html` (the anonymous `/s/:token` share page), `status.html`,
   the blog under `blog/`, legal pages, `404.html` (served by
   `lib/http/not-found.js` at every unmatched URL, translated but deliberately outside
@@ -264,10 +265,10 @@ Everything the browser loads is under `public/`:
   pages are indexed vs `noindex` vs redirect stub — and how `robots.txt`,
   `sitemap.xml`, and `rel="canonical"` stay in sync — is documented in
   [`reference/endpoints.md`](reference/endpoints.md#public-pages--seo-no-api-key).
-- **Scripts (`public/scripts/`):** e.g. `app.js` (main staging tool), `auth.js`,
-  `mask-core.js` (shared masking canvas math), `count-up.js` (hero stats),
-  `hero-picker.js` (the home hero's room/style grid), `home-reveal.js`, and the
-  `language-*.js` i18n helpers.
+- **Scripts (`public/scripts/`):** grouped into per-area subfolders, e.g. `app/app.js`
+  (main staging tool), `site/auth.js`, `mask/mask-core.js` (shared masking canvas math),
+  `home/count-up.js` (hero stats), `home/hero-picker.js` (the home hero's room/style
+  grid), `home/home-reveal.js`, and the `i18n/language-*.js` helpers.
 - **Styles (`public/styles/`):** a site-wide base `styles.css` (partially minified — edit
   with care) plus per-page (`home.css`, `ai-designer.css`, …) and opt-in per-feature
   (`auth.css`, `hero-picker.css`, `demo-player.css`, …) files, linked à la carte per page.
@@ -286,9 +287,9 @@ files for logs and uploads. Full detail: [`reference/data-stores.md`](reference/
 
 | File | Contents |
 |---|---|
-| `auth-store.db` | **SQLite** (`better-sqlite3`, WAL) — the single app database, one shared connection (`lib/data/db.js`). Tables: auth (`users`, `sessions`, …, **sensitive**: hashed passwords; session/reset tokens are hashed too — `lib/data/session-tokens.js`), `enterprise_domains`, `memories`, `uptime_state`. Each store imports its legacy JSON once on first run, then leaves it as a frozen fallback. |
+| `auth-store.db` | **SQLite** (`better-sqlite3`, WAL) — the single app database, one shared connection (`lib/data/db.js`). Tables: auth (`users`, `sessions`, …, **sensitive**: hashed passwords; session/reset tokens are hashed too — `lib/data/session-tokens.js`), `enterprise_domains`, `memories`, `uptime_state`, the gallery tables (`staged_renders`, `render_blobs`, `ref_objects`, `render_refs`, `gallery_shares`, `blob_tombstones`), public API (`api_keys`, `api_credit_balances`, `api_credit_ledger`, `api_requests`), `stripe_events`, `referral_links` / `referral_hits`, `admin_sessions` / `admin_access_events`, `blog_views`, `email_optouts`. Each store imports its legacy JSON once on first run, then leaves it as a frozen fallback. |
 | `hosted-images/` | User-hosted image uploads served via `/i/:id`. |
-| `*_logs.csv` | Append-only logs: prompts, chats, contacts, masks, bug reports, email opens. |
+| `*.csv` | Append-only logs: prompts, chats, contacts, masks, bug reports (`bug_reports.csv`), email opens, rejections (`rejection_logs.csv`). |
 | `*.json` (legacy) | `auth-store.json`, `enterprise-domains.json`, `memories.json`, `uptime.json` — pre-SQLite stores, now frozen import fallbacks. |
 
 On Render, when a persistent disk is mounted at `/data`, these are written there
@@ -302,7 +303,11 @@ Rough groups:
 
 - **Core AI:** `POST /api/process-image` (stage), `/api/mask-edit`, `/api/segment`,
   `/api/enhance-exterior`, `/api/validate-image` (upload gatekeeper — returns a
-  localizable rejection `code`), `/api/stage-by-endpoint-key`.
+  localizable rejection `code`), `/api/stage-by-endpoint-key`, `/api/disclosure-preview`.
+- **Public API (Bearer key):** `POST /api/v1/renders`, `GET /api/v1/renders/:id`,
+  `/api/v1/credits`, `/api/v1/me`, `/api/v1/options`.
+- **API keys & credits (session-authed):** `/api/api-keys`, `/api/api-credits`,
+  `/api/api-credits/packs`, `/api/api-credits/checkout`, `/api/api-usage`.
 - **Auth:** `/api/auth/register`, `/register/verify`, `/login`, `/logout`, `/me`,
   `/forgot-password`, `/reset-password`, `/google`.
 - **Billing:** `/api/billing/customer-portal`, `/api/billing/stripe-webhook`,
@@ -315,7 +320,7 @@ Rough groups:
 - **Images/hosting:** `/api/host-image`, `/api/hosted-images`, `GET /i/:id`,
   `/api/masking-studio/save`, `/api/stamp-image`, `/api/download-result`.
 - **Misc:** `/api/contact-count`, `/api/prompt-count`, `/api/bug-report`,
-  `/api/send-email`, `/health`, `/api/health`, `/api/status`.
+  `/api/send-email`, `/api/stats`, `/health`, `/api/health`, `/api/status`.
 - **Admin/logs (gated by `endpoint_key`):** `/promptlogs`, `/chatlogs`, `/contactlogs`,
   `/masklogs`, `/bugreports`, `/authstore`, `/enterprise-domains`, `/memories`, etc.
 
@@ -323,7 +328,7 @@ Rough groups:
 
 | Provider | Used for | Key(s) |
 |---|---|---|
-| Google Generative AI (Gemini) | Staging & 3D renders | `GOOGLE_AI_API_KEY` |
+| Google Gemini (`@google/genai`) | Staging & 3D renders | `GOOGLE_AI_API_KEY` |
 | OpenAI | Chat assistant | `GPT_KEY` |
 | Resend | Transactional email | `RESEND_API_KEY` |
 | Stripe | Subscriptions & metered enterprise billing | `STRIPE_*`, `ENTERPRISE_PRICE_ID` |

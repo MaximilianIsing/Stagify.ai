@@ -10,7 +10,11 @@ versioned URLs. Get those headers right and edge caching is safe to turn on.
 
 The server serves `public/` through `express.static` and sets `Cache-Control`
 per file type in the `setHeaders` callback of `applyBodyAndStatic()`
-([`lib/http/app-middleware.js`](../../lib/http/app-middleware.js), wired from `server.js`):
+([`lib/http/app-middleware.js`](../../lib/http/app-middleware.js), wired from `server.js`).
+`.html` and `.css` are actually answered first by the comment-stripping middleware
+([`lib/http/text-assets.js`](../../lib/http/text-assets.js)), and `llms.txt` by
+[`lib/http/llms-txt-asset.js`](../../lib/http/llms-txt-asset.js). Both are mounted ahead of
+`express.static` and set the same `no-cache`:
 
 | File types | `Cache-Control` | Effect |
 |---|---|---|
@@ -47,8 +51,12 @@ than the payload and let two different figures share one validator. The ETag ass
 in `test/http/live-stats-serving.test.js` are the guard on this.
 
 Dynamic and sensitive responses opt out of caching entirely with `no-store`
-(e.g. the auth config, the `/getpro` grant page, hosted-image listings), so they
-are never stored at any layer.
+(e.g. every `protectLogs` admin route, the `/getpro` grant page, hosted-image listings),
+so they are never stored at any layer.
+
+Hosted images at `GET /i/:id` are also `public, max-age=31536000, immutable`, set in
+`routes/public.js` rather than `setHeaders`. Their ids are random, so there is nothing
+to bust.
 
 ## Render edge caching
 

@@ -6,6 +6,8 @@
 share/preview image. It exports to:
 
 - `public/og-image.png` — the file actually served in `<meta og:image>` tags.
+- `public/brand/stagify-og-image.png`, copied from `OG_Image.png` by
+  `node scripts/build-brand-kit.js` for the downloadable brand kit.
 
 ### Why it looks unused (and isn't)
 The server never references the `.psd` — it only serves the exported PNG in

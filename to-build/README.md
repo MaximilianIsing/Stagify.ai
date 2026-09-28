@@ -9,7 +9,7 @@ in `public/` are exported from:
 |---|---|
 | `to-build/media-png/**` | `public/media-webp/**` (lossy WebP) |
 | `to-build/media-png/logo/**` | the favicons + logo images in `public/` |
-| `to-build/Iridescent background/` | source for the animated background effect |
+| `to-build/Iridescent background/` | a WebGL background effect. Nothing under `public/` loads it; the live background is `public/background.mp4` |
 
 ### The exception: WebP-derived copies
 
@@ -21,7 +21,7 @@ detail to come back.
 
 | Set | Where the pixels actually came from |
 |---|---|
-| `media-png/Homepage/Restage/r01–r100.png` | the pool generators → `webp({quality:74})`. (`empty.png` is a *real* master — see that folder's README.) |
+| `media-png/Homepage/Restage/r01–r100.png` | the pool generator (`Homepage/Restage/tools/generate.mjs`) → `webp({quality:74})`. (`empty.png` is a *real* master — see that folder's README.) |
 | `media-png/Homepage/Gallery/room-*.png` | Fal.ai `flux/dev`, WebP-first. The `-480.webp` variants beside them ARE exported from these PNGs — `node scripts/build-gallery-thumbs.js` — because a downscale to 40% resamples the generation loss away rather than compounding it. The 1200 px encodes stay as shipped for the same reason in reverse. |
 | `media-png/blog/exterior-{before,after}.png` | same |
 | `media-png/background-poster.png` | a frame of `public/background.mp4` — if it ever changes, re-extract from the video rather than editing this PNG |
@@ -51,7 +51,8 @@ API) and the favicons. They ship as `public/media-webp/logo/<same name>.webp`:
 sharp(src).webp({ quality: 90 }).toFile(out)
 ```
 
-**90, deliberately.** The two build scripts below use 78, which is right for a 1600px
+**90, deliberately.** The thumbnail build scripts (`build-blog-thumbs.js`,
+`build-gallery-thumbs.js`, `build-instagram-covers.js`) use 78, which is right for a 1600px
 photo and wrong here: these are painted at 18–64 px, where lossy ringing around the mark's
 edge is visible at a glance. 90 lands each file within a few percent of its siblings
 (`Enterprise32x32` is 1026 B, `Api32x32` is 1018 B), and lossless is roughly 60% larger for
@@ -68,18 +69,22 @@ only shows up as a broken image the day someone wires the mark into a page.
 
 ### Masters with a scripted export
 
-Most of these are exported by hand. One set has a build script, so re-run it rather
+Most of these are exported by hand. These sets have a build script, so re-run it rather
 than exporting by eye:
 
 | Master | Script | Produces |
 |---|---|---|
 | `media-png/blog/cover-N.png` | `node scripts/build-blog-thumbs.js` | `public/media-webp/blog/cover-N-thumb.webp` (800×450) |
-| `media-png/logo/logo-full.png`, `media-png/logo/Logo{64,180}.png`, `brand/pfp/Stagify_pfp.png`, `OG_Image/OG_Image.png` | `node scripts/build-brand-kit.js` | `public/brand/**` — the downloadable kit linked from /about#brand-kit, including `stagify-brand-kit.zip` |
+| `media-png/logo/{logo,pro,enterprise,api}-full.png` and each mark's `{32,64,180}` sizes, `brand/pfp/Stagify_pfp.png`, `brand/linkedin/LinkedIn-logo.png`, `OG_Image/OG_Image.png`, `public/bimi-logo.svg` | `node scripts/build-brand-kit.js` | `public/brand/**` — the downloadable kit linked from /about#brand-kit, including `stagify-brand-kit.zip` |
+| `media-png/Homepage/Gallery/room-*.png` | `node scripts/build-gallery-thumbs.js` | `public/media-webp/Homepage/Gallery/room-*-480.webp` |
+| `media-png/instagram/*.png` | `node scripts/build-instagram-covers.js` | `public/media-webp/instagram/*.webp` (660 px wide) |
+| `media-png/blog/covers/` (recipe) | `node scripts/build-blog-covers.js` | `public/media-webp/blog/cover-N.<lang>.*`. See that folder's README |
+| `media-png/example/*.png` | `node to-build/media-png/example/tools/generate-combos.mjs --rebuild` (no API calls) | `public/media-webp/example/*.webp`. See that folder's README |
 
 The blog covers ship at **two** sizes. `cover-N.webp` (1600×900) is the article hero and
 is exported by hand as usual; `cover-N-thumb.webp` is the card thumbnail used by the
 `/blog/` grid and the homepage's "from the blog" strip, where the image is painted about
-400 px wide. Serving the hero into those cards cost ~1.2 MB across the ten articles.
+400 px wide. Serving the hero into those cards cost ~1.2 MB across the ten articles of the time (there are 17 now).
 
 After replacing a cover master, re-export the hero **and** re-run the script. Because
 `media-webp/` is served `immutable` for a year, a regenerated thumb under the same
@@ -91,9 +96,10 @@ filename will not reach returning visitors — rename it or add a `?v=`, exactly
 `brand/pfp/`, `brand/linkedin/`, `brand/facebook/` and `brand/advertisements/` are the
 artwork we hand to other platforms: profile pictures, channel covers and the ad creatives.
 Nothing under `public/` referenced any of it until the brand kit existed, and most of it
-still does not — uploading a cover to LinkedIn is not a deploy. The one exception is
-`brand/pfp/Stagify_pfp.png`, which `scripts/build-brand-kit.js` now copies to
-`public/brand/stagify-avatar.png` so third parties use the same avatar we do.
+still does not — uploading a cover to LinkedIn is not a deploy. The exceptions are
+`brand/pfp/Stagify_pfp.png` and `brand/linkedin/LinkedIn-logo.png`, which
+`scripts/build-brand-kit.js` copies to `public/brand/stagify-avatar.png` and
+`public/brand/stagify-linkedin-logo.png` so third parties use the same marks we do.
 
 The kit’s colours are **not** stored here: `scripts/build-brand-kit.js` reads them out of
 the `:root` block in `public/styles/styles.css` at build time, so the README inside the zip

@@ -293,7 +293,8 @@ cookie plumbing on its own buys nothing. Scope, measured:
   ([`lib/services/auth-helpers.js`](../../lib/services/auth-helpers.js)) and the
   logout/me extraction in [`routes/auth.js`](../../routes/auth.js). Plus set-cookie on
   login / register-verify / google-login and clear on logout.
-- **Browser: 14 files, 21 send sites**, all mechanical deletions — `fetch` already
+- **Browser: 18 files, 30 send sites** (18 `Authorization` headers, 10 `authToken` JSON
+  body fields, 2 `authToken` form-data fields), all mechanical deletions — `fetch` already
   sends same-origin cookies by default, so removing the `Authorization` header and the
   `authToken` body field is the whole change.
 - **Tests: `e2e/fixtures.js` is the only place that fakes a signed-in session**, so the
@@ -358,7 +359,7 @@ when it did, and send them round the loop again.
 only the email says so.
 
 **Still open:** `endpoint_key` remains a single, non-rotating, process-wide
-secret with no per-admin identity and no audit trail, and it also guards the CSV
+secret with no per-admin identity, and it also guards the CSV
 exports (customer emails, prompt text) and mutating routes like
 `/api/admin/grant-plus`. Redacting `/authstore` removed the worst blast radius;
 it did not fix the admin auth model. `RL_ENDPOINT_KEY` (below) now bounds how fast
@@ -368,8 +369,16 @@ it does nothing about rotation, identity, or audit.
 Admin sessions (above) chip at the same corner without closing it: what a browser
 holds day to day is now revocable and scoped, and rotating the key really does log
 everything out. The key behind them is still one static secret shared by whoever has
-it, so **identity and audit remain unsolved** — a session tells you a browser was
-signed in, not who was at it.
+it, so **identity remains unsolved**: a session tells you a browser was signed in, not
+who was at it.
+
+There is now an **access log**, which is the closest thing to an audit trail.
+[`lib/data/admin-access.js`](../../lib/data/admin-access.js) records every console
+sign-in (`POST /api/admin/session`), every page open (`GET /api/admin/ping`) and every
+refusal (funnelled through the guards' rejection path) in `admin_access_events`, with
+IP and user-agent, and bursts collapsed into one row. That tells you which machine and
+when, not which person, because everyone still holds the same key. Those rows are kept
+indefinitely, on purpose (see [Sensitive data at rest](#sensitive-data-at-rest)).
 
 ## Client share links — the one anonymous read surface
 
@@ -452,6 +461,10 @@ of erased people.
 | `RL_STAMP_IMAGE` | 30 / 15 min | `POST /api/stamp-image` (Pro-only badge stamping of a browser-built composite) |
 | `RL_DOWNLOAD_RESULT` | 60 / 15 min | `POST /api/download-result` — CPU-only resize/re-encode, not a paid-generation cap |
 | `RL_DISCLOSURE_PREVIEW` | 120 / 5 min | `GET /api/disclosure-preview`, unauthenticated |
+| `RL_API_RENDER` | 60 / 5 min | every `/api/v1/*` route, bucketed per API key (per IP before the key is checked); the credit balance and the concurrency gate are the real brakes |
+| `RL_API_KEY_REJECT` | 20 / 15 min | **wrong** API keys only, per IP; a valid key never touches it |
+| `RL_API_KEY_MANAGE` | 30 / 15 min | `/api/api-keys` create / revoke / rename |
+| `RL_API_CREDIT_CHECKOUT` | 10 / 60 min | `POST /api/api-credits/checkout`, each call a real Stripe Checkout Session |
 
 Two of them are **write-ceilings, not rate limits**: `RL_EMAIL_PIXEL` (120 / 15 min, the
 email open-tracking pixel) and `RL_REFERRAL` (120 / 15 min, campaign short-URLs). Both sit
@@ -583,8 +596,8 @@ is written in this repo, not produced by a runtime exception.
 
 ## Transport & headers
 
-- **CSP** via `helmet`, tuned for the third parties the app loads (Google, Stripe,
-  Supademo/Instagram embeds, the HEIC WASM worker).
+- **CSP** via `helmet`, tuned for the third parties the app loads (Google Sign-In,
+  Stripe, the HEIC WASM worker, the pdf.js worker).
   - **`script-src` carries no `'unsafe-inline'`.** All page JS lives in external files
     under `public/scripts/` — there are no inline `<script>` blocks or `on*=` handlers
     left — so the policy genuinely blocks injected script (the core XSS defence). Keep
@@ -606,7 +619,8 @@ is written in this repo, not produced by a runtime exception.
 
 ## File-upload safety
 
-- Staging and host uploads use **type `fileFilter`s** (images → jpeg/png/webp).
+- Staging and host uploads use **type `fileFilter`s**: staging accepts jpeg/png/webp,
+  `host-image` accepts jpeg/png/webp/gif.
   **`host-image` deliberately rejects SVG** — an SVG can carry script and would
   execute on our own origin.
 - `chat-upload` intentionally accepts **all** types (the AI handles unsupported ones) —
@@ -614,23 +628,41 @@ is written in this repo, not produced by a runtime exception.
 
 ## Secrets
 
-- `.env` and the `*.txt` key files are **gitignored**; the server reads the env var
-  first, then the file. Production secrets live in the **Render dashboard**
-  (`sync: false`), never in the repo. Full list: the env doc.
+- `.env` and the `*.txt` key files are **gitignored**. Precedence depends on the secret:
+  - The Stripe keys and price ids, the Google OAuth client id/secret, `endpoint_key` and
+    the API-credit price ids (`lib/config/config.js`) read the **file first**, searched
+    in `STRIPE_SECRETS_DIR`, the app directory, the working directory, then
+    `/etc/secrets`, and fall back to the env var only when no file is found. A stale key
+    file on disk therefore overrides the dashboard value.
+  - The Resend key is env-first, with `resendkey.txt` as the fallback.
+  - The Gemini and OpenAI keys are env-only.
+- Production secrets live in the **Render dashboard**, never in the repo (`render.yaml`
+  declares no env vars). Full list: the env doc.
 - Sentry runs with **`sendDefaultPii: false`** — no cookies, auth headers, or client IP
   are sent.
 
 ## Staging safety
 
-When `IS_STAGING` is on, **Google Sign-In and Stripe checkout are disabled** and a
-staging banner is shown, so a staging deploy can't mint real sessions or take real
-payments. Ensure production does **not** set `IS_STAGING`. (See
+When `IS_STAGING` is on, **Google Sign-In is refused server-side**
+(`POST /api/auth/google` answers `403 STAGING_DISABLED`), the Stagify+ Payment Link is
+disabled **in the browser only** (`public/scripts/plus/stagify-plus.js`), and a staging
+banner is shown unless `HIDE_STAGING_BANNER` is set. That is less than it sounds:
+email/password sign-in still works, and the enterprise checkout
+(`POST /api/enterprise/create-checkout`) and API-credit checkout
+(`POST /api/api-credits/checkout`) do not check `IS_STAGING` at all. So give a staging
+deploy Stripe **test** keys; the flag alone does not stop it taking real payments.
+Ensure production does **not** set `IS_STAGING`. (See
 [`deployment.md`](../operations/deployment.md).)
 
 ## Sensitive data at rest
 
 - `auth-store.db` — password hashes + session tokens.
 - The CSV logs and the `memories` table (in `auth-store.db`) — emails, IPs, chat content.
+- `admin_access_events` (in `auth-store.db`, [`lib/data/admin-access.js`](../../lib/data/admin-access.js)):
+  IP and user-agent of every admin console sign-in, open and refusal, kept indefinitely
+  on purpose. The anonymous counters (blog views, referral links) refuse to store either;
+  this table is the deliberate exception, because its subjects are the few key holders
+  and its job is to spot the one who is not.
 
 All live on the `/data` disk ([`data-stores.md`](../reference/data-stores.md)); the
 export endpoints that read them are `endpoint_key`-gated.
@@ -673,17 +705,16 @@ automatically.
   fix, its true scope, and the CSRF surface it opens are written up under
   [Tokens in the browser](#tokens-in-the-browser-localstorage-not-a-cookie--accepted-risk).
   Deliberately deferred: it is a project, not a patch.
-* **The public API's blast radius is the prepaid balance, and nothing more.** A leaked
+- **The public API's blast radius is the prepaid balance, and nothing more.** A leaked
   `stg_live_…` key can spend the credits already bought and cannot run up an invoice —
   there is no postpaid metering on that path. Keys are stored as `sha256$` digests
   (`lib/data/api-keys.js`), belong to exactly one account, and revoke immediately. This is
   the property that made prepaid the right billing model rather than merely a simpler one.
-* **`POST /api/stage-by-endpoint-key` is deprecated and should be deleted.** It is an
-  unmetered image generator behind `LOGS_ACCESS_KEY`, the same secret that opens the whole
+- **`POST /api/stage-by-endpoint-key` is deprecated and should be deleted.** It is an
+  unmetered image generator behind `endpoint_key` (`LOGS_ACCESS_KEY` in code), the same secret that opens the whole
   admin surface, so one leak is total compromise plus free AI. It now answers with a
   `Deprecation` header and warns on every call; the follow-up is removing it and narrowing
   that key's reach.
-
 - **Erasure is operator-mediated** — `POST /api/admin/delete-user` exists, but there is
   no self-serve "delete my account" button in the product. Adding one is a product
   decision (confirmation flow, Stripe cancellation, copy in 11 languages), not a data-

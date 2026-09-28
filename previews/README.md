@@ -1,7 +1,9 @@
 # previews/ — generated change previews (KEEP the folder, not the contents)
 
-**This folder is scratch, and that is intentional.** Its contents are gitignored; only this
-README is committed. Deleting any `<date>-<slug>/` subfolder is always safe.
+**This folder is scratch, and that is intentional.** Only this README is meant to be
+committed, but the contents are **not** gitignored: `.gitignore` has no `previews/` rule, so a
+`git add -A` with a preview on disk will stage it. Delete each preview once its change is
+applied. Deleting any `<date>-<slug>/` subfolder is always safe.
 
 Each subfolder is one proposed change to a real page, rendered inside a clone of that page so
 it can be looked at before anything under `public/` is edited. They are produced by the
@@ -53,7 +55,3 @@ artifacts, not runtime assets, and they are served by their own throwaway server
 
 A preview is stale the moment its change ships. The skill deletes the folder after applying;
 if you find old ones lying around, they were abandoned, and they are safe to delete too.
-
-This README is not tracked by git until it is committed, and the `.gitignore` rule that
-protects it (`previews/*` plus `!previews/README.md`) cannot save it from a wholesale
-`rm -rf previews/`. Commit it.

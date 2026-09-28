@@ -214,7 +214,8 @@ The markup contract:
 picked option's `data-value` onto the root, and that is what gets submitted. `data-lang`
 controls only the visible label. Never derive a submitted value from displayed text.
 
-**Options with extra chrome** (the `New` badge on the Dorm room type) need a different
+**Options with extra chrome** (e.g. a `New` badge; none ships today since the Dorm one was
+retired, but the CSS and the `.option-label` read remain) need a different
 shape, because `data-lang` sets `textContent` and would wipe any nested markup on every
 language switch. Put the badge *beside* a label span rather than inside it, and leave the
 option element itself without a `data-lang`:
@@ -227,11 +228,13 @@ option element itself without a `data-lang`:
 ```
 
 `initCustomSelect` reads `.option-label` when present (otherwise the whole option), so the
-trigger shows `Dorm` rather than `DormNew`, and copies that span's `data-lang` onto the
-trigger so a later language switch re-renders the *selected* room, not the authored
-default. The same sibling-span shape is what the SSR renderer needs — a `data-lang` on the
-wrapper would swallow the badge server-side too (see [`i18n.md`](i18n.md)). Covered by
-[`e2e/stage-room-type.spec.js`](../../e2e/stage-room-type.spec.js).
+trigger shows the label rather than label-plus-badge, and copies that span's `data-lang`
+onto the trigger so a later language switch re-renders the *selected* room, not the
+authored default. The same sibling-span shape is what the SSR renderer needs: a
+`data-lang` on the wrapper would swallow the badge server-side too (see
+[`i18n.md`](i18n.md)). The trigger's `data-lang` hand-off is covered by
+[`e2e/stage-room-type.spec.js`](../../e2e/stage-room-type.spec.js); no test covers a badged
+option, since none ships.
 
 **Reacting to a pick.** Pass `{ onChange }` as the second argument to be notified when the
 user selects an option: `initCustomSelect('#room-type-select', { onChange: fn })`. It fires
@@ -314,7 +317,7 @@ markup, because each one shows its own computed pixel dimensions.
 </div>
 ```
 
-Five rules worth knowing before touching it:
+Eight rules worth knowing before touching it:
 
 - **Both buttons ship `disabled` in the markup.** The island flips them on when a staged
   result exists and back off on reset, driven by a `MutationObserver` on `canvas1`'s
@@ -364,7 +367,10 @@ Five rules worth knowing before touching it:
 
 Sizes are multipliers of what the model actually produced. Upscaling is plain
 interpolation and adds no real detail, so rows state their true pixels rather than
-implying otherwise. Pure logic covered by
+implying otherwise. Every download tries the server first (`resizeOnServer`,
+`POST /api/download-result`), because only the server can embed the provenance metadata;
+the canvas resize is the fail-open fallback, so a network hiccup costs the metadata, never
+the download. Pure logic covered by
 [`test/frontend/app/download-menu.test.js`](../../test/frontend/app/download-menu.test.js).
 
 ### How to extend it
@@ -389,7 +395,7 @@ gates the deploy, proves **nothing** about the entry↔island seam: a renamed st
 a dropped dependency, or a callback invoked with the wrong arity all type-check clean and
 fail in the browser instead.
 
-The Masking Studio is the worked example, because it is the extreme case: eight islands
+The Masking Studio is the worked example, because it is the extreme case: nine islands
 share one mutable store and seven of them write to it. The shape is written down once in
 [`scripts/masking-studio/types.d.ts`](../../public/scripts/masking-studio/types.d.ts)
 (`MsState`, `MsLayer`, and friends — same `.d.ts` idiom as the backend's
@@ -430,8 +436,7 @@ Three things to know before you write one:
   `HTMLElement` and `querySelector` yields `Element`, so a bag that honestly wants an
   `HTMLInputElement` will not accept them. Widening the island's type to match hides what
   it actually needs; a `/** @type {HTMLInputElement} */ (…)` cast where the element is
-  resolved keeps the island's contract honest. That was already the house style in
-  `ai-designer-app.js` before this rule existed.
+  resolved keeps the island's contract honest.
 
 Stay permissive where a union would only fight the code. `AdHistoryEntry.role` is `string`,
 not `'user' | 'assistant' | 'system'`, because entries are assembled from variables at
@@ -477,8 +482,9 @@ A dialog here owes four things:
    `e2e/ai-designer-a11y.spec.js` checks the live elements and the focus round-trips,
    which source-reading cannot.
 
-All four studio dialogs now do this: both mask editors, `#bug-report-popup`, and
-`#image-modal`. The lightbox's close control had to become a `<button>` first — it was
+All six dialogs that `dialog-a11y.test.js` tracks do this: both mask editors, the account
+menu's Report-an-issue dialog (`profile-menu/report-issue-template.js`), the gallery detail
+panel, the Masking Studio to Exterior Studio hand-off, and `#image-modal`. The lightbox's close control had to become a `<button>` first — it was
 a `<span>`, so it was not keyboard-reachable at all.
 
 > **Adjacent gap:** the lightbox's *trigger* is a bare `<img>` with a click handler, so
@@ -505,11 +511,12 @@ closeBtn.addEventListener('click', function () {       // fine — resolved when
 
 The first form threw before the listener was ever attached, so the lightbox's "×" did
 nothing for as long as it existed, while Escape and click-outside kept working (they
-resolve the name inside their own handler bodies). Because the file is classic — no
-`import`/`export` — it is **not linted**, so `no-undef` never flagged it. Two more of
-these are live in the same file today: `setTimeout(updateMaskEditorTranslations, …)` at
-two call sites, and the bug-report submit handler's references to `conversationHistory`,
-`lang` and `showToast`.
+resolve the name inside their own handler bodies). The file is linted now (it is in the
+classic-script list in `eslint.config.js`, with `no-undef` on), but a bridged name is
+declared to ESLint with a `/* global */` comment, which stays green even if the
+`window.x = x` bridge in `ai-designer-app.js` is deleted.
+[`test/frontend/classic-script-globals.test.js`](../../test/frontend/classic-script-globals.test.js)
+is what checks each bridge exists.
 
 ### Nothing blocks the parser in `<head>` without a reason
 
@@ -520,7 +527,8 @@ duplication rather than showing up in one config file. A synchronous `<script sr
 discovery of the stylesheet links below it.
 
 A short allow-list is permitted to do it, because each has to act before anything paints:
-`ai-designer-gate.js` and `gallery-gate.js` (viewport redirects), `faq-redirect.js` (a
+`ai-designer-gate.js`, `gallery-gate.js`, `api-keys-gate.js` and `developers-gate.js`
+(viewport redirects), `faq-redirect.js` (a
 meta-refresh stub), `preview-gate.js` (applies the cached-Pro page shape — see *Paid pages
 RESHAPE* below), and `session-class.js` (sets `html.has-session` so the nav's Gallery tab
 does not pop in a round trip late). Everything else in a `<head>` carries `defer`, `async`,
@@ -529,21 +537,11 @@ or is a module. The list lives in
 reason, and it has been shrinking: `masking-studio-gate.js` and `exterior-studio-gate.js`
 were both on it and are gone.
 
-The Google Ads tag (`scripts/gtag.js`) was the exception that proved the rule: it sat
-synchronous and **first** in `<head>` on all 19 public pages, ahead of every stylesheet
-link, for a file that only queued two `dataLayer` entries and appended an already-async
-loader. **That tag has since been removed outright** — the site ran no Google Ads
-campaigns any more, and it fired no conversion events, so it was pure remarketing weight
-at roughly a quarter of the page payload. Removed with it: the `googletagmanager.com`
-preconnect on 34 pages, `scripts/ad-optout.js` and the opt-out control in privacy.html
-§16.3, the four advertising origins in the CSP, and the advertising disclosures in
-§9/§10.2/§16.3 plus `legal/subprocessors.html`.
-
-[`ad-tag-disclosure.test.js`](../../test/frontend/ad-tag-disclosure.test.js) is the guard
-that keeps those two halves in step, and it works in **both** directions: while a tag
-ships it fails on a policy that denies advertising, and now that no tag ships it fails on
-a policy that still discloses Google Ads or points at an opt-out with nothing behind it.
-Re-adding any ad tag therefore means re-writing that copy in the same commit.
+The site ships no ad tag (Google Ads was removed along with its privacy-policy
+disclosures), and re-adding one means rewriting that copy in the same commit:
+[`ad-tag-disclosure.test.js`](../../test/frontend/ad-tag-disclosure.test.js) fails in both
+directions, on a tag with a policy that denies advertising and on a policy that discloses
+ads with no tag behind it.
 
 `test/frontend/head-scripts.test.js` walks every page under `public/` and fails the
 deploy on an unexplained blocking tag; adding one means adding it to that file's
@@ -581,7 +579,7 @@ They share one shape, and it is worth copying for a third:
   frontend typecheck fails.
 
 One CSP trap worth knowing: pdf.js spawns its parser in a **Web Worker** loaded from
-`scripts/vendor/pdf.worker.min.js`. That is covered by `worker-src 'self'` in
+`scripts/vendor/pdf.worker.min.js`. That is covered by `worker-src 'self' blob:` in
 `lib/http/app-middleware.js`. Tightening that directive would make floor-plan PDFs
 *hang* rather than error, because a blocked worker is not a failed fetch.
 
@@ -606,17 +604,21 @@ gets the files as authored (same [no-build-step decision](architecture.md#decisi
   [`architecture.md`](architecture.md#decision-no-frontend-build-step)), so edit it
   carefully; the lower sections are `/* === … === */`-commented and readable.
 - **Per-page — `styles/<page>.css`.** One file per page's own layout: `home.css`
-  (the index/marketing page), `ai-designer.css`, `masking-studio.css`, `stagify-plus.css`,
-  `plus-welcome.css` (the post-checkout confirmation card), `enterprise.css`, `status.css`,
-  `admin.css`, `getpro.css`, `reset-password.css`, `index.css`, `not-found.css` (the 404
-  page — full chrome, so it loads `styles.css` and its colours must be tokenized). Legal pages share
-  `legal.css` (privacy + terms) and `enterprise-msa.css`. A page file may declare its own
+  (the index page, also linked by guides), `index.css`, `ai-designer.css`,
+  `masking-studio.css`, `exterior-studio.css`, `basic-mask.css`, `gallery.css`,
+  `guides.css`, `about.css`, `stagify-plus.css`, `plus-welcome.css` (the post-checkout
+  confirmation card), `enterprise.css`, `status.css`, `admin.css`, `getpro.css`,
+  `reset-password.css`, `share.css` (listing-share), `developers.css` (developers and
+  api-keys), `not-found.css` (the 404 page: full chrome, so it loads `styles.css` and its
+  colours must be tokenized). Legal pages share `legal.css` (privacy, terms,
+  subprocessors) and `enterprise-msa.css`. A page file may declare its own
   local custom properties where its palette/scale genuinely differs from the site's —
   `admin.css` does, on `.page-admin`, for the dashboard's denser data UI.
 - **Shared feature CSS — opt-in per page.** Small files a page links only if it uses the
-  feature: `auth.css` (nav + auth-modal UI, on ~14 pages), `hero-picker.css` and
-  `faq-plan.css` (both index-only), `star-border.css`, `home-text-animate.css`,
-  `demo-player.css`, `toast.css` (required by any page importing `scripts/shared/toast.js`). A
+  feature: `auth.css` (nav + auth-modal UI, on 17 pages), `hero-picker.css` and
+  `faq-plan.css` (both index-only), `home-text-animate.css`, `demo-player.css`,
+  `immersive.css` (index, guides), `compare.css` (exterior-studio, gallery,
+  listing-share), `toast.css` (required by any page importing `scripts/shared/toast.js`). A
   page pulls in only the feature CSS it actually renders, so no page carries the whole
   site's styles.
 
@@ -638,7 +640,7 @@ purpose:
 
 | Sheet | Served to |
 |---|---|
-| `legal.css` | `privacy.html`, `terms.html` |
+| `legal.css` | `privacy.html`, `terms.html`, `legal/subprocessors.html` |
 | `enterprise-msa.css` | `legal/enterprise-msa.html` |
 | `getpro.css` | `getpro.html` |
 | `blog.css` | the blog (it carries its own `:root`) |
@@ -651,15 +653,10 @@ A page file may still define local custom properties where its palette genuinely
 (`admin.css` does, on `.page-admin`). What it should not do is re-spell a shared value:
 `--adm-accent: var(--brand)` rather than `--adm-accent: #2563eb`.
 
-**The palette is descriptive.** It was rewritten from a survey of what the sheets already
-painted with, not chosen top-down. A review had flagged that the big sheets "ignore the
-tokens" — the real cause was that the tokens described a palette the app did not use:
-`#2563eb` appeared **183 times across 16 files with no token at all**, while
-`--primary` (`#1e40af`) appeared 22. `admin.css` had independently named the same two
-blues privately, which is why it alone looked tokenized. Adding `--brand*`, `--slate*`,
-`--muted-light` and `--danger` is what made the substitution possible; `--primary` was
-deliberately **not** redefined to `#2563eb`, since 22 existing `var(--primary)` uses
-would have changed colour.
+**The palette is descriptive.** It was built from a survey of what the sheets already
+painted with, not chosen top-down, which is where `--brand*`, `--slate*`, `--muted-light`
+and `--danger` come from. `--primary` (`#1e40af`) is deliberately **not** the brand blue
+(`--brand`, `#2563eb`): redefining it would recolour every existing `var(--primary)` use.
 
 [`test/frontend/css-tokens.test.js`](../../test/frontend/css-tokens.test.js) enforces all
 of it: no hard-coded colour that has a token (in sheets where the palette is in scope),
@@ -672,7 +669,7 @@ in the same review finding, and both are usually legitimate here — `a,b { shar
 specialize }` reads as a "duplicate" to any scanner, and `styles.css`'s machine-merged
 shape means one element's rules are grouped by value rather than by element. A test would
 report the cascade working as designed. The cost is readability, not correctness, and
-un-merging a 3,200-line sheet with no visual-regression coverage is not worth it.
+un-merging a 5,300-line sheet with no visual-regression coverage is not worth it.
 
 **Comments are stripped from `.html` and `.css` at serve time — write them freely.**
 [`lib/http/text-assets.js`](../../lib/http/text-assets.js) sits in front of `express.static`
@@ -689,8 +686,8 @@ documentation this codebase is built on costs visitors nothing, and there is no 
 write a terse comment to "keep the file small". Two consequences worth knowing:
 
 - **Do not minify or comment-strip the source files.** Several drift tests strip comments
-  themselves before scanning precisely so the prose can stay (see
-  [`source-scan-guards`](#) style guards throughout `test/frontend/`).
+  themselves before scanning precisely so the prose can stay (see the
+  source-scan guards throughout `test/frontend/`).
 - **The strippers are character scanners, not regexes,** because `/*` inside a
   `content: "…"` or a quoted `url(data:…)` is a string, and `<!--` inside a `<script>` or
   `<style>` body is data. `test/http/text-assets.test.js` runs them over every real sheet
@@ -699,8 +696,8 @@ write a terse comment to "keep the file small". Two consequences worth knowing:
 
 **Non-render-blocking (lazy) CSS.** Pages split their stylesheets by criticality. On
 `index.html`, `styles.css` / `toast.css` / `hero-picker.css` / `home.css` / `index.css`
-load normally (render-blocking); the below-the-fold ones (`auth.css`, `star-border.css`,
-`home-text-animate.css`, `demo-player.css`, `faq-plan.css`) ship as `media="print"` with a
+load normally (render-blocking); the below-the-fold ones (`auth.css`,
+`home-text-animate.css`, `demo-player.css`, `immersive.css`, `faq-plan.css`) ship as `media="print"` with a
 `data-lazy-css` attribute so they
 **don't block first paint**, and [`scripts/site/lazy-css.js`](../../public/scripts/site/lazy-css.js)
 promotes each to `media="all"` once fetched. A `<noscript>` block links them the normal
@@ -708,8 +705,7 @@ way for the no-JS path. The promotion is an external script rather than an inlin
 `onload=` handler on purpose — it keeps the page under the CSP's `script-src-attr 'none'`
 (no `unsafe-inline`).
 
-The helper is page-agnostic (it was called `index-lazy-css.js` back when the homepage was
-its only caller), so adopting the pattern elsewhere needs no JS change: mark the `<link>`
+The helper is page-agnostic, so adopting the pattern elsewhere needs no JS change: mark the `<link>`
 `media="print" data-lazy-css`, include the script after it, and **copy the `<noscript>`
 fallback across as well** — the flip is the only thing that ever loads those sheets, so
 without it a no-JS visitor gets none of them.
@@ -751,8 +747,11 @@ Three pieces, and each page names its own ids:
   data-pending-class="ms-pro-pending">`. It reads the plan `auth.js` cached last visit and
   pre-applies the Pro shape before first paint, so a subscriber never watches the pitch
   paint and vanish a round trip later. It **never navigates**.
-- a per-page `<x>/access.js` (four lines) binding the ids, imported by `auth.js` so
-  `applyUserToUI()` re-runs it on every auth change — signing OUT has to put the pitch back.
+- a per-page `<x>/access.js`, one `createPreviewAccess({ … })` call binding the ids. The
+  page's entry calls it around the plan check via `settlePreview`. `auth.js` imports the
+  exterior-studio, masking-studio and ai-designer bindings so `applyUserToUI()` re-runs
+  them on every auth change (signing OUT has to put the pitch back); it does not import
+  `basic-mask/access.js`, which runs only from `basic-mask-page.js`'s boot.
 
 `ai-designer.html` is the exception that still redirects, and only on **viewport**: the
 studio is a desktop layout, so `ai-designer-gate.js` sends ≤768px to the home page before
@@ -781,17 +780,16 @@ grep for `location.replace` cannot tell a viewport redirect from an auth redirec
 ### `var` is an extraction artifact — sweep it, don't pick at it
 
 Much of `public/scripts/` still declares with `var`, left over from when these were classic
-`<script>` files (see the unminify/ESM-conversion history): **491 across 34 files** as of
-2026-07-28, down from 587/37. `admin/renderers.js` has 88, `status.js` 45,
-`demo-player.js` 38. New code uses `const`/`let`.
+`<script>` files (see the unminify/ESM-conversion history): several hundred, spread over
+about 40 files, with `admin/` and `status/status.js` the heaviest. The count grows as
+files are added, so get the current figure from the sweep command below rather than from
+this page. New code uses `const`/`let`.
 
-The 96 that went were `profile-menu.js` (21) and `profile-menu/auth-modal.js` (75) — **not**
-a counter-example to the sweep rule below. `auth-modal.js` was being rewritten anyway (the
-element-handle cache, and the sign-in hand-off bug in the next section), and new code is
-`const`/`let` by the same rule; `profile-menu.js` followed so the island isn't half-and-half
-with its own submodule. `profile-menu/google-signin.js` still has its `var`s and is left for
-the sweep. That is the shape of a legitimate exception: the file was open for a behavioural
-reason, and it came with the [first tests][pm-tests] this surface has ever had.
+`profile-menu/auth-modal.js` and `profile-menu/profile-menu.js` are already `var`-free.
+That was a legitimate exception to the sweep rule: `auth-modal.js` was open for a
+behavioural rewrite and came with [its first tests][pm-tests], and `profile-menu.js`
+followed so the island is not half-and-half. `profile-menu/google-signin.js` is left for
+the sweep.
 
 [pm-tests]: ../../test/frontend/profile-menu/auth-modal.test.js
 
@@ -808,8 +806,8 @@ one command plus four judgement calls:
 npx eslint public/scripts --rule '{"no-var":"error","prefer-const":"error"}' --fix
 ```
 
-That reports 567 problems and fixes **566 automatically** (565 `no-var` + both
-`prefer-const`). ESLint deliberately declines exactly **one**, and it is the only one
+That fixes every finding automatically but **one** (on 2026-09-28: 750 problems, 749
+fixed, across 42 files). ESLint deliberately declines it, and it is the only one
 needing a human: `export var ICONS` in `admin/helpers.js` — an exported binding, so check
 no importer reassigns it before making it `const`. Afterwards, add both rules to
 `eslint.config.js` so it cannot drift back, and verify with `npm run typecheck` —
@@ -817,9 +815,9 @@ no importer reassigns it before making it `const`. Afterwards, add both rules to
 block it was declared in, and a redeclaration in one scope) into hard errors, which is
 what makes an otherwise-untested sweep safe.
 
-**Timing matters more than usual**: it rewrites 39 files at once, so run it when nobody
-else has work open under `public/scripts/`. (Re-run the command before trusting these
-counts — they drift with every file added under `public/scripts/`.)
+**Timing matters more than usual**: it rewrites around 40 files at once, so run it when
+nobody else has work open under `public/scripts/`. Drop `--fix` for a dry run that reports
+the current counts.
 
 ### The auth modal's element handles
 
@@ -830,25 +828,19 @@ if anything ever replaces the modal the handles rebuild instead of writing into 
 tree. A plain module-scope cache would have been fine today — nothing removes the node —
 but it would have been fine *by accident*, and this costs one lookup to not depend on that.
 
-Worth being straight about the payoff: those were O(1) id-map lookups on a human click, so
-**this bought readability, not speed**. The reason to do it was that the alternative —
-twenty `document.getElementById` calls interleaved with the logic — is what hid the
-`stageModal` assignment that relied on `var` hoisting reaching it from an earlier branch,
-and the dead `__stagifyPendingStaging` check described below.
-
 ### The sign-in → staging hand-off
 
 `openAuthModal(true)` sets `window.__stagifyPendingStaging` so a visitor who clicked
 "Stage" while signed out gets the staging dialog back after authenticating. **The flag must
-be read before `closeAuthModal()`, which clears it.** All three success paths — password
-login, email verification, and Google sign-in — read it *after* the close until 2026-07-28,
-so the hand-off was dead: the modal shut and nothing opened, with no error. The sibling
-`__stagifyPendingPlusRedirect` was already captured up-front for exactly this reason, which
-is what makes the omission easy to miss on a read-through.
+be read before `closeAuthModal()`, which clears it.** Read it after the close and the
+hand-off dies silently: the modal shuts and nothing opens. The sibling
+`__stagifyPendingPlusRedirect` follows the same rule.
 
-If you add a fourth way to complete sign-in, route it through `completeSignIn()` in
-`auth-modal.js` rather than repeating the sequence; it captures both flags in the right
-order. Covered by `test/frontend/profile-menu/auth-modal.test.js` at the unit level and by
+Password login and email verification go through `completeSignIn()` in `auth-modal.js`,
+which captures both flags in the right order. Google sign-in (`profile-menu/google-signin.js`)
+still inlines the same sequence rather than calling it, so a change to the order has to be
+made there too. If you add another way to complete sign-in, route it through
+`completeSignIn()`. Covered by `test/frontend/profile-menu/auth-modal.test.js` at the unit level and by
 `e2e/stage-signin-entry.spec.js` in a real browser — the latter drives the whole path the
 visitor takes (upload button → auth modal → sign in → stage dialog → a staged request),
 which is what the unit shim cannot: the flag has to survive two modules and reach the real
@@ -862,15 +854,16 @@ is a deliberate, standing decision — not a gap we simply haven't filled.** A f
 remains **deferred**, and the island-splitting / de-monolithing work is the chosen
 alternative to one, not a way-station toward one.
 
-This is worth writing down because at ~33k lines of vanilla JS the absence of a
+This is worth writing down because at ~46k lines of vanilla JS the absence of a
 component abstraction reads, at a glance, like an oversight. It isn't — here is the
 reasoning, and the (narrow) conditions under which we'd revisit it.
 
 **Why this is the right default here:**
 
-- **The interactive surface is small and isolated.** Of ~21 pages (plus a dozen blog
-  articles), only a handful carry real interactivity — the staging tool, AI Designer,
-  Masking Studio, Exterior Studio, Basic Mask, and the gallery. The rest — marketing,
+- **The interactive surface is small and isolated.** Of ~26 pages (plus 17 blog
+  articles), only a handful carry real interactivity: the staging tool, AI Designer,
+  Masking Studio, Exterior Studio, Basic Mask, the gallery, the API-keys console and the
+  listing share page. The rest — marketing,
   legal, status, guides, auth, blog — are essentially static content with light
   nav/i18n/auth scripts and would gain **nothing** from a component runtime. A framework
   would tax every page to benefit a few.
@@ -896,7 +889,7 @@ The honest downside the pattern carries is that entry scripts are procedural and
 grow — `app.js` reached ~1k lines before the `max-lines: 650` ratchet split it into
 `scripts/app/` submodules, and it now sits just under that cap along with every other
 entry. But git history concentrates frontend change in that **one** staging entry, not
-evenly across the ~33k lines — the studio internals and the static pages are
+evenly across the ~46k lines — the studio internals and the static pages are
 comparatively stable. (Some of `app.js`'s churn is ordinary feature work on the flagship
 tool, not pure friction.) The proportionate response is to keep `app.js` healthy, not to
 re-architect the whole frontend:
@@ -906,9 +899,10 @@ re-architect the whole frontend:
 - **Pure logic is extracted and unit-tested** — branchy or reusable logic moves from the
   entry into a pure helper island with a `node --test` spec, shrinking the hotspot and
   pinning its behavior.
-- **Every interactive surface has Playwright e2e smokes** (`e2e/`) — the two studios, the
-  Exterior Studio, Basic Mask, the main tool's stage/mask flows, the gallery and the share
-  page — covering their happy, error, and resume paths with every `/api/*` mocked.
+- **Interactive surfaces have Playwright e2e smokes** (`e2e/`; the listing share page is
+  the one without) — the two studios, the
+  Exterior Studio, Basic Mask, the main tool's stage/mask flows, the gallery (including its share panel)
+  and the API-keys console, covering their happy, error, and resume paths with every `/api/*` mocked.
 - **Islands keep each feature bounded** — new behavior lands in a new module, not as
   another 50 lines in the entry.
 

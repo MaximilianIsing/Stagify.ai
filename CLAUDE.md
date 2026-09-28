@@ -4,7 +4,9 @@ AI virtual-staging web app. Node/Express (ESM) backend + static multi-page
 frontend in `public/`. Entry point: `server.js`.
 
 ## Layout
-- `server.js` — app bootstrap, middleware (helmet/CORS/rate-limits), shared helpers.
+- `server.js`: composition root, builds the shared stores/helpers and mounts middleware
+  (`lib/http/app-middleware.js`, limiters in `lib/http/rate-limiters.js`) and routers. It is
+  at its 650-line ESLint cap, so new logic goes in a `routes/` or `lib/` factory.
 - `routes/` — Express routers (`chat`, `staging`, `auth`, `public`, `billing`, `i18n`, …).
   The admin console's routers live in `routes/admin/` (`index.js` is the main one; the
   rest are sibling routers split off because it is at its line cap).
@@ -17,8 +19,9 @@ frontend in `public/`. Entry point: `server.js`.
   **subfolders mirroring the source tree** (`test/data/`, `test/routes/`, `test/frontend/app/`,
   …); `test/helpers/` holds the shared harnesses. The glob is `test/**/*.test.js`, so a new
   folder needs no registration — see `docs/guides/testing.md` for which folder to use.
-- `e2e/` — Playwright browser smokes of the two studios (`npm run test:e2e`, all `/api/*`
-  mocked). Separate from the deploy-gating `npm test`; runs in its own GitHub CI job.
+- `e2e/`: Playwright browser smokes of the studios, staging tool, home page, gallery and
+  more (`npm run test:e2e`, all `/api/*` mocked). Separate from the deploy-gating
+  `npm test`; runs in its own GitHub CI job.
 
 ## Logging — two separate things, don't conflate them
 - `lib/logger.js` — the **diagnostic logger**: the single funnel for operator-facing
@@ -27,7 +30,8 @@ frontend in `public/`. Entry point: `server.js`.
   `console.*` in `routes/`, `lib/`, or `server.js` is a lint **error** (`no-console`),
   so this is enforced, not merely a convention. The only files allowed to touch
   `console` directly are `lib/logger.js` itself, the bootstrap layer
-  (`lib/config/runtime-flags.js`, `load-env.js`) that runs beneath it, and `test/`.
+  (`lib/config/runtime-flags.js`, `load-env.js`) that runs beneath it, `test/`, and
+  `scripts/` (build/CI tools whose stdout is their interface).
   Verbosity: `LOG_LEVEL` (debug|info|warn|error|silent) wins; otherwise `DEBUG_MODE`
   (env `DEBUG`, from `.env` locally) raises the floor to `debug`; otherwise the floor is
   `info`. So production prints info/warn/error and drops debug. Guard expensive
@@ -85,6 +89,11 @@ its own README:
 - `to-build/demos/` — authoring master + standalone preview for the guide
   walkthroughs; exports to `public/scripts/guides/demo-data.js`, the served
   `demo-player.{js,css}`, and `public/media-webp/demos/`.
+- `to-build/fonts/`: recipe for the subset fonts in `public/fonts/`.
+- `to-build/disclosure-badges/`: recipe for `lib/image/badges/`, rendered by
+  `scripts/build-disclosure-badges.js`.
+- `to-build/brand/`: brand masters copied into `public/brand/` by `scripts/build-brand-kit.js`.
+- `to-build/Iridescent background/`: retired background prototype; nothing loads it.
 
 Before proposing to remove any file because it "isn't referenced," check whether
 it is a *build input* (a source master, config, or asset) rather than a runtime
@@ -99,10 +108,13 @@ dependency. If unsure, ask — don't assume unreferenced == deletable.
 - All structured state lives in **one SQLite database** (`auth-store.db` via
   `better-sqlite3`, under `/data` on Render or `./data` locally), opened through a
   single shared connection in `lib/data/db.js`: auth (`users`, `sessions`, …),
-  `enterprise_domains`, `memories`, and `uptime_state`. Each store imports its legacy
-  JSON (`auth-store.json`, `enterprise-domains.json`, `memories.json`, `uptime.json`)
-  once on first boot, then leaves it as a frozen fallback. Only the **CSV logs** and
-  `hosted-images/` remain flat files.
+  `enterprise_domains`, `memories`, `uptime_state`, the gallery tables, API keys and
+  credits, `stripe_events`, referral links, admin sessions and access log, `blog_views`,
+  and `email_optouts` (full list: `docs/reference/data-stores.md`). Each older store
+  imports its legacy JSON (`auth-store.json`, `enterprise-domains.json`, `memories.json`,
+  `uptime.json`) once on first boot, then leaves it as a frozen fallback. Only the
+  **CSV logs** and `hosted-images/` remain flat files; gallery render bytes live in
+  Cloudflare R2 (`lib/data/object-store.js`).
 - Deploys to Render; the build runs `npm test`, so **a failing test blocks the
   deploy** — keep the suite green. `npm run lint` must also pass (`--max-warnings=0`) — it
   runs ESLint over all JS (backend, `public/scripts/` ES modules auto-detected via

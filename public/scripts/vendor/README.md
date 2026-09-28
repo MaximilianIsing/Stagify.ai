@@ -8,22 +8,22 @@ are not part of any build. They are checked in so the browser can fetch them fro
 ## Why these are self-hosted rather than loaded from a CDN
 
 `script-src` in `lib/http/app-middleware.js` is a real allowlist with no third-party
-JavaScript host on it (Google sign-in, Stripe and the Ads tag are the only external
+JavaScript host on it (Google sign-in and Stripe are the only external
 origins, and none of them serve these). A `<script src="https://cdn…">` for any of these
 would be blocked outright. Self-hosting is the requirement, not a preference.
 
 ## Why these files are not linted
 
-`eslint.config.js` matches files by module marker (`import`/`export`). These are minified
-UMD bundles with neither, so they match no block and are intentionally left unlinted. Do
-not add them to a lint block — see the comment at the top of that config.
+`eslint.config.js` ignores `**/*.min.js` outright, and `stylelint.config.js` ignores
+`**/vendor/**`, so these minified UMD bundles are intentionally left unlinted. Do not add
+them to a lint block. See the comment at the top of `eslint.config.js`.
 
 ## Contents
 
 | File | Library | Version | Licence | Loaded by |
 |------|---------|---------|---------|-----------|
-| `heic2any.min.js` | [heic2any](https://github.com/alexcorvi/heic2any) (bundles libheif) | — | MIT | `public/scripts/heic-convert.js` |
-| `pdf.min.js` | [pdf.js](https://github.com/mozilla/pdf.js) `legacy/build/pdf.min.js` | pdfjs-dist **3.11.174** | Apache-2.0 | `public/scripts/pdf-page-to-image.js` |
+| `heic2any.min.js` | [heic2any](https://github.com/alexcorvi/heic2any) (bundles libheif) | — | MIT | `public/scripts/shared/heic-convert.js` |
+| `pdf.min.js` | [pdf.js](https://github.com/mozilla/pdf.js) `legacy/build/pdf.min.js` | pdfjs-dist **3.11.174** | Apache-2.0 | `public/scripts/shared/pdf-page-to-image.js` |
 | `pdf.worker.min.js` | pdf.js worker, `legacy/build/pdf.worker.min.js` | pdfjs-dist **3.11.174** | Apache-2.0 | loaded by `pdf.min.js` via `GlobalWorkerOptions.workerSrc` |
 
 Both pdf.js files come from the **`legacy/`** build, which is the UMD one — it sets
