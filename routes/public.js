@@ -231,6 +231,10 @@ router.get('/blog/which-virtual-staging-style', (req, res) => {
   sendPost(req, res, 'which-virtual-staging-style');
 });
 
+router.get('/blog/virtual-staging-before-and-after', (req, res) => {
+  sendPost(req, res, 'virtual-staging-before-and-after');
+});
+
 router.get('/bimi-logo.svg', (req, res) => {
   res.setHeader('Content-Type', 'image/svg+xml');
   res.sendFile(path.join(__dirname, 'public', 'bimi-logo.svg'));

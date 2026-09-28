@@ -11,7 +11,7 @@ node scripts/build-blog-covers.js --cover=cover-10 --lang=es   # one, while iter
 
 ## What this solves
 
-Nine of the sixteen blog covers have English words burned into the picture. Served unchanged
+Nine of the seventeen blog covers have English words burned into the picture. Served unchanged
 under `/es/blog/…` they put English type on the most widely-seen asset the article has — the
 `og:image` a reader meets in a Slack unfurl or a search result *before* the page itself. The
 script repaints those regions and redraws the type per language.
@@ -41,7 +41,7 @@ The lesson for the next cover: sample the pixels before concluding a region cann
 repainted. "Text inside the artwork" and "text on a flat plate that happens to sit over
 artwork" look identical at a glance and are completely different jobs.
 
-Seven covers are pure photography with no text, so there is nothing to localize.
+Eight covers are pure photography with no text, so there is nothing to localize. cover-17 (`virtual-staging-before-and-after`) is one of them on purpose: its before/after split carries a wordless slider handle instead of labels, so the English image serves every language.
 
 **cover-16** (`which-virtual-staging-style`) was authored for this pipeline rather than
 retro-fitted to it: a white header bar and a dark footer band, with the three photographs
