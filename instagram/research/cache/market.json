@@ -1,6 +1,6 @@
 {
   "key": "market",
-  "fetchedAt": "2026-09-16T17:37:28.949Z",
+  "fetchedAt": "2026-09-28T01:57:44.587Z",
   "ttlDays": 7,
   "queries": [
     "housing market days on market trend",
@@ -8,109 +8,81 @@
   ],
   "findings": [
     {
-      "claim": "In August 2026 the median US home spent 60 days on market, unchanged from a year earlier, while active inventory rose 3.6% year over year to 1,140,035 listings.",
-      "sourceUrl": "https://www.prnewswire.com/news-releases/delistings-trend-below-last-years-pace-as-summer-comes-to-an-end-realtorcom-august-housing-report-302866775.html",
-      "sourceTitle": "Delistings Trend Below Last Year's Pace As Summer Comes to an End: Realtor.com August Housing Report",
+      "claim": "The average 30-year fixed mortgage rate reached 7.03% in Freddie Mac's survey of September 24, 2026, up from 6.95% the week before and 6.30% a year earlier.",
+      "sourceUrl": "https://www.globenewswire.com/news-release/2026/09/24/3368592/0/en/mortgage-rates-average-7-03.html",
+      "sourceTitle": "Mortgage Rates Average 7.03% (Freddie Mac)",
       "confidence": "primary-source",
-      "retrievedAt": "2026-09-16"
+      "retrievedAt": "2026-09-27"
     },
     {
-      "claim": "The national median list price was $424,500 in August 2026, down 1.3% year over year, the tenth consecutive month of annual list-price declines.",
-      "sourceUrl": "https://www.prnewswire.com/news-releases/delistings-trend-below-last-years-pace-as-summer-comes-to-an-end-realtorcom-august-housing-report-302866775.html",
-      "sourceTitle": "Realtor.com August 2026 Housing Report",
+      "claim": "US existing-home sales fell 2.0% in August 2026 to a seasonally adjusted annual rate of 3.98 million.",
+      "sourceUrl": "https://www.nar.realtor/research-and-statistics/housing-statistics/existing-home-sales",
+      "sourceTitle": "Existing-Home Sales (National Association of REALTORS)",
       "confidence": "primary-source",
-      "retrievedAt": "2026-09-16"
+      "retrievedAt": "2026-09-27"
     },
     {
-      "claim": "20.4% of active listings carried a price reduction in August 2026, roughly one in five homes on the market cutting its asking price. Cuts were least common in the Northeast at 14.1% and most common in the West at 22.0%.",
-      "sourceUrl": "https://www.prnewswire.com/news-releases/delistings-trend-below-last-years-pace-as-summer-comes-to-an-end-realtorcom-august-housing-report-302866775.html",
-      "sourceTitle": "Realtor.com August 2026 Housing Report",
+      "claim": "Unsold inventory hit 1.62 million homes in August 2026, or 4.9 months of supply. NAR's chief economist called that the highest level in over ten years.",
+      "sourceUrl": "https://www.nar.realtor/research-and-statistics/housing-statistics/existing-home-sales",
+      "sourceTitle": "Existing-Home Sales (National Association of REALTORS)",
       "confidence": "primary-source",
-      "retrievedAt": "2026-09-16"
+      "retrievedAt": "2026-09-27"
     },
     {
-      "claim": "Summer 2026 delistings ran 12.6% below last year's pace, meaning sellers are staying on the market and competing rather than pulling their listings as they did in summer 2025.",
-      "sourceUrl": "https://www.prnewswire.com/news-releases/delistings-trend-below-last-years-pace-as-summer-comes-to-an-end-realtorcom-august-housing-report-302866775.html",
-      "sourceTitle": "Realtor.com August 2026 Housing Report",
-      "confidence": "primary-source",
-      "retrievedAt": "2026-09-16"
+      "claim": "Homes that sold in August 2026 had a median of 31 days on market, up from 29 days in July. The median existing-home price was $429,100, up 1.6% year over year.",
+      "sourceUrl": "https://www.housingwire.com/articles/existing-home-sales-august-2026/",
+      "sourceTitle": "Existing home sales slip to 3.98 million in August as rates take a bite (HousingWire)",
+      "confidence": "secondary",
+      "retrievedAt": "2026-09-27"
     },
     {
-      "claim": "Realtor.com named September 27 to October 3, 2026 the best week of the year to buy: active listings 13.3% above the average week and 31.9% above the start of the year, buyer competition 30.1% below its annual peak, and listing prices 3.5% below the seasonal peak, about $14,000 off a median $416,000 home.",
+      "claim": "First-time buyers made up 30% of August 2026 existing-home sales, up from 28% a year earlier. All-cash purchases were 27%.",
+      "sourceUrl": "https://www.housingwire.com/articles/existing-home-sales-august-2026/",
+      "sourceTitle": "Existing home sales slip to 3.98 million in August as rates take a bite (HousingWire)",
+      "confidence": "secondary",
+      "retrievedAt": "2026-09-27"
+    },
+    {
+      "claim": "In the week ending September 19, 2026, active listings were up 5.8% year over year and the median list price was $419,500, down 1.3% from a year earlier, per Realtor.com weekly data.",
+      "sourceUrl": "https://wrenews.com/housing-inventory-listing-prices-september-19-2026/",
+      "sourceTitle": "Housing Inventory Rises 5.8% as Listing Prices Keep Falling (WRE News)",
+      "confidence": "secondary",
+      "retrievedAt": "2026-09-27"
+    },
+    {
+      "claim": "Listed homes spent a typical 61 days on market in the week ending September 19, 2026, according to Realtor.com weekly data.",
+      "sourceUrl": "https://wrenews.com/housing-inventory-listing-prices-september-19-2026/",
+      "sourceTitle": "Housing Inventory Rises 5.8% as Listing Prices Keep Falling (WRE News)",
+      "confidence": "secondary",
+      "retrievedAt": "2026-09-27"
+    },
+    {
+      "claim": "Realtor.com named September 27 to October 3, 2026 the best week to buy this year, forecasting 13.3% more active listings than an average week, prices 3.5% below the seasonal peak, and about 64 days on market.",
       "sourceUrl": "https://www.prnewswire.com/news-releases/realtorcom-september-27th---october-3rd-marks-the-best-time-to-buy-a-home-in-2026-302875854.html",
-      "sourceTitle": "Realtor.com: September 27th to October 3rd Marks the Best Time to Buy a Home in 2026",
+      "sourceTitle": "Realtor.com: September 27th - October 3rd Marks the Best Time to Buy a Home in 2026",
       "confidence": "primary-source",
-      "retrievedAt": "2026-09-16"
+      "retrievedAt": "2026-09-27"
     },
     {
-      "claim": "During the week of September 27 to October 3, 2026, homes are expected to sit about 64 days on market, roughly 13 days longer than the year's fastest pace.",
+      "claim": "Realtor.com expects buyer competition during the September 27 to October 3 week to be 30.1% below its annual peak, so sellers face more choice and less urgency from buyers.",
       "sourceUrl": "https://www.prnewswire.com/news-releases/realtorcom-september-27th---october-3rd-marks-the-best-time-to-buy-a-home-in-2026-302875854.html",
-      "sourceTitle": "Realtor.com: Best Time to Buy a Home in 2026",
+      "sourceTitle": "Realtor.com: September 27th - October 3rd Marks the Best Time to Buy a Home in 2026",
       "confidence": "primary-source",
-      "retrievedAt": "2026-09-16"
+      "retrievedAt": "2026-09-27"
     },
     {
-      "claim": "The 30-year fixed mortgage averaged 6.76% for the week of September 10, 2026, up from 6.71% the prior week and above 6.35% a year earlier.",
-      "sourceUrl": "https://www.globenewswire.com/news-release/2026/09/10/3359803/0/en/mortgage-rates-average-6-76.html",
-      "sourceTitle": "Mortgage Rates Average 6.76%, Freddie Mac Primary Mortgage Market Survey",
-      "confidence": "primary-source",
-      "retrievedAt": "2026-09-16"
-    },
-    {
-      "claim": "In NAR's 2025 Profile of Home Buyers and Sellers, 81% of buyers rated listing photos the most useful feature of their online home search.",
+      "claim": "81% of buyers rated listing photos the most useful feature in their online home search, and 52% found the home they bought online.",
       "sourceUrl": "https://www.nar.realtor/news/real-estate-news/sales-marketing/how-to-maximize-online-visibility-for-every-listing",
-      "sourceTitle": "How to Maximize Online Visibility for Every Listing, National Association of REALTORS",
+      "sourceTitle": "How to Maximize Online Visibility for Every Listing (National Association of REALTORS)",
       "confidence": "primary-source",
-      "retrievedAt": "2026-09-16"
+      "retrievedAt": "2026-09-27"
     },
     {
-      "claim": "NAR's February 2025 Profile of Home Staging found 83% of buyers' agents said staging made it easier for a buyer to visualize a property as their future home, and 26% said staging affected most buyers' view of the home.",
+      "claim": "83% of buyers' agents said staging made it easier for a buyer to visualize the property as a future home. The living room was the most staged room (91%), ahead of the primary bedroom (83%).",
       "sourceUrl": "https://www.nar.realtor/research-and-statistics/research-reports/profile-of-home-staging",
-      "sourceTitle": "Profile of Home Staging, National Association of REALTORS",
+      "sourceTitle": "2025 Profile of Home Staging (National Association of REALTORS)",
       "confidence": "primary-source",
-      "retrievedAt": "2026-09-16"
-    },
-    {
-      "claim": "In NAR's February 2025 staging survey the most commonly staged rooms were the living room at 91%, the primary bedroom at 83% and the dining room at 69%.",
-      "sourceUrl": "https://www.nar.realtor/research-and-statistics/research-reports/profile-of-home-staging",
-      "sourceTitle": "Profile of Home Staging, National Association of REALTORS",
-      "confidence": "primary-source",
-      "retrievedAt": "2026-09-16"
-    },
-    {
-      "claim": "Only 21% of sellers' agents staged every home before listing it, per NAR's February 2025 staging survey, so most listings still go online unstaged.",
-      "sourceUrl": "https://www.nar.realtor/research-and-statistics/research-reports/profile-of-home-staging",
-      "sourceTitle": "Profile of Home Staging, National Association of REALTORS",
-      "confidence": "primary-source",
-      "retrievedAt": "2026-09-16"
-    },
-    {
-      "claim": "A 2026 vendor cost comparison puts traditional staging at $2,000 to $5,000 plus to set up plus $500 to $2,000 a month in furniture rental over 3 to 7 business days, against $75 to $600 for a whole virtually staged listing delivered in 24 to 48 hours.",
-      "sourceUrl": "https://www.virtuance.com/blog/blog-virtual-staging-vs-traditional-staging/",
-      "sourceTitle": "Virtual staging vs traditional staging: a 2026 cost-benefit analysis, Virtuance",
-      "confidence": "vendor-blog, commercial slant, attribute as industry analysis",
-      "retrievedAt": "2026-09-16"
-    },
-    {
-      "claim": "On a $400,000 listing, a 2026 industry analysis modelled traditional staging at roughly $4,500 against a 1% price lift of $4,000, a net loss of about $500, while the same lift on $300 of virtual staging nets about $3,700.",
-      "sourceUrl": "https://www.virtuance.com/blog/blog-virtual-staging-vs-traditional-staging/",
-      "sourceTitle": "Virtual staging vs traditional staging: a 2026 cost-benefit analysis, Virtuance",
-      "confidence": "vendor-blog, commercial slant, attribute as industry analysis",
-      "retrievedAt": "2026-09-16"
-    },
-    {
-      "claim": "A 2026 real estate photography roundup reports buyers spend about 2.7 seconds on a listing's primary photo before clicking in or scrolling past, and under 20 seconds deciding whether the listing deserves a deeper look.",
-      "sourceUrl": "https://www.modernangles.com/blog/the-numbers-don-t-lie-real-estate-photography-statistics-every-agent-should-know-in-2026",
-      "sourceTitle": "Real Estate Photography Statistics Every Agent Should Know in 2026, Modern Angles",
-      "confidence": "industry-blog, attribute as industry analysis",
-      "retrievedAt": "2026-09-16"
-    },
-    {
-      "claim": "Researcher note: widely repeated staging stats such as staged homes selling 73% faster, selling for 25% more, or a virtual staging ROI of 3,650% were deliberately excluded because no page repeating them cites a primary study.",
-      "sourceUrl": "https://www.nar.realtor/research-and-statistics/research-reports/profile-of-home-staging",
-      "sourceTitle": "Exclusion note, checked against NAR Profile of Home Staging",
-      "confidence": "do-not-use",
-      "retrievedAt": "2026-09-16"
+      "retrievedAt": "2026-09-27"
     }
   ]
 }

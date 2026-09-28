@@ -1,6 +1,6 @@
 {
   "key": "competitors",
-  "fetchedAt": "2026-09-03T02:06:54.213Z",
+  "fetchedAt": "2026-09-28T01:56:53.933Z",
   "ttlDays": 14,
   "queries": [
     "virtual staging companies social media",
@@ -8,94 +8,81 @@
   ],
   "findings": [
     {
-      "claim": "Before/after Reels are the leading discovery format for home stager accounts, performing best when paired with trending audio and result statistics rendered as on-screen text or in the caption.",
-      "sourceUrl": "https://www.socialmon.ai/blog/68-home-stager-instagram-post-ideas-with-examples-that-sell-listings",
-      "sourceTitle": "68 Home stager Instagram post ideas with examples that sell listings",
-      "retrievedAt": "2026-09-02"
+      "claim": "Virtual Staging Solutions (@virtualstaging) has about 408 followers and its feed is mostly static single-image before-and-after staging renders, not reels or carousels, with posts running from 2021 to December 2025.",
+      "sourceUrl": "https://www.instagram.com/virtualstaging/",
+      "sourceTitle": "Virtual Staging Solutions (@virtualstaging) Instagram photos and videos",
+      "confidence": "primary-source",
+      "retrievedAt": "2026-09-27"
     },
     {
-      "claim": "Educational carousels about staging ROI and staging misconceptions drive high save rates among home stager accounts, because realtors bookmark them to share with clients.",
-      "sourceUrl": "https://www.socialmon.ai/blog/68-home-stager-instagram-post-ideas-with-examples-that-sell-listings",
-      "sourceTitle": "68 Home stager Instagram post ideas with examples that sell listings",
-      "retrievedAt": "2026-09-02"
+      "claim": "Ivy Lane Home Staging (@ivylanehome, Boulder, Denver and Fort Collins) has about 38.8K followers and mixes carousels of staging transformations, reels with styling tips and before-and-afters, and static finished-room images.",
+      "sourceUrl": "https://www.instagram.com/ivylanehome/?hl=en",
+      "sourceTitle": "Ivy Lane Home Staging (@ivylanehome)",
+      "confidence": "primary-source",
+      "retrievedAt": "2026-09-27"
     },
     {
-      "claim": "A polished 'after' shot posted without business context (the before, the timeline, the result) reads as interior decoration rather than a business solution and consistently underperforms.",
-      "sourceUrl": "https://www.socialmon.ai/blog/68-home-stager-instagram-post-ideas-with-examples-that-sell-listings",
-      "sourceTitle": "68 Home stager Instagram post ideas with examples that sell listings",
-      "retrievedAt": "2026-09-02"
+      "claim": "Ivy Lane Home Staging organizes 11 story highlights, including \"Before + Afters\", \"Staging Tips\", \"Styling Tips\", \"Our Looks\" and \"About Us\", and links followers to shop its looks.",
+      "sourceUrl": "https://www.instagram.com/ivylanehome/?hl=en",
+      "sourceTitle": "Ivy Lane Home Staging (@ivylanehome)",
+      "confidence": "primary-source",
+      "retrievedAt": "2026-09-27"
     },
     {
-      "claim": "A booking CTA laid over a beautiful photo consistently underperforms educational or story-led captions in the home staging niche.",
-      "sourceUrl": "https://www.socialmon.ai/blog/68-home-stager-instagram-post-ideas-with-examples-that-sell-listings",
-      "sourceTitle": "68 Home stager Instagram post ideas with examples that sell listings",
-      "retrievedAt": "2026-09-02"
+      "claim": "Elite Home Staging & Design (@elitehomestaging, Southern California, verified, about 14.5K followers) posts before-and-after transformations, reels and project carousels, and uses highlights such as PRESS, REVIEWS, SOLD, WHY ELITE?, MODERN and ORGANIC to lean on social proof and style categories.",
+      "sourceUrl": "https://www.instagram.com/elitehomestaging/?hl=en",
+      "sourceTitle": "Elite Home Staging & Design (@elitehomestaging)",
+      "confidence": "primary-source",
+      "retrievedAt": "2026-09-27"
     },
     {
-      "claim": "Stories, not the feed, are where home stager accounts generate the most realtor DMs, with the 'before-the-reveal tease' (post the cluttered before walkthrough, reveal the finished result later) as a recurring format.",
-      "sourceUrl": "https://www.socialmon.ai/blog/68-home-stager-instagram-post-ideas-with-examples-that-sell-listings",
-      "sourceTitle": "68 Home stager Instagram post ideas with examples that sell listings",
-      "retrievedAt": "2026-09-02"
+      "claim": "Home Staging Gals (@homestaginggals, Tampa Bay, about 3.8K followers) puts its HGTV \"100 Day Dream Home\" credit in the bio and posts a mix of before-and-after carousels, video clips and reels of individual rooms.",
+      "sourceUrl": "https://www.instagram.com/homestaginggals/",
+      "sourceTitle": "Home Staging Gals (@homestaginggals) Instagram photos and videos",
+      "confidence": "primary-source",
+      "retrievedAt": "2026-09-27"
     },
     {
-      "claim": "Home stager accounts commonly recommend six post types: before/after, educational, seller-objection, brand/humanization, conversion (testimonials and walkthroughs), and Stories polls or question boxes.",
-      "sourceUrl": "https://socialsavvystagers.com/10-home-staging-instagram-post-ideas-to-grow-your-following/",
-      "sourceTitle": "10 Home Staging Instagram Post Ideas to Grow Your Following",
-      "retrievedAt": "2026-09-02"
-    },
-    {
-      "claim": "The stated weak point of home stager accounts is not creativity but consistency and distinguishing posts meant to attract attention from posts meant to bring in inquiries.",
-      "sourceUrl": "https://socialsavvystagers.com/10-home-staging-instagram-post-ideas-to-grow-your-following/",
-      "sourceTitle": "10 Home Staging Instagram Post Ideas to Grow Your Following",
-      "retrievedAt": "2026-09-02"
-    },
-    {
-      "claim": "Virtual staging vendors advise clients to repurpose staged stills into swipeable carousels and dynamic before/after GIFs rather than posting single staged images.",
-      "sourceUrl": "https://www.bellavirtual.com/blogs/news/best-practices-for-marketing-virtually-staged-homes",
-      "sourceTitle": "Marketing Virtually Staged Homes: Best Practices | Bella",
-      "retrievedAt": "2026-09-02"
-    },
-    {
-      "claim": "Vendor guidance for virtually staged images is to add a discreet corner label reading 'virtually staged', with many MLS systems additionally requiring a disclosure near the start of the public remarks.",
-      "sourceUrl": "https://www.bellavirtual.com/blogs/news/best-practices-for-marketing-virtually-staged-homes",
-      "sourceTitle": "Marketing Virtually Staged Homes: Best Practices | Bella",
-      "retrievedAt": "2026-09-02"
-    },
-    {
-      "claim": "Since July 2025 Instagram applies an 'AI Info' label to fully AI-generated content, and manual disclosure is still required when AI elements are added in non-C2PA-compliant editors.",
-      "sourceUrl": "https://influencermarketinghub.com/ai-disclosure-rules/",
-      "sourceTitle": "AI Disclosure Rules by Platform: YouTube, Instagram/Facebook, and TikTok Labeling Guide",
-      "retrievedAt": "2026-09-02"
-    },
-    {
-      "claim": "In the adjacent real estate photography niche, feeds of near-identical sunny exteriors are named as the oversaturated pattern, and photographer-jargon captions are called out as appealing only to peers.",
-      "sourceUrl": "https://www.socialmon.ai/blog/63-real-estate-photographer-instagram-post-ideas-with-examples",
-      "sourceTitle": "63 Real estate photographer Instagram post ideas with examples",
-      "retrievedAt": "2026-09-02"
-    },
-    {
-      "claim": "Neglected formats in the adjacent real estate photography niche are doubt-clearing posts answering objections such as 'can my agent just use their phone', agent-focused teaching posts, and seasonal listing-cycle positioning.",
-      "sourceUrl": "https://www.socialmon.ai/blog/63-real-estate-photographer-instagram-post-ideas-with-examples",
-      "sourceTitle": "63 Real estate photographer Instagram post ideas with examples",
-      "retrievedAt": "2026-09-02"
-    },
-    {
-      "claim": "Real estate Reels are reported to generate roughly 67% more engagement than static images, with transformation content (before/after, twilight conversions, drone reveals) working on mute.",
-      "sourceUrl": "https://www.socialmon.ai/blog/63-real-estate-photographer-instagram-post-ideas-with-examples",
-      "sourceTitle": "63 Real estate photographer Instagram post ideas with examples",
-      "retrievedAt": "2026-09-02"
-    },
-    {
-      "claim": "Per Socialinsider 2026 benchmarks, carousels lead engagement at 0.55% versus roughly 0.50-0.52% for Reels, while Reels get about 36% more reach; the recommended mix is 60-70% Reels and 20-30% carousels.",
-      "sourceUrl": "https://www.icekulfi.com/blogs/instagram-reels-vs-carousels-engagement-guide-2026",
-      "sourceTitle": "Reels vs Carousels 2026: Which Gets More Reach? [10K Post Study]",
-      "retrievedAt": "2026-09-02"
-    },
-    {
-      "claim": "Established adjacent accounts sit in the tens of thousands of followers and are geographically anchored: C&B Home Staging (@cb_staging, 42K, Columbus OH), Ivy Lane Home Staging (@ivylanehome, 39K, Boulder/Denver/Fort Collins), Home Staging Gals (@homestaginggals, Tampa Bay).",
+      "claim": "Search listings show C&B Home Staging (@cb_staging, Columbus, Ohio) at about 42K followers and New Concept Home Staging (@newconcepthomestaging, Canada) at about 13K, positioning local physical stagers as the larger accounts in the niche.",
       "sourceUrl": "https://www.instagram.com/cb_staging/",
-      "sourceTitle": "C&B Home Staging (@cb_staging) - Instagram photos and videos",
-      "retrievedAt": "2026-09-02"
+      "sourceTitle": "C&B Home Staging (@cb_staging) Instagram photos and videos",
+      "confidence": "secondary",
+      "retrievedAt": "2026-09-27"
+    },
+    {
+      "claim": "HousingWire names Trolto the best AI virtual staging tool for social media video because it turns staged images into custom-branded cinematic fly-through videos and AI Instagram Reels, with a content calendar and direct scheduling to platforms.",
+      "sourceUrl": "https://www.housingwire.com/articles/virtual-staging-companies-apps/",
+      "sourceTitle": "Virtual Staging: The Best Apps for 2026 + Mind-Blowing AI picks",
+      "confidence": "secondary",
+      "retrievedAt": "2026-09-27"
+    },
+    {
+      "claim": "Virtual staging vendor ApplyDesign recommends four social content types: before-and-after visuals, behind-the-scenes looks at the staging process, client success stories and testimonials, and highlights of specific digitally enhanced features.",
+      "sourceUrl": "https://www.applydesign.io/post/social-media-and-virtual-staging-a-powerful-marketing-combination",
+      "sourceTitle": "Virtual Staging and Social Media - Top Property Marketing Duo",
+      "confidence": "primary-source",
+      "retrievedAt": "2026-09-27"
+    },
+    {
+      "claim": "Staged4more tells home stagers to post project photos on Instagram, make behind-the-scenes videos, share virtual tours of staged properties and feature client testimonials about how staging changed their listings.",
+      "sourceUrl": "https://www.staged4more.com/blog/marketing-ideas-for-home-stagers",
+      "sourceTitle": "50 Marketing Ideas For Home Stagers to Generate Revenue - Staged4more",
+      "confidence": "secondary",
+      "retrievedAt": "2026-09-27"
+    },
+    {
+      "claim": "Shhots AI lists \"before and after staging\" among 10 real estate reel formats for 2026 and advises a hard cut from the empty frame to the staged frame rather than a dissolve, with the reveal landing within about two seconds.",
+      "sourceUrl": "https://shhots.ai/blog/real-estate-reels-ideas/",
+      "sourceTitle": "Real Estate Reels: 10 Formats That Work in 2026",
+      "confidence": "secondary",
+      "retrievedAt": "2026-09-27"
+    },
+    {
+      "claim": "Shhots AI advises captioning staging reels as digitally staged, since most MLS rules require staged imagery to be disclosed as digitally enhanced and reels act as listing ads.",
+      "sourceUrl": "https://shhots.ai/blog/real-estate-reels-ideas/",
+      "sourceTitle": "Real Estate Reels: 10 Formats That Work in 2026",
+      "confidence": "secondary",
+      "retrievedAt": "2026-09-27"
     }
   ]
 }
