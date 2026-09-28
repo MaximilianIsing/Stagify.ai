@@ -200,8 +200,9 @@ test.describe('Home page — load smoke', () => {
     // Home/End matter because the style menu is 8 rows; Left/Right because it is two columns.
     await page.keyboard.press('End');
     await expect(page.locator('.hp-menu__item:focus')).toHaveText(/Custom/);
+    // Modern leads the menu: it is the style the hero ships painted (hero-picker.js STYLES).
     await page.keyboard.press('Home');
-    await expect(page.locator('.hp-menu__item:focus')).toHaveText(/Standard/);
+    await expect(page.locator('.hp-menu__item:focus')).toHaveText(/Modern/);
     await page.keyboard.press('ArrowRight');
     await expect(page.locator('.hp-menu__item:focus')).toHaveText(/Farmhouse/);
 
