@@ -33,7 +33,7 @@
     "google-auth-library": "^10.9.0",
     "helmet": "^8.2.0",
     "multer": "^2.3.0",
-    "openai": "^4.28.0",
+    "openai": "^7.23.0",
     "resend": "^6.6.0",
     "sharp": "^0.35.4",
     "stripe": "^21.0.1"
