@@ -736,7 +736,7 @@ body.page-admin main { flex: 0 0 auto; overflow: visible; width: 100% }
   display: inline-flex; align-items: center; transition: background .14s;
 }
 .adm-host-copy:hover { background: var(--adm-sunken) }
-.adm-host-meta { font-size: .71875rem; color: var(--adm-faint); word-break: break-word }
+.adm-host-meta { font-size: .71875rem; color: var(--adm-faint); overflow-wrap: anywhere }
 .adm-host-actions { display: flex; gap: .4rem; align-items: center; justify-content: space-between; margin-top: auto }
 .adm-host-del {
   padding: .35rem .65rem; font-size: .71875rem; font-weight: 600; font-family: inherit;
@@ -755,7 +755,7 @@ body.page-admin main { flex: 0 0 auto; overflow: visible; width: 100% }
 .adm-comp-row:first-of-type { border-top: none }
 .adm-comp-main { flex: 1 1 auto; min-width: 0 }
 .adm-comp-id { font-weight: 600; font-size: .875rem; display: flex; align-items: center; gap: .4rem }
-.adm-comp-reason { color: var(--adm-muted); font-size: .8125rem; margin-top: .15rem; word-break: break-word }
+.adm-comp-reason { color: var(--adm-muted); font-size: .8125rem; margin-top: .15rem; overflow-wrap: anywhere }
 .adm-comp-badge { min-width: 5.5rem; justify-content: center; text-align: center }
 .adm-comp-badge--operational { color: var(--adm-pos); background: var(--adm-pos-wash); border-color: var(--adm-pos-line) }
 .adm-comp-badge--degraded { color: var(--adm-warn); background: var(--adm-warn-wash); border-color: var(--adm-warn-line) }
@@ -839,7 +839,7 @@ body.page-admin main { flex: 0 0 auto; overflow: visible; width: 100% }
 }
 .adm-email-card__title { margin: 0 0 .25rem; font-size: .875rem; font-weight: 620; color: var(--adm-ink) }
 .adm-email-card__desc { margin: 0 0 .45rem; font-size: .75rem; line-height: 1.5; color: var(--adm-muted) }
-.adm-email-card__subject { margin: 0; font-size: .71875rem; color: var(--adm-faint); word-break: break-word }
+.adm-email-card__subject { margin: 0; font-size: .71875rem; color: var(--adm-faint); overflow-wrap: anywhere }
 .adm-email-frame {
   width: 100%; height: 300px; border: 0; border-top: 1px solid var(--adm-line);
   border-bottom: 1px solid var(--adm-line); background: var(--adm-sunken); display: block;

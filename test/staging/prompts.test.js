@@ -475,3 +475,12 @@ test('the reviewer checks the same named failures, and lets an ASKED-FOR repaint
     assert.match(c, /Wall colour, wallpaper and floor finish may differ ONLY where the user's request above explicitly asked/);
   }
 });
+
+// Seen in the 2026-09-28 eval on four of 25 rooms: a tight crop re-rendered as a wider shot so
+// the furniture would fit, inventing walls and windows outside the photo.
+test('the framing rules forbid pulling the camera back to fit furniture', () => {
+  for (const room of ['Bedroom', 'Bathroom']) {
+    const p = generatePrompt(room, 'standard', '', false);
+    assert.match(p, /NEVER PULL THE CAMERA BACK to make room for furniture/, room);
+  }
+});

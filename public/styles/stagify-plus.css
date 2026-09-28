@@ -531,6 +531,7 @@
 
          `display: flex` sits on an inner span, not on the <th> itself — replacing a
          table-cell's own display takes it out of the table's column model. */
+      /* stylelint-disable-next-line no-duplicate-selectors -- kept beside the ⓘ-column note above that explains it */
       .sp-feature-table tbody th {
         line-height: 1.4;
       }

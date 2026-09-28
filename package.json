@@ -14,7 +14,9 @@
     "test": "npm run typecheck && node --test \"test/**/*.test.js\"",
     "test:coverage": "node scripts/test-coverage.js",
     "test:e2e": "playwright test",
-    "lint": "eslint . --max-warnings=0"
+    "lint": "npm run lint:js && npm run lint:css",
+    "lint:js": "eslint . --max-warnings=0",
+    "lint:css": "stylelint \"**/*.css\" \"**/*.html\" --max-warnings=0"
   },
   "author": "Maximilian Ising",
   "license": "UNLICENSED",
@@ -50,6 +52,9 @@
     "eslint": "^10.6.0",
     "globals": "^17.7.0",
     "nodemon": "^3.0.2",
+    "postcss-html": "^2.0.0",
+    "stylelint": "^17.15.0",
+    "stylelint-config-recommended": "^18.0.0",
     "typescript": "^5.9.3"
   },
   "engines": {

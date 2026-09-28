@@ -541,8 +541,6 @@ html.ex-pro-pending #ex-tool[hidden] { display: grid; }
  * non-binding at this width. The phone breakpoints below reset this to 0 and size the
  * dropzone directly, so they are unaffected. */
 .ex-workspace { padding: 18px; display: flex; flex-direction: column; gap: 14px; min-height: 605px; min-width: 0; }
-.ex-viewer-actions { display: flex; align-self: flex-end; gap: 8px; flex-wrap: wrap; }
-.ex-viewer-actions.hidden { display: none; }
 
 .ex-dropzone {
   width: 100%;
@@ -651,7 +649,7 @@ html.ex-pro-pending #ex-tool[hidden] { display: grid; }
 .ex-result__heading { min-width: 0; }
 .ex-result__title { margin: 0 0 4px; font-size: 15px; font-weight: 700; color: var(--brand-deep); }
 .ex-result__hint { margin: 0; font-size: 13px; color: var(--muted); }
-.ex-viewer-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ex-viewer-actions { display: flex; align-self: flex-end; align-items: center; gap: 8px; flex-wrap: wrap; }
 .ex-viewer-actions.hidden { display: none; }
 /* The row carries three buttons now, and .btn's default padding makes that a wide row that
  * wraps under the title on a narrow column before it needs to. */

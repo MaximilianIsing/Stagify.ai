@@ -1,6 +1,7 @@
 // ESLint flat config (ESLint 9+). Enforced in CI — a warning or error fails the build (.github/workflows/ci.yml).
 //
-// Two linted scopes, each carrying the recommended ruleset:
+// Linted scopes, each carrying the recommended ruleset (CSS is stylelint's job — see
+// stylelint.config.js; `npm run lint` runs both):
 //   1. Backend — server.js, instrument.js, routes/, lib/, the test suite. Node ES modules.
 //   2. Frontend — the files under public/scripts/ that are actual ES modules. This list is
 //      AUTO-DISCOVERED (see scripts/collect-esm-frontend.js): any file with a top-level
@@ -13,13 +14,12 @@
 //   3. Classic scripts — hand-written <script> files under public/scripts/, listed by name in
 //      their own block (sourceType 'script'). A new classic file is NOT picked up automatically;
 //      add it to that list.
+//   4. Tooling — instagram/ and to-build/ (local generators, Node + headless-browser globals).
 //
-// Everything else under public/ — minified/generated bundles (carousel, star-border,
-// sponsors-scroll, language-loader, demo-data, vendor/*) — matches NO block and is
-// intentionally left unlinted. Do NOT add
-// a broad `public/**` ignore: ESLint can't un-ignore files beneath a `/**`-ignored ancestor, which
-// would make the frontend block unreachable; scoping via `files` (below) is what keeps the classic
-// scripts out.
+// The only JS left unlinted is generated or third-party: demo-data.js and vendor/*.min.js. They
+// match NO block. Do NOT add a broad `public/**` ignore: ESLint can't un-ignore files beneath a
+// `/**`-ignored ancestor, which would make the frontend blocks unreachable; scoping via `files`
+// (below) is what keeps the generated files out.
 
 import js from '@eslint/js';
 import globals from 'globals';
@@ -42,8 +42,6 @@ export default [
       'node_modules/**',
       'ds-bundle/**',     // generated bundle
       'supademo-local/**',
-      'instagram/**',     // local-only post generator; deliberately outside the deploy gate
-      'to-build/**',      // source masters (media-png, OG_Image, demos) — not runtime code
       '**/*.min.js',
     ],
   },
@@ -52,6 +50,7 @@ export default [
     // Backend: Node, ES modules.
     files: [
       'eslint.config.js',
+      'stylelint.config.js',
       'server.js',
       'load-env.js',
       'instrument.js',
@@ -214,6 +213,43 @@ export default [
       ...recommendedRules,
       'no-empty': ['error', { allowEmptyCatch: true }],
       'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrors: 'none' }],
+    },
+  },
+
+  {
+    // Local tooling: the instagram/ post generator and the to-build/ asset generators.
+    // Not runtime code, but they write files the site ships (hero combos, demo data), so a
+    // bug here is a bug in production assets. Node scripts that also hand callbacks to a
+    // headless browser (page.evaluate), hence both global sets. Linted but not ratcheted:
+    // no max-lines, and console is their interface.
+    files: ['instagram/**/*.{js,mjs}', 'to-build/**/*.{js,mjs}'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: {
+        ...globals.node,
+        ...globals.browser,
+      },
+    },
+    rules: {
+      ...recommendedRules,
+      'no-empty': ['error', { allowEmptyCatch: true }],
+      'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrors: 'none' }],
+    },
+  },
+
+  {
+    // The classic (non-module) files among the tooling above.
+    files: [
+      'to-build/Iridescent background/iridescence.js',
+      'to-build/demos/demo-player.js',
+      'to-build/demos/demos.js',
+    ],
+    languageOptions: {
+      sourceType: 'script',
+      globals: {
+        module: 'readonly',
+      },
     },
   },
 

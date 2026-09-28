@@ -659,9 +659,6 @@ body {
     overflow-x:clip!important;
     max-width:100%
   }
-  .nav-link {
-    overflow:visible!important
-  }
   body,html {
     overflow-x:clip;
     width:100%;
@@ -688,10 +685,6 @@ body {
     font-size:12px;
     padding:6px 28px 6px 8px;
     min-width:40px
-  }
-  .brand {
-    grid-column:1;
-    grid-row:1
   }
   /* MOBILE nav rhythm — the ONE owner of it, for the row AND the links (.nav-link below).
      It lives here rather than in auth.css/home.css because styles.css is the only sheet
@@ -762,15 +755,19 @@ body {
     flex-direction:column;
     gap:2px;
     max-width:100%;
-    margin-right:12px
+    margin-right:12px;
+    display:block
   }
   .brand {
+    grid-column:1;
+    grid-row:1;
     font-size:24px
   }
   /* NB: the header's own padding/font-size for these links is NOT set here — this
      selector is (0,1,0) and loses to `.site-header .nav-link` further down the file. The
      mobile sizing lives with that rule; see the two media blocks under it. */
   .nav-link {
+    overflow:visible!important;
     background-color:transparent!important;
     color:var(--brand)!important;
     padding:4px 6px!important;
@@ -791,9 +788,6 @@ body {
      still lands ~270px down, nowhere near the fold. */
   .nav-link::before {
     display:none!important
-  }
-  .mobile-test-text {
-    display:block
   }
 }
 #hero-upload,.hero-stage-frame,.image-viewer,.nav-link,.progress,.thumb {
@@ -1846,12 +1840,10 @@ h2 {
    because the subgridded axis takes its gutters from the parent. */
 .tool-row-pair>.tool-row {
   grid-row:span 2;
-  grid-template-rows:subgrid
-}
-/* margin-bottom is zeroed here rather than only above because the mobile blocks
-   further down give every .tool-row one; on a grid item that would grow the
-   pair's single row. The pair takes that spacing itself down there instead. */
-.tool-row-pair>.tool-row {
+  grid-template-rows:subgrid;
+  /* margin-bottom is zeroed here rather than only above because the mobile blocks
+     further down give every .tool-row one; on a grid item that would grow the
+     pair's single row. The pair takes that spacing itself down there instead. */
   margin-top:0;
   margin-bottom:0;
   min-width:0
@@ -2837,10 +2829,6 @@ h2 {
   border-radius:10px;
   cursor:pointer
 }
-.modal-dialog {
-  color:var(--fg);
-  border:1px solid var(--border)
-}
 .thumb img {
   display:block;
   width:140px;
@@ -2865,6 +2853,8 @@ h2 {
    rectangle that overhangs the 16px corners — the browser does not round an element's
    own scrollbar to its border-radius, but it does clip a descendant's. */
 .modal-dialog {
+  color:var(--fg);
+  border:1px solid var(--border);
   position:relative;
   display:flex;
   flex-direction:column;
@@ -3388,8 +3378,7 @@ body:has(.stage-mask-modal.active) .language-picker-container {
   }
   .contact-value {
     font-size:16px;
-    word-break:break-word;
-    overflow-wrap:break-word
+    overflow-wrap:anywhere
   }
   .contact-value a {
   /* !important is load-bearing: contact.html sets style="font-size:18px" inline on
@@ -3412,7 +3401,6 @@ body:has(.stage-mask-modal.active) .language-picker-container {
   }
   .contact-text-desktop {
     white-space:normal!important;
-    word-wrap:break-word!important;
     overflow-wrap:break-word!important
   }
 }
@@ -3572,8 +3560,7 @@ body:has(.stage-mask-modal.active) .language-picker-container {
   }
   .contact-value {
     font-size:14px;
-    word-break:break-word;
-    overflow-wrap:break-word;
+    overflow-wrap:anywhere;
     hyphens:auto
   }
   .contact-value a {
@@ -3602,7 +3589,6 @@ body:has(.stage-mask-modal.active) .language-picker-container {
   }
   .contact-text-desktop {
     white-space:normal!important;
-    word-wrap:break-word!important;
     overflow-wrap:break-word!important
   }
 }

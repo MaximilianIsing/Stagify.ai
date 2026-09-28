@@ -736,7 +736,6 @@
          result, compare divider) would render squeezed while the photo
          overflowed, misaligning strokes from the cursor. */
       .ms-viewer.is-zoomed .ms-stack { max-width: none; }
-      .ms-stack { margin: auto; }
 
       .ms-stack.is-pan { cursor: grab; }
       .ms-stack.is-pan:active { cursor: grabbing; }
@@ -752,8 +751,8 @@
         cursor: pointer;
         background: rgba(255, 255, 255, 0.35);
         padding: 24px;
+        transition: border-color 0.15s ease, background 0.15s ease;
       }
-      .ms-dropzone { transition: border-color 0.15s ease, background 0.15s ease; }
       .ms-dropzone:hover, .ms-dropzone.is-drag-over { border-color: var(--brand); background: rgba(219, 234, 254, 0.45); }
       .ms-dropzone:focus-visible { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); }
       .ms-dz-icon { color: var(--brand); margin-bottom: 10px; }
@@ -787,7 +786,7 @@
         .ms-dz-dots span { animation: none; }
       }
 
-      .ms-stack { position: relative; display: inline-block; max-width: 100%; line-height: 0; }
+      .ms-stack { position: relative; display: inline-block; max-width: 100%; line-height: 0; margin: auto; }
       .ms-stack canvas { border-radius: 12px; }
       #ms-base-canvas {
         display: block;

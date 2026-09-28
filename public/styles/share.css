@@ -216,7 +216,7 @@ body[data-state='unavailable'] .sh-headline { text-align: center; font-size: 1.3
   padding: calc((var(--sh-tap) - 1.4em) / 2) 0;
   color: var(--sh-accent);
   text-decoration: none;
-  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 .sh-agent__link:hover, .sh-agent__link:focus-visible { text-decoration: underline; }
 

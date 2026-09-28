@@ -606,6 +606,7 @@ html.reveal-armed .reveal {
    the vertical padding count toward the box at all; on an inline element it would paint
    but not affect layout or the hit target. The underline stays tight to the text because
    text-decoration follows the text, not the padding. */
+/* stylelint-disable-next-line no-duplicate-selectors -- WCAG 2.5.8 target-size fix, documented above */
 .rs__revert {
   display: inline-block;
   padding: 5px 4px;
@@ -1788,6 +1789,7 @@ body.page-home main {
    IF YOU REMOVE container-type, `cqw` silently falls back to resolving against the
    VIEWPORT and the copy blows out to half the window. test/frontend/home-strips.test.js
    pins the two together. */
+/* stylelint-disable-next-line no-duplicate-selectors -- container-type kept beside the cqw note it pairs with */
 .hstrips--ready {
   container-type: inline-size;
 }
@@ -2536,6 +2538,7 @@ body.page-home main {
       0 0 0 9px rgba(37, 99, 235, 0.12);
   }
 }
+/* stylelint-disable-next-line no-duplicate-selectors -- pulse kept beside its @keyframes */
 .ba-handle::after {
   animation: baHandlePulse 2.6s ease-in-out infinite;
 }
@@ -3122,6 +3125,7 @@ body.page-home main {
    outgoing copy is a clone parked over the original, which is why the row needs to be
    the positioning context. `.nar-source` is a flex row, and an absolutely positioned
    child is out of flow, so this costs the layout nothing. */
+/* stylelint-disable-next-line no-duplicate-selectors -- positioning context for .nar-dissolve, documented above */
 .nar-source {
   position: relative;
 }
@@ -3935,6 +3939,14 @@ body.page-home main {
                              takes a position, there is no "n/a" (2026-08-10 — an
                              empty room cannot try a different look, so that cell
                              LOSES the row rather than sitting it out).
+     [data-vs-col-focus]  -> set by home-whyus.js on .whyus-board while a
+                             competitor column is hovered, focused or pinned.
+                             EVERY dim rule is scoped behind it, so at rest the
+                             table is undimmed and the no-JS render is correct.
+
+   The section had row-group filter pills for about an hour; they and their
+   [data-vs-group] hook are gone. Ten rows fit on a screen, so filtering only
+   hid what the visitor could already read.
 
    CONTRAST, before you reach for a lighter grey anywhere in this block: none of
    this text is on white. .whyus-scroller is rgba(255,255,255,.62) over a page
@@ -3946,13 +3958,6 @@ body.page-home main {
      --slate-deep  #475569  7.58 -> 6.22   <- the lightest one that clears 4.5:1
    Same trap is documented on .tw-loc, where the identical ink fell to 3.73:1 over
    a bluer card. Measure against the composite, never against #fff. */
-     [data-vs-col-focus]  -> set by home-whyus.js on .whyus-board while a
-                             competitor column is hovered, focused or pinned.
-                             EVERY dim rule is scoped behind it, so at rest the
-                             table is undimmed and the no-JS render is correct.
-   The section had row-group filter pills for about an hour; they and their
-   [data-vs-group] hook are gone. Ten rows fit on a screen, so filtering only
-   hid what the visitor could already read. */
 .whyus-board {
   max-width: 1044px;
   margin: 0 auto;
@@ -4808,11 +4813,13 @@ body.page-home main {
    the star nearest the cursor, so entering on the middle star gives 2,1,0,1,2 (outward) and
    entering over the label gives 4,3,2,1,0 (right to left). It clears the inline value on
    pointerleave, which is what hands the defaults below back to the next focus. */
+/* stylelint-disable no-duplicate-selectors -- ripple-origin defaults, grouped apart from the delay rules above on purpose */
 .qr__stars svg:nth-child(1) { --qr-star-step: 0; }
 .qr__stars svg:nth-child(2) { --qr-star-step: 1; }
 .qr__stars svg:nth-child(3) { --qr-star-step: 2; }
 .qr__stars svg:nth-child(4) { --qr-star-step: 3; }
 .qr__stars svg:nth-child(5) { --qr-star-step: 4; }
+/* stylelint-enable no-duplicate-selectors */
 @keyframes qrStarGlow {
   0%,
   100% {

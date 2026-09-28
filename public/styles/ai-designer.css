@@ -103,12 +103,6 @@
         overflow: hidden;
       }
       
-      .chat-input-container {
-        max-width: 900px;
-        margin: 0 auto;
-        width: 100%;
-      }
-      
       .chat-messages {
         flex: 1 1 auto;
         overflow-y: auto;
@@ -191,9 +185,6 @@
         height: 36px;
         align-self: flex-start;
         margin-top: 0;
-      }
-      
-      .message.user .message-avatar {
         background: var(--brand);
         padding: 0;
         overflow: hidden;
@@ -224,14 +215,9 @@
         padding: 12px 16px;
         border-radius: 12px;
         max-width: min(70%, 600px);
-        word-wrap: break-word;
         overflow-wrap: break-word;
         min-width: 0;
         box-sizing: border-box;
-      }
-      
-      .message.assistant .message-content {
-        white-space: pre-wrap;
       }
       
       .message.assistant .message-content strong {
@@ -255,6 +241,7 @@
       }
       
       .message.assistant .message-content {
+        white-space: pre-wrap;
         background: rgba(255, 255, 255, 0.8);
         color: var(--brand-deep);
         border-bottom-left-radius: 4px;

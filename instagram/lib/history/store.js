@@ -83,7 +83,7 @@ function readJsonl(file) {
       try {
         return JSON.parse(line);
       } catch (error) {
-        throw new Error(`${path.basename(file)} line ${i + 1} is not valid JSON: ${error.message}`);
+        throw new Error(`${path.basename(file)} line ${i + 1} is not valid JSON: ${error.message}`, { cause: error });
       }
     });
 }

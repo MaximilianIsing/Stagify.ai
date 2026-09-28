@@ -12,7 +12,7 @@ Two suites, deliberately kept separate:
 npm test         # npm run typecheck, then node --test "test/**/*.test.js"  (both gate deploy)
 npm run typecheck # tsc --noEmit (backend) + scripts/typecheck-frontend.js (frontend) — see Type-checking below
 npm run test:e2e # playwright test                   — browser smokes of every interactive page
-npm run lint     # eslint . --max-warnings=0  (backend + frontend ES modules — see Linting below)
+npm run lint     # eslint (all JS) + stylelint (all CSS, inline <style>) — see Linting below
 ```
 
 > **Tests gate deployment.** `render.yaml`'s build command is `sh scripts/build.sh`,
@@ -321,37 +321,52 @@ Two scopes, one per environment (both deliberately loose for now — `strict: fa
   discovers the ES modules with the **same** collector ESLint uses
   ([`scripts/collect-esm-frontend.js`](../../scripts/collect-esm-frontend.js)) and hands
   them to `tsc` via a throwaway temp config. **Lint scope and type-check scope are
-  therefore identical** — every file we lint we also type-check, and vice-versa. Classic
-  shared-global scripts and `vendor/*.min.js` bundles have no `import`/`export`, so they
-  fall out of both.
+  therefore identical** for the ES modules. Classic shared-global scripts have no
+  `import`/`export`, so they are not type-checked; they are linted through their own
+  by-name ESLint block. `vendor/*.min.js` bundles fall out of both.
 
 ## Linting
 
 ```bash
-npm run lint     # eslint . --max-warnings=0
+npm run lint     # lint:js && lint:css
+npm run lint:js  # eslint . --max-warnings=0
+npm run lint:css # stylelint "**/*.css" "**/*.html" --max-warnings=0
 ```
 
 ESLint uses a flat config ([`eslint.config.js`](../../eslint.config.js)):
 
-- **Two scopes, both linted.**
-  - *Backend* — `eslint.config.js`, `server.js`, `load-env.js`, `instrument.js`, `routes/**`,
-    `lib/**`, `test/**` (Node globals).
-  - *Frontend* — the ES modules under `public/scripts/`, **auto-discovered**: the config scans
+- **Every hand-written JS file is linted.**
+  - *Backend* — `eslint.config.js`, `stylelint.config.js`, `server.js`, `load-env.js`,
+    `instrument.js`, `routes/**`, `lib/**`, `test/**`, `scripts/**` (Node globals).
+  - *Frontend ES modules* — under `public/scripts/`, **auto-discovered**: the config scans
     that tree at load and lints any file with a top-level `export` or static `import … from`
-    (browser globals). As classic `<script>` files migrate to ES modules they start being linted
-    automatically — no config edit needed. Files with neither marker (the render-blocking gate
-    scripts like `preview-gate.js`, and generated/vendor bundles like `demo-data.js`,
-    `vendor/*.min.js`) match no block and stay unlinted — currently 7 of the 75 files under
-    `public/scripts/`; the other 68 are linted **and** type-checked.
-- **No blanket `public/**` ignore.** Only `node_modules`, `ds-bundle`, `supademo-local`,
-  `to-build`, and `*.min.js` are ignored outright. `public/**` is deliberately *not* ignored:
-  ESLint can't un-ignore files beneath a `/**`-ignored ancestor, so a broad ignore would make the
-  frontend allowlist unreachable. Classic scripts stay out by matching no `files` block, not by
-  being ignored.
-- **Deliberately lenient.** Both scopes use `@eslint/js`'s recommended set plus `no-unused-vars`
-  as a **warning** (an `_`-prefixed name is intentionally unused). The frontend scope also allows
-  empty `catch {}` and unused caught-error bindings (`no-empty {allowEmptyCatch}`,
+    (browser globals). These are linted **and** type-checked.
+  - *Frontend classic scripts* — the render-blocking gate scripts (`preview-gate.js`, …),
+    `hero-picker.js`, `demo-player.js` and the rest, **listed by name** with
+    `sourceType: 'script'`. A new classic file must be added to that list. Names bridged in from
+    a module (`window.closeImageModal = …`) are declared with a `/* global */` comment;
+    [`classic-script-globals.test.js`](../../test/frontend/classic-script-globals.test.js)
+    is what checks the bridge itself still exists.
+  - *Tooling* — `instagram/**` and `to-build/**` (Node + browser globals, for the
+    `page.evaluate` callbacks).
+  - *E2E* — `playwright.config.js`, `e2e/**`.
+- **Unlinted by design:** generated `demo-data.js` and `vendor/*.min.js`. They match no block.
+- **No blanket `public/**` ignore.** Only `node_modules`, `ds-bundle`, `supademo-local`, and
+  `*.min.js` are ignored outright. `public/**` is deliberately *not* ignored: ESLint can't
+  un-ignore files beneath a `/**`-ignored ancestor, so a broad ignore would make the frontend
+  allowlists unreachable.
+- **Deliberately lenient.** Every scope uses `@eslint/js`'s recommended set plus `no-unused-vars`
+  as a **warning** (an `_`-prefixed name is intentionally unused). The non-backend scopes also
+  allow empty `catch {}` and unused caught-error bindings (`no-empty {allowEmptyCatch}`,
   `no-unused-vars {caughtErrors:'none'}`) — deliberate best-effort swallows in the UI code.
+
+Stylelint ([`stylelint.config.js`](../../stylelint.config.js)) runs
+`stylelint-config-recommended` (bug rules, no formatting) over every `.css` file and the inline
+`<style>` blocks in HTML (via `postcss-html`). Three adjustments, each explained in the config:
+`no-descending-specificity` is off (200 hits on a component-ordered stylesheet, almost none of
+them real), `clip` is allowed for the `.sr-only` pattern, and consecutive duplicate declarations
+with different values are allowed as viewport-unit fallbacks. A deliberately split duplicate
+selector carries a `stylelint-disable-next-line no-duplicate-selectors -- <reason>` comment.
 
 ## Coverage
 

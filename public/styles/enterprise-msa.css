@@ -99,7 +99,7 @@
       text-transform: uppercase;
       letter-spacing: 0.04em;
       margin: 32px 0 8px;
-      page-break-after: avoid;
+      break-after: avoid;
     }
     h2:first-child { margin-top: 0; }
     h3 {
@@ -108,7 +108,7 @@
       font-weight: 700;
       color: #334155;
       margin: 20px 0 6px;
-      page-break-after: avoid;
+      break-after: avoid;
     }
     p { margin: 0 0 12px; }
     ul, ol { margin: 4px 0 14px; padding-left: 22px; }
@@ -155,7 +155,7 @@
       grid-template-columns: 1fr 1fr;
       gap: 32px;
       margin-top: 28px;
-      page-break-inside: avoid;
+      break-inside: avoid;
     }
     @media (max-width: 600px) {
       .sig-grid { grid-template-columns: 1fr; }
@@ -208,5 +208,5 @@
       .pp-back, .pp-toolbar, .pp-footer { display: none !important; }
       .pp-wrap { padding: 0; max-width: none; }
       .doc { border: none; box-shadow: none; padding: 0; border-radius: 0; }
-      .exhibit { page-break-before: always; }
+      .exhibit { break-before: page; }
     }

@@ -64,7 +64,6 @@ const SERVED = path.join(REPO, 'public/media-webp/example');
    again without re-checking that measurement — `.hp-canvas` is the LCP element. */
 const OUT_W = 1248;
 const OUT_H = 832;
-const OUT_Q = 80;
 
 /* THE SRCSET LADDER. Every candidate is cut from the SAME master buffer, so they cannot
    drift into showing different rooms, and the whole ladder is rebuildable from the PNGs with
