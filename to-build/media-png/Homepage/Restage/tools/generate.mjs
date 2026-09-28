@@ -28,7 +28,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { createGeminiClient } from '../../../../../lib/services/gemini-client.js';
 import { createStagingGeneration } from '../../../../../lib/staging/staging-generation.js';
 import { generateWithQualityRetry } from '../../../../../lib/staging/staging-pipeline.js';
 import { createImageReview } from '../../../../../lib/image/image-review.js';
@@ -105,7 +105,7 @@ function chooseRecipes(n, used, cursor = 0) {
 let pipeline = null;
 function getPipeline() {
   if (pipeline) return pipeline;
-  const genAI = new GoogleGenerativeAI(readKey());
+  const genAI = createGeminiClient(readKey(), { timeoutMs: 300_000, attempts: 3 });
   const { reviewImageQuality } = createImageReview({ genAI });
   pipeline = createStagingGeneration({
     genAI,

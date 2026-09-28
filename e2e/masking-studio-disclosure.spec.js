@@ -178,7 +178,7 @@ test.describe('Masking Studio — virtually staged label', () => {
 
     // Asserted on the TEXT in one shot, for the same reason as the test below: the toast is
     // transient, so two sequential queries against it are a race.
-    await expect(page.locator('#toast-host .toast').first()).toContainText(/label/i);
+    await expect(page.locator('#toast-host .toast', { hasText: /label/i })).toBeVisible();
     await expect(page.locator('#ms-download')).toBeEnabled('so they can untick and retry');
     expect(downloaded).toBe(false);
   });
@@ -200,7 +200,8 @@ test.describe('Masking Studio — virtually staged label', () => {
 
     // ONE assertion, not toBeVisible() followed by toContainText(): the toast removes
     // itself after 4.2s + a fade, so a second query against the same transient element is a
-    // race — and it lost, exactly once, before this was collapsed.
-    await expect(page.locator('#toast-host .toast').first()).toContainText('virtually staged');
+    // race — and it lost, exactly once, before this was collapsed. Matched by text, not
+    // `.first()`: generation's own "All areas staged!" toast can still be on screen ahead of it.
+    await expect(page.locator('#toast-host .toast', { hasText: 'virtually staged' })).toBeVisible();
   });
 });

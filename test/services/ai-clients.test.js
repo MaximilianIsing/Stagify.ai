@@ -8,7 +8,7 @@
 // `null`), so callers — and these tests — observe `null`.
 //
 // Why there is no real API, model, or email call here: constructing a
-// GoogleGenerativeAI / OpenAI / Resend SDK object only stores the key string; the
+// Gemini adapter / OpenAI / Resend SDK object only stores the key string; the
 // SDKs are lazy and make no network request until a method (generateContent,
 // chat.completions.create, emails.send, …) is actually invoked. This suite only
 // ever inspects truthiness of the returned handles and NEVER calls a method on
@@ -112,7 +112,7 @@ test('an empty key leaves its client null — same rule for all three, no empty-
   // guard. GPT_KEY is a fake non-empty key here only so its block isn't under test.
   //
   // genAI used to be the odd one out: it passed '' straight to
-  // new GoogleGenerativeAI(''), which constructs a TRUTHY handle that 400s on every
+  // new GoogleGenerativeAI('') (the old SDK), which constructs a TRUTHY handle that 400s on every
   // call. That read as "configured" to every `if (!genAI)` guard in the codebase, so
   // an empty key produced failing network round-trips instead of a clean no-op — and
   // it made "disable the AI" impossible to express in tests. It now matches the
