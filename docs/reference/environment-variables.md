@@ -59,6 +59,11 @@ GOOGLE_AI_API_KEY=
 # OpenAI key. Powers the chat assistant only; the rest of the app works without
 # it (chat is simply disabled). File fallback: gpt-key.txt
 GPT_KEY=
+# Per-request ceilings (ms) for the AI SDKs, set in lib/services/ai-clients.js.
+# Gemini defaults to 120000 (a normal image render takes ~57s) with one SDK retry;
+# OpenAI defaults to 90000 with its standard two retries. Clamped to 5000-600000.
+GEMINI_TIMEOUT_MS=
+OPENAI_TIMEOUT_MS=
 
 # --- Email (Resend) ---
 # Resend API key for transactional email (password resets, notifications). If
