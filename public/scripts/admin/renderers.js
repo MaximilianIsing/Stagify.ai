@@ -12,7 +12,7 @@ import { createOverview } from './overview.js';
 import { createInsights } from './insights.js';
 import { createSignals } from './signals.js';
 import { createAnalyst } from './analyst.js';
-import { showErrorToast } from '../toast.js';
+import { showErrorToast } from '../shared/toast.js';
 
 /**
  * All admin tab rendering plus the data-derived helpers, over a single shared

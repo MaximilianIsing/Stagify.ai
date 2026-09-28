@@ -1,4 +1,4 @@
-// Tier: frontend island logic (DOM-stubbed) — public/scripts/home-review-stars.js.
+// Tier: frontend island logic (DOM-stubbed) — public/scripts/home/home-review-stars.js.
 //
 // The home outro's "Leave a Google review" link grows its five stars in a 0.06s-per-star
 // wave. The module's whole job is deciding where that wave STARTS: it writes each star's
@@ -38,7 +38,7 @@ const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..')
 // before importing — the 'loading' branch only registers a listener.
 globalThis.document = /** @type {any} */ ({ readyState: 'loading', addEventListener() {} });
 
-const { initReviewStars } = await import('../../public/scripts/home-review-stars.js');
+const { initReviewStars } = await import('../../public/scripts/home/home-review-stars.js');
 
 /** The settle delay inside the module, in ms. Ticked past, never waited on. */
 const SETTLE_MS = 60;

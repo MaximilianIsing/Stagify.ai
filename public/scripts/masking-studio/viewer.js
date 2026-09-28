@@ -1,5 +1,5 @@
 // The phase/view presentation layer for the Masking Studio entry
-// (scripts/masking-studio-app.js): the setPhase state machine, the
+// (scripts/masking-studio/masking-studio-app.js): the setPhase state machine, the
 // before/compare/after view toggle, the compare divider, zoom & pan, and the
 // busy overlay + control-enablement (updateControls). Lifted verbatim from the
 // entry; the private comparePos / busyMsgTimer / busyOverlay module state

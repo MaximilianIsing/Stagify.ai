@@ -1,4 +1,4 @@
-// Tier: frontend island logic (DOM-stubbed) — block 1 of public/scripts/index-inline.js,
+// Tier: frontend island logic (DOM-stubbed) — block 1 of public/scripts/home/index-inline.js,
 // the fragment-landing correction.
 //
 // THE BUG THIS PINS. index-deferred.js runs the below-fold modules AFTER `load`, which is
@@ -119,7 +119,7 @@ function stage(opts) {
 test('a fragment landing is re-asserted when the page resizes under it', async () => {
   const faq = el('faq');
   const harness = stage({ hash: '#faq', nodes: { faq, testimonials: el('testimonials') } });
-  await import(`../../public/scripts/index-inline.js?case=resize`);
+  await import(`../../public/scripts/home/index-inline.js?case=resize`);
 
   assert.deepEqual(faq.scrolls, [{ block: 'start' }], 'lands on the FAQ at load');
   // The deck collapses. Before the fix this is where the visitor silently ended up in
@@ -139,7 +139,7 @@ test('every section is watched, since any of them can be the one that resizes', 
     nodes: { faq, testimonials },
     sections: [testimonials, faq],
   });
-  await import(`../../public/scripts/index-inline.js?case=observe`);
+  await import(`../../public/scripts/home/index-inline.js?case=observe`);
 
   // `main` is the scroll container, so its OWN border box is viewport-sized and never
   // changes — watching it would report nothing. The movers are the sections inside it.
@@ -162,7 +162,7 @@ for (const id of [
     const section = el('studio-showcase');
     const panel = el(id, section, true);
     const harness = stage({ hash: `#${id}`, nodes: { [id]: panel } });
-    await import(`../../public/scripts/index-inline.js?case=panel-${id}`);
+    await import(`../../public/scripts/home/index-inline.js?case=panel-${id}`);
 
     assert.deepEqual(panel.scrolls, [], 'the panel box is never the scroll target');
     assert.deepEqual(section.scrolls, [{ block: 'start' }]);
@@ -177,7 +177,7 @@ test('an anchor outside the carousel is scrolled as itself', async () => {
   const section = el('faq-section');
   const faq = el('faq', section);
   const harness = stage({ hash: '#faq', nodes: { faq } });
-  await import(`../../public/scripts/index-inline.js?case=plain-anchor`);
+  await import(`../../public/scripts/home/index-inline.js?case=plain-anchor`);
 
   assert.deepEqual(faq.scrolls, [{ block: 'start' }]);
   assert.deepEqual(section.scrolls, [], 'not promoted to its section');
@@ -188,7 +188,7 @@ test('an anchor outside the carousel is scrolled as itself', async () => {
 test('once the visitor scrolls, a later resize is left alone', async () => {
   const faq = el('faq');
   const harness = stage({ hash: '#faq', nodes: { faq } });
-  await import(`../../public/scripts/index-inline.js?case=bail`);
+  await import(`../../public/scripts/home/index-inline.js?case=bail`);
   assert.equal(faq.scrolls.length, 1);
 
   harness.interact();
@@ -201,7 +201,7 @@ test('once the visitor scrolls, a later resize is left alone', async () => {
 
 test('a fragment that names nothing on the page arms nothing', async () => {
   const harness = stage({ hash: '#not-a-section', nodes: { faq: el('faq') } });
-  await import(`../../public/scripts/index-inline.js?case=miss`);
+  await import(`../../public/scripts/home/index-inline.js?case=miss`);
 
   assert.deepEqual(harness.observed, [], 'no observer, no timer, no scroll');
 

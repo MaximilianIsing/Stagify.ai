@@ -1,5 +1,5 @@
 // Tier: frontend island logic (DOM-stubbed) — the admin console's boot-time session
-// resume in public/scripts/admin.js.
+// resume in public/scripts/admin/admin.js.
 //
 // WHY ITS OWN FILE. The resume is an IIFE that runs at import time and reads
 // localStorage before anything else happens, so the only way to exercise it is to
@@ -93,7 +93,7 @@ handler = (url) => {
 const settle = async (n = 8) => { for (let i = 0; i < n; i++) await new Promise((r) => setImmediate(r)); };
 
 // The import IS the boot. Everything asserted below already happened by this line.
-await import('../../../public/scripts/admin.js');
+await import('../../../public/scripts/admin/admin.js');
 await settle();
 
 const $ = (id) => dom.querySelector(`#${id}`);

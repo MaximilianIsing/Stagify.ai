@@ -18,7 +18,7 @@
 // which is `data-lang-html` because it contains a mailto link; the composition root
 // re-applies the pack after every paint, which is what makes that safe.
 
-import { escapeHtml } from '../escape-html.js';
+import { escapeHtml } from '../shared/escape-html.js';
 import { chartHtml } from './usage-chart.js';
 import { t, plural } from './i18n.js';
 import { formatCount, formatDuration, formatPercent, noValue, percent } from './format.js';

@@ -17,7 +17,7 @@
 // it is current — every other panel is a snapshot of the last Refresh.
 
 import { qs, el, fmtDateTime } from './helpers.js';
-import { showErrorToast } from '../toast.js';
+import { showErrorToast } from '../shared/toast.js';
 
 const POLL_MS = 30 * 1000;
 

@@ -1,4 +1,4 @@
-// Tier: pure frontend logic — public/scripts/bg-video-start.js.
+// Tier: pure frontend logic — public/scripts/home/bg-video-start.js.
 //
 // This module exists so background.mp4's 1.25 MB stays out of the homepage's LCP window:
 // index.html ships #background-video with `preload="none"` and no `autoplay`, and this
@@ -31,7 +31,7 @@ globalThis.document = /** @type {any} */ ({
   getElementById: () => null,
 });
 
-const { startBackgroundVideo } = await import('../../public/scripts/bg-video-start.js');
+const { startBackgroundVideo } = await import('../../public/scripts/home/bg-video-start.js');
 
 /**
  * A stand-in for the <video>, recording the order of everything the module does to it.

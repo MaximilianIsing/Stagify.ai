@@ -1,7 +1,7 @@
-// Tier: frontend composition root — public/scripts/page-chrome.js.
+// Tier: frontend composition root — public/scripts/site/page-chrome.js.
 //
 // The shared entry for contact, status and guides. It exists because those three
-// pages used to load scripts/app.js — index.html's whole staging application, ~228 KB
+// pages used to load scripts/app/app.js — index.html's whole staging application, ~228 KB
 // across 32 transitive modules — to get two small effects, on pages that carry no
 // #stage-modal at all.
 //
@@ -111,7 +111,7 @@ async function load({ readyState = 'loading', tag = Math.random().toString(36).s
   // Specifier written as a literal prefix + `?v=` suffix, not built from a variable:
   // that is the form untested-frontend-modules.test.js can see statically, so this
   // module counts as covered rather than being reported as untested debt.
-  await withStubs(() => import(`../../public/scripts/page-chrome.js?v=${tag}`));
+  await withStubs(() => import(`../../public/scripts/site/page-chrome.js?v=${tag}`));
   // Snapshot taken at end-of-eval, before any test fires DOMContentLoaded by hand —
   // that is what makes "ran at eval" distinguishable from "ran on the event".
   const tiltRanAtEval = mediaQueries.length > 0;
@@ -171,15 +171,15 @@ test('contact, status and guides load page-chrome.js and NOT the staging app', (
 
     assert.match(
       src,
-      /<script type="module" src="scripts\/page-chrome\.js"><\/script>/,
-      `${page} must load scripts/page-chrome.js`,
+      /<script type="module" src="scripts\/site\/page-chrome\.js"><\/script>/,
+      `${page} must load scripts/site/page-chrome.js`,
     );
     // The regression this change exists to prevent. app.js pulls 32 transitive modules
     // (~228 KB) and this page has no #stage-modal for any of it to act on.
     assert.doesNotMatch(
       src,
-      /src="scripts\/app\.js"/,
-      `${page} must NOT load scripts/app.js — it has no staging markup`,
+      /src="scripts\/app\/app\.js"/,
+      `${page} must NOT load scripts/app/app.js — it has no staging markup`,
     );
   }
 });
@@ -189,7 +189,7 @@ test('page-chrome.js pulls in neither the staging pipeline nor the mask editor',
   // one of its two leaves) that reaches back into the staging graph would silently
   // undo the saving while every assertion above still passed.
   const seen = new Set();
-  const queue = ['public/scripts/page-chrome.js'];
+  const queue = ['public/scripts/site/page-chrome.js'];
   let bytes = 0;
 
   while (queue.length) {

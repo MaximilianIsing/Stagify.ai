@@ -2,7 +2,7 @@
 // import from both the shell (admin.js) and the renderers island. Extracted from
 // admin.js verbatim.
 
-import { copyText } from '../clipboard.js';
+import { copyText } from '../shared/clipboard.js';
 
 export function qs(s){return document.querySelector(s)}
 export function qsa(s){return document.querySelectorAll(s)}
@@ -16,7 +16,7 @@ export function el(tag,a,ch){
 // `String(s||'')` — a no-op wearing a security name — while feeding three
 // `innerHTML` sinks in renderers.js. Keep calling it for anything interpolated
 // into markup; use `el()`/textContent when you are only inserting text.
-export { escapeHtml as esc } from '../escape-html.js';
+export { escapeHtml as esc } from '../shared/escape-html.js';
 
 // ── CSV parser (RFC 4180 compliant) ──
 
@@ -78,7 +78,7 @@ export function fmtBytes(n){
   return (n/1048576).toFixed(1)+' MB';
 }
 
-// The two-path copy itself now lives in scripts/clipboard.js, shared with the gallery's
+// The two-path copy itself now lives in scripts/shared/clipboard.js, shared with the gallery's
 // share-link button. This keeps the (text, btn) call shape the four admin call sites use.
 export function copyToClipboard(text,btn){
   var done=function(){if(!btn)return;var o=btn.textContent;btn.textContent='Copied!';setTimeout(function(){btn.textContent=o},1200)};

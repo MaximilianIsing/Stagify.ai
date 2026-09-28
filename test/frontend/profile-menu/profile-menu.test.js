@@ -1,4 +1,4 @@
-// The profile dropdown's rendering (public/scripts/profile-menu.js).
+// The profile dropdown's rendering (public/scripts/profile-menu/profile-menu.js).
 //
 // Companion to auth-modal.test.js: both files were ES5 extraction artifacts that
 // got modernized (`var` → `const`/`let`), and a keyword swap is not as safe as it
@@ -23,7 +23,7 @@ const dom = installAuthModalDom({
   extraIds: ['profile-menu-btn', 'profile-menu-dropdown'],
 });
 
-await import('../../../public/scripts/profile-menu.js');
+await import('../../../public/scripts/profile-menu/profile-menu.js');
 
 const menu = globalThis.window.StagifyProfileMenu;
 const dropdown = dom.el('profile-menu-dropdown');

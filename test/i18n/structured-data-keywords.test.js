@@ -12,7 +12,7 @@
 //
 // #2 exists because of how #1 nearly went wrong. Both renderers used to find the
 // keywords key by scraping the meta tag: lib/i18n/render-page.js regex-matched it and
-// fell back to 'meta.keywords', and public/scripts/language-loader.js hardcoded
+// fell back to 'meta.keywords', and public/scripts/i18n/language-loader.js hardcoded
 // 'meta.keywords' outright. Deleting the tag would therefore not have removed the
 // localized keywords from the three studio pages — it would have silently swapped in
 // the HOMEPAGE's keyword list, on pages describing entirely different tools. Nothing
@@ -168,7 +168,7 @@ test('the renderer localizes keywords from the attribute, and invents none witho
 test('the client mirrors the server: language-loader reads the same attribute', () => {
   // The two renderers are separate implementations of one rule, and the client's was
   // the one that had the bug. Pin that it reads the attribute rather than a literal.
-  const src = fs.readFileSync(path.join(PUBLIC, 'scripts', 'language-loader.js'), 'utf8')
+  const src = fs.readFileSync(path.join(PUBLIC, 'scripts', 'i18n', 'language-loader.js'), 'utf8')
     .replace(/\/\/[^\n]*/g, '')          // a comment naming the call is not the call
     .replace(/\/\*[\s\S]*?\*\//g, '');
   assert.match(src, /getAttribute\(\s*['"]data-lang-keywords['"]\s*\)/);

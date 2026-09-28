@@ -1,4 +1,4 @@
-// Stage mask editor island for the main Stagify tool (scripts/app.js).
+// Stage mask editor island for the main Stagify tool (scripts/app/app.js).
 //
 // The brush-mask "edit with AI" subsystem for the staging tool's Before/After
 // canvases. A factory that owns its state and receives the glue it needs from
@@ -11,8 +11,8 @@
 // reference photo, sizing, refine maths, the /api/mask-edit request and the
 // phase copy are all shared — see scripts/mask/.
 //
-import { buildBlendMask, compositeMaskedEdit } from '../mask-core.js';
-import { showErrorToast } from '../toast.js';
+import { buildBlendMask, compositeMaskedEdit } from '../mask/mask-core.js';
+import { showErrorToast } from '../shared/toast.js';
 // Everything under scripts/mask/ is shared with the AI Designer's mask editor.
 // All of it used to exist twice: some inline here and extracted there, the rest
 // duplicated on both sides.

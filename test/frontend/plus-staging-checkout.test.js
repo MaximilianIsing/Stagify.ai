@@ -1,10 +1,10 @@
 // Tier: frontend island logic (DOM-stubbed) — the IS_STAGING branch of
-// public/scripts/stagify-plus.js.
+// public/scripts/plus/stagify-plus.js.
 //
 // WHY THIS EXISTS
 // The staging branch disables checkout, and the cheapest way to make a button look
 // disabled was to borrow the subscriber's class, `sp-gradient-checkout-btn--subscribed`.
-// That class is not a style: public/scripts/stagify-plus-blackhole.js reads it as
+// That class is not a style: public/scripts/plus/stagify-plus-blackhole.js reads it as
 // "this viewer is already Stagify+" and pins the black-hole lens to zero for them. So
 // staging — the one place the page is actually looked at before it ships — was the one
 // place the effect never ran, and nobody could see they had broken it.
@@ -36,7 +36,7 @@ const ready = [];
 globalThis.document.addEventListener = (type, fn) => {
   if (type === 'DOMContentLoaded') ready.push(fn);
 };
-const { applyStripeCheckout } = await import('../../public/scripts/stagify-plus.js');
+const { applyStripeCheckout } = await import('../../public/scripts/plus/stagify-plus.js');
 assert.equal(ready.length, 1, 'stagify-plus.js no longer boots from DOMContentLoaded');
 
 /**

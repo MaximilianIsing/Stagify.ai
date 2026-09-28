@@ -1,5 +1,5 @@
 // Tier: frontend island logic (DOM-stubbed) + a markup drift guard —
-// public/scripts/staging-menu.js and the nav block it drives.
+// public/scripts/site/staging-menu.js and the nav block it drives.
 //
 // The top nav's "Staging" dropdown replaced two bare links (AI Designer, Masking
 // Studio) that auth.js revealed by stripping `.hidden`. Two things about that
@@ -73,7 +73,7 @@ function mountMenu({ plan, proItems = [makeItem({ pro: true }), makeItem({ pro: 
 // The module self-initialises on import (it wires the dropdown), so a document
 // has to exist before the import — not after.
 mountMenu({ plan: undefined, proItems: [] });
-const { stagingItemLocked, syncStagingMenu } = await import('../../public/scripts/staging-menu.js');
+const { stagingItemLocked, syncStagingMenu } = await import('../../public/scripts/site/staging-menu.js');
 
 // ---- The pure rule ---------------------------------------------------------
 
@@ -215,7 +215,7 @@ test('the staging menu lists the five tools in order, with the right four locked
   );
 
   // Relative and un-prefixed, so the locale rewriters (lib/i18n/render-page.js's
-  // rewriteHref and scripts/i18n-routing.js's localizeLinks) can re-point them at
+  // rewriteHref and scripts/i18n/i18n-routing.js's localizeLinks) can re-point them at
   // /es, /fr, … — a leading slash would strand non-English visitors in English.
   for (const href of hrefs) assert.ok(!href.startsWith('/'), `${href} must stay relative`);
 
@@ -273,7 +273,7 @@ test('the lock is the only Stagify+ mark, and it is what announces the state', (
 
 test('the AI Designer row — and only it — is hidden on phones', () => {
   // The AI Designer is a PC-only tool. Offering it in the nav on a phone is a dead
-  // end: public/scripts/ai-designer-gate.js bounces a phone-sized viewport straight
+  // end: public/scripts/gates/ai-designer-gate.js bounces a phone-sized viewport straight
   // back to the home page, so the row would advertise a tool that answers a tap by
   // undoing it. The other three rows must stay — a phone had NO nav path to any
   // staging tool until 2026-08-01 (see the header above), and that is not being
@@ -468,7 +468,7 @@ test('every nav-bearing page carries the Gallery tab, between Staging and Guides
     if (gallery === -1) { missing.push(name); continue; }
     // Hidden twice over, and both are load-bearing:
     //   `desktop-only` — PC-only, like the AI Designer row above it;
-    //   `hidden`       — signed-out visitors, stripped by scripts/gallery-tab.js once
+    //   `hidden`       — signed-out visitors, stripped by scripts/site/gallery-tab.js once
     //                    /api/auth/me answers. It must SHIP hidden, or every visitor
     //                    sees the tab for a moment and then has it taken away.
     // gallery-gate.js turns both of those visitors away from the URL as well, so a

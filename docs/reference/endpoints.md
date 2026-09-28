@@ -97,7 +97,7 @@ which also holds the three deliberate exemptions (the two redirect stubs below, 
 > **Stagify+ personal subscription flow (no server endpoint).** Unlike the enterprise
 > plan (`POST /api/enterprise/create-checkout`, below), the individual Stagify+ plan does
 > **not** create a server-side Checkout Session. The "Start free trial" button on
-> `stagify-plus.html` is a Stripe **Payment Link** (`scripts/stagify-plus.js` appends the
+> `stagify-plus.html` is a Stripe **Payment Link** (`scripts/plus/stagify-plus.js` appends the
 > signed-in user's `client_reference_id` + `prefilled_email`). Stripe hosts checkout,
 > fires `checkout.session.completed` to `POST /api/billing/stripe-webhook` (which upgrades
 > the account to `pro`), then redirects the buyer to **`/plus-welcome.html`** — the
@@ -384,7 +384,7 @@ Notes that bite:
 - **Disclosure is not fully the model's call.** An `eye-level` render is a furnished
   depiction of a real listing, so it is **always** stamped; a `top-down` plan render is a
   diagram, so there the routing model's `disclosure` decision stands.
-- **PDFs are rasterized in the browser**, by `public/scripts/pdf-page-to-image.js`, before
+- **PDFs are rasterized in the browser**, by `public/scripts/shared/pdf-page-to-image.js`, before
   upload. The server has never been able to read a PDF: `lib/chat/chat-upload-prep.js`
   accepts `application/pdf` and reduces it to the placeholder text `[File: … Content
   cannot be directly read]`. Page 1 only.

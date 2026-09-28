@@ -1,5 +1,5 @@
 // Area-layer model + all layer/chip DOM rendering for the Masking Studio entry
-// (scripts/masking-studio-app.js). Owns create/remove/find/active-layer, the
+// (scripts/masking-studio/masking-studio-app.js). Owns create/remove/find/active-layer, the
 // palette-color/title/status binding wrappers, the big renderLayers card
 // builder, the quick-switch chip bar, and the add-layer button + languagechange
 // wiring. Lifted verbatim from the entry; cross-island collaborators arrive via

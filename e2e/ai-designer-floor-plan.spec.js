@@ -9,7 +9,7 @@
 //      transcript AND from the history the next turn is built from. There is a unit test
 //      for the handler, but "both images are actually on the page" is a claim only a real
 //      DOM can make.
-//   2. The PDF rasterizer. public/scripts/pdf-page-to-image.js converts a floor-plan PDF to
+//   2. The PDF rasterizer. public/scripts/shared/pdf-page-to-image.js converts a floor-plan PDF to
 //      a PNG in the browser because the server has never been able to read a PDF. Its pure
 //      helpers are unit-tested; the pdf.js + canvas half needs a browser, and needs a
 //      FOREGROUND one — pdf.js drives page.render() with requestAnimationFrame, which never

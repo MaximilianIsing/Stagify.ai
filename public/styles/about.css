@@ -418,7 +418,7 @@
   color: var(--brand-deep);
 }
 
-/* The two toast templates scripts/brand-kit.js reads. They carry `hidden`, so the UA
+/* The two toast templates scripts/pages/brand-kit.js reads. They carry `hidden`, so the UA
    already keeps them off the page — this rule is the belt to that brace, because
    `hidden` is only `display: none` at the UA level and any later rule that gives these
    spans a display would print both messages under the swatches. They are markup solely

@@ -16,8 +16,8 @@ import { dirname, join } from 'node:path';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const html = readFileSync(join(root, 'public', 'index.html'), 'utf8');
 const css = readFileSync(join(root, 'public', 'styles', 'home.css'), 'utf8');
-const appJs = readFileSync(join(root, 'public', 'scripts', 'app.js'), 'utf8');
-const boot = readFileSync(join(root, 'public', 'scripts', 'hero-cta-boot.js'), 'utf8');
+const appJs = readFileSync(join(root, 'public', 'scripts', 'app', 'app.js'), 'utf8');
+const boot = readFileSync(join(root, 'public', 'scripts', 'home', 'hero-cta-boot.js'), 'utf8');
 
 // Bounded at the first </section>, which is this one's: the closing row contains no
 // nested <section>. An unbounded slice runs to the end of the file and silently drags
@@ -52,7 +52,7 @@ test('the closing row exists and is the last section in <main>', () => {
 test('the closing button is wired to the staging flow in hero-cta-boot.js', () => {
   // THE BINDING MOVED OUT OF app.js on 2026-08-19. app.js is 38 modules and ~267 KB, and
   // nothing in it is reachable until somebody starts staging, so it now loads from
-  // scripts/index-deferred.js after `load` instead of inside the LCP window. That leaves a
+  // scripts/home/index-deferred.js after `load` instead of inside the LCP window. That leaves a
   // window where these buttons are painted and app.js has not arrived, which is why the
   // binding lives in a small zero-import module that IS still in <head>: a click there
   // pulls app.js in and then calls the hook. app.js must NOT also bind them — two
@@ -85,7 +85,7 @@ test('the closing button is wired to the staging flow in hero-cta-boot.js', () =
   );
   assert.match(
     html,
-    /<script type="module" src="scripts\/hero-cta-boot\.js">/,
+    /<script type="module" src="scripts\/home\/hero-cta-boot\.js">/,
     'index.html must still load hero-cta-boot.js as a normal <head> module — deferring it '
       + 'too would put the gap it exists to cover back exactly where it was',
   );

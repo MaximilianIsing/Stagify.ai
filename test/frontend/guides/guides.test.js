@@ -18,7 +18,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { initGuides, demoFromHash } from '../../../public/scripts/guides.js';
+import { initGuides, demoFromHash } from '../../../public/scripts/guides/guides.js';
 import { guidesDocument, pageTabs, pageSource } from '../../helpers/guides-dom.js';
 
 const selected = (ctx) => ctx.tabs.find((t) => t.getAttribute('aria-selected') === 'true');

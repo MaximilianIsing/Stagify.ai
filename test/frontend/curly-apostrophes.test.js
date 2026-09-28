@@ -24,7 +24,7 @@
 //   - Primes. `12' × 15'` in the dorm-room article is feet, not an apostrophe,
 //     so the patterns below are anchored to LETTERS on both sides (and to a
 //     plural `s` for the possessive case). A digit-adjacent ' is legal.
-//   - public/scripts/demo-data.js and the HowTo JSON-LD in guides.html. Both
+//   - public/scripts/guides/demo-data.js and the HowTo JSON-LD in guides.html. Both
 //     are generated from to-build/demos/demos.json, which is a Supademo export
 //     — hand-curling it would be undone by the next export. If that pipeline
 //     ever starts emitting ’, delete the exemption rather than working around

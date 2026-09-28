@@ -1,4 +1,4 @@
-// Tier: frontend gate behaviour — public/scripts/session-class.js and the CSS pair it
+// Tier: frontend gate behaviour — public/scripts/site/session-class.js and the CSS pair it
 // switches on.
 //
 // The Gallery tab ships hidden, which is right: signed-out is the no-JS default and what a
@@ -27,7 +27,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const PUBLIC = path.join(ROOT, 'public');
-const SCRIPT = path.join(PUBLIC, 'scripts', 'session-class.js');
+const SCRIPT = path.join(PUBLIC, 'scripts', 'site', 'session-class.js');
 const CSS = path.join(PUBLIC, 'styles', 'styles.css');
 
 const source = fs.readFileSync(SCRIPT, 'utf8');

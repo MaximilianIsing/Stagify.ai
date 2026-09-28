@@ -14,7 +14,7 @@
 // rerun the build — and this file is what turns that into a red build rather than an
 // hreflang pointing at a 404.
 //
-// The same idiom, and the same reasoning, as public/scripts/locale-data.js.
+// The same idiom, and the same reasoning, as public/scripts/i18n/locale-data.js.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';

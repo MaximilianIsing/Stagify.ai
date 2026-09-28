@@ -71,7 +71,7 @@ async function stubApi(page, { credits = CREDITS, keys = KEYS, usage = USAGE } =
 }
 
 test.describe('Developer docs', () => {
-  // The docs page is PC-only: scripts/developers-gate.js redirects a phone-sized
+  // The docs page is PC-only: scripts/gates/developers-gate.js redirects a phone-sized
   // viewport to the home page before paint, so on mobile-chrome every assertion below
   // would be made against index.html. The gate's own behaviour is covered in
   // test/frontend/developers/developers-gate-mobile.test.js, and the footer link that

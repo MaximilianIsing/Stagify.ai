@@ -6,7 +6,7 @@
 // handler, before the model is touched (see lib/staging/exterior-handler.js). One
 // request, one answer.
 
-import { unstageableMessage } from '../unstageable-message.js';
+import { unstageableMessage } from '../shared/unstageable-message.js';
 
 /**
  * How long to wait for a render.

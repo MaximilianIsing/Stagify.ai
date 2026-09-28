@@ -22,7 +22,7 @@ const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..')
 const LANG_DIR = path.join(ROOT, 'public', 'languages');
 const TEMPLATE = path.join(ROOT, 'public', 'scripts', 'profile-menu', 'report-issue-template.js');
 const MODAL = path.join(ROOT, 'public', 'scripts', 'profile-menu', 'report-issue-modal.js');
-const MENU = path.join(ROOT, 'public', 'scripts', 'profile-menu.js');
+const MENU = path.join(ROOT, 'public', 'scripts', 'profile-menu', 'profile-menu.js');
 
 // English is served at the root as static files rather than through a LOCALES entry,
 // so pull it in explicitly — it needs the keys like every other pack.

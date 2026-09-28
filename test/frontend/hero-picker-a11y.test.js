@@ -31,7 +31,7 @@ const root = process.cwd();
 const read = (rel) => fs.readFileSync(path.join(root, rel), 'utf8');
 
 const INDEX = read('public/index.html');
-const JS = read('public/scripts/hero-picker.js');
+const JS = read('public/scripts/home/hero-picker.js');
 const CSS = read('public/styles/hero-picker.css');
 
 /** Source with comments stripped, so prose describing a rule never satisfies a check for it. */

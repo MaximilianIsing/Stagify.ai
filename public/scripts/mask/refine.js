@@ -5,7 +5,7 @@
 // Both mask editors carried identical copies of all of this, including the two
 // magic ratios and the 55%-ghost overlay. Re-cropping is instant and free — no
 // API call — which is the whole point of the refine phase.
-import { buildBlendMask, compositeMaskedEditCanvas } from '../mask-core.js';
+import { buildBlendMask, compositeMaskedEditCanvas } from './mask-core.js';
 
 // Secret brush expansion: grow the selection a little so slight under-brushing is
 // still covered, with a feathered edge so the composite shows no seam. Kept

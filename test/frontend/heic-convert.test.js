@@ -1,4 +1,4 @@
-// Tier: pure frontend logic — public/scripts/heic-convert.js.
+// Tier: pure frontend logic — public/scripts/shared/heic-convert.js.
 //
 // Covers the two pure exports the browser's HEIC pipeline relies on:
 //   - sniff(bytes): identifies an image by its real leading bytes (magic numbers +
@@ -13,7 +13,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 globalThis.window = globalThis.window || {};
-const { sniff, isHeic } = await import('../../public/scripts/heic-convert.js');
+const { sniff, isHeic } = await import('../../public/scripts/shared/heic-convert.js');
 
 // Build a >=12-byte Uint8Array from ascii strings and/or raw byte numbers.
 function bytes(...parts) {

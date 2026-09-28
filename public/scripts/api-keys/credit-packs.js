@@ -11,7 +11,7 @@
 // environment with billing half-configured shows fewer cards rather than cards that
 // lead to a broken checkout.
 
-import { escapeHtml } from '../escape-html.js';
+import { escapeHtml } from '../shared/escape-html.js';
 
 /**
  * Format a price in whole currency units.

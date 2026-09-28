@@ -75,7 +75,7 @@ test('the eyebrow markup and the English pack say the same thing', () => {
   assert.ok(
     !/data-hover-glow/.test(tag[0]),
     'the hero eyebrow carries data-hover-glow again.\n' +
-      'public/scripts/hover-glow.js writes the effect as INLINE styles and reverts with ' +
+      'public/scripts/fx/hover-glow.js writes the effect as INLINE styles and reverts with ' +
       "`textShadow = 'none'` on mouseout. 'none' is a value, not a removal, and an inline " +
       'style outranks the sheet — so from the first hover onwards the eyebrow permanently ' +
       'loses the `0 1px 10px rgba(9,17,45,.5)` scrim shadow in hero-picker.css that carries ' +

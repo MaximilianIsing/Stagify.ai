@@ -23,7 +23,7 @@ import {
   isPhone,
   setLabel,
   wantsRotation,
-} from '../../public/scripts/immersive-view.js';
+} from '../../public/scripts/shared/immersive-view.js';
 
 // ── the fake DOM ─────────────────────────────────────────────────────────────
 

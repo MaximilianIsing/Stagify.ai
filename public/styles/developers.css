@@ -18,7 +18,7 @@
    an opaque sheet, hairline rules, persistent navigation, no floating cards.
 
    DESKTOP ONLY. Three columns cannot survive a phone, and rather than reflow them into
-   something worse, scripts/developers-gate.js redirects a phone-sized viewport to the
+   something worse, scripts/gates/developers-gate.js redirects a phone-sized viewport to the
    home page before paint — the same treatment the gallery and AI Designer get. The
    footer link that points here is wrapped in `.desktop-only` so the two agree; that
    pairing is enforced by test/frontend/desktop-only-gates.test.js. Nothing below
@@ -35,7 +35,7 @@
    gradient, leaving a lavender band under an otherwise white sheet. Scoped from the
    body class instead, which is how index.html already distinguishes itself.
 
-   This page also does NOT load scripts/aurora-scrollbar.js. That script adds
+   This page also does NOT load scripts/fx/aurora-scrollbar.js. That script adds
    html.aurora-on, and that class is the only thing hiding the styled native scrollbar
    (styles.css) behind the animated gradient overlay — so simply not loading it gives
    this page the plain blue bar, with no opt-out flag to keep in sync. */
@@ -715,7 +715,7 @@ code {
      - NOTES ARE LEFT-BORDERED, like `.dev-note` and `.dev-warn`.
    Everything is prefixed `.ak-`; developers.html loads this file and uses none of it.
 
-   The page is PC-only (scripts/api-keys-gate.js), so there is no phone layout here
+   The page is PC-only (scripts/gates/api-keys-gate.js), so there is no phone layout here
    on purpose. The one media query at the end is for a WINDOWED desktop browser.
    ═══════════════════════════════════════════════════════════════════════════ */
 

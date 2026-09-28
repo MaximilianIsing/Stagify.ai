@@ -32,7 +32,7 @@ function pageSources() {
     .map((f) => path.join('scripts', 'api-keys', f));
   return [
     'api-keys.html',
-    path.join('scripts', 'api-keys-app.js'),
+    path.join('scripts', 'api-keys', 'api-keys-app.js'),
     ...scripts,
   ];
 }

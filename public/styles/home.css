@@ -52,7 +52,7 @@
 /* --- Reveal on scroll ---------------------------------------------------- */
 /* THIS RULE HIDES MOST OF THE PAGE. 37 elements on the homepage carry .reveal
    (plus the #learn checklist below, which keys off the same .is-visible), and the
-   only thing that ever un-hides them is scripts/home-reveal.js — which is not a
+   only thing that ever un-hides them is scripts/home/home-reveal.js — which is not a
    <script> tag at all: index-deferred.js injects it on `load` + requestIdleCallback.
    So every failure that keeps that module from running (JS disabled, a 404, a CSP
    block, a parse error anywhere in the injected batch, no ES-module support) used
@@ -166,7 +166,7 @@ html.reveal-armed .reveal {
 /* The `.ba` wipe below is NO LONGER USED BY THIS SECTION. #restage replaced it; the
    only surviving mount is #exterior-studio-demo inside the studio showcase carousel
    (see section 8b and the note at index.html's exterior panel), which still uses every
-   `.ba*` rule here plus scripts/staging-studio.js's mountWipe(). Do not delete them as
+   `.ba*` rule here plus scripts/home/staging-studio.js's mountWipe(). Do not delete them as
    dead — grep `.ba-handle` before touching anything in this block. */
 .ba {
   position: relative;
@@ -793,7 +793,7 @@ html.reveal-armed .reveal {
    change (translate3d(0,0,0) rotateY(0deg) scale(1)) rather than, say, a
    scale(1.02) that would silently skew every hit test inside it.
 
-   Geometry is written by scripts/studio-showcase.js as inline transforms; this
+   Geometry is written by scripts/showcase/studio-showcase.js as inline transforms; this
    file owns the look, the transition and the no-JS fallback. */
 
 /* The side panels are translated well past the section on purpose, so the arc runs
@@ -1077,7 +1077,7 @@ body.page-home main {
   display: block;
 }
 /* On a phone this control is not a fullscreen toggle at all — it opens the
-   rotate-to-landscape view (scripts/immersive-view.js), so it shows a phone-rotating
+   rotate-to-landscape view (scripts/shared/immersive-view.js), so it shows a phone-rotating
    glyph instead of the expand arrows. `.is-mobile-rotate` is added by that module
    from PHONE_QUERY and re-evaluated when the query flips, so a tablet that gets
    rotated or a laptop that gains a trackpad lands on the right glyph.
@@ -1211,7 +1211,7 @@ body.page-home main {
 
 /* --- The immersive presentation ---
    The class-path twin of the `:fullscreen` block above, for the rotate-to-landscape
-   view that phones get instead (scripts/immersive-view.js portals .shw__media into
+   view that phones get instead (scripts/shared/immersive-view.js portals .shw__media into
    an overlay on <body> rather than into the browser's top layer).
 
    DELIBERATELY DUPLICATED rather than folded into the selector list above. A CSS
@@ -1340,7 +1340,7 @@ body.page-home main {
    at its own ratio and this box sizes the SKELETON — the shape you look at until the
    player mounts, at which point .designer-demo.sdp releases the ratio to .sdp__frame's
    --ar. A disagreement here is therefore a visible jump on mount, not a static crop.
-   Keep these equal to the demo's `aspect` in scripts/demo-data.js; a test derives the
+   Keep these equal to the demo's `aspect` in scripts/guides/demo-data.js; a test derives the
    expectation from that file, so it cannot drift again.
 
    Staging is the panel that is in front on load, and it was the one that was wrong:
@@ -1436,7 +1436,7 @@ body.page-home main {
    towering over the exterior one.
 
    The exterior panel additionally reuses the .ba wipe from section 1 verbatim —
-   same markup, same handle, same JS (scripts/staging-studio.js mounts both roots
+   same markup, same handle, same JS (scripts/home/staging-studio.js mounts both roots
    off one function). Only the frame ratio is specific to it.
    ========================================================================== */
 .shw__split {
@@ -1539,7 +1539,7 @@ body.page-home main {
    paragraphs.
 
    THE FALLBACK IS THE FIRST BLOCK, NOT AN AFTERTHOUGHT. Everything that makes this a
-   strip widget is gated behind `.hstrips--ready`, which scripts/home-strips.js adds.
+   strip widget is gated behind `.hstrips--ready`, which scripts/home/home-strips.js adds.
    index-deferred.js injects that file after `load`, so there is a real window — and a
    real failure mode (JS off, a 404, a parse error anywhere in the injected batch) —
    where this markup is all the visitor gets. Un-upgraded it must read as four ordinary
@@ -1856,7 +1856,7 @@ body.page-home main {
    (`.cmp-source`) outlived the table for a while as a shared class, but #compare's
    citation was removed and #ai-shift's is now a row inside the NAR card itself —
    see `.nar-source` in the "Don't fall behind" section below.
-   Behaviour lives in scripts/home-figures.js.
+   Behaviour lives in scripts/home/home-figures.js.
    ========================================================================== */
 .calc {
   background: rgba(255, 255, 255, 0.5);
@@ -2359,7 +2359,7 @@ body.page-home main {
      to open into. Below this the strips go back to a stack, still one-open-at-a-time
      but growing downward, with every title horizontal again.
 
-     THIS BREAKPOINT IS MIRRORED IN scripts/home-strips.js (FLAT_QUERY). Move one and
+     THIS BREAKPOINT IS MIRRORED IN scripts/home/home-strips.js (FLAT_QUERY). Move one and
      you must move the other; test/frontend/home-strips.test.js fails if they drift. */
   .hstrips--ready {
     flex-direction: column;
@@ -2548,7 +2548,7 @@ body.page-home main {
 
 /* The Bedroom/Living/Dining segmented control that used to sit here went with the
    before/after wipe — #restage stages one room, so there is nothing to switch between.
-   scripts/staging-studio.js's mountExamples() was retired in the same change. */
+   scripts/home/staging-studio.js's mountExamples() was retired in the same change. */
 
 /* respect reduced motion for all of the above */
 @media (prefers-reduced-motion: reduce) {
@@ -4809,7 +4809,7 @@ body.page-home main {
    authored here are the left-to-right wave (0,1,2,3,4) this shipped with, and they are what
    a visitor gets with no JS and what a KEYBOARD focus always gets, since there is no cursor
    to originate at.
-   scripts/home-review-stars.js overrides them inline on pointerenter with the distance from
+   scripts/home/home-review-stars.js overrides them inline on pointerenter with the distance from
    the star nearest the cursor, so entering on the middle star gives 2,1,0,1,2 (outward) and
    entering over the label gives 4,3,2,1,0 (right to left). It clears the inline value on
    pointerleave, which is what hands the defaults below back to the next focus. */
@@ -5057,7 +5057,7 @@ body.page-home main {
 /* ==========================================================================
    Testimonials — a DECK of seven glass quote cards. The top card is readable, the
    rest fan out behind it, and you drag it away (or use the arrows) to advance.
-   Driven by scripts/home-testimonials.js.
+   Driven by scripts/home/home-testimonials.js.
 
    PROGRESSIVE ENHANCEMENT IS THE CONTRACT. Every deck rule below is scoped behind
    `.tw-deck--ready`, which that script adds. With no JS the markup renders as what
@@ -5487,7 +5487,7 @@ a.tw-name:focus-visible .tw-li {
 /* ==========================================================================
    Gallery showcase — a CSS mock of the signed-in gallery
    Links NOWHERE on purpose: gallery.html redirects anyone signed out or on a
-   <=768px screen (scripts/gallery-gate.js), so a CTA would dead-end.
+   <=768px screen (scripts/gates/gallery-gate.js), so a CTA would dead-end.
 
    PREFIX IS hgal-, DELIBERATELY. Not .gal-* (that is the real gallery page,
    styles/gallery.css, which index.html does not load) and not .gallery /

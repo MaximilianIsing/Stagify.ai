@@ -1,5 +1,5 @@
 // Entry points into the home page's two staging screens from OUTSIDE the home
-// page — i.e. from the top nav's "Staging" dropdown (scripts/staging-menu.js).
+// page — i.e. from the top nav's "Staging" dropdown (scripts/site/staging-menu.js).
 //
 // Two halves, because the dropdown lives on nine pages and this file only on
 // one:
@@ -14,7 +14,7 @@
 // reopen the screen on every refresh and on Back, which is not what a visitor
 // who just closed it expects.
 
-import { localizedTarget } from '../i18n-routing.js';
+import { localizedTarget } from '../i18n/i18n-routing.js';
 
 /** @type {Record<string, 'stage' | 'basic-mask'>} */
 const HASH_ACTIONS = {

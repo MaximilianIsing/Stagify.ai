@@ -1,4 +1,4 @@
-// Before/After version carousel island for the main Stagify tool (scripts/app.js).
+// Before/After version carousel island for the main Stagify tool (scripts/app/app.js).
 //
 // Owns the before/after version arrays (uploaded photo + masked edits vs the
 // staged results + masked refinements), the Before/After view toggle, and the

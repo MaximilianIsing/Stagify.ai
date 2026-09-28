@@ -39,7 +39,7 @@ changed pixels exactly like furniture does. There is no cheap proxy. Look at the
    WebP. (The direction of truth is reversed for this set — see `../README.md`.)
 3. Appends the recipe to `../manifest.json` as a new batch, and marks any slot it replaced
    `supersededBy`.
-4. Rewrites the `RESTAGE_POOL` array in `public/scripts/restage-pool.js` to match the disk.
+4. Rewrites the `RESTAGE_POOL` array in `public/scripts/home/restage-pool.js` to match the disk.
 
 Step 4 is the one a test enforces (`test/frontend/home-restage.test.js` fails the build when
 the checked-in list and the files disagree), and it is the step that used to get forgotten.

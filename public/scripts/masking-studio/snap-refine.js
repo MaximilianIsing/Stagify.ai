@@ -1,5 +1,5 @@
 // Refine "Snap to object" island for the Masking Studio
-// (scripts/masking-studio-app.js).
+// (scripts/masking-studio/masking-studio-app.js).
 //
 // The refine step composites each area's AI output through the mask the user
 // painted, so anything the model drew just PAST the highlight (a sofa arm, a

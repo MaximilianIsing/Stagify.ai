@@ -1,11 +1,11 @@
 // Room-photo intake and per-area furniture-reference intake for the Masking
-// Studio entry (scripts/masking-studio-app.js): HEIC coercion, type/size
+// Studio entry (scripts/masking-studio/masking-studio-app.js): HEIC coercion, type/size
 // validation, decode + stageable-room pre-check, furniture prepare/downscale,
 // and all the drop / paste / dropzone / replace wiring. Lifted verbatim from the
 // entry. The pendingFurnitureLayerId cursor is encapsulated here (via
 // beginFurniturePick) so it never becomes a cross-module shared var.
-import { unstageableMessage } from '../unstageable-message.js';
-import { unstageableCta } from '../unstageable-cta.js';
+import { unstageableMessage } from '../shared/unstageable-message.js';
+import { unstageableCta } from '../shared/unstageable-cta.js';
 import { MAX_IMAGE_BYTES } from '../app/image-file.js';
 
 /**

@@ -1,6 +1,6 @@
 // Stagify.ai — who sees what on the Basic Mask page.
 //
-// One binding of the shared preview pattern (scripts/preview-access.js), and the one that
+// One binding of the shared preview pattern (scripts/gates/preview-access.js), and the one that
 // bends it, so read the mapping before the ids:
 //
 //   toolId: 'bm-tool'  — NOT a tool. Basic Mask lives in the staging flow on the home page,
@@ -17,7 +17,7 @@
 // Nothing here is a security boundary. The button reveals a link to a panel whose own
 // render route answers 403 for a free account, and that route is the gate.
 
-import { createPreviewAccess } from '../preview-access.js';
+import { createPreviewAccess } from '../gates/preview-access.js';
 
 /**
  * Swap the page between its two shapes: the sales button and the upgrade line for anyone
@@ -26,7 +26,7 @@ import { createPreviewAccess } from '../preview-access.js';
  * Called from auth.js's applyUserToUI(), so it runs on sign-in, sign-out and token refresh
  * — and from basic-mask-page.js's boot, twice, around the plan check.
  *
- * `bm-pro-pending` is the class scripts/preview-gate.js puts on <html> before the first
+ * `bm-pro-pending` is the class scripts/gates/preview-gate.js puts on <html> before the first
  * paint when the cached plan says Stagify+; the rules that give it meaning are in
  * basic-mask.css. This writer takes it off once the live plan is known.
  *

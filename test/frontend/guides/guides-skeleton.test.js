@@ -24,7 +24,7 @@ const read = (...parts) => fs.readFileSync(path.join(ROOT, ...parts), 'utf8');
 
 /** key → aspect, straight out of the generated demo data. */
 function demoAspects() {
-  const src = read('public', 'scripts', 'demo-data.js');
+  const src = read('public', 'scripts', 'guides', 'demo-data.js');
   const keys = [...src.matchAll(/"key":"(\w+)"/g)].map((m) => m[1]);
   const aspects = [...src.matchAll(/"aspect":([0-9.]+)/g)].map((m) => Number(m[1]));
   assert.equal(keys.length, aspects.length, 'every demo carries an aspect');
@@ -71,7 +71,7 @@ test('the skeleton is sized by that property and cleared on mount', () => {
 });
 
 test('guides.js raises the flag the skeleton waits on', () => {
-  const js = read('public', 'scripts', 'guides.js');
+  const js = read('public', 'scripts', 'guides', 'guides.js');
   assert.match(js, /classList\.add\('is-mounted'\)/,
     'nothing would ever clear the skeleton');
 });

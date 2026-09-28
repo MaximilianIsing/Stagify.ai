@@ -199,7 +199,7 @@
          is JS, not an inline onload= handler, so it passes the CSP’s
          script-src-attr 'none'. -->
     <link rel="stylesheet" href="styles/auth.css" media="print" data-lazy-css>
-    <script type="module" src="scripts/lazy-css.js"></script>
+    <script type="module" src="scripts/site/lazy-css.js"></script>
     <noscript>
       <!-- The promotion above is the only thing that ever loads this sheet, so
            without this the modal is unstyled with JS off. -->
@@ -209,7 +209,7 @@
     <!-- Sets html.has-session from the stored token BEFORE first paint, so the nav’s
          Gallery tab does not pop in a round trip late. Render-blocking on purpose, and
          last in <head> so it never delays discovery of the CSS above it. -->
-    <script src="scripts/session-class.js"></script>
+    <script src="scripts/site/session-class.js"></script>
   </head>
   <body class="page-stagify-plus">
     <video id="background-video" autoplay muted loop playsinline webkit-playsinline preload="metadata" poster="media-webp/background-poster.webp">
@@ -312,13 +312,13 @@
 
       <section class="sp-plan-wrap" data-lang-attr="stagifyPlus.subscribeAria|aria-label" aria-label="Subscribe to Stagify+">
         <!--
-          Ships with sp-hint--pending, which `html.has-session` (scripts/session-class.js,
+          Ships with sp-hint--pending, which `html.has-session` (scripts/site/session-class.js,
           loaded above) hides before the first paint. The copy below is the SIGNED-OUT
           advice, but which hint belongs here is only knowable once /api/auth/me answers —
           a round trip after DOMContentLoaded — so a subscriber used to read "create a free
           account first" and then watch the card jump up as the paragraph was removed.
           The class is a guess from the stored token, never an authorization; the first
-          applyStripeCheckout() render in scripts/stagify-plus.js drops it and owns this
+          applyStripeCheckout() render in scripts/plus/stagify-plus.js drops it and owns this
           element from then on via .hidden.
         -->
         <p class="sp-hint sp-hint--pending" id="plus-checkout-hint" aria-live="polite" data-lang="stagifyPlus.plan.hintAccountFirst">Create a free account first. That’s how your subscription gets linked to you.</p>
@@ -340,7 +340,7 @@
 
           <div class="bh-stage" id="bh-stage">
             <!--
-              Ships with NO href on purpose. scripts/stagify-plus.js sets one only once
+              Ships with NO href on purpose. scripts/plus/stagify-plus.js sets one only once
               it knows who is buying, because a checkout with no `client_reference_id`
               cannot be mapped back to an account. Hard-coding the Payment Link here
               left it clickable for the whole gap between "page is interactive" and
@@ -369,7 +369,7 @@
            restating six of these rows as cards, which meant every Stagify+ tool was
            described twice on one page and the two descriptions could drift apart. The long
            explanation moved INTO the row it explains, behind the ⓘ button — see
-           scripts/stagify-plus-tips.js for why the bubble is portalled to <body>. -->
+           scripts/plus/stagify-plus-tips.js for why the bubble is portalled to <body>. -->
       <section class="sp-compare" data-lang-attr="stagifyPlus.compareAria|aria-label" aria-label="Free vs Stagify+ comparison">
         <h2 class="sp-h2" data-lang="stagifyPlus.compare.heading">Compare plans</h2>
         <div class="sp-compare-table-wrap glass">
@@ -404,7 +404,7 @@
                      that is DIRECTLY referenced by aria-describedby is still announced, so
                      the screen-reader path needs no second copy of the text.
                    * The bubble a sighted visitor sees is a portal in <body>, positioned by
-                     scripts/stagify-plus-tips.js. It is NOT this span moved into view: the
+                     scripts/plus/stagify-plus-tips.js. It is NOT this span moved into view: the
                      row sits inside .sp-compare-scroll (overflow-x:auto, which forces
                      overflow-y to auto as well) inside .sp-compare-table-wrap
                      (overflow:hidden for the rounded corners), so anything absolutely
@@ -573,15 +573,15 @@
       </div>
       </div>
     </main>
-    <script type="module" src="scripts/language-detect.js"></script>
-    <script type="module" src="scripts/language-loader.js"></script>
-    <script type="module" src="scripts/language-switcher.js"></script>
-    <script type="module" src="scripts/nav-pill.js"></script>
-    <script type="module" src="scripts/auth.js"></script>
-    <script type="module" src="scripts/profile-menu.js"></script>
-    <script type="module" src="scripts/stagify-plus.js"></script>
-    <script type="module" src="scripts/stagify-plus-tips.js"></script>
-    <script type="module" src="scripts/stagify-plus-blackhole.js"></script>
+    <script type="module" src="scripts/i18n/language-detect.js"></script>
+    <script type="module" src="scripts/i18n/language-loader.js"></script>
+    <script type="module" src="scripts/i18n/language-switcher.js"></script>
+    <script type="module" src="scripts/site/nav-pill.js"></script>
+    <script type="module" src="scripts/site/auth.js"></script>
+    <script type="module" src="scripts/profile-menu/profile-menu.js"></script>
+    <script type="module" src="scripts/plus/stagify-plus.js"></script>
+    <script type="module" src="scripts/plus/stagify-plus-tips.js"></script>
+    <script type="module" src="scripts/plus/stagify-plus-blackhole.js"></script>
 
     <footer style="text-align:center;padding:20px 16px 28px;font-size:13px;color:#374151;">
       <details class="legal-menu" data-legal-menu>
@@ -603,10 +603,10 @@
       © <span class="footer-year">2026</span> <span data-lang="footer.copyright">Stagify.ai</span>
     </footer>
 
-      <script type="module" src="scripts/aurora-scrollbar.js"></script>
+      <script type="module" src="scripts/fx/aurora-scrollbar.js"></script>
     <!-- card-spotlight.js is deliberately NOT loaded here any more: its only target on
          this page was .sp-feature, and the feature grid is gone. -->
-    <script type="module" src="scripts/footer-year.js"></script>
-    <script type="module" src="scripts/legal-menu.js"></script>
+    <script type="module" src="scripts/site/footer-year.js"></script>
+    <script type="module" src="scripts/site/legal-menu.js"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-// Guard for the one re-entrancy hazard in public/scripts/language-loader.js's
+// Guard for the one re-entrancy hazard in public/scripts/i18n/language-loader.js's
 // MutationObserver.
 //
 // The observer watches document.body for added nodes carrying [data-lang*] and
@@ -30,6 +30,7 @@ const SRC = join(
   '..',
   'public',
   'scripts',
+  'i18n',
   'language-loader.js',
 );
 

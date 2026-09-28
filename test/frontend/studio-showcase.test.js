@@ -1,4 +1,4 @@
-// Tier: pure frontend logic + markup/i18n drift guards — public/scripts/studio-showcase.js.
+// Tier: pure frontend logic + markup/i18n drift guards — public/scripts/showcase/studio-showcase.js.
 //
 // The showcase carousel folded four homepage sections into panels of one widget (five
 // now, since the main staging flow was added at the front).
@@ -27,7 +27,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { offsetOf, geometryFor, indexForHash, stageHeightFor, wireDrag } from '../../public/scripts/studio-showcase.js';
+import { offsetOf, geometryFor, indexForHash, stageHeightFor, wireDrag } from '../../public/scripts/showcase/studio-showcase.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const INDEX = fs.readFileSync(path.join(ROOT, 'public', 'index.html'), 'utf8');
@@ -297,7 +297,7 @@ test('the panels live inside the showcase root the script looks for', () => {
 
 test('every homepage fragment the gate scripts redirect to is a real panel', () => {
   const panelIds = panelsFromMarkup().map((p) => p.id);
-  const sources = ['ai-designer-gate.js', 'ai-designer-app.js'].map((f) =>
+  const sources = ['gates/ai-designer-gate.js', 'ai-designer/ai-designer-app.js'].map((f) =>
     fs.readFileSync(path.join(ROOT, 'public', 'scripts', f), 'utf8')
   );
   const targets = new Set();
@@ -379,7 +379,7 @@ test('every walkthrough key the panels ask for exists in demo-data.js', () => {
   // suite connects the homepage's data-demo attributes to the generated demo data.
   const keys = [...INDEX.matchAll(/class="designer-demo" data-demo="([\w-]+)"/g)].map((m) => m[1]);
   assert.ok(keys.length >= 3, `expected the walkthrough panels, saw ${keys.length}`);
-  const data = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'demo-data.js'), 'utf8');
+  const data = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'guides', 'demo-data.js'), 'utf8');
   /** @type {{ demos: { key: string }[] }} */
   const demos = JSON.parse(data.slice(data.indexOf('{'), data.lastIndexOf('}') + 1));
   const known = new Set(demos.demos.map((d) => d.key));
@@ -537,7 +537,7 @@ function ruleBody(selector) {
 
 /** Every demo's declared aspect ratio, read out of the generated data file. */
 function demoAspects() {
-  const src = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'demo-data.js'), 'utf8');
+  const src = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'guides', 'demo-data.js'), 'utf8');
   /** @type {Record<string, number>} */
   const out = {};
   for (const m of src.matchAll(/"key":"([a-z]+)"[\s\S]*?"aspect":([0-9.]+)/g)) out[m[1]] = Number(m[2]);
@@ -634,7 +634,7 @@ test('hiding the fullscreen button actually hides it', () => {
    move across the stage measured dx against that dead origin, cleared 60px and flicked
    the carousel with no button held. Capture is what guarantees the release comes back. */
 test('a drag cannot be left half-finished when the pointer leaves the stage', () => {
-  const js = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'studio-showcase.js'), 'utf8');
+  const js = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'showcase', 'studio-showcase.js'), 'utf8');
   const code = js.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
   assert.match(code, /setPointerCapture\(/, 'the stage must capture the pointer it is tracking');
   assert.match(code, /isPrimary/, 'and ignore a second finger / non-primary button');
@@ -645,7 +645,7 @@ test('a drag cannot be left half-finished when the pointer leaves the stage', ()
    sc.active without moving focus. Arrowing from sc.active after any of those skipped a
    studio relative to where the user actually was. */
 test('tablist arrow keys step from the focused tab, not the active panel', () => {
-  const js = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'studio-showcase.js'), 'utf8');
+  const js = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'showcase', 'studio-showcase.js'), 'utf8');
   const code = js.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
   const handler = code.match(/ArrowRight[\s\S]{0,400}?ArrowLeft[^\n]*\n/);
   assert.ok(handler, 'the arrow-key branch exists');
@@ -692,7 +692,7 @@ test('the fullscreen button is a labelled toggle', () => {
 test('fullscreen degrades and does not fight the carousel', () => {
   const strip = (src) => src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
   const island = strip(fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'showcase', 'fullscreen.js'), 'utf8'));
-  const code = strip(fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'studio-showcase.js'), 'utf8'));
+  const code = strip(fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'showcase', 'studio-showcase.js'), 'utf8'));
   assert.match(island, /document\.fullscreenEnabled/, 'hides the control where fullscreen is unavailable');
 
   /* Cycling while the front media is expanded would swap the content out from under a
@@ -759,13 +759,13 @@ test('fullscreen derives the demo width from the height, never the reverse', () 
    players on fullscreenchange; the homepage did not, and threw away the instance
    mount() returns, so it had nothing to reflow. */
 test('the showcase keeps its players and reflows them on fullscreen change', () => {
-  const mount = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'designer-demo.js'), 'utf8');
+  const mount = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'showcase', 'designer-demo.js'), 'utf8');
   assert.match(
     mount,
     /__player\s*=\s*SupademoPlayer\.mount\(/,
     'designer-demo.js must keep the mounted instance for the host page'
   );
-  const js = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'studio-showcase.js'), 'utf8');
+  const js = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'showcase', 'studio-showcase.js'), 'utf8');
   assert.match(js, /__player\.reflow\(\)/, 'the showcase reflows the mounted player');
   // One named hook rather than a body repeated per path, because there are now two
   // routes into a size change: the native fullscreenchange, and the immersive
@@ -940,7 +940,7 @@ test('the homepage clips the arc that bleeds past the viewport', () => {
 test('the carousel drag ignores the gallery scroller', () => {
   // Without this the mock cannot be scrolled by dragging: the pointer gesture is
   // taken by the carousel and flicks to the next studio instead.
-  const js = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'studio-showcase.js'), 'utf8');
+  const js = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'showcase', 'studio-showcase.js'), 'utf8');
   const guard = js.match(/if \(target\.closest\((['"])(.+?)\1\)\) return;/);
   assert.ok(guard, 'wireDrag still has its ignore list');
   assert.match(guard[2], /\.hgal-grid/, 'the gallery scroller is in the drag ignore list');
@@ -1028,7 +1028,7 @@ test('the showcase ships prev/next arrows outside the tablist', () => {
 });
 
 test('the arrows are wired to step the carousel', () => {
-  const js = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'studio-showcase.js'), 'utf8');
+  const js = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'showcase', 'studio-showcase.js'), 'utf8');
   const code = js.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
   assert.match(code, /querySelectorAll\('\[data-shw-arrow\]'\)/, 'wireArrows reads the arrows from the markup');
   assert.match(code, /select\(sc,\s*sc\.active \+ step\)/, 'a click steps by the arrow\'s own delta');
@@ -1074,7 +1074,7 @@ test('the stepper switches on at the same width as the flat carousel', () => {
   // studio-showcase.js stops positioning the neighbouring panels at FLAT_QUERY. The
   // stepper has to appear at exactly that width: a gap between the two leaves either a
   // scrolling tab strip or an arc with no room, and the coupling was comment-only.
-  const js = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'studio-showcase.js'), 'utf8');
+  const js = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'showcase', 'studio-showcase.js'), 'utf8');
   const flatQuery = js.match(/const FLAT_QUERY = '([^']+)'/);
   assert.ok(flatQuery, 'studio-showcase.js still declares FLAT_QUERY');
 

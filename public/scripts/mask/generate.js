@@ -4,7 +4,7 @@
 // where the source image and the model name came from, so those are arguments.
 // The bearer token is read here because both copies read the same global — it is
 // the app's single auth accessor, not a per-editor choice.
-import { buildModelMask } from '../mask-core.js';
+import { buildModelMask } from './mask-core.js';
 
 /**
  * Load a data URL / URL into an Image, resolving once decoded.

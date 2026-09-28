@@ -123,7 +123,7 @@ test('there is no before/after comparison on the pitch — the homepage panel ow
   assert.ok(!pitch.includes('ex-demo'), 'the pitch comparison markup is back');
   assert.ok(!pitch.includes('Homepage/Exterior'), 'the homepage pair is being shown here again');
 
-  const app = fs.readFileSync(path.join(PUBLIC, 'scripts', 'exterior-studio-app.js'), 'utf8');
+  const app = fs.readFileSync(path.join(PUBLIC, 'scripts', 'exterior-studio', 'exterior-studio-app.js'), 'utf8');
   assert.ok(!/mountPitchDemo/.test(app), 'the pitch demo is being mounted again');
 
   const css = fs.readFileSync(path.join(PUBLIC, 'styles', 'exterior-studio.css'), 'utf8')

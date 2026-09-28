@@ -1,5 +1,5 @@
 // Shared room-photo intake for the two places a visitor hands us an image file:
-// the staging dropzone (scripts/app.js) and the standalone Basic Mask uploader
+// the staging dropzone (scripts/app/app.js) and the standalone Basic Mask uploader
 // (scripts/app/stage-mask-editor.js).
 //
 // Both need the same three gates before anything can be drawn to a canvas —

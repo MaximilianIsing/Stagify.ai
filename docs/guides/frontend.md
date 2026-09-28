@@ -15,9 +15,9 @@ scripts, which talk to the JSON API over `fetch`.
 
 ```
 public/<page>.html
-   │  <script type="module" src="scripts/<page>-app.js">
+   │  <script type="module" src="scripts/<page>/<page>-app.js">
    ▼
-scripts/<page>-app.js         ← per-page entry (a client-side composition root)
+scripts/<page>/<page>-app.js  ← per-page entry (a client-side composition root)
    │  imports + wires…
    ▼
 scripts/<page>/*.js           ← "islands": factories, pure helpers, shared stores
@@ -33,10 +33,18 @@ there is **one mental model across the stack**.
 
 | Page | Entry | Islands live in |
 |---|---|---|
-| `index.html` (staging tool) | `scripts/app.js` | `scripts/app/` |
-| `ai-designer.html` | `scripts/ai-designer-app.js` | `scripts/ai-designer/` |
-| `masking-studio.html` | `scripts/masking-studio-app.js` | `scripts/masking-studio/` |
-| `exterior-studio.html` | `scripts/exterior-studio-app.js` | `scripts/exterior-studio/` |
+| `index.html` (staging tool) | `scripts/app/app.js` | `scripts/app/` |
+| `ai-designer.html` | `scripts/ai-designer/ai-designer-app.js` | `scripts/ai-designer/` |
+| `masking-studio.html` | `scripts/masking-studio/masking-studio-app.js` | `scripts/masking-studio/` |
+| `exterior-studio.html` | `scripts/exterior-studio/exterior-studio-app.js` | `scripts/exterior-studio/` |
+| `basic-mask.html` | `scripts/basic-mask/basic-mask-page.js` | `scripts/basic-mask/` |
+| `gallery.html` | `scripts/gallery/gallery-app.js` | `scripts/gallery/` |
+| `api-keys.html` | `scripts/api-keys/api-keys-app.js` | `scripts/api-keys/` |
+| `listing-share.html` | `scripts/share/main.js` | `scripts/share/` |
+| `admin.html` | `scripts/admin/admin.js` | `scripts/admin/` |
+
+`index.html` does not name its entry in a `<script>` tag: `scripts/home/index-deferred.js`
+imports `scripts/app/app.js` after first paint.
 
 The entry resolves the page's DOM elements once, then constructs and wires the islands
 — exactly what `server.js` does with routers and `lib/` factories, but for the browser.
@@ -62,17 +70,22 @@ The entry resolves the page's DOM elements once, then constructs and wires the i
 entry imports them. A `scripts/app/…` file importing from `scripts/ai-designer/…` is the
 shape to avoid; promote instead. Two shapes, by size:
 
-- **Single files at `scripts/` root** for one self-contained concern: `toast.js`,
-  `escape-html.js`, `mask-core.js`, `heic-convert.js`, `i18n-routing.js`,
-  `unstageable-message.js`, and the generated `locale-data.js` (see
-  [`i18n.md`](i18n.md) — do not edit it by hand).
+- **Single files in a small grab-bag folder** for one self-contained concern.
+  [`scripts/shared/`](../../public/scripts/shared/) holds `toast.js`, `escape-html.js`,
+  `heic-convert.js`, `pdf-page-to-image.js`, `unstageable-message.js`, `clipboard.js` and
+  friends. Site chrome (auth, nav, footer year, lazy CSS) lives in
+  [`scripts/site/`](../../public/scripts/site/), and the i18n runtime in
+  [`scripts/i18n/`](../../public/scripts/i18n/), including `i18n-routing.js` and the
+  generated `locale-data.js` (see [`i18n.md`](i18n.md); do not edit it by hand). Nothing
+  lives at the `scripts/` root except `globals.d.ts`.
 - **A `scripts/<subsystem>/` folder** when the shared thing is a cohesive set rather than
   one file. [`scripts/mask/`](../../public/scripts/mask/) is the worked example: the mask
-  editor's brush, viewport pinning, processing overlay, reference photo, sizing, refine
-  maths, `/api/mask-edit` request and phase copy, shared by the main tool's
+  editor's core (`mask-core.js`), brush, viewport pinning, processing overlay, reference
+  photo, sizing, refine maths, stamp option, `/api/mask-edit` request and phase copy,
+  shared by the main tool's
   [`app/stage-mask-editor.js`](../../public/scripts/app/stage-mask-editor.js) and the AI
   Designer's [`ai-designer/mask-editor.js`](../../public/scripts/ai-designer/mask-editor.js).
-  Eight files at `scripts/` root would have said nothing about belonging together.
+  Eleven loose files would have said nothing about belonging together.
 
 What stays per-page is what genuinely differs. The two mask editors keep their own DOM
 ownership (one builds its dialog at runtime, the other binds to static markup), their own
@@ -82,8 +95,8 @@ algorithms and the data; leave the wiring.
 
 ### Shared chrome: the header and footer are copied by hand, on purpose
 
-The site header (`<header class="site-header">`, ~37 lines) is duplicated into **12**
-`public/*.html` files, and the site footer (Privacy · Terms · Status · ©) into **6**.
+The site header (`<header class="site-header">`, ~37 lines) is duplicated into **16**
+`public/*.html` files, and the site footer (Privacy · Terms · Status · ©) into **11**.
 This looks like the obvious thing to extract, and periodically gets flagged as such.
 **It cannot become a runtime include.**
 [`lib/i18n/render-page.js`](../../lib/i18n/render-page.js) is a *pure string transform
@@ -122,28 +135,28 @@ further `<header>` elements inside the page body.
 The footer is the cautionary tale. It went unguarded until 2026-08-10 and drifted into
 three variants — `guides.html` and `404.html` lost their `data-lang` attributes entirely
 and shipped an English footer on all eleven locales, while two rival year mechanisms
-(`id="year"` in `app.js` vs `.footer-year` + `scripts/footer-year.js`) meant the block
+(`id="year"` in `app.js` vs `.footer-year` + `scripts/site/footer-year.js`) meant the block
 could not be one shape. Every key involved already existed in all eleven packs; only the
-attributes were missing. Two sanctioned variations remain, each pinned by a named
-constant in the spec: `gallery.html`'s `id="gal-nav"`, the empty `.nav-trailing` on the
-three marketing pages, and `enterprise.html`'s class-styled `.ent-site-footer`.
+attributes were missing. Three sanctioned variations remain, each pinned by a named
+constant in its spec: `gallery.html`'s `id="gal-nav"` (`PER_PAGE_ATTRS`, header spec), the
+empty `.nav-trailing` on three marketing pages (`EMPTY_TRAILING`, header spec), and
+`enterprise.html`'s class-styled `.ent-site-footer` (`OWN_SHAPE`, footer spec).
 
 **When you add a page with this chrome, copy the block verbatim and run `npm test`** —
 the guards will tell you what you dropped. When you change the chrome, change it in every
 file; there is no shortcut, by design.
 
-**User-facing messages go through [`scripts/toast.js`](../../public/scripts/toast.js)**
+**User-facing messages go through [`scripts/shared/toast.js`](../../public/scripts/shared/toast.js)**
 (`showToast(msg, type)` / `showErrorToast(msg)`) — the single message channel for all
 three studios. It self-creates its `#toast-host`, so a page needs no markup for it, but
 it **does** need to link [`styles/toast.css`](../../public/styles/toast.css). Do not
-reach for native `alert()`: it blocks the page, ignores the language pack's styling, and
-until recently was the main staging tool's entire error channel. The one deliberate
+reach for native `alert()`: it blocks the page and ignores the language pack's styling. The one deliberate
 exception is `heic-convert.js`'s "Converting photo…" indicator — a reference-counted
 progress spinner of indefinite duration, which is a different thing from a transient
 message and stays separate.
 
 **Anything interpolated into an `innerHTML` string goes through
-[`scripts/escape-html.js`](../../public/scripts/escape-html.js)** (`escapeHtml(value)`) —
+[`scripts/shared/escape-html.js`](../../public/scripts/shared/escape-html.js)** (`escapeHtml(value)`) —
 the one escaper, re-exported under the names the call sites already used
 (`admin/helpers.js`'s `esc`, `profile-menu/dom-utils.js`'s `esc`,
 `ai-designer/format.js`'s `escapeHtml`). It escapes `&<>` **and both quote styles**,
@@ -154,16 +167,14 @@ Prefer `textContent` or the `el()` builder when you are only inserting text — 
 needs no escaping and cannot be got wrong. Reach for `escapeHtml` when you are
 genuinely assembling markup.
 
-There were three implementations before, and the admin one was `String(s || '')` — a
-no-op wearing a security name, wired into three `innerHTML` sinks. Every argument
-happened to be a literal, so nothing was exploitable; the hazard was the next person
-writing `esc(user.email)` and believing it was handled. **Do not add a fourth copy** —
+**Do not add a second escaper.** A local copy can quietly be wrong (one past copy was a
+no-op), and the next caller trusts the name.
 `test/frontend/escape-html.test.js` walks `public/scripts/` and fails on any second
 hand-rolled escaper.
 
 **Translated strings count as data here too.** `lang(...)` values are team-authored, so
 this is not an XSS question — it is a translator writing `&`, `<`, or a quote and silently
-mangling the markup. Every `lang()` value that `profile-menu.js` concatenates into its
+mangling the markup. Every `lang()` value that `profile-menu/profile-menu.js` concatenates into its
 dropdown is wrapped in `esc()`, attributes and element content alike, and the same spec
 scans that file and fails on a bare one. Escaping only the attribute sites reads like a
 considered decision when it is really the next oversight waiting to be copied.
@@ -477,7 +488,7 @@ a `<span>`, so it was not keyboard-reachable at all.
 
 ### Classic scripts run before deferred modules
 
-`ai-designer.html` loads `scripts/ai-designer-model-selector.js` as a **classic**
+`ai-designer.html` loads `scripts/ai-designer/ai-designer-model-selector.js` as a **classic**
 `<script>`, so it executes during parsing — *before* the deferred
 `<script type="module">` entry that defines the functions it wants to call. Anything the
 module exposes on `window` therefore does not exist yet when the classic file runs.
@@ -546,8 +557,8 @@ server dependency:
 
 | Module | Handles | Vendored library |
 |--------|---------|------------------|
-| `scripts/heic-convert.js` | iPhone HEIC/HEIF → JPEG. Most browsers cannot decode HEIC, and the flows need a decodable image for the instant preview and the `<canvas>` paint. | `scripts/vendor/heic2any.min.js` (~1.3 MB) |
-| `scripts/pdf-page-to-image.js` | Floor-plan PDF → PNG of **page 1**. The server has never been able to read a PDF: `lib/chat/chat-upload-prep.js` accepts `application/pdf` and reduces it to the placeholder `[File: … Content cannot be directly read]`, so it never becomes an image and can never be rendered — while the product copy promised exactly that. | `scripts/vendor/pdf.min.js` (~370 KB) + `scripts/vendor/pdf.worker.min.js` (~1.1 MB) |
+| `scripts/shared/heic-convert.js` | iPhone HEIC/HEIF → JPEG. Most browsers cannot decode HEIC, and the flows need a decodable image for the instant preview and the `<canvas>` paint. | `scripts/vendor/heic2any.min.js` (~1.3 MB) |
+| `scripts/shared/pdf-page-to-image.js` | Floor-plan PDF → PNG of **page 1**. The server has never been able to read a PDF: `lib/chat/chat-upload-prep.js` accepts `application/pdf` and reduces it to the placeholder `[File: … Content cannot be directly read]`, so it never becomes an image and can never be rendered — while the product copy promised exactly that. | `scripts/vendor/pdf.min.js` (~370 KB) + `scripts/vendor/pdf.worker.min.js` (~1.1 MB) |
 
 They share one shape, and it is worth copying for a third:
 
@@ -605,7 +616,7 @@ gets the files as authored (same [no-build-step decision](architecture.md#decisi
 - **Shared feature CSS — opt-in per page.** Small files a page links only if it uses the
   feature: `auth.css` (nav + auth-modal UI, on ~14 pages), `hero-picker.css` and
   `faq-plan.css` (both index-only), `star-border.css`, `home-text-animate.css`,
-  `demo-player.css`, `toast.css` (required by any page importing `scripts/toast.js`). A
+  `demo-player.css`, `toast.css` (required by any page importing `scripts/shared/toast.js`). A
   page pulls in only the feature CSS it actually renders, so no page carries the whole
   site's styles.
 
@@ -691,7 +702,7 @@ write a terse comment to "keep the file small". Two consequences worth knowing:
 load normally (render-blocking); the below-the-fold ones (`auth.css`, `star-border.css`,
 `home-text-animate.css`, `demo-player.css`, `faq-plan.css`) ship as `media="print"` with a
 `data-lazy-css` attribute so they
-**don't block first paint**, and [`scripts/lazy-css.js`](../../public/scripts/lazy-css.js)
+**don't block first paint**, and [`scripts/site/lazy-css.js`](../../public/scripts/site/lazy-css.js)
 promotes each to `media="all"` once fetched. A `<noscript>` block links them the normal
 way for the no-JS path. The promotion is an external script rather than an inline
 `onload=` handler on purpose — it keeps the page under the CSP's `script-src-attr 'none'`
@@ -731,12 +742,12 @@ one; the hero's "Get Stagify+ to use it" button is the whole ask.
 
 Three pieces, and each page names its own ids:
 
-- [`preview-access.js`](../../public/scripts/preview-access.js) — the pure predicate
+- [`preview-access.js`](../../public/scripts/gates/preview-access.js) — the pure predicate
   (`previewView`), one idempotent writer (`applyPreviewView`), the factory that binds them
   to a page (`createPreviewAccess`), and `settlePreview`, which is the paint-wait-paint
   dance every entry point does around `/api/auth/me`.
-- [`preview-gate.js`](../../public/scripts/preview-gate.js) — one render-blocking classic
-  script, mounted as `<script src="scripts/preview-gate.js"
+- [`preview-gate.js`](../../public/scripts/gates/preview-gate.js) — one render-blocking classic
+  script, mounted as `<script src="scripts/gates/preview-gate.js"
   data-pending-class="ms-pro-pending">`. It reads the plan `auth.js` cached last visit and
   pre-applies the Pro shape before first paint, so a subscriber never watches the pitch
   paint and vanish a round trip later. It **never navigates**.

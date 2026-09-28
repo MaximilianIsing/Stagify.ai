@@ -11,7 +11,7 @@
 
 import { el, replaceChildren, contactHref } from './dom.js';
 import { buildCompare } from './compare.js';
-import { styleLabel, entryName } from '../render-name.js';
+import { styleLabel, entryName } from '../shared/render-name.js';
 
 /**
  * What this page calls the photo — the heading, the alt text and the lightbox label, from

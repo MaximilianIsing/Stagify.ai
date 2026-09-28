@@ -46,7 +46,7 @@ server-side** by `routes/i18n.js` + `lib/i18n/render-page.js` from the existing
 localized page set. After changing either (or a page's canonical), **rerun
 `node scripts/build-i18n-seo.js`** — it bakes the `hreflang` cluster into the static
 English pages, regenerates `public/sitemap.xml`, and regenerates
-`public/scripts/locale-data.js`, the browser's copy of the language set (prefix maps,
+`public/scripts/i18n/locale-data.js`, the browser's copy of the language set (prefix maps,
 BCP-47 codes, flags, browser-tag detection). The frontend must import its language
 tables from `locale-data.js` — never re-list languages by hand; that is how five
 copies accumulated. Drift tests in `test/i18n/i18n.test.js` and
@@ -83,7 +83,7 @@ its own README:
   localized blog covers `public/media-webp/blog/cover-N.<lang>.*`, rendered by
   `scripts/build-blog-covers.js`. The English covers are never overwritten.
 - `to-build/demos/` — authoring master + standalone preview for the guide
-  walkthroughs; exports to `public/scripts/demo-data.js`, the served
+  walkthroughs; exports to `public/scripts/guides/demo-data.js`, the served
   `demo-player.{js,css}`, and `public/media-webp/demos/`.
 
 Before proposing to remove any file because it "isn't referenced," check whether

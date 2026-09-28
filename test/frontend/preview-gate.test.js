@@ -1,4 +1,4 @@
-// Tier: frontend gate behaviour — public/scripts/preview-gate.js, the pre-paint half of
+// Tier: frontend gate behaviour — public/scripts/gates/preview-gate.js, the pre-paint half of
 // the public-preview pattern, and the pages that mount it.
 //
 // A preview page ships in the ANONYMOUS state (pitch visible, tool hidden) so that a
@@ -32,7 +32,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const PUBLIC = path.join(ROOT, 'public');
-const gateSource = fs.readFileSync(path.join(PUBLIC, 'scripts', 'preview-gate.js'), 'utf8');
+const gateSource = fs.readFileSync(path.join(PUBLIC, 'scripts', 'gates', 'preview-gate.js'), 'utf8');
 
 /** Every page that mounts the shared gate, as {file, pendingClass, stylesheet}. */
 function mountingPages() {

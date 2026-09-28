@@ -3,7 +3,7 @@
 //
 // /api/status ships a stable reason CODE plus the server's canonical English, and the
 // browser looks up `status.components.reason.<CODE>` before falling back to that English
-// (public/scripts/status-components.js). A missing key therefore degrades silently
+// (public/scripts/status/status-components.js). A missing key therefore degrades silently
 // instead of breaking — which is exactly why it would otherwise ship unnoticed. Adding a
 // component or a reason without translating it is the mistake this catches, in the same
 // spirit as test/i18n/unstageable-i18n.test.js.

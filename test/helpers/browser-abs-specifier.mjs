@@ -2,7 +2,7 @@
 //
 // WHY: some frontend modules load a shared slice by its SERVED path rather than a
 // relative one — public/scripts/masking-studio/generate-pipeline.js does
-// `import('/scripts/mask-core.js')`. In a browser that is the same file every page
+// `import('/scripts/mask/mask-core.js')`. In a browser that is the same file every page
 // already has cached. Under node it resolves against the filesystem root
 // (`C:\scripts\mask-core.js` on Windows) and rejects with ERR_MODULE_NOT_FOUND, which
 // takes the whole island down with it: the factory stores that rejected promise and

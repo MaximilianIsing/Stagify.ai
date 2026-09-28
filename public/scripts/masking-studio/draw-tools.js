@@ -1,4 +1,4 @@
-// Draw-tools island for the Masking Studio (scripts/masking-studio-app.js).
+// Draw-tools island for the Masking Studio (scripts/masking-studio/masking-studio-app.js).
 //
 // Brush/erase/rect stroke drawing with pixel claiming across areas, the
 // snapshot-based undo/redo stacks, the pointer/touch/pinch/pan handlers on the

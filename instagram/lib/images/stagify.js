@@ -220,7 +220,7 @@ export function createStagifyImages({ debug = false, config }) {
      * Two things the route does NOT do, which matter here and not in the browser:
      *
      *  * The route returns the model's RAW edit. Pixel identity outside the brush comes
-     *    from compositeMaskedEdit in public/scripts/mask-core.js, on the client. Nothing
+     *    from compositeMaskedEdit in public/scripts/mask/mask-core.js, on the client. Nothing
      *    server-side composites, so a caller that shipped `editedImage` straight into a
      *    post would be publishing the model's unconstrained redraw of the whole room
      *    under a headline promising the opposite. We composite here, through the same

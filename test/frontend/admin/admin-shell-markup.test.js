@@ -6,7 +6,7 @@
 //   - public/admin.html declares the rail: one `.adm-tab` per section, carrying
 //     `data-tab` (which panel it opens) and `data-title`/`data-sub` (what the
 //     sticky topbar says while it is open),
-//   - scripts/admin.js reads those attributes — `#panel-<data-tab>` and the two
+//   - scripts/admin/admin.js reads those attributes — `#panel-<data-tab>` and the two
 //     labels — and never validates them,
 //   - scripts/admin/renderers.js writes the count chips by id (`#tc-users`, …).
 //

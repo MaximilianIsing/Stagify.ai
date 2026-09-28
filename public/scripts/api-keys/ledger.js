@@ -6,7 +6,7 @@
 // I down three credits" needs to see the three charges and the one refund, not a number
 // that silently disagrees with their own count.
 
-import { escapeHtml } from '../escape-html.js';
+import { escapeHtml } from '../shared/escape-html.js';
 import { t, locale } from './i18n.js';
 import { noValue } from './format.js';
 

@@ -5,7 +5,7 @@
 // of them start from a key. Markup that was never GIVEN a key is invisible to every one
 // of them, and both renderers fall back silently to the English baked into the source
 // (resolveKey in lib/i18n/render-page.js returns null and the caller leaves the tag
-// alone; public/scripts/language-loader.js does the same in the browser). So a block
+// alone; public/scripts/i18n/language-loader.js does the same in the browser). So a block
 // added without data-lang looks perfect in English and ships English under a `de`,
 // `ja` or `ru` hreflang, with nothing failing anywhere.
 //

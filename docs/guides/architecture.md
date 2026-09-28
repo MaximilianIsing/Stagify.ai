@@ -247,7 +247,7 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 | `virtual-staging-handler.js` | The `/api/process-image` + `/api/stage-by-endpoint-key` multipart handler (`handleVirtualStagingMultipart`), lifted out of `server.js`: free-tier cap, two-stage furniture removal, per-variation staging, enterprise metering. |
 | `mask-edit.js` | The `/api/mask-edit` request pipeline (locator overlay, reference letterboxing, quality-retry review), lifted out of `routes/staging.js`. |
 | `segment.js` | The `/api/segment` magic-wand handler (Gemini box detection → normalized `box_2d`), lifted out of `routes/staging.js`. |
-| `cad-handling.js` | Renders a floor plan (AI Designer), via Gemini. **Two views**, chosen by the routing model's `cad[].view`: `top-down` (default — a furnished 3D plan seen from above) and `eye-level` (a photorealistic interior photo taken standing inside the room named by `cad[].room`). `createCadHandling({ genAI })` — takes the **shared** client from `server.js`; it must not build its own (it used to, from a `lib/staging/key.txt` that never existed). PDFs are rasterized in the **browser** (`public/scripts/pdf-page-to-image.js`), so this module only ever sees an image. **The quality gate is deliberately OFF here** (no `reviewImageQuality` injected): measured on a clean five-room plan, both views ran the full 3 attempts and settled at 80/100, so the gate degenerated from "usually one call" into "always three calls for best-of-3" on the priciest model — and the single un-selected draw was no worse. `maxAttempts` stays at 3 so a transient provider error is still retried; the reviewer branch stays wired and specced so re-enabling is one word in `server.js`. |
+| `cad-handling.js` | Renders a floor plan (AI Designer), via Gemini. **Two views**, chosen by the routing model's `cad[].view`: `top-down` (default — a furnished 3D plan seen from above) and `eye-level` (a photorealistic interior photo taken standing inside the room named by `cad[].room`). `createCadHandling({ genAI })` — takes the **shared** client from `server.js`; it must not build its own (it used to, from a `lib/staging/key.txt` that never existed). PDFs are rasterized in the **browser** (`public/scripts/shared/pdf-page-to-image.js`), so this module only ever sees an image. **The quality gate is deliberately OFF here** (no `reviewImageQuality` injected): measured on a clean five-room plan, both views ran the full 3 attempts and settled at 80/100, so the gate degenerated from "usually one call" into "always three calls for best-of-3" on the priciest model — and the single un-selected draw was no worse. `maxAttempts` stays at 3 so a transient provider error is still retried; the reviewer branch stays wired and specced so re-enabling is one word in `server.js`. |
 
 **`lib/chat/`** — AI Designer chat orchestration
 
@@ -444,7 +444,7 @@ lives in `public/`: hand-written HTML, CSS, and native ES-module JavaScript
 between.
 
 Two generators exist and neither contradicts that, because neither runs at deploy time:
-`scripts/build-i18n-seo.js` (hreflang clusters, `sitemap.xml`, `scripts/locale-data.js`)
+`scripts/build-i18n-seo.js` (hreflang clusters, `sitemap.xml`, `scripts/i18n/locale-data.js`)
 and the `to-build/` asset exporters are run **by hand**, and their output is committed —
 so the browser still receives a file that exists in the repo. What is ruled out is a step
 between the repo and the browser. i18n.md calls its generator "the build step" in that

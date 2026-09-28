@@ -1,4 +1,4 @@
-// Tier: frontend island logic — public/scripts/preview-access.js and the three pages bound
+// Tier: frontend island logic — public/scripts/gates/preview-access.js and the three pages bound
 // to it.
 //
 // WHAT THIS COVERS
@@ -27,7 +27,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { previewView, applyPreviewView, createPreviewAccess, settlePreview } from '../../public/scripts/preview-access.js';
+import { previewView, applyPreviewView, createPreviewAccess, settlePreview } from '../../public/scripts/gates/preview-access.js';
 import { syncMaskingStudioAccess } from '../../public/scripts/masking-studio/access.js';
 import { syncDesignerAccess } from '../../public/scripts/ai-designer/access.js';
 import { syncBasicMaskAccess } from '../../public/scripts/basic-mask/access.js';
@@ -221,7 +221,7 @@ for (const page of PAGES) {
     assert.ok(mod.includes(`'${page.pending}'`), `${page.module} does not name ${page.pending}`);
     assert.ok(html.includes(`data-pending-class="${page.pending}"`)
       || html.includes(`'${page.pending}'`)
-      || fs.readFileSync(path.join(PUBLIC, 'scripts', 'ai-designer-gate.js'), 'utf8').includes(`'${page.pending}'`),
+      || fs.readFileSync(path.join(PUBLIC, 'scripts', 'gates', 'ai-designer-gate.js'), 'utf8').includes(`'${page.pending}'`),
     `nothing arms ${page.pending} before paint on ${page.file}`);
   });
 
@@ -360,7 +360,7 @@ test('settlePreview works on a page with no auth at all', async () => {
 test('auth.js calls every preview writer, and does it BEFORE the signed-out return', () => {
   // applyUserToUI() returns early for a signed-out visitor. A writer called after that
   // return never runs on sign-OUT, which is precisely when the pitch has to come back.
-  const src = fs.readFileSync(path.join(PUBLIC, 'scripts', 'auth.js'), 'utf8');
+  const src = fs.readFileSync(path.join(PUBLIC, 'scripts', 'site', 'auth.js'), 'utf8');
   const body = src.slice(src.indexOf('applyUserToUI'));
   const earlyReturn = body.indexOf('if (!u) {');
   assert.notEqual(earlyReturn, -1, 'the early return moved — this guard needs rewriting');

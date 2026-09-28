@@ -4,7 +4,7 @@
 // image entries carry whole base64 data URLs, so posting it verbatim 413'd every
 // report made after a render: the bug channel broke precisely when it was needed.
 //
-// public/scripts/bug-report-history.js therefore summarises the transcript before the
+// public/scripts/profile-menu/bug-report-history.js therefore summarises the transcript before the
 // POST. These tests pin the two halves of that contract:
 //   1. the summary is small (the payload survives the 1MB limit), and
 //   2. the summary is LOSSLESS as far as the server is concerned — the row
@@ -31,7 +31,7 @@ import { flattenConversationHistory } from '../../../lib/http/bug-report-row.js'
 import {
   summariseBugReportHistory as summarise,
   readBugReportHistory,
-} from '../../../public/scripts/bug-report-history.js';
+} from '../../../public/scripts/profile-menu/bug-report-history.js';
 
 const rootDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const MODAL_SRC = path.join(rootDir, 'public', 'scripts', 'profile-menu', 'report-issue-modal.js');
@@ -203,14 +203,14 @@ test('SOURCE GUARD: the bug-report POST sends the summary, not the raw transcrip
     !/conversationHistory:\s*conversationHistory\b/.test(code),
     'the raw transcript is being posted again — this is the 413 regression'
   );
-  assert.match(code, /import\s*\{\s*readBugReportHistory\s*\}\s*from\s*'\.\.\/bug-report-history\.js'/);
+  assert.match(code, /import\s*\{\s*readBugReportHistory\s*\}\s*from\s*'\.\/bug-report-history\.js'/);
 });
 
 test('SOURCE GUARD: the AI Designer bug button routes to that one dialog', () => {
   // The studio's own copy of the form is gone; if the button stops delegating, the
   // bug channel silently disappears from the page it was invented for.
   const selector = fs.readFileSync(
-    path.join(rootDir, 'public', 'scripts', 'ai-designer-model-selector.js'), 'utf8'
+    path.join(rootDir, 'public', 'scripts', 'ai-designer', 'ai-designer-model-selector.js'), 'utf8'
   );
   assert.match(selector, /getElementById\('bug-report-btn'\)/);
   assert.match(selector, /openReportIssue/);
@@ -219,6 +219,6 @@ test('SOURCE GUARD: the AI Designer bug button routes to that one dialog', () =>
     'the studio posted its own report again — that path was removed because it was untranslated'
   );
 
-  const menu = fs.readFileSync(path.join(rootDir, 'public', 'scripts', 'profile-menu.js'), 'utf8');
+  const menu = fs.readFileSync(path.join(rootDir, 'public', 'scripts', 'profile-menu', 'profile-menu.js'), 'utf8');
   assert.match(menu, /openReportIssue:\s*reportIssue\.open/);
 });

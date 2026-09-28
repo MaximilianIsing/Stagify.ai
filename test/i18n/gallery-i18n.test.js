@@ -198,7 +198,7 @@ test('only pages with no localized URL swap language in place', () => {
   assert.deepEqual(marked.sort(), [...IN_PLACE_PAGES].sort(),
     'a page opted in or out of localized-URL navigation without updating IN_PLACE_PAGES');
 
-  const loader = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'language-loader.js'), 'utf8')
+  const loader = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'i18n', 'language-loader.js'), 'utf8')
     .replace(/\/\*[\s\S]*?\*\//g, '')
     .replace(/\/\/[^\n]*/g, '');
   assert.match(loader, /data-lang-inplace/, 'the loader no longer reads the opt-out marker');

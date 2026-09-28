@@ -8,7 +8,7 @@
 // it. That is what the null cases below pin.
 //
 // This used to be load-bearing in production: contact/status/guides all loaded app.js
-// without carrying this markup. They no longer do (they load scripts/page-chrome.js
+// without carrying this markup. They no longer do (they load scripts/site/page-chrome.js
 // instead), so index.html is now app.js's only consumer and it does carry every
 // element. The null-tolerance is therefore a module contract now rather than a live
 // dependency — keep it, because it is the thing that made app.js safe to mount on a

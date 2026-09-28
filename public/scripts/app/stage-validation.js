@@ -1,4 +1,4 @@
-// Stageability pre-check for the main Stagify tool (scripts/app.js).
+// Stageability pre-check for the main Stagify tool (scripts/app/app.js).
 //
 // Plain exported fetch helper — no DOM wiring, no app state. The entry owns
 // the stageValidation/stageValidationResult bookkeeping around it; this module

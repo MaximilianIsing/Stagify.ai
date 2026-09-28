@@ -1,5 +1,5 @@
 // Magic-select (segmentation wand) island for the Masking Studio
-// (scripts/masking-studio-app.js).
+// (scripts/masking-studio/masking-studio-app.js).
 //
 // POSTs the photo to /api/segment, decodes and caches every returned object
 // mask, and paints the clicked object into the active area exactly like brush

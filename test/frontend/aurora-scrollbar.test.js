@@ -23,7 +23,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { auroraBarGeometry } from '../../public/scripts/aurora-scrollbar.js';
+import { auroraBarGeometry } from '../../public/scripts/fx/aurora-scrollbar.js';
 
 /** The shape every page with a header AND a footer has: main is the middle band. */
 function withFooter(over = {}) {

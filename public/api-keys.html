@@ -28,22 +28,22 @@
          is JS, not an inline onload= handler, so it passes the CSP’s
          script-src-attr 'none'. -->
     <link rel="stylesheet" href="styles/auth.css" media="print" data-lazy-css>
-    <script type="module" src="scripts/lazy-css.js"></script>
+    <script type="module" src="scripts/site/lazy-css.js"></script>
     <noscript>
       <!-- The promotion above is the only thing that ever loads this sheet, so
            without this the modal is unstyled with JS off. -->
       <link rel="stylesheet" href="styles/auth.css">
     </noscript>
     <link rel="preload" href="languages/english.json" as="fetch" crossorigin>
-    <script type="module" src="scripts/language-detect.js"></script>
-    <script type="module" src="scripts/language-loader.js"></script>
-    <script type="module" src="scripts/language-switcher.js"></script>
-    <script type="module" src="scripts/nav-pill.js"></script>
+    <script type="module" src="scripts/i18n/language-detect.js"></script>
+    <script type="module" src="scripts/i18n/language-loader.js"></script>
+    <script type="module" src="scripts/i18n/language-switcher.js"></script>
+    <script type="module" src="scripts/site/nav-pill.js"></script>
     <!-- auth.js defines window.StagifyAuth, which api-keys-app.js reads for the session
          token, and profile-menu.js is what makes the account button in the shared header
          do anything. Both are needed by the chrome, not just by this page. -->
-    <script type="module" src="scripts/auth.js"></script>
-    <script type="module" src="scripts/profile-menu.js"></script>
+    <script type="module" src="scripts/site/auth.js"></script>
+    <script type="module" src="scripts/profile-menu/profile-menu.js"></script>
     <style>
       /* Hide AI Designer link on mobile */
       @media (max-width: 768px) {
@@ -53,13 +53,13 @@
       }
     </style>
     <!-- PC-only. A phone-sized viewport is sent to the home page before the body paints
-         — see scripts/api-keys-gate.js for why this page refuses them, and note that it
+         — see scripts/gates/api-keys-gate.js for why this page refuses them, and note that it
          reads the LAYOUT viewport, so it only works below the viewport <meta> above. -->
-    <script src="scripts/api-keys-gate.js"></script>
+    <script src="scripts/gates/api-keys-gate.js"></script>
     <!-- Sets html.has-session from the stored token BEFORE first paint, so the nav’s
          Gallery tab does not pop in a round trip late. Render-blocking on purpose, and
          last in <head> so it never delays discovery of the CSS above it. -->
-    <script src="scripts/session-class.js"></script>
+    <script src="scripts/site/session-class.js"></script>
   </head>
   <!-- page-docs is the documentation shell’s body class: an opaque sheet, a white
        footer instead of the site gradient, and the pinned language pill. It is not
@@ -187,7 +187,7 @@
         </section>
 
         <!-- The inspector: everything the account owns in the rail, the selected one in
-             the column beside it. Both halves are rendered by scripts/api-keys-app.js
+             the column beside it. Both halves are rendered by scripts/api-keys/api-keys-app.js
              from one state object — the markup here is only the two hosts and the chrome
              around them, so the list and the pane can never disagree about the
              selection. -->
@@ -271,14 +271,14 @@
       © <span class="footer-year">2026</span> <span data-lang="footer.copyright">Stagify.ai</span>
     </footer>
 
-    <!-- NOT app.js — see scripts/page-chrome.js for why. -->
-    <script type="module" src="scripts/page-chrome.js"></script>
+    <!-- NOT app.js — see scripts/site/page-chrome.js for why. -->
+    <script type="module" src="scripts/site/page-chrome.js"></script>
     <!-- No aurora-scrollbar.js, exactly as on developers.html: that script sets
          html.aurora-on, which is what hides the native scrollbar behind the animated
          gradient overlay. A document surface gets the plain bar. -->
-    <script type="module" src="scripts/hover-glow.js"></script>
-    <script type="module" src="scripts/footer-year.js"></script>
-    <script type="module" src="scripts/legal-menu.js"></script>
-    <script type="module" src="scripts/api-keys-app.js"></script>
+    <script type="module" src="scripts/fx/hover-glow.js"></script>
+    <script type="module" src="scripts/site/footer-year.js"></script>
+    <script type="module" src="scripts/site/legal-menu.js"></script>
+    <script type="module" src="scripts/api-keys/api-keys-app.js"></script>
 </body>
 </html>

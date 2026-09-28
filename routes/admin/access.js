@@ -8,7 +8,7 @@
 //
 // THIS FILE ALSO OWNS THE 'open' EVENT, and does it by falling through. The console
 // already fires GET /api/admin/ping exactly once per page load, before it reveals
-// the dashboard (public/scripts/admin.js#restoreSession) — and deliberately does NOT
+// the dashboard (public/scripts/admin/admin.js#restoreSession) — and deliberately does NOT
 // fire it after a fresh sign-in, which the mint records instead. So the probe that
 // already exists is precisely the "someone opened the dashboard" signal, and adding
 // a second endpoint would have meant a second client call for an event we were

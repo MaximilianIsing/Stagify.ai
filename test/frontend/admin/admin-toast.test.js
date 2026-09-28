@@ -3,7 +3,7 @@
 //
 // The admin dashboard was the last corner of the app still calling native
 // alert(): a failed hosted-image delete, a failed log download, and the
-// session-expiry notice. Everything else was migrated to scripts/toast.js, so
+// session-expiry notice. Everything else was migrated to scripts/shared/toast.js, so
 // these three were modal, unstyled browser dialogs in an otherwise toast-based UI.
 //
 // This suite pins the migration behaviourally rather than by grepping for the
@@ -25,7 +25,7 @@ import { makeDom } from '../../helpers/admin-dom.js';
 
 // ---- Minimal fake DOM ------------------------------------------------------
 // Only the surface admin.js, admin/renderers.js, admin/helpers.js#el and
-// scripts/toast.js touch. No jsdom, matching the other frontend-island suites.
+// scripts/shared/toast.js touch. No jsdom, matching the other frontend-island suites.
 // Shared with test/frontend/admin/admin-shell.test.js — see test/helpers/admin-dom.js.
 // `makeDom()` with no options keeps the behaviour this suite is calibrated against,
 // notably querySelectorAll returning [].
@@ -120,7 +120,7 @@ globalThis.localStorage = /** @type {any} */ ({
 let fetchImpl = async () => { throw new Error('no fetch stub'); };
 globalThis.fetch = /** @type {any} */ ((url) => fetchImpl(String(url)));
 
-await import('../../../public/scripts/admin.js');
+await import('../../../public/scripts/admin/admin.js');
 const { createRenderers } = await import('../../../public/scripts/admin/renderers.js');
 
 // ---- renderers.js: hosted-image delete ------------------------------------

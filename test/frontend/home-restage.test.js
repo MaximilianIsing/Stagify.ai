@@ -1,4 +1,4 @@
-// Tier: pure frontend logic + markup/CSS/i18n drift guards — public/scripts/home-restage.js.
+// Tier: pure frontend logic + markup/CSS/i18n drift guards — public/scripts/home/home-restage.js.
 //
 // #restage ("Press it again. Get a different room.") replaced the before/after drag wipe.
 // Five things about it are fragile enough to pin, and every one of them fails SILENTLY —
@@ -39,8 +39,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { makeBag } from '../../public/scripts/home-restage.js';
-import { RESTAGE_DIR, RESTAGE_EMPTY, RESTAGE_POOL, RESTAGE_SIZE } from '../../public/scripts/restage-pool.js';
+import { makeBag } from '../../public/scripts/home/home-restage.js';
+import { RESTAGE_DIR, RESTAGE_EMPTY, RESTAGE_POOL, RESTAGE_SIZE } from '../../public/scripts/home/restage-pool.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const read = (/** @type {string[]} */ ...p) => fs.readFileSync(path.join(ROOT, ...p), 'utf8');
@@ -74,8 +74,8 @@ const stripJs = (js) =>
 
 const INDEX = read('public', 'index.html');
 const HOME_CSS = stripComments(read('public', 'styles', 'home.css'));
-const DEFERRED = read('public', 'scripts', 'index-deferred.js');
-const STUDIO_JS = read('public', 'scripts', 'staging-studio.js');
+const DEFERRED = read('public', 'scripts', 'home', 'index-deferred.js');
+const STUDIO_JS = read('public', 'scripts', 'home', 'staging-studio.js');
 
 const PACKS = [
   'english', 'spanish', 'french', 'german', 'italian', 'portuguese',
@@ -136,7 +136,7 @@ test('restage-pool.js lists exactly the renders that exist on disk', () => {
   const dir = path.join(ROOT, 'public', 'media-webp', 'Homepage', 'Restage');
   const onDisk = fs.readdirSync(dir).filter((f) => /^r\d+\.webp$/.test(f)).sort();
   assert.deepEqual([...RESTAGE_POOL].sort(), onDisk,
-    'add or remove a render and public/scripts/restage-pool.js must be updated to match');
+    'add or remove a render and public/scripts/home/restage-pool.js must be updated to match');
   assert.ok(RESTAGE_POOL.length >= 20,
     'the pool is the whole point — a handful of renders would repeat visibly');
 });
@@ -170,7 +170,7 @@ test('the button ships disabled and hidden until the script marks the root ready
 });
 
 test('the section is registered in the deferred batch', () => {
-  assert.match(DEFERRED, /scripts\/home-restage\.js/);
+  assert.match(DEFERRED, /scripts\/home\/home-restage\.js/);
 });
 
 test('the section markup carries every hook the module queries', () => {
@@ -282,7 +282,7 @@ test('no string the section renders carries an un-substituted placeholder', () =
 });
 
 test('the counter and its keys are gone from markup, module and packs', () => {
-  const source = read('public', 'scripts', 'home-restage.js');
+  const source = read('public', 'scripts', 'home', 'home-restage.js');
   assert.ok(!INDEX.includes('data-restage-hint'), 'the hint element was removed');
   assert.ok(!source.includes('hintCount'), 'the module no longer renders a count');
   for (const name of PACKS) {
@@ -297,7 +297,7 @@ test('the first press throws something too', () => {
   // on the opening press unless the module makes a disposable copy of it. That press is
   // the one most visitors ever make, and without this it popped the staged room in with
   // no animation at all.
-  const source = read('public', 'scripts', 'home-restage.js');
+  const source = read('public', 'scripts', 'home', 'home-restage.js');
   assert.match(source, /current \|\| makeGhost\(\)/,
     'stage() must fall back to a throwaway copy of the empty photo when no card is showing');
   assert.match(source, /void ghost\.offsetWidth/,
@@ -325,7 +325,7 @@ test('the departing card is thrown clear of the arriving one', () => {
   assert.ok(travelMs <= 550, `exit runs ${travelMs}ms; over ~550ms it drags`);
   assert.ok(Number(fade[1]) * 1000 + Number(fade[2]) * 1000 <= travelMs + 20,
     'the fade must finish with the flight, not after it');
-  const removal = Number(read('public', 'scripts', 'home-restage.js')
+  const removal = Number(read('public', 'scripts', 'home', 'home-restage.js')
     .match(/card\.remove\(\), (\d+)\)/)[1]);
   assert.ok(removal > travelMs, `cards are removed after ${removal}ms, cutting the ${travelMs}ms exit short`);
 });
@@ -339,7 +339,7 @@ test('the two button labels are stacked so the width never changes', () => {
   assert.match(rule[0], /display:\s*grid/, 'both labels must share one grid cell');
   assert.match(HOME_CSS, /\.rs__btn-label\s*\{[^}]*grid-area:\s*1\s*\/\s*1/,
     'stacking them in the same cell is what pins the width across the flip');
-  assert.ok(!/button\.textContent\s*=/.test(read('public', 'scripts', 'home-restage.js')),
+  assert.ok(!/button\.textContent\s*=/.test(read('public', 'scripts', 'home', 'home-restage.js')),
     'the module must not write the label — markup owns both, so a language re-apply is safe');
 });
 
@@ -381,7 +381,7 @@ test('the label swap cross-fades, so the button is never blank mid-transition', 
     'the new wording rises from below');
 
   // The accessible name is now the module's job, and it must cover every state change.
-  const source = stripJs(read('public', 'scripts', 'home-restage.js'));
+  const source = stripJs(read('public', 'scripts', 'home', 'home-restage.js'));
   assert.match(source, /function syncLabelAria\(staged\)/, 'the module must own the name');
   assert.match(source, /labelFirst\.setAttribute\('aria-hidden', String\(staged\)\)/);
   assert.match(source, /labelAgain\.setAttribute\('aria-hidden', String\(!staged\)\)/);
@@ -399,7 +399,7 @@ test('the retired sequencing leaves nothing behind', () => {
   // `has-swapped` existed only to tell "just mounted" from "just reverted" for the old
   // sequenced timing. The cross-fade needs no such distinction, so the class and its rule
   // must go rather than linger as a state nobody reads.
-  const source = stripJs(read('public', 'scripts', 'home-restage.js'));
+  const source = stripJs(read('public', 'scripts', 'home', 'home-restage.js'));
   assert.ok(!source.includes('has-swapped'), 'the module must no longer set has-swapped');
   assert.ok(!HOME_CSS.includes('has-swapped'), 'and home.css must no longer style it');
 });
@@ -418,7 +418,7 @@ test('the label swap keeps the accessible name to exactly one wording', () => {
     'the labels must not ship aria-hidden — the module sets it once it has mounted');
 
   // Mount, land, revert. Miss one and the name sticks on the wording that is fading out.
-  const source = stripJs(read('public', 'scripts', 'home-restage.js'));
+  const source = stripJs(read('public', 'scripts', 'home', 'home-restage.js'));
   const pairs = [
     ['a render landing', /classList\.add\('has-staged'\);\s*\n\s*syncLabelAria\(true\);/],
     ['revert', /classList\.remove\('has-staged'\);\s*\n\s*syncLabelAria\(false\);/],
@@ -473,7 +473,7 @@ test('"See original" appears only while something is staged', () => {
   assert.match(revert[0], /opacity:\s*0/, 'hidden until a card is showing');
   assert.match(HOME_CSS, /\.rs\.has-staged[^{]*\.rs__revert\s*\{[^}]*opacity:\s*1/,
     'and revealed by the same class the card sets');
-  const source = read('public', 'scripts', 'home-restage.js');
+  const source = read('public', 'scripts', 'home', 'home-restage.js');
   assert.ok(source.includes("root.classList.remove('has-staged')"),
     'reverting must drop has-staged so the control fades back out');
 });
@@ -496,7 +496,7 @@ test('the arriving card is opaque on arrival, with no entrance fade', () => {
   // reads as recessed, then snapping forward. It shipped that way and was spotted by eye.
   assert.ok(!/\.rs__card\.is-entering/.test(HOME_CSS),
     'no entrance-state rule may exist on .rs__card');
-  const source = stripJs(read('public', 'scripts', 'home-restage.js'));
+  const source = stripJs(read('public', 'scripts', 'home', 'home-restage.js'));
   assert.ok(!source.includes('is-entering'),
     'the module must not add an entrance class to the arriving card');
   // And it must insert the element preload() already decoded, not a fresh <img> on the
@@ -561,7 +561,7 @@ test('pressing the button is never gated on the fetch it starts', () => {
   // control must stay live while renders are in the air. Both halves of the old gate are
   // guarded, because either one alone reintroduces the cooldown: `busy` dropped the
   // press outright, and `disabled` made the button refuse the click before JS saw it.
-  const source = stripJs(read('public', 'scripts', 'home-restage.js'));
+  const source = stripJs(read('public', 'scripts', 'home', 'home-restage.js'));
   const disables = [...source.matchAll(/button\.disabled\s*=\s*(\w+)/g)].map((m) => m[1]);
   assert.deepEqual(disables, ['false'],
     'the button may only ever be ENABLED by the module (once, at mount); re-adding a ' +
@@ -579,7 +579,7 @@ test('pressing the button is never gated on the fetch it starts', () => {
 test('an in-flight render is abandoned if the visitor reverts first', () => {
   // Without this, "See original" is undone a moment later by a fetch that was already on
   // its way — the empty room appears, then silently re-stages itself.
-  const source = stripJs(read('public', 'scripts', 'home-restage.js'));
+  const source = stripJs(read('public', 'scripts', 'home', 'home-restage.js'));
   assert.match(source, /const mine = epoch;/, 'each press must capture the epoch it started under');
   assert.match(source, /epoch \+= 1;/, 'revert must bump it');
   assert.match(source, /if \(mine !== epoch\)/, 'and a stale render must not be inserted');
@@ -591,7 +591,7 @@ test('the press animation restarts rather than being retriggered', () => {
   // Adding a class that is already present is not a style change, so without the
   // remove/reflow/add the second press inside the 580ms bounce animates nothing at all —
   // which, with no cooldown, is the common case rather than an edge one.
-  const source = stripJs(read('public', 'scripts', 'home-restage.js'));
+  const source = stripJs(read('public', 'scripts', 'home', 'home-restage.js'));
   const play = source.match(/function playPress\(\)\s*\{[\s\S]*?\n {2}\}/);
   assert.ok(play, 'the module must own a press-animation trigger');
   assert.match(play[0], /classList\.remove\('is-boing'[^)]*\)[\s\S]*void button\.offsetWidth[\s\S]*classList\.add\('is-boing'[^)]*\)/,
@@ -609,7 +609,7 @@ test('clicking the photo does not bounce the button', () => {
   // Each trigger animates only the thing the visitor touched. Bouncing the pill when the
   // PHOTO was clicked threw the eye to the far side of the section at the exact moment
   // the room it controls was changing.
-  const source = stripJs(read('public', 'scripts', 'home-restage.js'));
+  const source = stripJs(read('public', 'scripts', 'home', 'home-restage.js'));
 
   // stage() itself must stay feedback-free, or every entry point inherits the bounce
   // again and this regresses silently.
@@ -640,7 +640,7 @@ test('a press mid-wave re-fires the letters from where they are, not from the ba
   // you press), and refusing to re-arm it at all makes the text feel dead under a fast
   // press. `--from` carries the glyph's current height into the next wave's 0%, so the
   // letter changes direction instead of jumping.
-  const source = stripJs(read('public', 'scripts', 'home-restage.js'));
+  const source = stripJs(read('public', 'scripts', 'home', 'home-restage.js'));
   const play = source.match(/function playPress\(\)\s*\{[\s\S]*?\n {2}\}/)[0];
   // No press may be swallowed — both classes re-fire, unconditionally.
   assert.match(play, /button\.classList\.remove\('is-boing', 'is-hopping'\)/);
@@ -731,7 +731,7 @@ test('the squash beats the hover lift and the release bounces back', () => {
 });
 
 test('the per-glyph hop survives a language switch and cannot run away with a long label', () => {
-  const source = stripJs(read('public', 'scripts', 'home-restage.js'));
+  const source = stripJs(read('public', 'scripts', 'home', 'home-restage.js'));
   // language-loader.js assigns textContent to every [data-lang] node on each pass, which
   // flattens the spans. It fires `languagechange` at the end of that pass; re-splitting
   // there is the only thing keeping the stagger alive after a switch.
@@ -793,7 +793,7 @@ test('the photo stages too, without becoming a second tab stop', () => {
   assert.ok(!/role=/.test(stack[0]), 'the frame must not be announced as a control');
   assert.ok(!/tabindex=/.test(stack[0]), 'and must not be focusable');
 
-  const source = stripJs(read('public', 'scripts', 'home-restage.js'));
+  const source = stripJs(read('public', 'scripts', 'home', 'home-restage.js'));
   assert.match(source, /tapTarget\.addEventListener\('click'/, 'the tap must be wired');
   // A drag inside the frame is a selection, not a press.
   assert.match(source, /if \(selection && !selection\.isCollapsed/,
@@ -846,7 +846,7 @@ test('the photo press feedback avoids every transform already in play', () => {
   assert.ok(!/\.rs__stack\.is-tapped\s+\.rs__(card|empty)/.test(HOME_CSS),
     'nor may it transform the layers inside — .rs__card\'s transform is the throw');
 
-  const source = stripJs(read('public', 'scripts', 'home-restage.js'));
+  const source = stripJs(read('public', 'scripts', 'home', 'home-restage.js'));
   // Cleared on a timer, not on transitionend: a repeat tap can leave the shadow already
   // at its pressed value, and a transition with nothing to animate fires no event at all,
   // which would strand the frame looking pressed.
@@ -862,7 +862,7 @@ test('a failed render says so, and the message clears on the next success', () =
   assert.match(err[0], /data-lang="home\.restage\.loadFailed"/, 'localized like everything else');
   assert.match(err[0], /data-restage-error/, 'with a hook the module can find');
 
-  const source = stripJs(read('public', 'scripts', 'home-restage.js'));
+  const source = stripJs(read('public', 'scripts', 'home', 'home-restage.js'));
   assert.match(source, /if \(!inflight\) root\.classList\.add\('has-error'\)/,
     'raised only once the LAST outstanding fetch has failed — with presses overlapping ' +
     'by design, one 404 among four in-flight requests is not worth reporting');
@@ -927,7 +927,7 @@ test('"See original" is a real tap target at every width', () => {
 test('the empty room is decode-warmed with the other lazy below-fold photos', () => {
   // A stale selector in warmImages() does not throw, it silently stops warming — which is
   // why every entry in that list is pinned by the section that owns it.
-  const reveal = read('public', 'scripts', 'home-reveal.js');
+  const reveal = read('public', 'scripts', 'home', 'home-reveal.js');
   // Anchored on a known member of the list, not on the first querySelectorAll in the
   // file — that one is `.reveal`, and matching it made this guard pass against a
   // home-reveal.js that warmed nothing at all.

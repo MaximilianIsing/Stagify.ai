@@ -16,7 +16,7 @@
 // the scheduled work run.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { start } from '../../../public/scripts/gallery-app.js';
+import { start } from '../../../public/scripts/gallery/gallery-app.js';
 import { MAX_ATTEMPTS } from '../../../public/scripts/share/refresh.js';
 import { galleryDocument, cards } from '../../helpers/gallery-dom.js';
 

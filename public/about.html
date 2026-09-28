@@ -446,19 +446,19 @@
          is JS, not an inline onload= handler, so it passes the CSP’s
          script-src-attr 'none'. -->
     <link rel="stylesheet" href="styles/auth.css" media="print" data-lazy-css>
-    <script type="module" src="scripts/lazy-css.js"></script>
+    <script type="module" src="scripts/site/lazy-css.js"></script>
     <noscript>
       <!-- The promotion above is the only thing that ever loads this sheet, so
            without this the modal is unstyled with JS off. -->
       <link rel="stylesheet" href="styles/auth.css">
     </noscript>
     <link rel="preload" href="languages/english.json" as="fetch" crossorigin>
-    <script type="module" src="scripts/language-detect.js"></script>
-    <script type="module" src="scripts/language-loader.js"></script>
-    <script type="module" src="scripts/language-switcher.js"></script>
-    <script type="module" src="scripts/nav-pill.js"></script>
-    <script type="module" src="scripts/auth.js"></script>
-    <script type="module" src="scripts/profile-menu.js"></script>
+    <script type="module" src="scripts/i18n/language-detect.js"></script>
+    <script type="module" src="scripts/i18n/language-loader.js"></script>
+    <script type="module" src="scripts/i18n/language-switcher.js"></script>
+    <script type="module" src="scripts/site/nav-pill.js"></script>
+    <script type="module" src="scripts/site/auth.js"></script>
+    <script type="module" src="scripts/profile-menu/profile-menu.js"></script>
     <style>
       /* Hide AI Designer link on mobile */
       @media (max-width: 768px) {
@@ -470,7 +470,7 @@
     <!-- Sets html.has-session from the stored token BEFORE first paint, so the nav’s
          Gallery tab does not pop in a round trip late. Render-blocking on purpose, and
          last in <head> so it never delays discovery of the CSS above it. -->
-    <script src="scripts/session-class.js"></script>
+    <script src="scripts/site/session-class.js"></script>
   </head>
   <body>
     <!-- Background Video -->
@@ -781,7 +781,7 @@
 
           <p class="about__note" data-lang-html="about.brand.notUs">Not us: stagify.io, stagify.app, stagify.online and stagifyai.com are unrelated companies with similar names. This kit is only for Stagify.ai, and the full guidance ships as README.txt inside the archive.</p>
 
-          <!-- Messages for scripts/brand-kit.js. Parked in the markup rather than in the
+          <!-- Messages for scripts/pages/brand-kit.js. Parked in the markup rather than in the
                module so they go through language-loader.js like every other string; the
                module reads their textContent and substitutes {hex}. -->
           <span class="brand-copy-msg" data-brand-copy-ok data-lang="about.brand.copied" hidden>Copied {hex} to the clipboard</span>
@@ -811,12 +811,12 @@
     </footer>
 
 
-    <!-- NOT app.js — see scripts/page-chrome.js for why. -->
-    <script type="module" src="scripts/page-chrome.js"></script>
-      <script type="module" src="scripts/aurora-scrollbar.js"></script>
-    <script type="module" src="scripts/hover-glow.js"></script>
-    <script type="module" src="scripts/footer-year.js"></script>
-    <script type="module" src="scripts/legal-menu.js"></script>
-    <script type="module" src="scripts/brand-kit.js"></script>
+    <!-- NOT app.js — see scripts/site/page-chrome.js for why. -->
+    <script type="module" src="scripts/site/page-chrome.js"></script>
+      <script type="module" src="scripts/fx/aurora-scrollbar.js"></script>
+    <script type="module" src="scripts/fx/hover-glow.js"></script>
+    <script type="module" src="scripts/site/footer-year.js"></script>
+    <script type="module" src="scripts/site/legal-menu.js"></script>
+    <script type="module" src="scripts/pages/brand-kit.js"></script>
 </body>
 </html>

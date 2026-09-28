@@ -1,4 +1,4 @@
-// Shared JSDoc/TS shapes for the Masking Studio (scripts/masking-studio-app.js
+// Shared JSDoc/TS shapes for the Masking Studio (scripts/masking-studio/masking-studio-app.js
 // and its islands under scripts/masking-studio/).
 //
 // Type-check only — never shipped to the browser. Reference from .js with e.g.

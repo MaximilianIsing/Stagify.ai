@@ -1,4 +1,4 @@
-// Tier: frontend behaviour + cross-file drift guard — public/scripts/faq-more.js and
+// Tier: frontend behaviour + cross-file drift guard — public/scripts/home/faq-more.js and
 // the three files that have to agree with it.
 //
 // Below 1001px the homepage FAQ opens on three questions instead of nine. That is one
@@ -23,7 +23,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { initFaqMore } from '../../public/scripts/faq-more.js';
+import { initFaqMore } from '../../public/scripts/home/faq-more.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const PUBLIC = path.join(ROOT, 'public');
@@ -240,9 +240,9 @@ test('the button is wired to the sheet, labelled in both states, and loaded earl
   assert.match(html, /data-lang="faq\.more\.show"/);
   assert.match(html, /data-lang="faq\.more\.hide"/);
 
-  assert.ok(INDEX.includes('<script type="module" src="scripts/faq-more.js"></script>'),
+  assert.ok(INDEX.includes('<script type="module" src="scripts/home/faq-more.js"></script>'),
     'the toggle must ship with the head modules, not after load where a tap is swallowed');
-  assert.ok(!INDEX.includes('scripts/faq-more.js" defer'),
+  assert.ok(!INDEX.includes('scripts/home/faq-more.js" defer'),
     'a module is already deferred; a second attribute means it was copied from a classic tag');
 });
 

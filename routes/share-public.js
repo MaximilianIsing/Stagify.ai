@@ -162,7 +162,7 @@ export function buildManifest({ render, blobs, share, presign }) {
     // are OUR vocabulary — four tool ids and our own preset labels — with no customer data
     // in them, and because without them this page would head an exterior render "Staged
     // room" where its owner sees "Exterior — Golden hour". The two pages agreeing is the
-    // whole reason public/scripts/render-name.js exists.
+    // whole reason public/scripts/shared/render-name.js exists.
     //
     // `sourceName` — the source photo's filename — is DELIBERATELY NOT HERE, and the
     // omission is structural rather than a flag someone can flip. Listing photos are named

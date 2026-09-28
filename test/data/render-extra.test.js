@@ -15,7 +15,7 @@ import {
   buildRenderExtra,
   readRenderExtra,
 } from '../../lib/data/render-extra.js';
-import { NAMED_SOURCES } from '../../public/scripts/render-name.js';
+import { NAMED_SOURCES } from '../../public/scripts/shared/render-name.js';
 
 test('the source vocabulary is the same on both sides of the lib/public boundary', () => {
   // A browser module cannot import from lib/ and nothing in lib/ imports from public/, so
@@ -28,7 +28,7 @@ test('the source vocabulary is the same on both sides of the lib/public boundary
   assert.deepEqual(
     [...NAMED_SOURCES, 'interior'].sort(),
     [...RENDER_SOURCES].sort(),
-    'lib/data/render-extra.js and public/scripts/render-name.js disagree about the studios',
+    'lib/data/render-extra.js and public/scripts/shared/render-name.js disagree about the studios',
   );
 });
 
@@ -66,7 +66,7 @@ test('normalizeSourceName takes the basename, so no path ever reaches a card', (
 });
 
 test('normalizeSourceName drops stems that would be identical on every render', () => {
-  // public/scripts/app.js re-wraps a mask-edited "before" as 'photo.png' before re-staging
+  // public/scripts/app/app.js re-wraps a mask-edited "before" as 'photo.png' before re-staging
   // it. Without this every such render would read "· photo", which tells the owner nothing
   // and defeats the entire point of a disambiguating suffix.
   for (const generic of ['photo', 'image', 'IMG', 'Untitled', 'download', 'screenshot', 'blob']) {

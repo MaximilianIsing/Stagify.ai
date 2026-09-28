@@ -38,7 +38,7 @@
 // The same mark sits on four backgrounds — blue (Stagify.ai), gold (Stagify+), navy
 // with a skyline (Enterprise) and navy with a grid (the API) — and the site already
 // paints all four: stagify-plus.html, enterprise.html, developers.html and
-// scripts/profile-menu.js read them out of public/media-webp/logo/. The kit ships the
+// scripts/profile-menu/profile-menu.js read them out of public/media-webp/logo/. The kit ships the
 // PNG masters of the same artwork, so a partner writing about Stagify+ has the gold
 // field rather than cropping it out of a screenshot. The webp copies stay where they
 // are: they are page assets, and the kit is a download.

@@ -3,7 +3,7 @@
 // Every path a file enters the chat: the picker, drag-and-drop on the chat
 // area, paste-from-clipboard, HEIC conversion, validation (type/size/count
 // caps) and the preview chip list. Lifted verbatim from the entry
-// (scripts/ai-designer-app.js) as a factory that self-wires its listeners at
+// (scripts/ai-designer/ai-designer-app.js) as a factory that self-wires its listeners at
 // creation. One in-body change vs the entry version: handleFiles calls
 // updateSendButtonState() unconditionally (the old `if (!isProcessing)` guard
 // was redundant — while processing, updateSendButtonState re-asserts the same
@@ -12,7 +12,7 @@
 // Window globals (StagifyHeic) are referenced directly.
 import { formatFileSize } from './format.js';
 import { getPdfAlt } from './i18n.js';
-import { showToast } from '../toast.js';
+import { showToast } from '../shared/toast.js';
 
       const MAX_UPLOAD_FILES = 5;
       // Per-file size cap (mirrors the server's 50MB chat-upload limit, kept a

@@ -83,7 +83,7 @@
     
     <!-- Preload the LCP image: the hero picker’s DEFAULT pair (Modern bedroom). Preload
          matching is by URL, so this has to stay equal to the static <img> in .hp-stage and
-         to DEFAULT_ROOM/DEFAULT_STYLE in scripts/hero-picker.js. A mismatch does not error,
+         to DEFAULT_ROOM/DEFAULT_STYLE in scripts/home/hero-picker.js. A mismatch does not error,
          it silently buys a wasted download AND delays the element it was meant to speed up.
          test/frontend/hero-picker-lcp.test.js fails on any of the three drifting. -->
     <link rel="preload" as="image" href="media-webp/example/modern-bedroom.webp" imagesrcset="media-webp/example/modern-bedroom-900.webp 900w, media-webp/example/modern-bedroom.webp 1248w, media-webp/example/modern-bedroom-1872.webp 1872w, media-webp/example/modern-bedroom-2496.webp 2496w" imagesizes="(min-width: 1180px) 1110px, 94vw" fetchpriority="high">
@@ -94,14 +94,14 @@
          script and it sits low in the body, so without this the scanner discovers it behind
          everything else and first paint waits on it. It is ~1 KB. See its own header, and
          the <script> tag inside .hp-canvas. -->
-    <link rel="preload" as="script" href="scripts/hero-restore.js" fetchpriority="high">
+    <link rel="preload" as="script" href="scripts/home/hero-restore.js" fetchpriority="high">
 
     <!-- The one script that blocks the parser, fetched at the priority that fact deserves.
          See the note on its <script> tag at the foot of this <head>: it is 2 KB, it gates
          first paint, and without this it was arriving 508 ms in, behind everything else
          the preload scanner had already queued. Sits here, below the LCP image preload and
          above the stylesheets, so it competes with neither. -->
-    <link rel="preload" as="script" href="scripts/session-class.js">
+    <link rel="preload" as="script" href="scripts/site/session-class.js">
 
     <!-- Critical CSS — render-blocking on purpose (needed for first paint) -->
     <link rel="stylesheet" href="styles/styles.css">
@@ -131,7 +131,7 @@
          never draws. Loading it late is safe — #faq is far below the fold AND inside a
          .reveal, so the sheet lands long before the section can be seen. -->
     <link rel="stylesheet" href="styles/faq-plan.css" media="print" data-lazy-css>
-    <script type="module" src="scripts/lazy-css.js"></script>
+    <script type="module" src="scripts/site/lazy-css.js"></script>
     <noscript>
       <link rel="stylesheet" href="styles/auth.css">
       <link rel="stylesheet" href="styles/home-text-animate.css">
@@ -161,7 +161,7 @@
          18-deep import graph to execute first, because modules run in document order. Paired
          with the direct init() call at the bottom of hero-picker.js; moving the tag alone
          does nothing. -->
-    <script type="module" src="scripts/hero-picker.js"></script>
+    <script type="module" src="scripts/home/hero-picker.js"></script>
     <!-- hero-van.js is SECOND, right behind the picker it listens to: it fills #hero-upload
          with the drawn street for the picker’s current style (desktop, hovering pointer
          only). It lived in index-deferred.js’s after-`load` list at first, and the button
@@ -170,18 +170,18 @@
          modulepreload is what keeps that cheap: the art module is its only import, and
          without the hint the browser only discovers it after hero-van.js has downloaded —
          two round trips in series instead of one. -->
-    <link rel="modulepreload" href="scripts/hero-van-art.js">
-    <script type="module" src="scripts/hero-van.js"></script>
-    <script type="module" src="scripts/language-detect.js"></script>
-    <script type="module" src="scripts/language-loader.js"></script>
-    <script type="module" src="scripts/language-switcher.js"></script>
-    <script type="module" src="scripts/nav-pill.js"></script>
+    <link rel="modulepreload" href="scripts/home/hero-van-art.js">
+    <script type="module" src="scripts/home/hero-van.js"></script>
+    <script type="module" src="scripts/i18n/language-detect.js"></script>
+    <script type="module" src="scripts/i18n/language-loader.js"></script>
+    <script type="module" src="scripts/i18n/language-switcher.js"></script>
+    <script type="module" src="scripts/site/nav-pill.js"></script>
     <!-- Not with home-faq-plan.js in index-deferred.js: that one draws, this one is a
          control, and a control that arrives after `load` swallows taps. -->
-    <script type="module" src="scripts/faq-more.js"></script>
-    <script type="module" src="scripts/auth.js"></script>
-    <script type="module" src="scripts/profile-menu.js"></script>
-    <script type="module" src="scripts/heic-convert.js"></script>
+    <script type="module" src="scripts/home/faq-more.js"></script>
+    <script type="module" src="scripts/site/auth.js"></script>
+    <script type="module" src="scripts/profile-menu/profile-menu.js"></script>
+    <script type="module" src="scripts/shared/heic-convert.js"></script>
     <!-- app.js is NOT here any more; hero-cta-boot.js stands in for it. app.js is 38
          modules and ~267 KB of source, and none of it is reachable until somebody starts
          staging — the mask editor, the staging pipeline, the download menu, the version
@@ -190,8 +190,8 @@
          This file is what keeps the gap honest: zero imports, and it binds #hero-upload
          and #outro-upload so a click that lands before app.js has arrived pulls it in and
          then opens the picker, instead of doing nothing. Do NOT defer this one too. -->
-    <script type="module" src="scripts/hero-cta-boot.js"></script>
-    <script type="module" src="scripts/count-up.js"></script>
+    <script type="module" src="scripts/home/hero-cta-boot.js"></script>
+    <script type="module" src="scripts/home/count-up.js"></script>
     <!-- Everything with no hero dependency now loads from index-deferred.js, after
          `load`: demo-data, demo-player, designer-demo, staging-studio, home-reveal,
          home-text-animate, sponsors-scroll, plus-cta-auth, index-inline,
@@ -199,7 +199,7 @@
          parsed on a throttled CPU while the browser was trying to paint the hero.
          Add new below-fold scripts to that file’s list, NOT here — and read its header
          first: anything loaded after `load` must not register on DOMContentLoaded. -->
-    <script type="module" src="scripts/index-deferred.js"></script>
+    <script type="module" src="scripts/home/index-deferred.js"></script>
     
     <!-- Sets html.has-session from the stored token BEFORE first paint, so the nav’s
          Gallery tab does not pop in a round trip late. Render-blocking on purpose, and
@@ -213,7 +213,7 @@
          a page whose CSS was complete at 333 ms and whose hero photo was decoded at 394 ms.
          Do not move this tag up to "fix" that — above the stylesheets it would delay THEM,
          and the preload already buys the priority without moving anything. -->
-    <script src="scripts/session-class.js"></script>
+    <script src="scripts/site/session-class.js"></script>
   </head>
   <body class="page-home">
     <!-- Sign in / Create account -->
@@ -300,7 +300,7 @@
          spent on a z-index:-1, opacity:.8 decorative layer, competing with the hero photo
          the preload above is trying to rush.
          Without `autoplay`, `preload="none"` is honoured and NOTHING is fetched until
-         something calls play() — which scripts/bg-video-start.js does, after `load`, from
+         something calls play() — which scripts/home/bg-video-start.js does, after `load`, from
          index-deferred.js. The `poster` paints the backdrop from first paint either way, so
          the only visible difference is that the motion starts a moment later.
          The <source> media gate is UNCHANGED and must stay: it is what keeps phones off the
@@ -415,7 +415,7 @@
                1. It must stay in agreement with TWO other places: the
                   <link rel="preload" as="image"> in <head> (matching is by URL, so a
                   mismatch costs a wasted download and delays this element), and
-                  DEFAULT_ROOM/DEFAULT_STYLE in scripts/hero-picker.js. If the default
+                  DEFAULT_ROOM/DEFAULT_STYLE in scripts/home/hero-picker.js. If the default
                   pair and this file disagree, the first paint shows one room and the
                   script immediately swaps it for another. There is a drift test.
                2. No loading="lazy" and no width/height attributes. Lazy would forfeit the
@@ -438,7 +438,7 @@
                   Renders created later get `hp-canvas__img` WITHOUT `is-on`, so the
                   cross-fade contract is untouched. There is a drift test on both halves.
 
-               5. THE PAIR ABOVE IS NOT ALWAYS WHAT PAINTS. scripts/hero-restore.js, the
+               5. THE PAIR ABOVE IS NOT ALWAYS WHAT PAINTS. scripts/home/hero-restore.js, the
                   tag directly below, rewrites this element’s src/srcset in place when the
                   visitor has a remembered pick, before the first paint — so the three-way
                   agreement in rule 1 is about the DEFAULT, which is what this file ships and
@@ -453,7 +453,7 @@
                parser-blocking script (a module would run at the end of parsing, which is the
                flash it removes) preloaded from <head>. It never replaces the node — rule 3
                holds. Read its header before moving it. -->
-          <script src="scripts/hero-restore.js"></script>
+          <script src="scripts/home/hero-restore.js"></script>
 
           <!-- Positioned against the canvas rather than laid out in a rail. It briefly shared
                a flex row with the stat pills, and a pill plus a button is wider than a 326px
@@ -473,7 +473,7 @@
                got neither — the sole feedback was the trigger button’s new label happening to
                be re-read as focus returned to it. "See original" gave not even that.
 
-               Ships EMPTY and is filled by scripts/hero-picker.js. A live region has to be in
+               Ships EMPTY and is filled by scripts/home/hero-picker.js. A live region has to be in
                the document before the text lands in it; populate it in the same breath as
                creating it and screen readers routinely miss the change. Empty on first paint
                also means nothing is announced for the render that was already there when the
@@ -500,7 +500,7 @@
                that only exists above 768px is a keyword line Google does not read.
 
                NO `data-hover-glow` HERE, deliberately. The shared handler in
-               scripts/hover-glow.js writes `textShadow` inline on mouseover and then
+               scripts/fx/hover-glow.js writes `textShadow` inline on mouseover and then
                `textShadow = 'none'` on mouseout, and an inline style outranks the sheet
                permanently — so after one hover this line lost the scrim shadow that keeps
                it readable over a bright render. The hover is CSS now; see
@@ -516,7 +516,7 @@
                HTML collapses the indentation into extra spaces around each slot, which shows
                up as a visible gap before the chevron and before the full stop.
 
-               scripts/hero-picker.js drops the data-lang attributes off the two label spans
+               scripts/home/hero-picker.js drops the data-lang attributes off the two label spans
                once it takes over, so a later language change cannot reset the sentence to the
                default pair while the photo stays where the visitor put it.
 
@@ -529,7 +529,7 @@
                 <div class="hero-cta-button-wrap">
                   <!-- ON DESKTOP THIS IS A DRAWN STREET, not a gradient button. `.hu` picks up the plate
                        shell in styles/hero-picker.css (navy, 376px, one line of label) at 769px and
-                       above with a hovering pointer; scripts/hero-van.js (after `load`) fills
+                       above with a hovering pointer; scripts/home/hero-van.js (after `load`) fills
                        `.hu-scene` with the scene for the picker’s current furniture style and swaps it
                        when that changes. Below the breakpoint the two spans are empty and invisible and
                        the button is the classic `.btn-primary` — the mobile rules in styles.css are
@@ -540,7 +540,7 @@
                   <button id="hero-upload" class="btn btn-primary hu"><span class="hu-scene" aria-hidden="true"></span><span class="hu-veil" aria-hidden="true"></span><strong data-lang="hero.cta">Upload image for free</strong></button>
                   <!-- The upgrade nudge for signed-in FREE accounts. Its copy ships here rather than
                        being written in by JS, and it is shown/hidden by `html.has-free-plan` (set
-                       pre-paint in scripts/session-class.js, corrected by app/hero-stats.js once
+                       pre-paint in scripts/site/session-class.js, corrected by app/hero-stats.js once
                        /api/auth/me answers) rather than by .hidden on the element itself — so the
                        line is in the first paint for the people who get it instead of growing the
                        hero a round trip late. data-lang-html because the sentence contains a link;
@@ -557,7 +557,7 @@
 
                  The real per-render data lives in the language packs, at
                  hero.added.items.<style>.<room> — 48 lists of five, one per combination the
-                 picker can reach, each written against that exact render. scripts/hero-picker.js
+                 picker can reach, each written against that exact render. scripts/home/hero-picker.js
                  replaces these <li> with the right list on every swap and on every language
                  change; see paintAdded() there for what happens in the window before the pack
                  has landed.
@@ -591,7 +591,7 @@
                    reads as one block rather than as two widgets parked on a render.
 
                    `#hero-stats`, `.hp-stat__num` and `data-stat` are the contract with
-                   scripts/count-up.js, which finds the numbers by that class and reveals this
+                   scripts/home/count-up.js, which finds the numbers by that class and reveals this
                    wrapper with `.is-ready` once both count endpoints resolve. Rename any of
                    the three and the counters silently never appear.
 
@@ -617,7 +617,7 @@
       </section>
 
       <!-- ============================ the hero picker’s menu glyphs ============================
-           One <symbol> per entry in the ROOMS and STYLES tables in scripts/hero-picker.js, drawn
+           One <symbol> per entry in the ROOMS and STYLES tables in scripts/home/hero-picker.js, drawn
            once here and used by every row those menus build. It sits in the markup rather than in
            that module because hero-picker.js is the first module tag on the page and has no
            imports ON PURPOSE (read its header): a static import would defer it behind a second
@@ -874,7 +874,7 @@
            (width/height attributes would also defeat the CSS ratio outright.)
 
            THE BUTTON SHIPS `disabled` ON PURPOSE. index-deferred.js injects
-           scripts/home-restage.js after `load`, so this markup is what every visitor
+           scripts/home/home-restage.js after `load`, so this markup is what every visitor
            sees first and keeps if that batch fails. home.css hides the button until the
            script adds `.rs--ready`, because a dead control is worse than no control;
            the room and the copy read fine without any of it. The photo’s own
@@ -974,7 +974,7 @@
            data-tx; it is never hidden.
 
            PROGRESSIVE ENHANCEMENT, same contract as the studio showcase below. Until
-           scripts/home-strips.js adds `.hstrips--ready` these are four plain stacked
+           scripts/home/home-strips.js adds `.hstrips--ready` these are four plain stacked
            blocks with every panel open — see the fallback block in styles/home.css.
            index-deferred.js injects that script after `load`, so there is a real
            window where this markup is all the visitor has, and a script failure has
@@ -1081,7 +1081,7 @@
         <div class="home-section__head home-section__head--wide reveal">
           <h2 class="home-section__title" id="nar-title" data-tx="rise" data-lang="home.nar.title">Don’t fall behind</h2>
         </div>
-        <!-- Every visible string here is unchanged; scripts/home-figures.js adds the
+        <!-- Every visible string here is unchanged; scripts/home/home-figures.js adds the
              legend highlight through the data-* hooks and nothing else.
 
              The segment widths live in `--seg-w` so the CSS owns the final value — with
@@ -1099,7 +1099,7 @@
              They ARE tweened when the visitor switches survey year with the buttons in
              the citation row — 20% to 9% between two published figures, on a click,
              which is the comparison the switch exists to make. That is driven entirely
-             from scripts/home-nar-years.js with no hook in this markup.
+             from scripts/home/home-nar-years.js with no hook in this markup.
 
              The same four numbers appear in four places — the bar widths, the legend,
              the note, and the bar’s aria-label (which is all a screen reader gets,
@@ -1159,7 +1159,7 @@
 
                  2025 is pressed in the markup because 2025 is what the card above is
                  authored as — the button state and the figures ship agreeing, so a reader
-                 who never loads scripts/home-nar-years.js still sees a card that is
+                 who never loads scripts/home/home-nar-years.js still sees a card that is
                  correctly labelled rather than one offering a switch that does nothing.
                  (The buttons are inert without JS; they change no numbers on their own.)
 
@@ -1186,7 +1186,7 @@
            kept so every existing deep link still resolves. #ai-designer-demo especially:
            ai-designer-gate.js and ai-designer-app.js bounce signed-out, free and mobile
            visitors to `index.html#ai-designer-demo`, index-inline.js re-asserts that
-           scroll after load, and four tests assert the URL. scripts/studio-showcase.js
+           scroll after load, and four tests assert the URL. scripts/showcase/studio-showcase.js
            reads location.hash on load and on hashchange and brings the matching panel to
            the front. Renaming a panel id silently breaks a redirect, not just an anchor.
 
@@ -1386,11 +1386,11 @@
            the same two photographs.
 
            The drag behaviour is the same widget as the staging comparison above:
-           scripts/staging-studio.js mounts BOTH roots off one shared function.
+           scripts/home/staging-studio.js mounts BOTH roots off one shared function.
 
            No CTA, matching the gallery panel beside it. The Staging nav menu is the
            way in; exterior-studio.html is marked `data-staging-preview`
-           (scripts/staging-menu.js), so signed-out and free visitors reaching it
+           (scripts/site/staging-menu.js), so signed-out and free visitors reaching it
            from there land on the public explainer rather than a redirect. -->
               <div class="shw__panel" id="exterior-studio-demo" aria-labelledby="shw-tab-3" data-shw-panel="3">
                 <div class="shw__panel-inner">
@@ -1453,7 +1453,7 @@
               <!-- ===================== GALLERY (SAVED RENDERS) ===================== -->
               <!-- A CSS/HTML mock of the signed-in gallery, not a screenshot. Deliberately
                    INERT: no <a>, no <button>, no JS. gallery.html redirects every signed-out
-                   visitor and every viewport <=768px (scripts/gallery-gate.js), so a CTA here
+                   visitor and every viewport <=768px (scripts/gates/gallery-gate.js), so a CTA here
                    would dead-end for the exact audience this panel persuades.
                    NOT a Stagify+ feature - free accounts get a gallery too, which is why this
                    is the one panel of the four whose subtitle carries no "(Stagify+
@@ -1783,7 +1783,7 @@
              below, the other 11 are left as harmless orphans (the parity gate in
              test/server/static.test.js is one-way, english → others).
 
-             The numbers are computed in the browser, so scripts/home-figures.js owns
+             The numbers are computed in the browser, so scripts/home/home-figures.js owns
              them; the authored text here is the value at CALC.initial so the pre-JS
              paint agrees with the first render. test/frontend/home-figures.test.js
              fails if the two drift apart. -->
@@ -2085,7 +2085,7 @@
              almost everyone reading the home page is anonymous. api-keys-row.js says the
              same thing — "until then the only way in is developers.html". -->
         <!-- desktop-only, and NOT as a style preference: developers.html loads
-             scripts/developers-gate.js, which redirects a phone-sized viewport to this
+             scripts/gates/developers-gate.js, which redirects a phone-sized viewport to this
              very page before paint. Unhidden, this line answers a tap by bouncing the
              reader back to where they already were. The footer’s Developers link is
              wrapped for the same reason, and test/frontend/desktop-only-gates.test.js
@@ -2500,7 +2500,7 @@
            NO `data-tx` HERE, deliberately. The whole point of this section is that it
            is quiet; an animated heading is the one thing that would undo that.
 
-           The button is `#outro-upload`, wired in scripts/app.js alongside
+           The button is `#outro-upload`, wired in scripts/app/app.js alongside
            `#hero-upload`. It is NOT `.btn.btn-primary`: that class is the uppercase
            five-stop radial-gradient blob with the shimmer sweep, which is the loudest
            control on the site and belongs to the hero. Whether the two should be
@@ -3093,11 +3093,11 @@
       &nbsp;·&nbsp;
       © <span class="footer-year">2026</span> <span data-lang="footer.copyright">Stagify.ai</span>
     </footer>
-    <script type="module" src="scripts/footer-year.js"></script>
-    <script type="module" src="scripts/legal-menu.js"></script>
+    <script type="module" src="scripts/site/footer-year.js"></script>
+    <script type="module" src="scripts/site/legal-menu.js"></script>
 
     <!-- aurora-scrollbar.js and card-spotlight.js used to sit here; both are
-         pointer:fine-only decoration and now load from scripts/index-deferred.js. -->
+         pointer:fine-only decoration and now load from scripts/home/index-deferred.js. -->
     <!-- Structured Data. Deliberately at the end of <body> rather than in <head>: these
          four blocks total ~19 KB, and in <head> they sat between the stylesheets and the
          hero markup, delaying the parser reaching the LCP element. Google reads JSON-LD
@@ -3106,7 +3106,7 @@
     <!-- data-lang-keywords names the translation key for the "keywords" property below.
          It used to be scraped off <meta name="keywords">, which has since been deleted
          (Google ignores that tag; Bing reads it as a spam signal). Both renderers --
-         lib/i18n/render-page.js and scripts/language-loader.js -- read the key from here
+         lib/i18n/render-page.js and scripts/i18n/language-loader.js -- read the key from here
          now, so a page without this attribute simply keeps its authored keywords. -->
     <script type="application/ld+json" data-lang-jsonld data-lang-keywords="meta.keywords">
     {

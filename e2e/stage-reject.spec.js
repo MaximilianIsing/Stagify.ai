@@ -3,7 +3,7 @@
 // The sibling spec (masking-studio-reject.spec.js) covers the same gatekeeper in the
 // OTHER studio, which has a different consumer: a toast that tears the photo back out.
 // Here the verdict lands in the stage modal's inline error viewer instead, through a
-// separate code path (scripts/app.js + app/staging-pipeline.js), so it needs its own
+// separate code path (scripts/app/app.js + app/staging-pipeline.js), so it needs its own
 // browser coverage — the two studios share only the resolver, not the plumbing.
 //
 // Also pins that the LOCALIZED copy wins: the server sends a category code plus its

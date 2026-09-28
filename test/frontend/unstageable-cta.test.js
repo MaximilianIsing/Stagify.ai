@@ -1,4 +1,4 @@
-// Unit tests for public/scripts/unstageable-cta.js — the one place that decides where a
+// Unit tests for public/scripts/shared/unstageable-cta.js — the one place that decides where a
 // rejected upload can send the user next, and under which label.
 //
 // Two things here are cross-tier on purpose. The server's UNSTAGEABLE_CODES is imported
@@ -10,7 +10,7 @@
 import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { unstageableCta, EXTERIOR_CODE } from '../../public/scripts/unstageable-cta.js';
+import { unstageableCta, EXTERIOR_CODE } from '../../public/scripts/shared/unstageable-cta.js';
 import { UNSTAGEABLE_CODES, GENERIC_UNSTAGEABLE_CODE } from '../../lib/staging/unstageable.js';
 
 // The module reads the global `window` for the plan; give it one per test.

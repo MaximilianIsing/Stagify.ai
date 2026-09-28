@@ -1,10 +1,10 @@
 // Stagify.ai — who sees what on the AI Designer page.
 //
 // One binding of the shared preview pattern; the reasoning for three audiences on one URL,
-// and the reminder that none of it is a security boundary, is in scripts/preview-access.js.
+// and the reminder that none of it is a security boundary, is in scripts/gates/preview-access.js.
 //
 // ONE THING IS DIFFERENT HERE, and it is worth knowing before reading the gate: this page
-// is also DESKTOP-ONLY, and that half is still a redirect. scripts/ai-designer-gate.js
+// is also DESKTOP-ONLY, and that half is still a redirect. scripts/gates/ai-designer-gate.js
 // sends any viewport at or below 768px to the home page before anything else runs, so a
 // phone never reaches the pitch either. That is a deliberate decision rather than an
 // oversight — the studio is a desktop layout, and a mobile landing page would sell
@@ -17,7 +17,7 @@
 // composition root into auth.js would load the whole studio on all ten nav-bearing pages.
 // The writer no-ops everywhere else by construction: `#ai-tool` exists on exactly one page.
 
-import { createPreviewAccess } from '../preview-access.js';
+import { createPreviewAccess } from '../gates/preview-access.js';
 
 /**
  * Apply the right view to the AI Designer, resolving the plan and the elements from the

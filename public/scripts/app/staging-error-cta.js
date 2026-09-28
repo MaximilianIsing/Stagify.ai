@@ -14,7 +14,7 @@
 // with the panel still open keeps the "Get Stagify+" label — the link works, and it lands
 // on the page that sells the thing they just bought. Wiring a new fan-out target into
 // auth.js for that window is not worth it.
-import { unstageableCta } from '../unstageable-cta.js';
+import { unstageableCta } from '../shared/unstageable-cta.js';
 
 /**
  * Paint (or clear) the call-to-action for one rejection verdict.

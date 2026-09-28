@@ -1,4 +1,4 @@
-// The owner's gallery page (public/scripts/gallery-app.js + gallery/*).
+// The owner's gallery page (public/scripts/gallery/gallery-app.js + gallery/*).
 //
 // The behaviours worth pinning are the ones a screenshot would not catch: the page has
 // one writer of its state so two cannot show at once, opening a card shows the link that
@@ -9,7 +9,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { start } from '../../../public/scripts/gallery-app.js';
+import { start } from '../../../public/scripts/gallery/gallery-app.js';
 import {
   formatWhen, renderGrid, renderCompare, renderMeta, entryName, defaultName,
 } from '../../../public/scripts/gallery/view.js';
@@ -139,7 +139,7 @@ test('nothing on the page offers to create or turn off a link', async () => {
   assert.ok(!/id="gal-share-create"/.test(src));
   assert.ok(!/id="gal-share-revoke"/.test(src));
 
-  const app = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'gallery-app.js'), 'utf8')
+  const app = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'gallery', 'gallery-app.js'), 'utf8')
     .replace(/\/\*[\s\S]*?\*\//g, '')
     .replace(/\/\/[^\n]*/g, '');
   assert.ok(!/mintShare|revokeShare/.test(app), 'the page can still call a route that is gone');

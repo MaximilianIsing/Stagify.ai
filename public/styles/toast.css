@@ -1,7 +1,7 @@
-/* Toast notifications — the shared styling for scripts/toast.js.
+/* Toast notifications — the shared styling for scripts/shared/toast.js.
  *
  * Extracted from ai-designer.css and masking-studio.css, which each carried a
- * byte-identical copy of this block. Any page that imports scripts/toast.js must
+ * byte-identical copy of this block. Any page that imports scripts/shared/toast.js must
  * link this file, including the main studio pages, which previously used native
  * alert() and so needed no toast styling at all. */
 

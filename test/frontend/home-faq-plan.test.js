@@ -1,4 +1,4 @@
-// Tier: pure frontend logic + markup drift guards — public/scripts/home-faq-plan.js.
+// Tier: pure frontend logic + markup drift guards — public/scripts/home/home-faq-plan.js.
 //
 // The module turns #faq into an architectural sheet. It generates SVG and nothing else:
 // the accordion is native <details>, so none of the FAQ's actual behaviour is at risk
@@ -45,7 +45,7 @@ const {
   roomId,
   answerTop,
   ANSWER_GAP,
-} = await import('../../public/scripts/home-faq-plan.js');
+} = await import('../../public/scripts/home/home-faq-plan.js');
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const PUBLIC = path.join(ROOT, 'public');
@@ -245,7 +245,7 @@ test('the plan drafts on the same gate that fades its own container in', () => {
   // copy needs a guard. Read out of the source rather than by running either module —
   // both are `load`-time side-effect scripts.
   const src = (/** @type {string} */ name) =>
-    fs.readFileSync(path.join(PUBLIC, 'scripts', name), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+    fs.readFileSync(path.join(PUBLIC, 'scripts', 'home', name), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
   const reveal = src('home-reveal.js');
   const plan = src('home-faq-plan.js');
 
@@ -1176,10 +1176,10 @@ test('the plan assets are wired in the right places', () => {
 
   // The module MUST be deferred: it is below-fold decoration, and index-deferred.js is
   // the only list that runs after `load`.
-  const deferred = fs.readFileSync(path.join(PUBLIC, 'scripts', 'index-deferred.js'), 'utf8');
-  assert.match(deferred, /scripts\/home-faq-plan\.js/, 'home-faq-plan.js belongs in DEFERRED');
+  const deferred = fs.readFileSync(path.join(PUBLIC, 'scripts', 'home', 'index-deferred.js'), 'utf8');
+  assert.match(deferred, /scripts\/home\/home-faq-plan\.js/, 'home-faq-plan.js belongs in DEFERRED');
   assert.doesNotMatch(
-    INDEX, /<script[^>]*src="scripts\/home-faq-plan\.js"/,
+    INDEX, /<script[^>]*src="scripts\/home\/home-faq-plan\.js"/,
     'home-faq-plan.js must not get its own tag in <head>'
   );
 });

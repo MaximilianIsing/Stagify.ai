@@ -131,7 +131,7 @@ export async function seedFreeSession(page) {
 }
 
 /**
- * Wait until `scripts/app.js` has finished evaluating.
+ * Wait until `scripts/app/app.js` has finished evaluating.
  *
  * The home page's upload buttons are wired inside that module body, so a click
  * that lands before it runs is silently a no-op (Playwright does not retry a

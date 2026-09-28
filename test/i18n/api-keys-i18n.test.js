@@ -58,7 +58,7 @@ function sources() {
   const dir = path.join(PUBLIC, 'scripts', 'api-keys');
   return [
     fs.readFileSync(path.join(PUBLIC, 'api-keys.html'), 'utf8'),
-    fs.readFileSync(path.join(PUBLIC, 'scripts', 'api-keys-app.js'), 'utf8'),
+    fs.readFileSync(path.join(PUBLIC, 'scripts', 'api-keys', 'api-keys-app.js'), 'utf8'),
     ...fs.readdirSync(dir).filter((f) => f.endsWith('.js'))
       .map((f) => fs.readFileSync(path.join(dir, f), 'utf8')),
   ].join('\n');

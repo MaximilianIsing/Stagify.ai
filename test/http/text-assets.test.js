@@ -222,8 +222,8 @@ test('the homepage keeps every hook its other drift tests key on', () => {
     'id="hero-upload"',
     'id="background-video"',
     'media-webp/example/modern-bedroom.webp',
-    'scripts/hero-picker.js',
-    'scripts/index-deferred.js',
+    'scripts/home/hero-picker.js',
+    'scripts/home/index-deferred.js',
     'data-lazy-css',
     'class="hp-canvas__img is-on"',
   ]) {

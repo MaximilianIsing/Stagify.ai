@@ -1,4 +1,4 @@
-// Pure helpers extracted from the main Stagify tool (scripts/app.js).
+// Pure helpers extracted from the main Stagify tool (scripts/app/app.js).
 //
 // No DOM, no app state — deterministic transforms on their arguments, so they
 // run under node --test with no shim (see test/frontend/app/app-helpers.test.js). atob /
@@ -28,7 +28,7 @@ export function dataURLToFile(dataUrl, filename) {
 // Replace every `{token}` in `tpl` with its value from `replacements`
 // (null/undefined → ""). Tokens with no matching key are left untouched. Keys
 // are code-controlled, so they are interpolated into the pattern unescaped —
-// exactly as the two call sites in scripts/app.js did before this was hoisted.
+// exactly as the two call sites in scripts/app/app.js did before this was hoisted.
 /**
  * @param {string | null | undefined} tpl
  * @param {Record<string, unknown>} [replacements]

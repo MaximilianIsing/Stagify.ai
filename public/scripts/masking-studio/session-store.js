@@ -1,5 +1,5 @@
 // IndexedDB session-persistence island for the Masking Studio
-// (scripts/masking-studio-app.js).
+// (scripts/masking-studio/masking-studio-app.js).
 //
 // The photo, strokes, prompts, and furniture refs are saved to IndexedDB
 // (debounced) so a crash or closed tab doesn't lose the work. Generated

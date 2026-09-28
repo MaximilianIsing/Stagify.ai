@@ -15,7 +15,7 @@
 // "i18n utils" would be a third home for a rule that already lives in language-loader.js.
 // If a third page needs this, THAT is when to extract it.
 
-import { LANG_BCP47 } from '../locale-data.js';
+import { LANG_BCP47 } from '../i18n/locale-data.js';
 
 /** The live pack accessor, or null before it loads / under test. */
 function system() {

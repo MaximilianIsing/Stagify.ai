@@ -1,6 +1,6 @@
 // The gallery is PC-only, in a real browser.
 //
-// public/scripts/gallery-gate.js reads the LAYOUT viewport, which is the one thing the
+// public/scripts/gates/gallery-gate.js reads the LAYOUT viewport, which is the one thing the
 // unit test (test/frontend/gallery/gallery-gate-mobile.test.js) has to stub: it runs the
 // gate's source against a fake matchMedia. What only a real browser can show is that the
 // page actually delivers that viewport to it — <meta name="viewport"> is parsed above the

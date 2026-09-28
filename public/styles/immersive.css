@@ -1,4 +1,4 @@
-/* The immersive ("rotate to landscape") overlay — scripts/immersive-view.js.
+/* The immersive ("rotate to landscape") overlay — scripts/shared/immersive-view.js.
    Shared by the homepage showcase and the guides walkthroughs, which is why it is
    its own file rather than a block in home.css and a second copy in guides.css.
 
@@ -45,7 +45,7 @@
    The rotation lives on .imv__stage and NOT on .imv. A transform on the fixed
    ancestor would make IT the containing block for every fixed descendant — which is
    the exact class of bug this overlay exists to dodge (see the portal note in
-   scripts/immersive-view.js).
+   scripts/shared/immersive-view.js).
 
    The box is authored at the SWAPPED dimensions and then turned, so after the 90deg
    it lands back at exactly the viewport's size. rotate(90deg) means the user tilts

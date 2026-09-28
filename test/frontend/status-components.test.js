@@ -1,4 +1,4 @@
-// public/scripts/status-components.js — the lookup order and the class mapping behind
+// public/scripts/status/status-components.js — the lookup order and the class mapping behind
 // the Components section of /status.
 //
 // The point of the lookup order is that translating is additive: the server always
@@ -11,7 +11,7 @@ import assert from 'node:assert/strict';
 
 import {
   FALLBACK_NAMES, componentLabel, componentReason, stateLabel, stateClass, bannerClass, bannerText,
-} from '../../public/scripts/status-components.js';
+} from '../../public/scripts/status/status-components.js';
 
 /** A language runtime that knows only the keys it is given. */
 const packOf = (entries) => (key, fallback) => (key in entries ? entries[key] : fallback);

@@ -1,6 +1,6 @@
 import { lang } from './dom-utils.js';
 import { REPORT_ISSUE_HTML } from './report-issue-template.js';
-import { readBugReportHistory } from '../bug-report-history.js';
+import { readBugReportHistory } from './bug-report-history.js';
 
 /**
  * The account menu's "Report an issue" dialog — the site-wide half of the bug

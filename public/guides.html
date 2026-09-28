@@ -89,7 +89,7 @@
          is JS, not an inline onload= handler, so it passes the CSP’s
          script-src-attr 'none'. -->
     <link rel="stylesheet" href="styles/auth.css" media="print" data-lazy-css>
-    <script type="module" src="scripts/lazy-css.js"></script>
+    <script type="module" src="scripts/site/lazy-css.js"></script>
     <noscript>
       <!-- The promotion above is the only thing that ever loads these sheets, so
            without this the modal and the walkthrough player are unstyled with JS off. -->
@@ -108,22 +108,22 @@
          the DOM until someone taps the control on a phone. -->
     <link rel="stylesheet" href="styles/immersive.css" media="print" data-lazy-css>
     <link rel="preload" href="languages/english.json" as="fetch" crossorigin>
-    <script type="module" src="scripts/language-detect.js"></script>
-    <script type="module" src="scripts/language-loader.js"></script>
-    <script type="module" src="scripts/language-switcher.js"></script>
-    <script type="module" src="scripts/nav-pill.js"></script>
-    <script type="module" src="scripts/auth.js"></script>
-    <script type="module" src="scripts/profile-menu.js"></script>
+    <script type="module" src="scripts/i18n/language-detect.js"></script>
+    <script type="module" src="scripts/i18n/language-loader.js"></script>
+    <script type="module" src="scripts/i18n/language-switcher.js"></script>
+    <script type="module" src="scripts/site/nav-pill.js"></script>
+    <script type="module" src="scripts/site/auth.js"></script>
+    <script type="module" src="scripts/profile-menu/profile-menu.js"></script>
     <!-- demo-data.js (41 KB) + demo-player.js (13 KB) are injected after `load` by
          guides-deferred.js, which then calls back into guides.js to mount whatever
          walkthrough is open. Do NOT put them back here as plain `defer` tags: that
          runs them inside the LCP window for a player that is below the fold and
          inside a `hidden` panel. -->
-    <script type="module" src="scripts/guides-deferred.js"></script>
-    <script type="module" src="scripts/guides.js?v=8"></script>
-    <script type="module" src="scripts/home-reveal.js"></script>
-    <!-- NOT app.js — see scripts/page-chrome.js for why. -->
-    <script type="module" src="scripts/page-chrome.js"></script>
+    <script type="module" src="scripts/guides/guides-deferred.js"></script>
+    <script type="module" src="scripts/guides/guides.js?v=8"></script>
+    <script type="module" src="scripts/home/home-reveal.js"></script>
+    <!-- NOT app.js — see scripts/site/page-chrome.js for why. -->
+    <script type="module" src="scripts/site/page-chrome.js"></script>
     <style>
       html {
         scroll-behavior: smooth;
@@ -255,7 +255,7 @@
     <!-- Sets html.has-session from the stored token BEFORE first paint, so the nav’s
          Gallery tab does not pop in a round trip late. Render-blocking on purpose, and
          last in <head> so it never delays discovery of the CSS above it. -->
-    <script src="scripts/session-class.js"></script>
+    <script src="scripts/site/session-class.js"></script>
   </head>
   <body>
     <!-- Background Video -->
@@ -364,7 +364,7 @@
 
           <!--
             A real ARIA tablist: each tab NAMES the panel it controls, each panel points
-            back at its tab, and only the selected tab is a tab stop (scripts/guides.js
+            back at its tab, and only the selected tab is a tab stop (scripts/guides/guides.js
             moves the 0 as you arrow between them). Without aria-controls/-labelledby the
             role tells a screen reader these are tabs while giving it no way to say which
             panel belongs to which — six unrelated buttons announced as a tablist.
@@ -399,7 +399,7 @@
           <!--
             These ids are PUBLISHED: the HowTo structured data above advertises
             guides.html#guide-demo-<key> as the URL of every step, so a search result can
-            drop a visitor straight onto one. scripts/guides.js reads that hash and opens
+            drop a visitor straight onto one. scripts/guides/guides.js reads that hash and opens
             the matching tab — without it the deep link resolves to a hidden element, the
             browser scrolls nowhere, and the visitor is shown the Free walkthrough
             regardless of which one they clicked. Renaming one of these breaks a link
@@ -419,7 +419,7 @@
             demo-data.js and demo-player.js are injected after `load` (guides-deferred.js),
             so until they land this panel is empty — without a reserved box the frame pops
             in and shoves the whole page below it down. It must match the demo’s `aspect`
-            in public/scripts/demo-data.js; test/frontend/guides/guides-skeleton.test.js
+            in public/scripts/guides/demo-data.js; test/frontend/guides/guides-skeleton.test.js
             fails the build if the two drift apart.
           -->
           <div class="guide-demo-stage">
@@ -540,7 +540,7 @@
             grid of six cards whose entire content was the same six techHelp.*.title
             strings as the cards below them — the page said everything twice and
             navigated to itself. The rail is now the navigation, the cards are the
-            content, and scripts/guides.js scroll-spies one against the other.
+            content, and scripts/guides/guides.js scroll-spies one against the other.
 
             No `.reveal` on .guides-help: the reveal system re-applies a transform
             via `.exit-up` / `.exit-down` as you scroll past (home.css), and a
@@ -776,9 +776,9 @@
       © <span class="footer-year">2026</span> <span data-lang="footer.copyright">Stagify.ai</span>
     </footer>
 
-      <script type="module" src="scripts/footer-year.js"></script>
-      <script type="module" src="scripts/legal-menu.js"></script>
-      <script type="module" src="scripts/aurora-scrollbar.js"></script>
-      <script type="module" src="scripts/hover-glow.js"></script>
+      <script type="module" src="scripts/site/footer-year.js"></script>
+      <script type="module" src="scripts/site/legal-menu.js"></script>
+      <script type="module" src="scripts/fx/aurora-scrollbar.js"></script>
+      <script type="module" src="scripts/fx/hover-glow.js"></script>
 </body>
 </html>

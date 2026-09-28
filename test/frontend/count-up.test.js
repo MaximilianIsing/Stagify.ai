@@ -1,4 +1,4 @@
-// Tier: pure frontend logic — public/scripts/count-up.js.
+// Tier: pure frontend logic — public/scripts/home/count-up.js.
 //
 // Covers the hero-stat counter's number/width math. The visible invariant the
 // animation depends on is that the pill NEVER clips the number and NEVER overshoots
@@ -10,7 +10,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 globalThis.window = globalThis.window || {};
-const { format, widthForText, lenAtDecade, rampValue, smoothWidthCh, hasServerCount } = await import('../../public/scripts/count-up.js');
+const { format, widthForText, lenAtDecade, rampValue, smoothWidthCh, hasServerCount } = await import('../../public/scripts/home/count-up.js');
 
 test('format rounds and groups like the displayed value', () => {
   assert.equal(format(0), '0');

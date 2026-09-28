@@ -146,12 +146,12 @@ test('the homepage video is not autoplayed, and something still starts it', () =
       + 'what actually keeps the fetch from starting; any other value re-arms it.',
   );
 
-  const deferred = fs.readFileSync(path.join(PUBLIC, 'scripts', 'index-deferred.js'), 'utf8');
+  const deferred = fs.readFileSync(path.join(PUBLIC, 'scripts', 'home', 'index-deferred.js'), 'utf8');
   assert.match(
     deferred,
-    /scripts\/bg-video-start\.js/,
+    /scripts\/home\/bg-video-start\.js/,
     'nothing starts the homepage background video any more. It ships without `autoplay` '
-      + 'on purpose, so scripts/bg-video-start.js must stay in index-deferred.js\'s list '
+      + 'on purpose, so scripts/home/bg-video-start.js must stay in index-deferred.js\'s list '
       + 'or the backdrop is a still poster forever.',
   );
 });
@@ -198,7 +198,7 @@ test('the flat-colour fallback cannot fire before a play has been attempted', ()
   );
 
   // The marker has to exist on the other side of the contract too.
-  const starter = fs.readFileSync(path.join(PUBLIC, 'scripts', 'bg-video-start.js'), 'utf8');
+  const starter = fs.readFileSync(path.join(PUBLIC, 'scripts', 'home', 'bg-video-start.js'), 'utf8');
   assert.match(
     starter,
     /setAttribute\('data-bg-started'/,

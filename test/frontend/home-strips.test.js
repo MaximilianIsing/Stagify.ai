@@ -1,4 +1,4 @@
-// Tier: pure frontend logic + markup/CSS drift guards — public/scripts/home-strips.js.
+// Tier: pure frontend logic + markup/CSS drift guards — public/scripts/home/home-strips.js.
 //
 // #learn ("What virtual staging is, and why it sells") was four stacked image+text
 // rows; it is now four photo strips, one open at a time. Three things about that are
@@ -29,15 +29,15 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { indexForKey, FLAT_QUERY } from '../../public/scripts/home-strips.js';
+import { indexForKey, FLAT_QUERY } from '../../public/scripts/home/home-strips.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const read = (/** @type {string[]} */ ...p) => fs.readFileSync(path.join(ROOT, ...p), 'utf8');
 
 const INDEX = read('public', 'index.html');
 const HOME_CSS = read('public', 'styles', 'home.css');
-const STRIPS_JS = read('public', 'scripts', 'home-strips.js');
-const REVEAL_JS = read('public', 'scripts', 'home-reveal.js');
+const STRIPS_JS = read('public', 'scripts', 'home', 'home-strips.js');
+const REVEAL_JS = read('public', 'scripts', 'home', 'home-reveal.js');
 const ENGLISH = JSON.parse(read('public', 'languages', 'english.json'));
 
 /** Every data-lang key the section carries, in the order the strips use them. */
@@ -260,8 +260,8 @@ test('the flat breakpoint matches between home-strips.js and home.css', () => {
 test('home-strips.js is registered in the deferred batch', async () => {
   globalThis.document = globalThis.document || /** @type {any} */ ({ readyState: 'loading' });
   globalThis.window = globalThis.window || /** @type {any} */ ({ addEventListener() {} });
-  const { DEFERRED } = await import('../../public/scripts/index-deferred.js');
-  const entry = DEFERRED.find((e) => e.src === 'scripts/home-strips.js');
+  const { DEFERRED } = await import('../../public/scripts/home/index-deferred.js');
+  const entry = DEFERRED.find((e) => e.src === 'scripts/home/home-strips.js');
   assert.ok(entry, 'home-strips.js is not in the DEFERRED list, so it never loads');
   assert.equal(entry.module, true, 'home-strips.js is an ES module');
 });

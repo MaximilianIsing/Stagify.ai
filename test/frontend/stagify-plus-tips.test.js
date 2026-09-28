@@ -1,4 +1,4 @@
-// Tier: frontend island logic (DOM-stubbed) — public/scripts/stagify-plus-tips.js.
+// Tier: frontend island logic (DOM-stubbed) — public/scripts/plus/stagify-plus-tips.js.
 //
 // WHY THIS EXISTS
 // The Compare-plans table used to be preceded by a feature grid that described six of
@@ -35,7 +35,7 @@ const POP_H = 96;
 // Import-time wiring, so the globals have to exist first. One mount per process: node's
 // module cache means the module body runs exactly once.
 const dom = mountPlusTips({ innerWidth: VIEWPORT, popWidth: POP_W, popHeight: POP_H });
-await import('../../public/scripts/stagify-plus-tips.js');
+await import('../../public/scripts/plus/stagify-plus-tips.js');
 
 /** Put a trigger at a known place in the viewport. */
 function placeTrigger(button, { top = 400, left = 300, width = 17 } = {}) {

@@ -32,7 +32,7 @@
      Every extra line it wraps to eats into the render behind it. Re-measure the locales
      before raising this.
 
-     THE CLAMP IS THE CEILING, NOT THE ANSWER. fitSentence() in scripts/hero-picker.js
+     THE CLAMP IS THE CEILING, NOT THE ANSWER. fitSentence() in scripts/home/hero-picker.js
      measures the locale's widest room + widest style once and, if that pair would not fit on
      one line, writes a smaller size into --hp-sentence-fs. It is pinned to the WORST pair
      rather than the current one, so the headline never changes size as you pick — see the
@@ -246,7 +246,7 @@
 }
 
 /* The long menu, in two columns instead of one very tall one. applyColumns() in
-   scripts/hero-picker.js adds this class and sets --hp-menu-rows; the comment there explains
+   scripts/home/hero-picker.js adds this class and sets --hp-menu-rows; the comment there explains
    why the flow is column-wise (the keyboard walks DOM order) and why the row count arrives
    from JS rather than being written in here.
 
@@ -782,7 +782,7 @@
    use — so colour and size are stated here for the scrim. It keeps the class name because
    test/frontend/hero-eyebrow.test.js keys off it.
 
-   THE HOVER IS LOCAL CSS, NOT THE SHARED scripts/hover-glow.js EFFECT, and that is a fix
+   THE HOVER IS LOCAL CSS, NOT THE SHARED scripts/fx/hover-glow.js EFFECT, and that is a fix
    rather than a preference. The shared handler sets `transform` and `textShadow` as inline
    styles on mouseover and reverts with `textShadow = 'none'` on mouseout. An inline style
    outranks this sheet, and 'none' is a value, not a removal — so from the first hover
@@ -1154,7 +1154,7 @@
    The primary CTA is a night street: a house on the right with its own front door, a
    removal van that drives in on hover and parks in the gap between the label and the
    house, the lantern coming on, the door swinging open onto an up-arrow. The SVG inside
-   `.hu-scene` is built by scripts/hero-van.js (after `load`) from scripts/hero-van-art.js;
+   `.hu-scene` is built by scripts/home/hero-van.js (after `load`) from scripts/home/hero-van-art.js;
    everything that MOVES is here, keyed off :hover, so the JS never touches a frame.
 
    DESKTOP ONLY, and the gate is the same one hero-van.js mounts under: below 769px, or

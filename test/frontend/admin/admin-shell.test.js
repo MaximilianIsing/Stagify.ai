@@ -1,4 +1,4 @@
-// Tier: frontend island logic (DOM-stubbed) — public/scripts/admin.js, the admin
+// Tier: frontend island logic (DOM-stubbed) — public/scripts/admin/admin.js, the admin
 // dashboard SHELL (as distinct from the panels it mounts, which have their own suites).
 //
 // WHY THIS EXISTS. admin.js is one boot IIFE: importing it registers ~15 DOM
@@ -141,7 +141,7 @@ function serveAll(url) {
   return okText('a,b\n1,2\n');
 }
 
-await import('../../../public/scripts/admin.js');
+await import('../../../public/scripts/admin/admin.js');
 
 const $ = (id) => dom.querySelector(`#${id}`);
 

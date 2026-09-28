@@ -89,7 +89,7 @@ test('a staged turn becomes a gallery entry labelled as the AI Designer', async 
 
 test("the room type is recorded as the model guessed it, 'Other' included", async () => {
   // The row stays honest about what the routing model decided; suppressing 'Other' is a
-  // DISPLAY rule in public/scripts/render-name.js, not a storage one.
+  // DISPLAY rule in public/scripts/shared/render-name.js, not a storage one.
   const { pipe, seen } = makePipeline();
   await pipe.runStagingRequests({
     stagingRequestFromAI: { shouldStage: true },

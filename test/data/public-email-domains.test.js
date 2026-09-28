@@ -123,7 +123,7 @@ test('non-English packs actually translate the refusal', () => {
 });
 
 test('the wire code the browser switches on is stable', () => {
-  // public/scripts/enterprise.js compares against this literal; changing the
+  // public/scripts/pages/enterprise.js compares against this literal; changing the
   // constant without changing the page would silently drop the localization.
   assert.equal(PUBLIC_EMAIL_DOMAIN_CODE, 'PUBLIC_EMAIL_DOMAIN');
   assert.ok(PUBLIC_EMAIL_DOMAIN_MESSAGE.trim().length > 0);

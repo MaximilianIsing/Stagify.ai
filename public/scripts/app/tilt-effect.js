@@ -1,4 +1,4 @@
-// 3D tilt effect for the contact cards (scripts/app.js loads on contact.html).
+// 3D tilt effect for the contact cards (scripts/app/app.js loads on contact.html).
 //
 // Plain exported init — no app state. Silent no-op on pages without a
 // .contact-card (the home page has none).
@@ -15,10 +15,10 @@
 // suppressing the visual would not.
 //
 // Note this fails CLOSED (no matchMedia -> no tilt), the opposite of
-// scripts/ai-designer-gate.js, which fails open. That one redirects, so guessing
+// scripts/gates/ai-designer-gate.js, which fails open. That one redirects, so guessing
 // wrong throws a real user off the page; this one is decorative, so an unclassifiable
-// device is better off without it. Same idiom as scripts/card-spotlight.js (the other
-// cursor-following card effect) and scripts/stagify-plus-blackhole.js.
+// device is better off without it. Same idiom as scripts/fx/card-spotlight.js (the other
+// cursor-following card effect) and scripts/plus/stagify-plus-blackhole.js.
 
 /**
  * @param {Window} win

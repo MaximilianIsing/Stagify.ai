@@ -1,7 +1,7 @@
-// Tier: pure frontend logic — public/scripts/hero-cta-boot.js.
+// Tier: pure frontend logic — public/scripts/home/hero-cta-boot.js.
 //
 // This file exists for one window in time: after the hero has painted and before
-// scripts/app.js — 38 modules, ~267 KB, now loaded from index-deferred.js after `load` —
+// scripts/app/app.js — 38 modules, ~267 KB, now loaded from index-deferred.js after `load` —
 // has arrived. #hero-upload is the primary call to action on the site, and inside that
 // window it is visible and, without this shim, inert. "I clicked it and nothing happened"
 // is a worse bug than a slower LCP, so a click has to pull app.js in and then act.
@@ -53,7 +53,7 @@ async function load({ hash = '', readyState = 'complete' } = {}) {
   delete (/** @type {any} */ (globalThis.window).__stagifyOpenStaging);
   globalThis.location = /** @type {any} */ ({ hash });
 
-  await import(`../../public/scripts/hero-cta-boot.js?t=${counter++}`);
+  await import(`../../public/scripts/home/hero-cta-boot.js?t=${counter++}`);
   return { buttons, docListeners };
 }
 let counter = 0;

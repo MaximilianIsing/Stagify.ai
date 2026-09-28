@@ -27,7 +27,7 @@ import { createCanvas } from '@napi-rs/canvas';
 
 import { installMaskDom, FakeEl } from '../../helpers/mask-dom.js';
 import { createUpload } from '../../../public/scripts/masking-studio/upload.js';
-import { unstageableCta } from '../../../public/scripts/unstageable-cta.js';
+import { unstageableCta } from '../../../public/scripts/shared/unstageable-cta.js';
 import { MAX_IMAGE_BYTES } from '../../../public/scripts/app/image-file.js';
 
 const REAL = {

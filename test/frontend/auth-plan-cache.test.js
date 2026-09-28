@@ -1,7 +1,7 @@
-// Tier: frontend island logic — the plan cache in public/scripts/auth.js.
+// Tier: frontend island logic — the plan cache in public/scripts/site/auth.js.
 //
 // `stagifyPlan` exists for the render-blocking scripts that have to choose a page shape
-// BEFORE the first paint — scripts/preview-gate.js on all four preview pages, and the copy
+// BEFORE the first paint — scripts/gates/preview-gate.js on all four preview pages, and the copy
 // of its body inside ai-designer-gate.js — while the only authority on the plan
 // (/api/auth/me) is still a round trip away. Everything worth
 // testing here is about the cache staying honest, because a stale one is invisible: the
@@ -59,7 +59,7 @@ before(async () => {
     });
   });
 
-  await import('../../public/scripts/auth.js');
+  await import('../../public/scripts/site/auth.js');
 });
 
 /** @returns {any} */

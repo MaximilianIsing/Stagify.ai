@@ -1,4 +1,4 @@
-// Tier: frontend island logic — public/scripts/session-state.js.
+// Tier: frontend island logic — public/scripts/site/session-state.js.
 //
 // Four lines, and both of the site's pre-paint tricks depend on getting them right:
 //
@@ -20,7 +20,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { authSettled } from '../../public/scripts/session-state.js';
+import { authSettled } from '../../public/scripts/site/session-state.js';
 
 test('an answered request is settled, whatever the answer was', () => {
   assert.equal(authSettled({ user: { plan: 'pro' }, getToken: () => 'tok' }), true);

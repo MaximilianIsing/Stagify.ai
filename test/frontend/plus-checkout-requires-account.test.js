@@ -1,4 +1,4 @@
-// Tier: frontend island logic (DOM-stubbed) — public/scripts/stagify-plus.js.
+// Tier: frontend island logic (DOM-stubbed) — public/scripts/plus/stagify-plus.js.
 //
 // WHY THIS EXISTS
 // The individual plan has no server-side Checkout Session. It is a public Stripe
@@ -38,7 +38,7 @@ const FREE_USER = { id: 'u_0123456789abcdef01234567', email: 'buyer@example.com'
 // The module wires up `languagechange` / `DOMContentLoaded` at import time, so the
 // globals have to exist before it loads.
 mountPlusPage({ profileMenu: fakeProfileMenu() });
-const { applyStripeCheckout } = await import('../../public/scripts/stagify-plus.js');
+const { applyStripeCheckout } = await import('../../public/scripts/plus/stagify-plus.js');
 
 /** Everything the element could expose to a click, as one searchable string. */
 function surfaceOf(link) {

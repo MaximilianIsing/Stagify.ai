@@ -1,4 +1,4 @@
-// Tier: frontend gate behaviour — public/scripts/gallery-gate.js.
+// Tier: frontend gate behaviour — public/scripts/gates/gallery-gate.js.
 //
 // The gallery is a desktop feature AND a signed-in one. Each rule is enforced twice:
 // the nav tab is `desktop-only` (a width) and ships `hidden` until auth answers (a
@@ -21,7 +21,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
-const GATE = path.join(ROOT, 'public', 'scripts', 'gallery-gate.js');
+const GATE = path.join(ROOT, 'public', 'scripts', 'gates', 'gallery-gate.js');
 const PAGE = path.join(ROOT, 'public', 'gallery.html');
 
 const gateSource = fs.readFileSync(GATE, 'utf8');

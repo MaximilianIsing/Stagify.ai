@@ -16,8 +16,8 @@ from Supademo, plus a standalone preview harness:
 
 | Source here | Ships as (served) |
 |---|---|
-| `demos.json` (`SUPADEMO_DEMOS`) | `public/scripts/demo-data.js` (`STAGIFY_DEMOS`) |
-| `demo-player.js` | `public/scripts/demo-player.js` (byte-identical copy) |
+| `demos.json` (`SUPADEMO_DEMOS`) | `public/scripts/guides/demo-data.js` (`STAGIFY_DEMOS`) |
+| `demo-player.js` | `public/scripts/guides/demo-player.js` (diverged: the served copy adds localized step-dot labels) |
 | `demo-player.css` | `public/styles/demo-player.css` (byte-identical copy) |
 | `assets/**` (`assets/free/step-01.webp`) | `public/media-webp/demos/**` (`media-webp/demos/free/step-01.webp`) |
 
@@ -27,10 +27,12 @@ served — so a grep for references finds **zero**. That is expected. These are
 **build inputs**, not runtime assets.
 
 ### Canonical vs. copy
-The **served** file is `public/scripts/demo-player.js`; the copy here is the
-authoring/preview master. They are kept in sync by hand: **if you edit the
-player or the walkthrough data here, re-export the matching `public/` files**
-(copy `demo-player.{js,css}` across, regenerate `demo-data.js` from
-`demos.json`, and export any new `assets/**` frames to
-`public/media-webp/demos/**`). If you'd rather have drift caught automatically,
-a byte-identity test under `test/` can assert the two player copies match.
+The **served** file is `public/scripts/guides/demo-player.js`; the copy here is the
+authoring/preview master. **The served player is now ahead of this copy**: it adds
+localized step-dot labels (`stepLabel()` and a `languagechange` listener). Port those
+changes back here before copying `demo-player.js` across, or the export will regress
+them. No test enforces the pair. `demo-player.css` is still byte-identical.
+
+If you edit the walkthrough data here, re-export the matching `public/` files:
+regenerate `demo-data.js` from `demos.json`, and export any new `assets/**` frames to
+`public/media-webp/demos/**`.

@@ -407,7 +407,7 @@ router.post('/api/masking-studio/save', galleryImportLimiter, genLimiter, async 
 //
 // Every other user of stampVirtuallyStaged() reaches it from inside a render the server was
 // already holding. Basic Mask cannot: it composites its result in the browser
-// (compositeMaskedEdit in public/scripts/mask-core.js) and downloads that canvas directly,
+// (compositeMaskedEdit in public/scripts/mask/mask-core.js) and downloads that canvas directly,
 // so the finished pixels exist nowhere else. Hence one round trip, at download time.
 //
 // It cannot be folded into /api/mask-edit either. That route returns the model's edit, which

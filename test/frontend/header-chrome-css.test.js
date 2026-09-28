@@ -7,7 +7,7 @@
 // WHAT THIS COVERS
 // Thirteen of the fifteen nav-bearing pages ship their non-critical CSS as
 // `<link rel="stylesheet" href="styles/auth.css" media="print" data-lazy-css>` and let
-// scripts/lazy-css.js promote it to media="all" once it arrives. That is right for the
+// scripts/site/lazy-css.js promote it to media="all" once it arrives. That is right for the
 // things auth.css mostly holds — the sign-in modal, the account dropdown — because none
 // of them generate a box until someone clicks.
 //

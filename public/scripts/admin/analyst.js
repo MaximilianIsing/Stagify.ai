@@ -22,7 +22,7 @@
 // the one place a customer's address could be spliced into markup.
 
 import { qs, el } from './helpers.js';
-import { copyText } from '../clipboard.js';
+import { copyText } from '../shared/clipboard.js';
 import { createIdentityMap } from './analyst-identity.js';
 import { createAnalystTools } from './analyst-tools.js';
 import { renderAnswer } from './analyst-answer.js';

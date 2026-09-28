@@ -1,4 +1,4 @@
-// Unit tests for the shared brush-mask image core, public/scripts/mask-core.js —
+// Unit tests for the shared brush-mask image core, public/scripts/mask/mask-core.js —
 // the pure canvas algorithms (grow / model-mask / blend-mask / composite) imported
 // by BOTH studios and the AI Designer, so a regression here silently corrupts every
 // mask edit across the app.
@@ -33,7 +33,7 @@ const {
   buildBlendMask,
   compositeMaskedEditCanvas,
   compositeMaskedEdit,
-} = await import('../../../public/scripts/mask-core.js');
+} = await import('../../../public/scripts/mask/mask-core.js');
 
 // ---- fixtures -------------------------------------------------------------
 

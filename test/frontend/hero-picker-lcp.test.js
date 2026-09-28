@@ -2,7 +2,7 @@
 //
 // The homepage hero is a sentence with two dropdowns in it ("Stage this <room> in <style>")
 // and a photo that changes with them. The photo is the page's LCP element, so it ships as a
-// static <img> in public/index.html rather than being created by scripts/hero-picker.js —
+// static <img> in public/index.html rather than being created by scripts/home/hero-picker.js —
 // built by JS its paint was chained behind 128 KB of HTML parsing, five render-blocking
 // stylesheets and the whole module graph on a throttled CPU.
 //
@@ -29,7 +29,7 @@ import path from 'node:path';
 
 const root = process.cwd();
 const indexHtml = fs.readFileSync(path.join(root, 'public', 'index.html'), 'utf8');
-const pickerJs = fs.readFileSync(path.join(root, 'public', 'scripts', 'hero-picker.js'), 'utf8');
+const pickerJs = fs.readFileSync(path.join(root, 'public', 'scripts', 'home', 'hero-picker.js'), 'utf8');
 const EXAMPLE_DIR = path.join(root, 'public', 'media-webp', 'example');
 
 /* The srcset ladder, read out of hero-picker.js rather than written down a third time.
@@ -187,18 +187,18 @@ test('hero-picker.js stays the first module tag on the homepage', () => {
   //    unconditionally later than this file, which inits at module eval. That ordering is
   //    what guarantees the sentence is never seen mid-wrap. Demote this tag and the
   //    guarantee goes with it, silently.
-  // Not literally first: scripts/lazy-css.js sits above it, next to the <link>s it
+  // Not literally first: scripts/site/lazy-css.js sits above it, next to the <link>s it
   // promotes, and it is 1.5 KB with zero imports — it cannot delay anything. What must
   // not appear ahead of hero-picker.js is a module that drags an import graph behind it.
-  const ALLOWED_AHEAD = new Set(['scripts/lazy-css.js']);
+  const ALLOWED_AHEAD = new Set(['scripts/site/lazy-css.js']);
   const tags = [...indexHtml.matchAll(/<script\s+type="module"\s+src="([^"]+)"/g)].map((m) => m[1]);
-  const at = tags.indexOf('scripts/hero-picker.js');
-  assert.notEqual(at, -1, 'index.html no longer loads scripts/hero-picker.js as a module');
+  const at = tags.indexOf('scripts/home/hero-picker.js');
+  assert.notEqual(at, -1, 'index.html no longer loads scripts/home/hero-picker.js as a module');
   const ahead = tags.slice(0, at).filter((s) => !ALLOWED_AHEAD.has(s));
   assert.deepEqual(
     ahead,
     [],
-    'these module tags now run before scripts/hero-picker.js: ' + ahead.join(', ') + '. ' +
+    'these module tags now run before scripts/home/hero-picker.js: ' + ahead.join(', ') + '. ' +
       'Modules run in document order, so anything ahead of it — and its whole import ' +
       'graph — has to execute before the hero can be adopted. If the new tag genuinely ' +
       'has no imports and must load first, add it to ALLOWED_AHEAD with the reason.'

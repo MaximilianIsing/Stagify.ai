@@ -1,4 +1,4 @@
-// Tier: frontend island logic (DOM-stubbed) — public/scripts/gallery-tab.js.
+// Tier: frontend island logic (DOM-stubbed) — public/scripts/site/gallery-tab.js.
 //
 // The Gallery tab is hidden from signed-out visitors. Two things about that need
 // holding down, and neither is visible from reading the markup:
@@ -68,7 +68,7 @@ function mount({ user = null, tabs = [makeTab()], token = undefined, sessionArme
 
 mount();
 const { galleryTabVisible, syncGalleryTab, NAV_VISIBILITY_EVENT } =
-  await import('../../../public/scripts/gallery-tab.js');
+  await import('../../../public/scripts/site/gallery-tab.js');
 
 // ---- the pure rule ---------------------------------------------------------
 
@@ -217,7 +217,7 @@ test('the event name is the one nav-pill.js listens for', async () => {
   const path = await import('node:path');
   const { fileURLToPath } = await import('node:url');
   const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
-  const navPill = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'nav-pill.js'), 'utf8');
+  const navPill = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'site', 'nav-pill.js'), 'utf8');
   assert.ok(
     navPill.includes(`"${NAV_VISIBILITY_EVENT}"`) || navPill.includes(`'${NAV_VISIBILITY_EVENT}'`),
     `nav-pill.js does not listen for ${NAV_VISIBILITY_EVENT} — the pill will not re-settle when the tab appears`,

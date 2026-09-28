@@ -1,4 +1,4 @@
-// Unit tests for public/scripts/unstageable-message.js — the one place that decides
+// Unit tests for public/scripts/shared/unstageable-message.js — the one place that decides
 // which sentence a user sees when the upload gatekeeper rejects their photo.
 //
 // The module touches only window.LanguageSystem, so we stub that and run it directly
@@ -9,7 +9,7 @@
 import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { unstageableMessage, DEFAULT_UNSTAGEABLE_MESSAGE } from '../../public/scripts/unstageable-message.js';
+import { unstageableMessage, DEFAULT_UNSTAGEABLE_MESSAGE } from '../../public/scripts/shared/unstageable-message.js';
 
 // The module reads the global `window`; give it one, and let each test install its
 // own LanguageSystem (or none, standing in for a page where the pack never loaded).

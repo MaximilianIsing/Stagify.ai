@@ -1,7 +1,7 @@
 // Tier: markup + source guard — the manual refresh control on /status.
 //
 // WHY A STATIC GUARD AND NOT A UNIT TEST
-// public/scripts/status.js is an IIFE with no exports (it ships `export {}` purely so
+// public/scripts/status/status.js is an IIFE with no exports (it ships `export {}` purely so
 // `eslint .` picks it up), and it is on the SHRINK-ONLY allowlist in
 // untested-frontend-modules.test.js. There is nothing to import. So this asserts the
 // things that are invisible when they break rather than the behaviour: an accessibility
@@ -28,7 +28,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const html = fs.readFileSync(path.join(ROOT, 'public', 'status.html'), 'utf8');
-const js = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'status.js'), 'utf8');
+const js = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'status', 'status.js'), 'utf8');
 
 /** The `<button …>` element carrying data-refresh, opening tag through close. */
 function refreshButton() {

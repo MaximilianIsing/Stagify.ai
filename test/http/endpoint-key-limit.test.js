@@ -7,7 +7,7 @@
 // grants, GDPR erasure — is gated by ONE shared static secret with no accounts behind
 // it, so guessing that secret is the only way in. Nothing bounded the guess rate: the
 // dashboard shows a lockout after a few bad tries, but that counter lives in the
-// browser (public/scripts/admin.js), so it protects nobody who skips the page and
+// browser (public/scripts/admin/admin.js), so it protects nobody who skips the page and
 // posts the header directly. This is the server-side half.
 //
 // WHERE IT LIVES, and why not on the router. The limiter runs in the two guards, not

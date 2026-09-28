@@ -1,4 +1,4 @@
-// Background video sync for the main Stagify tool pages (scripts/app.js).
+// Background video sync for the main Stagify tool pages (scripts/app/app.js).
 //
 // Keeps the hero background video's playback position continuous across page
 // navigations (localStorage) and retries autoplay around mobile restrictions,
@@ -30,7 +30,7 @@ export function initBackgroundVideoSync() {
      * This file used to register both of its blocks on a bare `DOMContentLoaded`, which
      * was fine while app.js was a <script type="module"> in <head> — modules execute
      * before that event. It stops being fine the moment app.js moves into
-     * scripts/index-deferred.js's list, because everything injected there runs after
+     * scripts/home/index-deferred.js's list, because everything injected there runs after
      * `load`: the event is long gone, the listener never fires, and NOTHING THROWS. The
      * backdrop simply never syncs or plays. index-deferred.js's header calls this out by
      * name as the trap of that list, and test/frontend/index-deferred.test.js fails any
@@ -98,7 +98,7 @@ export function initBackgroundVideoSync() {
             //   - The ten non-homepage carriers still ship `autoplay`, so the browser
             //     attempts it itself and video.autoplay is the right answer immediately.
             //   - The homepage deliberately does NOT (see the comment on its <video>): it
-            //     is started later by scripts/bg-video-start.js, which marks the element
+            //     is started later by scripts/home/bg-video-start.js, which marks the element
             //     with data-bg-started first. Until that lands, "paused" is the INTENDED
             //     state and must not arm anything.
             // Without this the retry loop below reaches fallBackToSolid() one second into

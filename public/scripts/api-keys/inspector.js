@@ -20,7 +20,7 @@
 // carrying one would be localized only until the next render; every string is looked up
 // through i18n.js instead, and the composition root repaints on `languagechange`.
 
-import { escapeHtml } from '../escape-html.js';
+import { escapeHtml } from '../shared/escape-html.js';
 import { t, plural } from './i18n.js';
 import { formatAgo, formatCount, keyStatus, statusLabel } from './format.js';
 

@@ -86,7 +86,7 @@
       /* The markup ships in the anonymous state — pitch visible, tool hidden — which is
          right for everyone except the people who already paid, who would otherwise watch
          the sales pitch paint and vanish a round trip later when /api/auth/me answers.
-         scripts/preview-gate.js runs before the first paint and puts this class on <html>
+         scripts/gates/preview-gate.js runs before the first paint and puts this class on <html>
          when the plan auth.js cached says Stagify+; masking-studio/access.js takes it off
          the moment the live plan is known, after which the `hidden` properties are the
          whole truth. These three rules ARE that pre-paint state — the class does nothing

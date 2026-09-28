@@ -11,7 +11,7 @@
 // shipped green.
 //
 // The JS copies are now generated (lib/i18n/locale-data.js →
-// public/scripts/locale-data.js). The markup cannot be generated, so it is
+// public/scripts/i18n/locale-data.js). The markup cannot be generated, so it is
 // asserted here instead. Between them, adding a language without finishing the job
 // now fails the build.
 import { test } from 'node:test';
@@ -29,7 +29,7 @@ import {
   LANG_FLAG,
   PRIMARY_SUBTAG_TO_LANG,
   LOCALIZED_PATHS,
-} from '../../public/scripts/locale-data.js';
+} from '../../public/scripts/i18n/locale-data.js';
 
 const repoRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const PUBLIC = path.join(repoRoot, 'public');
@@ -38,9 +38,9 @@ const SCRIPTS = path.join(PUBLIC, 'scripts');
 const ALL_LANGS = ALL_LOCALES.map((l) => l.lang);
 
 test('committed locale-data.js matches the generator (rebuild if this fails)', () => {
-  const committed = fs.readFileSync(path.join(SCRIPTS, 'locale-data.js'), 'utf8');
+  const committed = fs.readFileSync(path.join(SCRIPTS, 'i18n', 'locale-data.js'), 'utf8');
   assert.equal(committed.replace(/\r\n/g, '\n'), buildLocaleDataModule(),
-    'public/scripts/locale-data.js is stale — run `node scripts/build-i18n-seo.js`');
+    'public/scripts/i18n/locale-data.js is stale — run `node scripts/build-i18n-seo.js`');
 });
 
 test('every generated table is keyed by exactly the server locale set', () => {
@@ -87,7 +87,7 @@ test('DRIFT GUARD: no frontend script hard-codes the language list', () => {
       if (entry.isDirectory()) { scan(full); continue; }
       if (!entry.name.endsWith('.js')) continue;
       const rel = path.relative(PUBLIC, full).replace(/\\/g, '/');
-      if (rel === 'scripts/locale-data.js') continue; // the generated copy
+      if (rel === 'scripts/i18n/locale-data.js') continue; // the generated copy
       const named = new Set(stripComments(fs.readFileSync(full, 'utf8')).match(NAMES) || []);
       if (named.size >= 3) offenders.push(`${rel} (names ${named.size}: ${[...named].join(', ')})`);
     }
@@ -175,7 +175,7 @@ test('every language switcher in the markup lists exactly the server locale set'
 // render-blocking (it must beat the paint it prevents), so like ai-designer-gate.js it
 // cannot import locale-data.js and has to inline the prefixes. The assertions below
 // are what keep the two copies honest.
-const GATE_FILES = ['ai-designer-gate.js', 'developers-gate.js'];
+const GATE_FILES = ['gates/ai-designer-gate.js', 'gates/developers-gate.js'];
 
 /** Read a gate's source. */
 function gateSource(name) {

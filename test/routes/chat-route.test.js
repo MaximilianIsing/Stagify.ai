@@ -559,7 +559,7 @@ test('a CAD-only turn writes a gallery row', async () => {
 
 test('an eye-level render is filed in the gallery under its ROOM', async () => {
   // `view` is not a column, so the room is what distinguishes two renders of one plan
-  // (see the naming rule in public/scripts/render-name.js).
+  // (see the naming rule in public/scripts/shared/render-name.js).
   const recorded = [];
   app = await mountChat({
     routing: {

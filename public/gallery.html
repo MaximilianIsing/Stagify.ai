@@ -26,7 +26,7 @@
 
 <!-- MUST stay below the viewport <meta> above: the gate reads the layout viewport,
      and above that tag a phone reports ~980px and is never redirected. -->
-<script src="scripts/gallery-gate.js"></script>
+<script src="scripts/gates/gallery-gate.js"></script>
 
 <title data-lang="gallery.pageTitle">Your gallery — Stagify</title>
 <meta name="robots" content="noindex, nofollow">
@@ -51,7 +51,7 @@
      is JS, not an inline onload= handler, so it passes the CSP’s
      script-src-attr 'none'. -->
 <link rel="stylesheet" href="styles/auth.css" media="print" data-lazy-css>
-<script type="module" src="scripts/lazy-css.js"></script>
+<script type="module" src="scripts/site/lazy-css.js"></script>
 <noscript>
   <!-- The promotion above is the only thing that ever loads this sheet, so
        without this the modal is unstyled with JS off. -->
@@ -67,16 +67,16 @@
   omitting it leaves the Staging dropdown inert AND the account menu empty.
 -->
 <link rel="preload" href="languages/english.json" as="fetch" crossorigin>
-<script type="module" src="scripts/language-detect.js"></script>
-<script type="module" src="scripts/language-loader.js"></script>
-<script type="module" src="scripts/language-switcher.js"></script>
-<script type="module" src="scripts/nav-pill.js"></script>
-<script type="module" src="scripts/auth.js"></script>
-<script type="module" src="scripts/profile-menu.js"></script>
+<script type="module" src="scripts/i18n/language-detect.js"></script>
+<script type="module" src="scripts/i18n/language-loader.js"></script>
+<script type="module" src="scripts/i18n/language-switcher.js"></script>
+<script type="module" src="scripts/site/nav-pill.js"></script>
+<script type="module" src="scripts/site/auth.js"></script>
+<script type="module" src="scripts/profile-menu/profile-menu.js"></script>
   <!-- Sets html.has-session from the stored token BEFORE first paint, so the nav’s
        Gallery tab does not pop in a round trip late. Render-blocking on purpose, and
        last in <head> so it never delays discovery of the CSS above it. -->
-  <script src="scripts/session-class.js"></script>
+  <script src="scripts/site/session-class.js"></script>
 </head>
 
 <!-- One state at a time: loading | ready | empty | off | error | signed-out. -->
@@ -427,9 +427,9 @@
   </div>
 </div>
 
-<script type="module" src="scripts/gallery-app.js"></script>
+<script type="module" src="scripts/gallery/gallery-app.js"></script>
 <!-- The site’s custom scrollbar, anchored to <main>'s right edge. Every other real page
      loads it; this one was the lone exception. -->
-<script type="module" src="scripts/aurora-scrollbar.js"></script>
+<script type="module" src="scripts/fx/aurora-scrollbar.js"></script>
 </body>
 </html>

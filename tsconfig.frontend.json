@@ -25,7 +25,7 @@
     "types": [],
 
     // The browser loads modules from the site root, so the studios lazy-import
-    // mask-core as `import('/scripts/mask-core.js')`. Map that root-absolute URL
+    // mask-core as `import('/scripts/mask/mask-core.js')`. Map that root-absolute URL
     // back to the file on disk so the checker resolves it (and gives it real
     // types) instead of erroring TS2307.
     "baseUrl": ".",

@@ -1,4 +1,4 @@
-// Custom select component for the main Stagify tool (scripts/app.js).
+// Custom select component for the main Stagify tool (scripts/app/app.js).
 //
 // Plain exported function — no app state. Each call wires one .custom-select
 // root (trigger, menu, options) and returns a { value, set } handle; a missing

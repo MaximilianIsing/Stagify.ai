@@ -30,7 +30,7 @@
 //   • stagify-plus.html and enterprise.html had the link keys but not
 //     data-lang="footer.copyright".
 //   • Two rival year mechanisms coexisted: `<span id="year">` wired in app.js (index
-//     only) versus `.footer-year` + scripts/footer-year.js (everywhere else).
+//     only) versus `.footer-year` + scripts/site/footer-year.js (everywhere else).
 //
 // WHAT IS COMPARED
 // Whitespace is collapsed before comparing, so indentation and line breaks are NOT
@@ -145,7 +145,7 @@ test('every site footer localizes every string and uses the shared year span', (
 
 test('there is exactly one year mechanism — no page reintroduces id="year"', () => {
   // index.html used to fill `<span id="year">` from app.js while seven other pages used
-  // `.footer-year` + scripts/footer-year.js. Two mechanisms meant the footer could not
+  // `.footer-year` + scripts/site/footer-year.js. Two mechanisms meant the footer could not
   // be one block, which is how the rest of the drift got in.
   const offenders = publicPages()
     .filter((p) => p.html.includes('id="year"'))
@@ -157,7 +157,7 @@ test('every page carrying the shared footer also loads footer-year.js', () => {
   // .footer-year is filled by a script, so the markup hook alone is not enough — a page
   // with the span and no script renders "© <blank> Stagify.ai".
   const missing = footerPages()
-    .filter((p) => !p.html.includes('scripts/footer-year.js'))
+    .filter((p) => !p.html.includes('scripts/site/footer-year.js'))
     .map((p) => p.name);
   assert.deepEqual(missing, [], `pages with .footer-year but no footer-year.js: ${missing.join(', ')}`);
 });
@@ -167,13 +167,13 @@ test('every page carrying the shared footer also loads legal-menu.js', () => {
   // but Escape, the outside click and the arrow keys are all it, and a page that shipped
   // the markup without the module would lose them silently.
   const missing = footerPages()
-    .filter((p) => !p.html.includes('scripts/legal-menu.js'))
+    .filter((p) => !p.html.includes('scripts/site/legal-menu.js'))
     .map((p) => p.name);
   assert.deepEqual(missing, [], `pages with the Legal menu but no legal-menu.js: ${missing.join(', ')}`);
 });
 
 test('every .footer-year span ships a literal year, not an empty placeholder', () => {
-  // The span used to ship EMPTY and be filled by scripts/footer-year.js. That script is
+  // The span used to ship EMPTY and be filled by scripts/site/footer-year.js. That script is
   // a module, so it is defer-by-default AND costs its own request: the footer painted as
   // "© Stagify.ai" and the year popped in about a second later. Seeding the markup makes
   // it correct in the first paint and demotes the script to a corrector.

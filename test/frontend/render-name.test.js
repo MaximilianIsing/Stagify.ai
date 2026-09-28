@@ -1,4 +1,4 @@
-// What a staged render is called (public/scripts/render-name.js).
+// What a staged render is called (public/scripts/shared/render-name.js).
 //
 // This module is the ONE naming derivation, shared by the owner's gallery and the public
 // share page, so the tests here are as much about the contract as the output: the fallback
@@ -6,7 +6,7 @@
 // source machinery existed still reads exactly as it did.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { styleLabel, sourceLabel, defaultName, entryName, NAMED_SOURCES } from '../../public/scripts/render-name.js';
+import { styleLabel, sourceLabel, defaultName, entryName, NAMED_SOURCES } from '../../public/scripts/shared/render-name.js';
 
 test('an entry with no source keeps the original <Style> <Room type>', () => {
   // EVERY row in every existing gallery is this case — none of them carry a source — so a

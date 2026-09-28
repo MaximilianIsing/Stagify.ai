@@ -2,7 +2,7 @@
 //
 // The enlarge modal, image downloads, the AI-image container (image + download
 // + mask buttons) and the masked-image carousel. Lifted verbatim from the entry
-// (scripts/ai-designer-app.js) as a factory. `openMaskEditor` is injected as a
+// (scripts/ai-designer/ai-designer-app.js) as a factory. `openMaskEditor` is injected as a
 // late-bound arrow because the mask-editor island is created after this one;
 // downloadImage stays module-internal (only createAIImageWithDownload calls it).
 //

@@ -1,5 +1,5 @@
 // Generation-pipeline island for the Masking Studio
-// (scripts/masking-studio-app.js).
+// (scripts/masking-studio/masking-studio-app.js).
 //
 // Every painted area runs as its own parallel mask edit (POST /api/mask-edit,
 // bounded concurrency, 429/503 retries); the composites chain over the
@@ -67,7 +67,7 @@ export function createGeneratePipeline(deps) {
         // compositeMaskedEditCanvas) — same module the main tool and the AI
         // Designer use, so the pixel-preservation guarantee is identical.
         let buildModelMask, buildBlendMask, compositeMaskedEditCanvas;
-        const maskCoreReady = import('/scripts/mask-core.js').then((m) => {
+        const maskCoreReady = import('/scripts/mask/mask-core.js').then((m) => {
           buildModelMask = m.buildModelMask;
           buildBlendMask = m.buildBlendMask;
           compositeMaskedEditCanvas = m.compositeMaskedEditCanvas;

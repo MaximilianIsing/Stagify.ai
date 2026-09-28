@@ -1,7 +1,7 @@
 // Main tool — the session expires between opening the stage dialog and pressing Process.
 //
 // This file was `stage-mobile-auth.spec.js`, and it existed to cover a branch that only
-// a phone could reach. `public/scripts/app.js` used to read:
+// a phone could reach. `public/scripts/app/app.js` used to read:
 //
 //     if (error && error.code === 'AUTH_REQUIRED' && isMobileStagingViewport()) {
 //       …setAuthModeRegister(true); openAuthModal(true);…

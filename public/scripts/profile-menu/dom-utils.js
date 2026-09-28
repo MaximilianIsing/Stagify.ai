@@ -28,4 +28,4 @@ export function lang(key, fallback, vars) {
 // textContent, which does not escape quotes — and the menu interpolates into
 // `title="…"` and `aria-label="…"`, where an apostrophe in a translated string
 // would have closed the attribute early.
-export { escapeHtml as esc } from '../escape-html.js';
+export { escapeHtml as esc } from '../shared/escape-html.js';

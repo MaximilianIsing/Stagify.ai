@@ -29,7 +29,7 @@ import { BRUSH_STEP_MIN, BRUSH_STEP_MAX, BRUSH_STEP_DEFAULT } from '../mask/brus
 import { maskGrowths, snapshotCanvas, renderRefinePreview } from '../mask/refine.js';
 import { requestMaskEdit } from '../mask/generate.js';
 import { maskCopy } from '../mask/copy.js';
-import { buildBlendMask, compositeMaskedEdit } from '../mask-core.js';
+import { buildBlendMask, compositeMaskedEdit } from '../mask/mask-core.js';
 
 /**
  * @typedef {import('./types.js').AdImage} AdImage
@@ -407,7 +407,7 @@ export function createMaskEditor(deps) {
         if (e) { e.classList.toggle('is-active', !isBrush); e.setAttribute('aria-pressed', !isBrush ? 'true' : 'false'); }
       }
 
-      // The canvas maths lives once in /scripts/mask-core.js. It used to be
+      // The canvas maths lives once in /scripts/mask/mask-core.js. It used to be
       // reached here through a dynamic import plus four forwarding wrappers, which
       // runMaskGenerate then had to await before first use; the shared refine and
       // generate modules import it statically, so the wrappers and the await are

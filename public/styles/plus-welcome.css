@@ -1,6 +1,6 @@
       /* Post-purchase "Welcome to Stagify+" confirmation. This is a short celebration,
          not a feature tour — they just subscribed. On load: a confetti burst
-         (scripts/plus-welcome-confetti.js) + a success-badge sunburst, then the copy
+         (scripts/plus/plus-welcome-confetti.js) + a success-badge sunburst, then the copy
          and a single "Enjoy" CTA rise in. All motion is disabled under
          prefers-reduced-motion (see the block at the bottom). */
       .pw-page {

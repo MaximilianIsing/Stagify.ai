@@ -311,7 +311,7 @@
    The accepted tradeoff: on the rare frame where a callout's own Next button also
    lands here, this button's 44x44 tap target can sit over it.
 
-   scripts/guides.js hides the button outright when document.fullscreenEnabled is
+   scripts/guides/guides.js hides the button outright when document.fullscreenEnabled is
    false, rather than leaving a control whose only behaviour is a rejected promise. */
 .guide-demo-fs {
   position: absolute;
@@ -357,7 +357,7 @@
   display: block;
 }
 /* On a phone this is not a fullscreen toggle at all — it opens the rotate-to-landscape
-   view (scripts/immersive-view.js), so it shows a phone-rotating glyph instead of the
+   view (scripts/shared/immersive-view.js), so it shows a phone-rotating glyph instead of the
    expand arrows. `.is-mobile-rotate` is added by that module from PHONE_QUERY and
    re-evaluated when the query flips. Once the view is open the button turns it back,
    which the block below draws as the same glyph mirrored. Mirrors home.css. */
@@ -468,7 +468,7 @@
 
 /* --- The immersive presentation ---
    The class-path twin of the `:fullscreen` block above, for the rotate-to-landscape
-   view phones get instead: scripts/immersive-view.js portals this panel into an
+   view phones get instead: scripts/shared/immersive-view.js portals this panel into an
    overlay on <body> rather than into the browser's top layer.
 
    DELIBERATELY DUPLICATED rather than folded into the selector list above — a CSS

@@ -68,7 +68,7 @@ accepting gmail/yahoo/outlook addresses — do not wire it into the auth routes.
 
 Stagify+ is a Stripe **Payment Link**, so the only things tying a completed checkout to
 an account are two query parameters that the buyer can edit
-([`public/scripts/stagify-plus.js`](../../public/scripts/stagify-plus.js) appends them).
+([`public/scripts/plus/stagify-plus.js`](../../public/scripts/plus/stagify-plus.js) appends them).
 They are not equally trustworthy, and the difference is what it takes to aim one at
 somebody else:
 
@@ -130,8 +130,7 @@ guarded by the **`endpoint_key`** (note the lowercase env name):
 
 ### The console holds a session token, never the key
 
-The `/admin` console used to keep `endpoint_key` in a JS closure and persist nothing,
-so every page load asked for it again. It now **exchanges** the key for a scoped
+The `/admin` console **exchanges** the key for a scoped
 session token ([`lib/data/admin-sessions.js`](../../lib/data/admin-sessions.js)):
 `POST /api/admin/session` takes the key, returns a 256-bit token, and the browser keeps
 that in `localStorage`. The key itself is still never persisted — it is a local inside
@@ -265,7 +264,7 @@ Notes for anyone touching this:
 
 The section above is about tokens on *our* disk. In the *browser* the session token
 sits in `localStorage` under `stagifyAuthToken`
-([`public/scripts/auth.js`](../../public/scripts/auth.js)), which JavaScript on the
+([`public/scripts/site/auth.js`](../../public/scripts/site/auth.js)), which JavaScript on the
 page can read. **Any XSS in a page that runs `auth.js` is therefore full account
 takeover**, not merely defacement, and the CSP does not contain it: `connectSrc` and
 `imgSrc` are both `'https:'`
@@ -467,7 +466,7 @@ The whole admin surface — every CSV export, `/authstore`, comp grants, GDPR er
 plus `POST /api/stage-by-endpoint-key` sits behind one shared static secret with no
 accounts behind it. Guessing that secret is therefore the only way in, and nothing
 bounded the guess rate. The dashboard does show a lockout after a few bad tries, but
-that counter lives in the browser ([`public/scripts/admin.js`](../../public/scripts/admin.js)),
+that counter lives in the browser ([`public/scripts/admin/admin.js`](../../public/scripts/admin/admin.js)),
 so it protects nobody who skips the page and posts the header directly.
 
 Two design points worth not undoing:

@@ -172,7 +172,7 @@ test('the lightbox close listener resolves its callback at call time, not regist
   // the "×" did nothing for as long as it existed. Escape and click-outside kept
   // working because they resolve the name inside their own handler body, which is
   // why nobody noticed.
-  const src = read('public/scripts/ai-designer-model-selector.js');
+  const src = read('public/scripts/ai-designer/ai-designer-model-selector.js');
   assert.doesNotMatch(
     src,
     /addEventListener\(\s*'click'\s*,\s*closeImageModal\s*\)/,
@@ -298,7 +298,7 @@ const FOCUS_MANAGED = [
   },
   {
     label: 'gallery detail panel',
-    file: 'public/scripts/gallery-app.js',
+    file: 'public/scripts/gallery/gallery-app.js',
     open: ['function openDetail', '\n  }'],
     close: ['function closeDetail', '\n  }'],
   },

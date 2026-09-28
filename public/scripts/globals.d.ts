@@ -41,11 +41,11 @@ declare global {
     /** Closes the fullscreen image modal (ai-designer image viewer). */
     closeImageModal?: (...args: any[]) => void;
     /** Returns the live AI Designer chat transcript (ai-designer-app.js). Read by
-     *  readBugReportHistory (scripts/bug-report-history.js) so the shared "Report an
+     *  readBugReportHistory (scripts/profile-menu/bug-report-history.js) so the shared "Report an
      *  issue" dialog can attach it — stripped of image bytes, which is what keeps the
      *  report under the 1MB JSON body limit. */
     getConversationHistory?: () => any[];
-    /** Toast notifier (scripts/toast.js), bridged onto window for the classic
+    /** Toast notifier (scripts/shared/toast.js), bridged onto window for the classic
      *  (non-module) scripts the AI Designer loads, which cannot import it. */
     showToast?: (message: string, type?: string) => void;
     /** Mounts one walkthrough player into a `.designer-demo[data-demo]` host.

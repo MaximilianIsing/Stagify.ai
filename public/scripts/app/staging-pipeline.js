@@ -1,5 +1,5 @@
 import { createGalleryNotice } from './gallery-notice.js';
-import { unstageableMessage } from '../unstageable-message.js';
+import { unstageableMessage } from '../shared/unstageable-message.js';
 import { readStampOptions } from './stamp-style-row.js';
 
 // How long a single staging request may run before the client gives up on it.

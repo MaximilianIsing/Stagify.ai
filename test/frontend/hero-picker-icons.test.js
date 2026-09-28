@@ -2,7 +2,7 @@
 //
 // WHY A SOURCE-LEVEL GUARD. The glyphs replaced the 46 by 31 render crop each menu row used
 // to carry, and they live in three places that have to agree: the ROOMS/STYLES tables in
-// scripts/hero-picker.js name the keys, the sprite in index.html draws one symbol per key,
+// scripts/home/hero-picker.js name the keys, the sprite in index.html draws one symbol per key,
 // and rowFor() joins them with `<use href="#hp-ico-<key>">`. Nothing in the browser complains
 // when they stop agreeing. A `<use>` pointing at a symbol that does not exist renders NOTHING,
 // silently — no console error, no broken-image glyph, no layout shift, because the tile is
@@ -24,7 +24,7 @@ const root = process.cwd();
 const read = (rel) => fs.readFileSync(path.join(root, rel), 'utf8');
 
 const INDEX = read('public/index.html');
-const JS = read('public/scripts/hero-picker.js');
+const JS = read('public/scripts/home/hero-picker.js');
 const CSS = read('public/styles/hero-picker.css');
 
 /** Source with comments stripped, so prose describing a rule never satisfies a check for it. */
@@ -36,7 +36,7 @@ const INDEX_CODE = INDEX.replace(/<!--[\s\S]*?-->/g, '');
 /** The `key:` values of one table in hero-picker.js, in source order. */
 function keysOf(table) {
   const block = new RegExp(`const ${table} = \\[([\\s\\S]*?)\\n\\];`).exec(JS_CODE);
-  assert.ok(block, `scripts/hero-picker.js no longer declares a ${table} table`);
+  assert.ok(block, `scripts/home/hero-picker.js no longer declares a ${table} table`);
   const keys = [...block[1].matchAll(/\bkey:\s*'([^']+)'/g)].map((m) => m[1]);
   assert.ok(keys.length > 0, `${table} parsed to zero entries — the regex above has rotted`);
   return keys;
@@ -57,7 +57,7 @@ test('every room and style the picker offers has a glyph, and nothing else does'
     Object.keys(SYMBOLS).sort(),
     [...PICKER_KEYS].sort(),
     'the hp-ico-* sprite in public/index.html and the ROOMS/STYLES tables in '
-    + 'scripts/hero-picker.js have drifted apart',
+    + 'scripts/home/hero-picker.js have drifted apart',
   );
 });
 
@@ -78,7 +78,7 @@ test('the rows reference the sprite by the table key, not by a second hand-writt
 test('the thumbnail crop is gone from every layer', () => {
   // It was an <img> per row, a 900w candidate per open, and a CSS rule. Leaving any one of
   // them behind is how a "removed" feature half-ships.
-  assert.doesNotMatch(JS_CODE, /hp-menu__thumb/, 'scripts/hero-picker.js still builds a menu thumbnail');
+  assert.doesNotMatch(JS_CODE, /hp-menu__thumb/, 'scripts/home/hero-picker.js still builds a menu thumbnail');
   assert.doesNotMatch(CSS_CODE, /\.hp-menu__thumb\b/, 'styles/hero-picker.css still styles a menu thumbnail');
   assert.doesNotMatch(
     JS_CODE, /rowFor\([^)]*-900\.webp/,

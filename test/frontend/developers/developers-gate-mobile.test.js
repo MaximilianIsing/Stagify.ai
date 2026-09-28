@@ -1,4 +1,4 @@
-// Tier: frontend gate behaviour — public/scripts/developers-gate.js.
+// Tier: frontend gate behaviour — public/scripts/gates/developers-gate.js.
 //
 // The API documentation is a desktop-only page: it is a three-column shell (persistent
 // nav, prose, "on this page") and there is no honest way to fold that onto a phone. The
@@ -24,7 +24,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
-const GATE = path.join(ROOT, 'public', 'scripts', 'developers-gate.js');
+const GATE = path.join(ROOT, 'public', 'scripts', 'gates', 'developers-gate.js');
 const PAGE = path.join(ROOT, 'public', 'developers.html');
 
 const gateSource = fs.readFileSync(GATE, 'utf8');
@@ -129,7 +129,7 @@ test('the gate is render-blocking and sits BELOW the viewport meta', () => {
   const head = /<head[^>]*>([\s\S]*?)<\/head>/i.exec(pageHtml);
   assert.ok(head, 'developers.html has no <head>');
 
-  const tag = /<script\s+src="scripts\/developers-gate\.js"[^>]*>/i.exec(head[1]);
+  const tag = /<script\s+src="scripts\/gates\/developers-gate\.js"[^>]*>/i.exec(head[1]);
   assert.ok(tag, 'developers.html no longer loads the gate in <head>');
   assert.ok(!/\bdefer\b|\basync\b|type="module"/i.test(tag[0]),
     'the gate must stay render-blocking — a deferred gate paints the page it is meant to prevent');

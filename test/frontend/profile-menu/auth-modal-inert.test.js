@@ -7,7 +7,7 @@
 // cannot see through. Mouse users never hit it: the full-viewport backdrop already
 // swallows their clicks, which is why it went unnoticed for so long.
 //
-// The mechanism is shared with the gallery panel (public/scripts/inert-background.js).
+// The mechanism is shared with the gallery panel (public/scripts/site/inert-background.js).
 // What is asserted here is the part that is specific to THIS dialog and genuinely
 // dangerous to get wrong: that the page is handed back on every single close path, and
 // that it is handed back BEFORE the staging hand-off reveals a dialog nested inside

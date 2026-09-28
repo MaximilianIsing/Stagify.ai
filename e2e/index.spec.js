@@ -104,7 +104,7 @@ test.describe('Home page — load smoke', () => {
   test('a remembered pick is on screen from the first paint, with no second image', async ({ page }) => {
     // The remembered pick used to arrive the slow way: the default photo painted, then
     // hero-picker.js (a module, so end-of-parse) fetched the visitor's pair and cross-faded
-    // into it — a visible flash of a modern bedroom on every visit. scripts/hero-restore.js
+    // into it — a visible flash of a modern bedroom on every visit. scripts/home/hero-restore.js
     // repoints the static <img> before the paint instead, and hero-picker.js adopts what it
     // finds rather than fetching it again.
     //
@@ -276,7 +276,7 @@ test.describe('Home page — load smoke', () => {
       'media-webp/example/farmhouse-kitchen.webp',
     );
 
-    // The adopted LCP node survives the restore — and IS the restore: scripts/hero-restore.js
+    // The adopted LCP node survives the restore — and IS the restore: scripts/home/hero-restore.js
     // repointed that same node before the paint, so there is no second layer and no
     // modern-bedroom anywhere. (Before that script, the default painted and a new <img> faded
     // in over it, which is what this line used to assert.)

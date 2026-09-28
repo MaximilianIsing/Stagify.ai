@@ -23,13 +23,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { initGuides } from '../../../public/scripts/guides.js';
+import { initGuides } from '../../../public/scripts/guides/guides.js';
 import { guidesDocument, pageSource } from '../../helpers/guides-dom.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const read = (...p) => fs.readFileSync(path.join(ROOT, ...p), 'utf8');
 const guidesCss = () => read('public', 'styles', 'guides.css');
-const guidesJs = () => read('public', 'scripts', 'guides.js');
+const guidesJs = () => read('public', 'scripts', 'guides', 'guides.js');
 
 /** The six controls, as they ship. */
 function controls() {

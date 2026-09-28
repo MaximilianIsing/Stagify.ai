@@ -1,8 +1,8 @@
 import { lang } from './dom-utils.js';
 import { AUTH_MODAL_HTML } from './auth-modal-template.js';
 import { createGoogleSignIn } from './google-signin.js';
-import { localizedTarget } from '../i18n-routing.js';
-import { setInert, backgroundOf } from '../inert-background.js';
+import { localizedTarget } from '../i18n/i18n-routing.js';
+import { setInert, backgroundOf } from '../site/inert-background.js';
 
 /**
  * The account auth modal — create-account / sign-in / forgot-password / email

@@ -12,7 +12,7 @@
 //   2. Bakes the English og:locale + og:locale:alternate block into the same pages,
 //      for the ones that carry an Open Graph card at all (anchored to og:url).
 //   3. Regenerates public/sitemap.xml with a <url> per language + xhtml alternates.
-//   4. Regenerates public/scripts/locale-data.js — the browser's copy of the
+//   4. Regenerates public/scripts/i18n/locale-data.js — the browser's copy of the
 //      language set, which the frontend cannot import from lib/ directly.
 //   5. Bakes the canonical Organization (and, on the homepage, WebSite) JSON-LD from
 //      lib/seo/organization.js into every indexable page, between generated markers.
@@ -317,11 +317,11 @@ function run() {
   // Match the existing file's line endings, like the hreflang injector above: on a
   // CRLF checkout an unconditional LF write would show up as a whole-file diff on
   // every rebuild, with no content change behind it.
-  const localeDataPath = path.join(PUBLIC, 'scripts', 'locale-data.js');
+  const localeDataPath = path.join(PUBLIC, 'scripts', 'i18n', 'locale-data.js');
   const priorLocaleData = fs.existsSync(localeDataPath) ? fs.readFileSync(localeDataPath, 'utf8') : '';
   const localeDataEol = priorLocaleData.includes('\r\n') ? '\r\n' : '\n';
   fs.writeFileSync(localeDataPath, buildLocaleDataModule().split('\n').join(localeDataEol));
-  console.log('scripts/locale-data.js regenerated');
+  console.log('scripts/i18n/locale-data.js regenerated');
 
   // Step 6 — the plain-text summary. Same line-ending care as locale-data.js above, and
   // written AFTER the blog loop so it reads the articles' current titles and descriptions

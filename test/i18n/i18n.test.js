@@ -20,7 +20,7 @@ import {
 import { renderLocalizedPage } from '../../lib/i18n/render-page.js';
 import { buildSitemap } from '../../lib/i18n/sitemap.js';
 import { injectHreflang, injectOgLocale } from '../../scripts/build-i18n-seo.js';
-import { splitLocale, urlLanguage, hrefForLanguage, localizedTarget } from '../../public/scripts/i18n-routing.js';
+import { splitLocale, urlLanguage, hrefForLanguage, localizedTarget } from '../../public/scripts/i18n/i18n-routing.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..', '..');
@@ -222,7 +222,7 @@ test('renderer produces localized real index.html without English title leaking'
   assert.ok(!/Free virtual staging with one click/.test(titleMatch[1]), 'English title leaked in <title>');
   assert.ok(out.includes('<base href="/">'));
   assert.ok(out.includes('<link rel="canonical" href="https://stagify.ai/es">'));
-  assert.ok(out.includes('src="scripts/session-class.js"'), 'relative asset refs must be preserved (base resolves them)');
+  assert.ok(out.includes('src="scripts/site/session-class.js"'), 'relative asset refs must be preserved (base resolves them)');
 });
 
 // ── Sitemap + baked English hreflang (drift guards) ─────────────────────────
@@ -275,7 +275,7 @@ test('every English page with an Open Graph card carries the full baked-in og:lo
   assert.ok(withCard > 0, 'no English page had an og:url card — the guard would be vacuous');
 });
 
-// ── Client routing helpers (public/scripts/i18n-routing.js) ─────────────────
+// ── Client routing helpers (public/scripts/i18n/i18n-routing.js) ─────────────────
 
 /** Run `fn` with a stubbed browser `location`. */
 function withLocation(pathname, hash, fn) {

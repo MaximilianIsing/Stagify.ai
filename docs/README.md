@@ -54,10 +54,10 @@ This README is the entry point for the `docs/` folder. See also:
 - **Frontend:** Plain HTML/CSS/vanilla JS in `public/`. **No framework and no bundler** —
   nothing is transpiled or minified at deploy time and files are served as authored. The
   one code-generation step is `scripts/build-i18n-seo.js`, run by hand after a locale/page
-  change, which regenerates `public/sitemap.xml` and `public/scripts/locale-data.js`
+  change, which regenerates `public/sitemap.xml` and `public/scripts/i18n/locale-data.js`
   (see [`guides/i18n.md`](guides/i18n.md)).
 - **Image processing:** `sharp`.
-- **AI:** Google Generative AI (Gemini) for staging/renders, OpenAI for the chat assistant.
+- **AI:** Gemini via `@google/genai` (wrapped by `lib/services/gemini-client.js`) for staging/renders, OpenAI for the chat assistant.
 - **Email:** Resend. **Billing:** Stripe. **Auth:** local accounts + Google Sign-In.
 - **Security middleware:** `helmet` (CSP), `cors`, `express-rate-limit`.
 
@@ -70,16 +70,21 @@ This README is the entry point for the `docs/` folder. See also:
 ├── load-env.js              # Zero-dependency .env loader (imported first, before any secret)
 ├── render.yaml              # Render deploy config (build/start run the scripts below)
 ├── litestream.yml           # Litestream config: replicate the SQLite DB to Cloudflare R2
-├── scripts/                 # Deploy scripts
+├── scripts/                 # Deploy scripts + build/CI tooling (build-i18n-seo.js, blog-pack.js,
+│   │                        #   check-native-abi.js, test-coverage.js, asset builders, …)
 │   ├── build.sh             # Render build: npm ci → npm test (gate) → npm audit (gate) → fetch litestream
 │   └── start.sh             # Render start: restore DB from R2 if empty → replicate → run app
 ├── package.json             # Scripts, deps, Node engine
 ├── routes/                  # Express route modules, mounted by server.js (in this order)
 │   ├── billing.js           # Stripe webhook, customer portal, enterprise config + checkout
 │   ├── auth.js              # Register/login/Google/logout/reset, /getpro, /api/auth/config
-│   ├── admin.js             # /admin + log/JSON exports + image hosting (endpoint_key gated)
-│   │                        #   (the dashboard UI itself: docs/guides/admin-dashboard.md)
-│   ├── staging.js           # process-image, validate-image, mask-edit, segment, exterior
+│   ├── admin/               # index.js (main console router: /admin, log/JSON exports, image
+│   │                        #   hosting; endpoint_key gated) + access, analyst, api-usage, blog,
+│   │                        #   renders siblings (UI: docs/guides/admin-dashboard.md)
+│   ├── staging.js           # process-image, validate-image, mask-edit, segment, exterior,
+│   │                        #   masking-studio/save, stamp-image, download-result, disclosure-preview
+│   ├── api-keys.js          # /api/api-keys, /api/api-credits*, /api/api-usage (session-authed)
+│   ├── api-v1.js            # Public render API /api/v1/* (Bearer key)
 │   ├── chat.js              # AI Designer: chat, chat-upload, welcome-message
 │   ├── i18n.js              # Localized URLs (/es, /fr/guides.html, …), rendered server-side
 │   ├── public.js            # Home/SEO/status pages, health, counters, contact, email, bug reports
@@ -90,11 +95,15 @@ This README is the entry point for the `docs/` folder. See also:
 ├── lib/                     # Shared modules (factory + dependency-injection pattern)
 │   ├── logger.js            # Diagnostic logger — the single stdout/stderr funnel (LOG_LEVEL)
 │   ├── config/              # config.js (secrets), model-config.js, runtime-flags.js
-│   ├── data/                # db.js (shared SQLite conn), data-dir (the ONE "where state lives"), auth-store, session-tokens, admin-sessions, enterprise-store, stripe-linking, stripe-events, memory, counters, uptime-monitor, referral-links, gallery-* + object-store (R2/local) + blob-tombstones, user-deletion
-│   ├── http/                # async-router, http-helpers (sendError), error-ref, http-guards, rate-limiters, uploads, app-middleware, not-found (the terminal 404)
-│   ├── i18n/                # locales (the language + page set), render-page (the string transform), page-renderer (its caches), sitemap
-│   ├── image/               # image-primitives, image-annotation, image-review, erase, hosted-images, stamp-disclosure (the "virtually staged" pixel stamp)
-│   ├── services/            # ai-clients, auth-helpers, email, logging (CSV), stripe-webhooks
+│   ├── analytics/           # admin-metrics, api-usage (read-only aggregates for the admin console)
+│   ├── content/             # blog-posts (blog catalog), article-extract
+│   ├── data/                # db.js (shared SQLite conn), data-dir (the ONE "where state lives"), auth-store, session-tokens, pro-grants, admin-sessions, admin-access, enterprise-store, stripe-linking, stripe-events, api-keys, api-billing, credit-packs, memory, counters, uptime-monitor, referral-links, blog-views, email-optout, gallery-* + object-store (R2/local) + blob-tombstones, user-deletion
+│   ├── health/              # service-health (per-subsystem /status verdicts)
+│   ├── http/                # async-router, http-helpers (sendError), error-ref, http-guards, rate-limiters, uploads, app-middleware, text-assets, api-key-auth, api-concurrency, not-found (the terminal 404), …
+│   ├── i18n/                # locales (the language + page set), render-page (the string transform), page-renderer (its caches), sitemap, blog-*
+│   ├── image/               # image-primitives, image-annotation, image-review, erase, hosted-images, stamp-disclosure (the "virtually staged" pixel stamp), output-metadata, disclosure-preview
+│   ├── seo/                 # live-stats, llms-txt, organization (JSON-LD)
+│   ├── services/            # ai-clients, gemini-client, auth-helpers, email, lifecycle-emails, trial-lifecycle, email-catalog, admin-analyst(-tools), admin-brief, logging (CSV), csv-append, stripe-webhooks, stripe-credit-topup
 │   ├── staging/             # prompts, promptMatrix, room-constraints (per-room hard rules), unstageable (upload-gate prompt + reject taxonomy), staging-pipeline, staging-generation, virtual-staging-handler, mask-edit, segment, cad-handling
 │   ├── chat/                # chat-pipeline (wiring) + memory/image-retrieval/image-dispatch/staging/response dispatch, request-prep, upload-prep, welcome-message-handler, history, routing, sse
 │   └── types/               # Ambient .d.ts declarations shared by the checkJs typecheck (no runtime code)
@@ -102,13 +111,13 @@ This README is the entry point for the `docs/` folder. See also:
 ├── data/                    # Runtime state: one SQLite DB (all structured state) + CSV logs (see Data & persistence)
 ├── test/                    # `node --test` suite, in subfolders mirroring the source tree
 │                            #   (server/ routes/ chat/ staging/ image/ data/ services/
-│                            #    http/ config/ i18n/ seo/ frontend/) + helpers/ harnesses
+│                            #    http/ config/ i18n/ seo/ analytics/ content/ health/
+│                            #    scripts/ frontend/) + helpers/ harnesses
 ├── e2e/                     # Playwright browser smokes of the studios, home page, gallery
 │                            #   and share page (npm run test:e2e)
-├── ds-bundle/               # design-system bundle (generated)
 ├── to-build/                # source masters: media-png, OG_Image, demos (see to-build/README.md)
-├── instagram/               # local-only post generator (see instagram/README.md) — never
-│                            #   served, eslint-ignored, outside the deploy gate entirely
+├── instagram/               # local-only post generator (see instagram/README.md). Never
+│                            #   served; linted in CI (npm run lint) but outside the deploy gate
 └── docs/                    # You are here
 ```
 
@@ -136,18 +145,26 @@ Some secrets can alternatively be supplied as local `.txt` files (e.g.
 `stripe_secret_key.txt`, `resendkey.txt`) — see the env doc for the full mapping. The
 Gemini and OpenAI keys and `DEBUG` are env-only. `load-env.js` never
 overwrites a variable already present in the real environment, so host-provided
-config always wins.
+env beats `.env`.
+
+> **Warning: a stray `.txt` file overrides the Render env.** The secrets read by
+> `lib/config/config.js` (Stripe keys and price IDs, Google OAuth, `endpoint_key`) check
+> for their `.txt` file **first** and only then the env var. See
+> [Configuration & secrets](#configuration--secrets).
 
 ## Running the app
 
 ```bash
-npm start         # node server.js       → http://localhost:3000
-npm run dev       # nodemon server.js    → auto-restart on change
+npm start         # node --import ./instrument.js server.js   → http://localhost:3000
+npm run dev       # nodemon --import ./instrument.js server.js → auto-restart on change
 npm test          # typecheck + node --test → unit/integration suite (gates deploy)
 npm run typecheck # tsc --noEmit (checkJs) → backend + frontend type-check, no build
+npm run test:coverage # suite under V8 coverage; fails below the floors in scripts/test-coverage.js
 npm run test:e2e  # playwright test       → browser smokes (e2e/, real Chromium)
-npm run lint      # eslint . --max-warnings=0
+npm run lint      # eslint + stylelint (CSS and inline <style>), --max-warnings=0
 ```
+
+`prestart`, `predev` and `pretest` first run `scripts/check-native-abi.js`.
 
 `server.js` serves the static site (`/`, `/index.html`, etc.) and the JSON API from
 the same port (default `3000`, override with `PORT`).
@@ -167,8 +184,14 @@ before any secret is read. The full, commented list lives in
 - **Debug:** `DEBUG`, `EMAIL_DEBUG` (+ `DEBUG_EMAIL`, required when it is on),
   `STATS_DEBUG` (+ `DEBUG_ROOMS` / `DEBUG_USERS`).
 
-Every secret has a `.txt` file fallback for local dev; the server reads the env var
-first, then the file.
+Precedence differs by secret:
+
+- **`.txt` file first, then env:** everything read by `lib/config/config.js` (Stripe
+  secret/webhook/publishable keys, `ENTERPRISE_PRICE_ID`, API-credit price IDs, Google
+  OAuth, `endpoint_key`). Files are searched in `STRIPE_SECRETS_DIR`, the repo root, the
+  cwd and `/etc/secrets`. **A stray file there overrides the Render env.**
+- **Env first, then file:** `RESEND_API_KEY` (`resendkey.txt`), `EMAIL_DEBUG`, `DEBUG_EMAIL`.
+- **Env only:** `GOOGLE_AI_API_KEY`, `GPT_KEY`, `DEBUG`.
 
 ## Architecture
 
@@ -182,8 +205,9 @@ served as plain static files.
 - **Request flow:** browser loads a static HTML page → vanilla JS (`public/scripts/`)
   calls JSON endpoints → `server.js` validates, calls the relevant AI/billing/email
   provider, persists to `data/`, and responds.
-- **Secret resolution:** each secret resolves from its env var, falling back to a
-  local `.txt` file (handy for local dev; production uses the host dashboard).
+- **Secret resolution:** mixed. The `config.js` secrets prefer a local `.txt` file over
+  the env var; others are env-first or env-only. See
+  [Configuration & secrets](#configuration--secrets).
 - **Persistence:** one SQLite database (`auth-store.db`) for **all** structured state —
   accounts/sessions, enterprise domains, memories, uptime, gallery rows — plus flat CSV
   logs and `hosted-images/` under `data/`, and gallery render bytes in Cloudflare R2
@@ -197,21 +221,26 @@ served as plain static files.
 
 `server.js` is a composition root: it reads config, constructs the shared stores/
 helpers, and mounts the route modules in `routes/` (`public`, `auth`, `billing`,
-`staging`, `chat`, `admin`, `i18n`, `gallery`, `share-public`, and `referrals` **last**),
+`staging`, `api-keys`, `api-v1`, `chat`, `admin/*`, `i18n`, `gallery`, `share-public`,
+`object-local` (dev/CI only), and `referrals` **last**),
 then the terminal 404 handler behind them, injecting the reusable pieces from `lib/`. `lib/` is
 grouped into subdirectories by concern (full breakdown in
 [`guides/architecture.md`](guides/architecture.md#backend-modules-lib)):
 
 | Area | Key modules |
 |---|---|
-| `lib/config/` | `config.js` (secrets, env → `.txt` fallback), `model-config.js`, `runtime-flags.js` (`DEBUG_MODE` / `IS_STAGING` flags). |
-| `lib/data/` | `db.js` (the single shared `better-sqlite3` connection), `auth-store.js` (accounts/sessions, **SQLite-backed**), `session-tokens.js` (the token tables + token hashing), `password-hash.js` (the parameter-tagged password hash format + its rehash-on-login upgrade path), `enterprise-store.js`, `stripe-linking.js` (which account a subscription attaches to), `stripe-events.js` (webhook idempotency ledger), `memory.js`, `counters.js`, `uptime-monitor.js`. |
-| `lib/http/` | `async-router.js` (`createAsyncRouter()`), `http-helpers.js` (`sendError`, sensitive headers), `error-ref.js` (`reportError` — 5xx bodies carry a log reference, never the exception), `http-guards.js` (`endpoint_key`), `rate-limiters.js`, `uploads.js` (multer), `app-middleware.js` (helmet/CORS/compression + body-parse/static, wired from `server.js`), `not-found.js` (`createNotFoundHandler` — the terminal 404, a plain handler rather than a router on purpose). |
+| `lib/config/` | `config.js` (secrets: `.txt` file first, then env), `model-config.js`, `runtime-flags.js` (`DEBUG_MODE` / `IS_STAGING` flags). |
+| `lib/data/` | `db.js` (the single shared `better-sqlite3` connection), `auth-store.js` (accounts/sessions, **SQLite-backed**), `session-tokens.js` (the token tables + token hashing), `password-hash.js` (the parameter-tagged password hash format + its rehash-on-login upgrade path), `enterprise-store.js`, `stripe-linking.js` (which account a subscription attaches to), `stripe-events.js` (webhook idempotency ledger), `memory.js`, `counters.js`, `uptime-monitor.js`, `pro-grants.js` (admin comp grants), `admin-sessions.js` / `admin-access.js` (console token + access log), `api-keys.js` / `api-billing.js` / `credit-packs.js` (public API identity, prepaid credits, packs), `referral-links.js`, `blog-views.js`, `email-optout.js`, `user-deletion.js`, plus the gallery stores (`staged-renders.js`, `gallery-shares.js`, `object-store*.js`, `blob-tombstones.js`, …). |
+| `lib/http/` | `async-router.js` (`createAsyncRouter()`), `http-helpers.js` (`sendError`, sensitive headers), `error-ref.js` (`reportError` — 5xx bodies carry a log reference, never the exception), `http-guards.js` (`endpoint_key`), `rate-limiters.js`, `uploads.js` (multer), `app-middleware.js` (helmet/CORS/compression + body-parse/static, wired from `server.js`), `not-found.js` (`createNotFoundHandler` — the terminal 404, a plain handler rather than a router on purpose), `api-key-auth.js` / `api-concurrency.js` (public API auth + in-flight cap), `text-assets.js` (comment-stripped HTML/CSS), `llms-txt-asset.js`, `stats-endpoint.js` (`/api/stats`), `vanity-redirects.js`, `multer-errors.js`. |
 | `lib/i18n/` | `locales.js` (the single source of truth for the language set and `LOCALIZED_PAGES`), `render-page.js` (`renderLocalizedPage` — the pure string transform), `page-renderer.js` (its raw-HTML/translations/render caches, shared by `routes/i18n.js` and `lib/http/not-found.js`), `sitemap.js`. See [`guides/i18n.md`](guides/i18n.md). |
-| `lib/image/` | `image-primitives.js` (`sharp`), `image-annotation.js`, `image-review.js` (quality gate), `erase.js`, `hosted-images.js`. |
-| `lib/services/` | `ai-clients.js` (Gemini/OpenAI/Resend), `auth-helpers.js`, `email.js`, `logging.js` (append-only **CSV** business logs), `stripe-webhooks.js`. |
-| `lib/staging/` | `prompts.js` (incl. `generatePrompt`), `promptMatrix.js` (room × style style-layer), `room-constraints.js` (per-room hard rules), `staging-pipeline.js` (quality-retry loop), `staging-generation.js` (`processStaging`/`processImageGeneration`) + `virtual-staging-handler.js` (from `server.js`), `mask-edit.js` / `segment.js` (from `routes/staging.js`), `cad-handling.js` (floor plan → top-down plan render or eye-level room photo). |
+| `lib/image/` | `image-primitives.js` (`sharp`), `image-annotation.js`, `image-review.js` (quality gate), `erase.js`, `hosted-images.js`, `stamp-disclosure.js` (visible "virtually staged" badge), `output-metadata.js` (EXIF/XMP provenance), `disclosure-preview.js`. |
+| `lib/services/` | `ai-clients.js` (Gemini/OpenAI/Resend), `gemini-client.js` (`@google/genai` wrapper), `auth-helpers.js`, `email.js`, `lifecycle-emails.js` / `trial-lifecycle.js` (trial email sequence), `email-catalog.js`, `admin-analyst.js` / `admin-brief.js` (admin console AI), `logging.js` (append-only **CSV** business logs), `csv-append.js`, `stripe-webhooks.js`, `stripe-credit-topup.js`. |
+| `lib/staging/` | `prompts.js` (incl. `generatePrompt`), `promptMatrix.js` (room × style style-layer), `room-constraints.js` (per-room hard rules), `preservation-rules.js`, `unstageable.js` (upload gate), `staging-pipeline.js` (quality-retry loop), `staging-generation.js` (`processStaging`/`processImageGeneration`), `virtual-staging-handler.js`, `mask-edit.js` / `segment.js`, `exterior-prompts.js` / `exterior-handler.js`, `render-persistence.js` (gallery writes), `api-options.js` / `api-render-billing.js` (public API), `cad-handling.js` (floor plan → top-down plan render or eye-level room photo). |
 | `lib/chat/` | `chat-pipeline.js` (pure wiring) composing `chat-memory.js` / `chat-image-retrieval.js` / `chat-image-dispatch.js` / `chat-staging.js` / `chat-response.js`; pre-routing `chat-upload-prep.js` / `chat-request-prep.js` / `welcome-message-handler.js` / `chat-upload-error.js`; `chat-history.js` (barrel over `chat-history-sanitize.js` / `chat-image-collection.js` / `chat-image-classification.js` / `chat-dual-upload.js` / `chat-base-image-staging.js`), `chat-routing.js`, `chat-sse.js`. |
+| `lib/analytics/` | `admin-metrics.js`, `api-usage.js`: read-only aggregates for the admin console. |
+| `lib/content/` | `blog-posts.js` (blog catalog), `article-extract.js`. |
+| `lib/health/` | `service-health.js`: per-subsystem verdicts for `/status`. |
+| `lib/seo/` | `live-stats.js`, `llms-txt.js`, `organization.js` (JSON-LD identity). |
 | `lib/logger.js` | The **diagnostic** logger — the single `logger.debug/info/warn/error` stdout funnel (`LOG_LEVEL`). Distinct from `services/logging.js` (CSV). |
 
 ## Frontend

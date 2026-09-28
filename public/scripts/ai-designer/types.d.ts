@@ -1,4 +1,4 @@
-// Shared JSDoc/TS shapes for the AI Designer (scripts/ai-designer-app.js and
+// Shared JSDoc/TS shapes for the AI Designer (scripts/ai-designer/ai-designer-app.js and
 // its islands under scripts/ai-designer/).
 //
 // Type-check only — never shipped to the browser. Reference from .js with e.g.

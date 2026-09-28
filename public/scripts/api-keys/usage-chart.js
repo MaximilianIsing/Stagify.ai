@@ -11,7 +11,7 @@
 // was charged and then given back — so the column height stays "requests that day" and
 // the red cap is how much of it did not deliver.
 
-import { escapeHtml } from '../escape-html.js';
+import { escapeHtml } from '../shared/escape-html.js';
 import { t, plural, locale } from './i18n.js';
 import { formatCount } from './format.js';
 

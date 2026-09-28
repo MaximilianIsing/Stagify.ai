@@ -5,7 +5,7 @@
 // by test/frontend/site-footer-parity.test.js across all eleven hand-copied footers —
 // what only a browser can prove is that the thing actually opens, that the rows are
 // hidden until it does, that it lands centred on the trigger without running off the
-// screen, and that public/scripts/legal-menu.js adds what a native <details> does not
+// screen, and that public/scripts/site/legal-menu.js adds what a native <details> does not
 // have: Escape, outside click, arrow keys, and an exit that fades instead of vanishing.
 //
 // Run on about.html rather than the home page: it carries the identical footer with
@@ -164,7 +164,7 @@ test('it still works with the enhancement script blocked', async ({ page }) => {
   // The whole reason this is a <details> and not a button+panel: the footer is copied
   // by hand into eleven files, so the fewer of them that depend on a module loading,
   // the better. Opening and closing must survive legal-menu.js failing to arrive.
-  await page.route('**/scripts/legal-menu.js', (route) => route.abort());
+  await page.route('**/scripts/site/legal-menu.js', (route) => route.abort());
   await page.goto('/about.html');
 
   await page.locator(TRIGGER).click();

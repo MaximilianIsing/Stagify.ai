@@ -48,7 +48,7 @@ export function apiRowVisible(summary) {
  * use-gating back; if it does not, this whole group should go together.
  *
  * `desktop-only` because the dashboard is a PC-only page: it is a two-column inspector,
- * and `scripts/api-keys-gate.js` answers a phone-sized viewport by sending it to the
+ * and `scripts/gates/api-keys-gate.js` answers a phone-sized viewport by sending it to the
  * home page. Hiding the row is HALF of that rule — the gate is the other half, and
  * neither is sufficient alone (a bookmark bypasses this; the nav would otherwise
  * advertise a page that answers a tap by undoing it). The class and the gate share the
@@ -76,7 +76,7 @@ export function apiKeysRowHtml(lang, esc) {
  * link belongs anyway.
  *
  * `desktop-only`, and this is NOT inherited styling — it is half of a rule. api-keys.html
- * loads scripts/api-keys-gate.js, which answers a phone-sized viewport by sending it to
+ * loads scripts/gates/api-keys-gate.js, which answers a phone-sized viewport by sending it to
  * the home page, so an unhidden row here would advertise a page that undoes the tap. The
  * class and the gate share the 768px breakpoint and
  * test/frontend/desktop-only-gates.test.js fails if they drift. Note the row was ALREADY

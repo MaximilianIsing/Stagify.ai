@@ -1,4 +1,4 @@
-// Tier: frontend island logic (DOM-shimmed) — public/scripts/toast.js.
+// Tier: frontend island logic (DOM-shimmed) — public/scripts/shared/toast.js.
 //
 // The app's single user-facing message channel: it replaced nine native alert()s in
 // the staging flow plus two byte-identical copies elsewhere. Everything that goes
@@ -24,7 +24,7 @@
 import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { showToast, showErrorToast } from '../../public/scripts/toast.js';
+import { showToast, showErrorToast } from '../../public/scripts/shared/toast.js';
 
 // ── shim ───────────────────────────────────────────────────────────────────────
 

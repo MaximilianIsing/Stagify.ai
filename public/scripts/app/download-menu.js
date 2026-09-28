@@ -1,4 +1,4 @@
-// Resolution picker for the staged-result download (scripts/app.js).
+// Resolution picker for the staged-result download (scripts/app/app.js).
 //
 // Plain exported factory — no app state. Owns both halves of the split button:
 // "Download Result" keeps its original behaviour (full-size JPEG, no dimension

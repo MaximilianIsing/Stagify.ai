@@ -9,7 +9,7 @@
 // (which owns retryLayer and selectCandidate), snap-refine.js, scripts/mask/ and
 // scripts/app/stage-mask-editor.js do not import it, and a drift guard in
 // test/frontend/masking-studio/masking-studio-save.test.js fails the build if that changes.
-// The single caller is the "Looks Good" handler in scripts/masking-studio-app.js.
+// The single caller is the "Looks Good" handler in scripts/masking-studio/masking-studio-app.js.
 //
 // SILENT ON SUCCESS. See scripts/app/gallery-notice.js — saving is a background nicety, and
 // a toast on every success is noise the user cannot act on. Only an eviction gets a

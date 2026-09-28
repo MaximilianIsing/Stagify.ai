@@ -1,4 +1,4 @@
-// Tier: frontend island logic (DOM-stubbed) — public/scripts/home-whyus.js.
+// Tier: frontend island logic (DOM-stubbed) — public/scripts/home/home-whyus.js.
 //
 // #why is a scoreboard: six factors x five ways to stage a listing (us, a traditional
 // stager, a per-image AI tool, doing it yourself, empty rooms). It replaced the old
@@ -35,7 +35,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const PUBLIC = path.join(ROOT, 'public');
 
-const { initWhyUs } = await import('../../public/scripts/home-whyus.js');
+const { initWhyUs } = await import('../../public/scripts/home/home-whyus.js');
 
 /** The competitor columns, in the order the header uses them. `us` has no button. */
 const RIVALS = ['stager', 'ai', 'diy', 'empty'];

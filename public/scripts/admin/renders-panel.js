@@ -29,7 +29,7 @@ const PAGE = 24;
 /**
  * Operator-facing names for the render sources.
  *
- * Deliberately NOT imported from public/scripts/render-name.js. That module answers a
+ * Deliberately NOT imported from public/scripts/shared/render-name.js. That module answers a
  * customer-facing question — what to call a render on a card and on a public share page —
  * and it withholds a label for `interior` on purpose because the Room and Style rows say
  * it better. The console wants the opposite: every row named, including the plain interior

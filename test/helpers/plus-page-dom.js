@@ -2,7 +2,7 @@
 // public/stagify-plus.html.
 //
 // The ids come out of the shipped markup rather than a hand-written fixture, which is
-// the point: scripts/stagify-plus.js looks the checkout button and its hint up by id,
+// the point: scripts/plus/stagify-plus.js looks the checkout button and its hint up by id,
 // and a fixture that listed them itself would keep passing after someone renamed one in
 // the HTML. Here the rename makes requireIds() fail loudly — which matters more than
 // usual on this page, because a null checkout button is a silent no-op that leaves
@@ -21,7 +21,7 @@ export const PAGE = path.join(ROOT, 'public', 'stagify-plus.html');
 /** The page's markup. */
 export const pageHtml = () => fs.readFileSync(PAGE, 'utf8');
 
-/** The ids scripts/stagify-plus.js drives. */
+/** The ids scripts/plus/stagify-plus.js drives. */
 export const PLUS_IDS = [
   'plus-checkout-hint',
   'stagify-plus-checkout-link',

@@ -18,7 +18,7 @@
 // Every string resolves through i18n.js — see the note in inspector.js for why nothing
 // this file renders may carry `data-lang`.
 
-import { escapeHtml } from '../escape-html.js';
+import { escapeHtml } from '../shared/escape-html.js';
 import { chartHtml } from './usage-chart.js';
 import { t, plural } from './i18n.js';
 import {

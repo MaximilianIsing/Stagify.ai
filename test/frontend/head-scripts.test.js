@@ -31,11 +31,11 @@ const BLOCKING_ALLOWED = {
   // shared preview-gate.js either, because that file never navigates by design and the width
   // check must come first. So it carries the shared gate's body inline, and
   // ai-designer-gate-mobile.test.js pins both halves.
-  'ai-designer-gate.js': 'redirects a phone-sized viewport, then applies the cached-Pro shape, both before paint',
-  'gallery-gate.js': 'PC-only feature — redirects a phone-sized viewport before the grid paints',
-  'api-keys-gate.js': 'PC-only page — redirects a phone-sized viewport before the inspector paints',
-  'developers-gate.js': 'PC-only page — redirects a phone-sized viewport before the three-column docs shell paints',
-  'faq-redirect.js': 'meta-refresh stub — must redirect before anything renders',
+  'gates/ai-designer-gate.js': 'redirects a phone-sized viewport, then applies the cached-Pro shape, both before paint',
+  'gates/gallery-gate.js': 'PC-only feature — redirects a phone-sized viewport before the grid paints',
+  'gates/api-keys-gate.js': 'PC-only page — redirects a phone-sized viewport before the inspector paints',
+  'gates/developers-gate.js': 'PC-only page — redirects a phone-sized viewport before the three-column docs shell paints',
+  'gates/faq-redirect.js': 'meta-refresh stub — must redirect before anything renders',
   // The one that redirects NOBODY, and the reason this list is shrinking rather than
   // growing. A preview page ships in its anonymous shape, so a Stagify+ visitor used to
   // watch the sales pitch paint and vanish once /api/auth/me answered — a full round trip
@@ -43,12 +43,12 @@ const BLOCKING_ALLOWED = {
   // worth nothing at all after first paint. `masking-studio-gate.js` and
   // `exterior-studio-gate.js` both used to sit here; the first was deleted when that page
   // became a preview, the second when its page was folded onto this shared file.
-  'preview-gate.js': 'applies the cached-Pro page shape before first paint on all four preview pages, so a subscriber never sees the pitch',
+  'gates/preview-gate.js': 'applies the cached-Pro page shape before first paint on all four preview pages, so a subscriber never sees the pitch',
   // The only one on EVERY nav-bearing page, so it is also the only one whose cost is paid
   // site-wide. It is deliberately last in <head>: first paint is already blocked on the
   // stylesheets above it, so a small same-origin file fetched alongside them is free,
   // whereas putting it first would delay discovery of the CSS that paint is waiting for.
-  'session-class.js': 'sets html.has-session before first paint so the nav Gallery tab does not pop in a round trip late',
+  'site/session-class.js': 'sets html.has-session before first paint so the nav Gallery tab does not pop in a round trip late',
 };
 
 /** Every .html under public/, recursively. */
@@ -81,7 +81,7 @@ test('no unexplained render-blocking <script> in any <head>', () => {
     for (const tag of head.match(/<script\b[^>]*\bsrc=[^>]*>/gi) || []) {
       if (/\bdefer\b|\basync\b|type=["']module["']/i.test(tag)) continue;
       const src = (tag.match(/src=["']([^"']+)["']/i) || [])[1] || '';
-      const base = path.basename(src);
+      const base = src.replace(/^.*?scripts\//, '');
       if (Object.hasOwn(BLOCKING_ALLOWED, base)) continue;
       offenders.push(`${path.relative(root, file)}: ${tag.trim()}`);
     }
@@ -129,20 +129,20 @@ test('the homepage preloads the one script it still lets block the parser', () =
 
   assert.match(
     head,
-    /<script src="scripts\/session-class\.js"><\/script>/,
+    /<script src="scripts\/site\/session-class\.js"><\/script>/,
     'session-class.js is no longer a blocking script in the homepage <head>. If it was ' +
       'deferred or dropped, delete the preload below it too — a preload for something ' +
       'nothing loads is pure waste.',
   );
   assert.match(
     head,
-    /<link rel="preload" as="script" href="scripts\/session-class\.js">/,
+    /<link rel="preload" as="script" href="scripts\/site\/session-class\.js">/,
     'the homepage lost its `<link rel="preload" as="script">` for session-class.js. That ' +
       'script blocks the parser, so first paint cannot happen before it arrives, and ' +
       'without the preload it loses the queue to ~60 modules and costs ~120 ms of LCP.',
   );
 
-  const preloadAt = head.indexOf('<link rel="preload" as="script" href="scripts/session-class.js">');
+  const preloadAt = head.indexOf('<link rel="preload" as="script" href="scripts/site/session-class.js">');
   const firstSheet = head.indexOf('<link rel="stylesheet"');
   assert.ok(
     preloadAt !== -1 && firstSheet !== -1 && preloadAt < firstSheet,

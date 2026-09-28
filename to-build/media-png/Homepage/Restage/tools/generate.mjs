@@ -20,7 +20,7 @@
 //
 // --accept does the whole install: copies the WebP into public/, mints the pixel-identical
 // PNG master beside this file, appends the recipe to ../manifest.json, and rewrites the
-// RESTAGE_POOL list in public/scripts/restage-pool.js. That last step is what
+// RESTAGE_POOL list in public/scripts/home/restage-pool.js. That last step is what
 // test/frontend/home-restage.test.js checks, so forgetting it used to fail the build.
 //
 // Needs GOOGLE_AI_API_KEY in .env (or the environment).
@@ -42,7 +42,7 @@ const SRC = path.join(MASTERS, 'empty.png');
 const MANIFEST = path.join(MASTERS, 'manifest.json');
 const PENDING = path.join(HERE, 'pending');
 const SERVED = path.join(REPO, 'public/media-webp/Homepage/Restage');
-const POOL_LIST = path.join(REPO, 'public/scripts/restage-pool.js');
+const POOL_LIST = path.join(REPO, 'public/scripts/home/restage-pool.js');
 
 const MAX_ATTEMPTS = 4;
 const CONCURRENCY = 4;

@@ -36,17 +36,17 @@
     <link rel="stylesheet" href="styles/toast.css">
     <link rel="stylesheet" href="styles/auth.css">
     <link rel="preload" href="languages/english.json" as="fetch" crossorigin>
-    <script type="module" src="scripts/language-detect.js"></script>
-    <script type="module" src="scripts/language-loader.js"></script>
-    <script type="module" src="scripts/language-switcher.js"></script>
-    <script type="module" src="scripts/nav-pill.js"></script>
-    <script type="module" src="scripts/auth.js"></script>
-    <script type="module" src="scripts/profile-menu.js"></script>
+    <script type="module" src="scripts/i18n/language-detect.js"></script>
+    <script type="module" src="scripts/i18n/language-loader.js"></script>
+    <script type="module" src="scripts/i18n/language-switcher.js"></script>
+    <script type="module" src="scripts/site/nav-pill.js"></script>
+    <script type="module" src="scripts/site/auth.js"></script>
+    <script type="module" src="scripts/profile-menu/profile-menu.js"></script>
     <link rel="stylesheet" href="styles/not-found.css">
     <!-- Sets html.has-session from the stored token BEFORE first paint, so the nav’s
          Gallery tab does not pop in a round trip late. Render-blocking on purpose, and
          last in <head> so it never delays discovery of the CSS above it. -->
-    <script src="scripts/session-class.js"></script>
+    <script src="scripts/site/session-class.js"></script>
   </head>
   <body>
     <!-- Background Video -->
@@ -165,9 +165,9 @@
       © <span class="footer-year">2026</span> <span data-lang="footer.copyright">Stagify.ai</span>
     </footer>
 
-    <script type="module" src="scripts/footer-year.js"></script>
-    <script type="module" src="scripts/legal-menu.js"></script>
-    <script type="module" src="scripts/aurora-scrollbar.js"></script>
-    <script type="module" src="scripts/hover-glow.js"></script>
+    <script type="module" src="scripts/site/footer-year.js"></script>
+    <script type="module" src="scripts/site/legal-menu.js"></script>
+    <script type="module" src="scripts/fx/aurora-scrollbar.js"></script>
+    <script type="module" src="scripts/fx/hover-glow.js"></script>
   </body>
 </html>

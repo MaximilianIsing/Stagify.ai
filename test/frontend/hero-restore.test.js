@@ -1,4 +1,4 @@
-// Tier: frontend behaviour — public/scripts/hero-restore.js, the pre-paint half of the
+// Tier: frontend behaviour — public/scripts/home/hero-restore.js, the pre-paint half of the
 // homepage hero's remembered pick.
 //
 // The hero photo is the page's LCP element, so it ships static in index.html, and the pair
@@ -30,9 +30,9 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const PUBLIC = path.join(ROOT, 'public');
-const SOURCE = fs.readFileSync(path.join(PUBLIC, 'scripts', 'hero-restore.js'), 'utf8');
+const SOURCE = fs.readFileSync(path.join(PUBLIC, 'scripts', 'home', 'hero-restore.js'), 'utf8');
 const INDEX = fs.readFileSync(path.join(PUBLIC, 'index.html'), 'utf8');
-const PICKER = fs.readFileSync(path.join(PUBLIC, 'scripts', 'hero-picker.js'), 'utf8');
+const PICKER = fs.readFileSync(path.join(PUBLIC, 'scripts', 'home', 'hero-picker.js'), 'utf8');
 
 const DEFAULT_BASE = 'modern-bedroom';
 const DIR = 'media-webp/example/';
@@ -241,7 +241,7 @@ test('the shape check accepts every render that actually exists', () => {
 test('the tag sits inside .hp-canvas, after the <img>, and blocks the parser', () => {
   const canvas = INDEX.indexOf('<div class="hp-canvas"');
   const img = INDEX.indexOf('data-hp-img', canvas);
-  const tag = INDEX.indexOf('scripts/hero-restore.js"></script>', img);
+  const tag = INDEX.indexOf('scripts/home/hero-restore.js"></script>', img);
   const canvasEnd = INDEX.indexOf('</section>', canvas);
   assert.ok(canvas !== -1 && img !== -1, 'the hero markup was restructured — update this test');
   assert.ok(tag !== -1 && tag < canvasEnd, 'hero-restore.js must load inside the hero, after the image');
@@ -256,7 +256,7 @@ test('the script is preloaded from <head>', () => {
   // Parser-blocking and discovered low in the body, it would queue behind ~60 module tags.
   // Same lesson as the session-class.js preload two lines below it.
   const head = INDEX.slice(0, INDEX.indexOf('</head>'));
-  assert.match(head, /<link rel="preload" as="script" href="scripts\/hero-restore\.js"/);
+  assert.match(head, /<link rel="preload" as="script" href="scripts\/home\/hero-restore\.js"/);
 });
 
 test('it is a classic script with no imports, so the tag above stays legal', () => {

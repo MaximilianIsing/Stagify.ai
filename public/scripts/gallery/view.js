@@ -7,8 +7,8 @@
 
 import { el, replaceChildren } from '../share/dom.js';
 import { buildCompare } from '../share/compare.js';
-import { LANG_BCP47 } from '../locale-data.js';
-import { styleLabel, sourceLabel, defaultName as baseDefaultName, entryName as baseEntryName } from '../render-name.js';
+import { LANG_BCP47 } from '../i18n/locale-data.js';
+import { styleLabel, sourceLabel, defaultName as baseDefaultName, entryName as baseEntryName } from '../shared/render-name.js';
 import { t } from './i18n.js';
 
 /** 1x1 transparent GIF, so a failed tile has a valid src and no broken-image glyph. */
@@ -18,7 +18,7 @@ const TRANSPARENT_PIXEL = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAA
 const untitled = () => t('gallery.detailTitle', 'Staged room');
 
 /**
- * The naming rule itself lives in scripts/render-name.js, because the PUBLIC share page
+ * The naming rule itself lives in scripts/shared/render-name.js, because the PUBLIC share page
  * shows the same label over the same photo and two copies of "<Style> <Room type>" would
  * drift the first time either page was touched. These two wrappers exist only to bind the
  * translated fallback, which is the one part the share page cannot share (it loads no

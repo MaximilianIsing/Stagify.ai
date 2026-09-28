@@ -66,33 +66,33 @@ const EXCLUDED_PREFIXES = ['vendor/'];
 // Everything here exports something a test could call. Nothing is blocked; these
 // simply have no suite yet.
 const UNTESTED = [
-  'card-spotlight.js',
-  'designer-demo.js',
-  'enterprise.js',
-  'footer-year.js',
-  'getpro.js',
-  'home-reveal.js',
-  'home-text-animate.js',
-  'hover-glow.js',
-  'language-detect.js',
-  'language-switcher.js',
-  'lazy-css.js',
+  'fx/card-spotlight.js',
+  'fx/hover-glow.js',
+  'fx/star-border.js',
+  'home/home-reveal.js',
+  'home/home-text-animate.js',
+  'home/sponsors-scroll.js',
+  'home/staging-studio.js',
+  'i18n/language-detect.js',
+  'i18n/language-switcher.js',
+  'pages/enterprise.js',
+  'pages/getpro.js',
+  'pages/print-button.js',
+  'pages/reset-password.js',
+  'plus/plus-cta-auth.js',
+  'plus/plus-welcome-confetti.js',
+  'plus/stagify-plus-blackhole.js',
+  'showcase/designer-demo.js',
+  'site/footer-year.js',
+  'site/lazy-css.js',
   // The footer's Legal disclosure. Same standing as language-switcher.js above, which
   // it copies: a DOM-wiring IIFE with no exported surface. Its markup is pinned by
   // site-footer-parity.test.js and its behaviour by e2e/legal-menu.spec.js; what is
   // missing is a node-level suite, which would mean hand-rolling a <details> fake the
   // way staging-menu.test.js hand-rolls its nav.
-  'legal-menu.js',
-  'nav-pill.js',
-  'plus-cta-auth.js',
-  'plus-welcome-confetti.js',
-  'print-button.js',
-  'reset-password.js',
-  'sponsors-scroll.js',
-  'stagify-plus-blackhole.js',
-  'staging-studio.js',
-  'star-border.js',
-  'status.js',
+  'site/legal-menu.js',
+  'site/nav-pill.js',
+  'status/status.js',
 ];
 
 // ── list 2: covered by the browser suite, not by this walk ───────────────────
@@ -116,7 +116,7 @@ const E2E_COVERED = [
   // maskGrowths, requestMaskEdit, maskCopy — every one of which has a suite in
   // test/frontend/mask/. Driven by ai-designer{,-a11y,-errors,-mask-fit,
   // -mask-reference}.spec.js.
-  { module: 'ai-designer-app.js', page: 'ai-designer.html' },
+  { module: 'ai-designer/ai-designer-app.js', page: 'ai-designer.html' },
   { module: 'ai-designer/mask-editor.js', page: 'ai-designer.html' },
   // The main tool: 18 island imports plus a DOMContentLoaded mount. Eleven of
   // those islands already have suites under test/frontend/app/. Its mask editor is
@@ -127,10 +127,10 @@ const E2E_COVERED = [
   // test/frontend/api-keys/ (the three renderers and the create-key dialog); what is
   // left here is DOM wiring and a module-load side effect, which only a browser has.
   // Driven by api-keys.spec.js.
-  { module: 'api-keys-app.js', page: 'api-keys.html' },
+  { module: 'api-keys/api-keys-app.js', page: 'api-keys.html' },
   // app.js and app/stage-mask-editor.js WERE listed here and had to be delisted on
   // 2026-08-19 — but NOT because anyone unit-tested them. app.js left the homepage's
-  // <head> for index-deferred.js's after-`load` list, and scripts/hero-cta-boot.js (which
+  // <head> for index-deferred.js's after-`load` list, and scripts/home/hero-cta-boot.js (which
   // covers the gap that leaves at #hero-upload) reaches it with `import('./app.js')`.
   // hero-cta-boot.js has a suite, so the reachability walk above now follows that dynamic
   // import into app.js and its whole graph, and this ledger is asserted as exact set
@@ -143,26 +143,26 @@ const E2E_COVERED = [
   // (preview-access.test.js covers the writer and this page's binding of it), so what is
   // left here is the side effect of running at module load, which only a browser has.
   // Driven by basic-mask-preview.spec.js.
-  { module: 'basic-mask-page.js', page: 'basic-mask.html' },
-  // The Exterior Studio's composition root: wiring, and its three islands (access,
-  // compare, enhance) each have their own suite. Driven by exterior-studio.spec.js.
-  // developers.html's only script: three lines that fill the pricing grid from the live
-  // pack table. The fetch+render it calls is unit-tested (api-keys/credit-packs.js);
-  // what is left is the module-load side effect. Driven by api-keys.spec.js.
-  { module: 'developers-pricing.js', page: 'developers.html' },
-  { module: 'exterior-studio-app.js', page: 'exterior-studio.html' },
+  { module: 'basic-mask/basic-mask-page.js', page: 'basic-mask.html' },
+  { module: 'exterior-studio/exterior-studio-app.js', page: 'exterior-studio.html' },
   // The homepage hero's room/style picker (replaced carousel.js). It runs at PARSE time
   // rather than on DOMContentLoaded because the <img> it adopts is the page's LCP element,
   // so there is not even a mount function to call, and it deliberately has no imports —
   // which also means there is nothing importable to unit-test. What matters about it is
   // browser-only: that it ADOPTS the static photo instead of re-creating it, and that
   // picking a style actually swaps the image. Both are asserted in index.spec.js.
-  { module: 'hero-picker.js', page: 'index.html' },
+  { module: 'home/hero-picker.js', page: 'index.html' },
   // The Masking Studio's composition root. Its islands are the eight
   // masking-studio/* entries — several still on UNTESTED above, which is the debt
   // worth paying rather than testing this file. Driven by the six
   // masking-studio*.spec.js.
-  { module: 'masking-studio-app.js', page: 'masking-studio.html' },
+  { module: 'masking-studio/masking-studio-app.js', page: 'masking-studio.html' },
+  // The Exterior Studio's composition root: wiring, and its three islands (access,
+  // compare, enhance) each have their own suite. Driven by exterior-studio.spec.js.
+  // developers.html's only script: three lines that fill the pricing grid from the live
+  // pack table. The fetch+render it calls is unit-tested (api-keys/credit-packs.js);
+  // what is left is the module-load side effect. Driven by api-keys.spec.js.
+  { module: 'pages/developers-pricing.js', page: 'developers.html' },
 ];
 
 // ── list 3: not importable by node at all ────────────────────────────────────
@@ -176,38 +176,38 @@ const E2E_COVERED = [
 // The guard below re-derives this classification from the source rather than
 // trusting the list, so converting one to ESM fails here until it is delisted.
 const BLOCKED_CLASSIC = [
-  'ai-designer-gate.js',
-  'ai-designer-model-selector.js',
+  'ai-designer/ai-designer-model-selector.js',
+  'gates/ai-designer-gate.js',
   // The API dashboard's PC-only gate. Behaviourally covered by
   // test/frontend/api-keys/api-keys-gate-mobile.test.js on the same `new Function`
   // harness as the gates below, and here for the same structural reason.
-  'api-keys-gate.js',
-  'demo-data.js',
-  'demo-player.js',
+  'gates/api-keys-gate.js',
   // The docs page's PC-only gate. Behaviourally covered by
   // test/frontend/developers/developers-gate-mobile.test.js on the same `new Function`
   // harness as the two gates below — listed here only because an IIFE with no exports is
   // not something node can import, which is what this list tracks.
-  'developers-gate.js',
-  'faq-redirect.js',
-  'gallery-gate.js',
-  // The hero's pre-paint pick restore. Behaviourally covered by
-  // test/frontend/hero-restore.test.js on the same `new Function` harness as the gates
-  // here; listed only because an IIFE with no exports is not something node can import,
-  // and it has to stay an IIFE — a module runs after parsing, which is the flash it exists
-  // to remove.
-  'hero-restore.js',
+  'gates/developers-gate.js',
+  'gates/faq-redirect.js',
+  'gates/gallery-gate.js',
   // The shared reshaping gate, behaviourally covered by test/frontend/preview-gate.test.js
   // on the same `new Function` harness. Two entries used to sit beside it and are DELETED,
   // not delisted for coverage: `masking-studio-gate.js`, because that page became a public
   // preview and the gate that redirected everyone without a token had nothing left to do,
   // and `exterior-studio-gate.js`, which was a copy of this file for the one page that had
   // not been folded onto it yet.
-  'preview-gate.js',
+  'gates/preview-gate.js',
+  'guides/demo-data.js',
+  'guides/demo-player.js',
+  // The hero's pre-paint pick restore. Behaviourally covered by
+  // test/frontend/hero-restore.test.js on the same `new Function` harness as the gates
+  // here; listed only because an IIFE with no exports is not something node can import,
+  // and it has to stay an IIFE — a module runs after parsing, which is the flash it exists
+  // to remove.
+  'home/hero-restore.js',
   // Same story as the two gates above: behaviourally covered by
   // test/frontend/gallery/session-class.test.js through `new Function`, but an IIFE with
   // no exports is not something node can import, which is what this list tracks.
-  'session-class.js',
+  'site/session-class.js',
 ];
 
 /** Every module on the ledger, whichever list it sits on. */
@@ -451,7 +451,7 @@ test('the page walk resolves a module only reachable through an entry point', ()
   // Reached through TWO dynamic hops now, not a <script src>: index.html loads
   // hero-cta-boot.js, which `import('./app.js')`s it. That makes this a stronger check of
   // the walk than it was when app.js had its own tag.
-  assert.ok(loaded.has(`${SCRIPTS}/app.js`), 'index.html still reaches app.js');
+  assert.ok(loaded.has(`${SCRIPTS}/app/app.js`), 'index.html still reaches app.js');
   assert.ok(
     loaded.has(`${SCRIPTS}/app/download-menu.js`),
     'the page walk must follow imports, not just <script src> — app.js imports this',

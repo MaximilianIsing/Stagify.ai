@@ -1,5 +1,5 @@
 // Tier: frontend island logic (DOM-stubbed) + cross-file drift guards —
-// public/scripts/hero-van.js and public/scripts/hero-van-art.js.
+// public/scripts/home/hero-van.js and public/scripts/home/hero-van-art.js.
 //
 // On desktop, #hero-upload is a drawn night street: hero-van.js puts the SVG for the
 // picker's furniture style inside the button and, when the style changes, grafts the new
@@ -34,13 +34,13 @@ const read = (rel) => fs.readFileSync(path.join(ROOT, rel), 'utf8');
 // branch only registers a listener, so stub that before importing.
 globalThis.document = /** @type {any} */ ({ readyState: 'loading', addEventListener() {} });
 
-const { buildScene, initHeroVan, planSegment, speedAt, SCENE_MEDIA, STYLE_EVENT } = await import('../../public/scripts/hero-van.js');
-const { STYLE_HOUSE } = await import('../../public/scripts/hero-van-art.js');
+const { buildScene, initHeroVan, planSegment, speedAt, SCENE_MEDIA, STYLE_EVENT } = await import('../../public/scripts/home/hero-van.js');
+const { STYLE_HOUSE } = await import('../../public/scripts/home/hero-van-art.js');
 
 // ---- the art ---------------------------------------------------------------
 
 test('one house per furniture style, keyed exactly like hero-picker.js STYLES', () => {
-  const picker = read('public/scripts/hero-picker.js');
+  const picker = read('public/scripts/home/hero-picker.js');
   const keys = [...picker.matchAll(/\{ key: '([a-z]+)', slug: '[a-z]+', label: 'furnitureStyles\./g)].map((m) => m[1]);
   assert.deepEqual(STYLE_HOUSE.map((m) => m.key), keys, 'STYLE_HOUSE must list the picker’s styles, in its order');
   assert.equal(new Set(STYLE_HOUSE.map((m) => m.house)).size, keys.length, 'every style gets its own house');
@@ -606,7 +606,7 @@ test('index.html carries the plate hooks on #hero-upload', () => {
 });
 
 test('hero-picker.js publishes the style both ways hero-van.js reads it', () => {
-  const src = read('public/scripts/hero-picker.js').replace(/\/\*[\s\S]*?\*\//g, '');
+  const src = read('public/scripts/home/hero-picker.js').replace(/\/\*[\s\S]*?\*\//g, '');
   assert.match(src, /setAttribute\('data-hp-style', style\.key\)/);
   assert.match(src, new RegExp(`new CustomEvent\\('${STYLE_EVENT}'`));
   // Published after a pick AND once at init, or a returning visitor's restored style is drawn as the default.
@@ -615,10 +615,10 @@ test('hero-picker.js publishes the style both ways hero-van.js reads it', () => 
 
 test('index.html loads hero-van.js as a module tag right after hero-picker.js, with its art preloaded', () => {
   const html = read('public/index.html').replace(/<!--[\s\S]*?-->/g, '');
-  const tags = [...html.matchAll(/<script type="module" src="scripts\/([\w-]+\.js)"><\/script>/g)].map((m) => m[1]);
-  assert.equal(tags.indexOf('hero-van.js'), tags.indexOf('hero-picker.js') + 1, `module order: ${tags.slice(0, 3)}`);
-  assert.match(html, /<link rel="modulepreload" href="scripts\/hero-van-art\.js">/);
-  assert.doesNotMatch(read('public/scripts/index-deferred.js').replace(/\/\/.*$/gm, ''), /hero-van\.js/, 'must not ALSO be in the deferred list');
+  const tags = [...html.matchAll(/<script type="module" src="scripts\/([\w/-]+\.js)"><\/script>/g)].map((m) => m[1]);
+  assert.equal(tags.indexOf('home/hero-van.js'), tags.indexOf('home/hero-picker.js') + 1, `module order: ${tags.slice(0, 3)}`);
+  assert.match(html, /<link rel="modulepreload" href="scripts\/home\/hero-van-art\.js">/);
+  assert.doesNotMatch(read('public/scripts/home/index-deferred.js').replace(/\/\/.*$/gm, ''), /hero-van\.js/, 'must not ALSO be in the deferred list');
 });
 
 test('the CSS gate and the script gate are the same media condition', () => {

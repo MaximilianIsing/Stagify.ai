@@ -1,7 +1,7 @@
 // Tier: frontend island logic — public/scripts/exterior-studio/access.js.
 //
 // This page invented the public-preview pattern and, for a while, was the only one still
-// running its own copy of it. It is now a four-line binding of scripts/preview-access.js
+// running its own copy of it. It is now a four-line binding of scripts/gates/preview-access.js
 // like the other three, so everything that is TRUE OF EVERY PREVIEW PAGE moved to
 // test/frontend/preview-access.test.js, which runs it against all four:
 //

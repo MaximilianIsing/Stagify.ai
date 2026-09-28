@@ -249,7 +249,7 @@ test('a phone does not even attempt playback on interaction', () => {
 // ---- the homepage: paused on purpose, which is NOT a failure ----------------------
 //
 // index.html ships #background-video with `preload="none"` and no `autoplay`, so its
-// 1,281,846 B stays out of the LCP window; scripts/bg-video-start.js starts it after
+// 1,281,846 B stays out of the LCP window; scripts/home/bg-video-start.js starts it after
 // `load`. That makes "the video is paused a second after DOMContentLoaded" the INTENDED
 // state on the busiest page on the site, where it used to be the signal for "autoplay was
 // blocked, paint the body flat blue". These three are the difference between a working

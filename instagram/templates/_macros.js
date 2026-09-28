@@ -2,10 +2,10 @@
 // the CTA and the disclosure. Defined once so ten layouts cannot drift into ten slightly
 // different logo treatments.
 //
-// escapeHtml is imported from public/scripts/escape-html.js rather than re-implemented.
+// escapeHtml is imported from public/scripts/shared/escape-html.js rather than re-implemented.
 // It is a pure function with no browser dependencies, and the repo's rule is that there is
 // exactly ONE escaper.
-import { escapeHtml } from '../../public/scripts/escape-html.js';
+import { escapeHtml } from '../../public/scripts/shared/escape-html.js';
 
 export { escapeHtml };
 

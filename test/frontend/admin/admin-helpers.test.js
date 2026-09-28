@@ -44,7 +44,7 @@ test('parseCSV: CRLF and LF split the same, trailing newline adds no row', () =>
 
 test('esc: really escapes markup — it used to be a no-op named like an escaper', () => {
   // `esc` was `String(s||'')` while feeding three innerHTML sinks in renderers.js.
-  // It is now the shared escapeHtml (public/scripts/escape-html.js); the full
+  // It is now the shared escapeHtml (public/scripts/shared/escape-html.js); the full
   // character-level contract lives in test/frontend/escape-html.test.js, so this
   // just pins that the admin dashboard is on the real one.
   assert.equal(esc('hi'), 'hi');

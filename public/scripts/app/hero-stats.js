@@ -1,4 +1,4 @@
-// Hero stat pills + free-account upgrade nudge for the home page (scripts/app.js).
+// Hero stat pills + free-account upgrade nudge for the home page (scripts/app/app.js).
 //
 // loadHeroStats pulls the two public count endpoints and reveals/animates the
 // stat pills (via window.StagifyHeroStats from count-up.js when present).

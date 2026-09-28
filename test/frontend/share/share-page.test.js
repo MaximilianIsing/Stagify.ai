@@ -343,7 +343,7 @@ test('the lightbox opens the same URL the page is already showing', () => {
 // ---- what the photo is ---------------------------------------------------------------
 
 test('the page is headed with the SAME title the owner sees in their gallery', () => {
-  // "<Style> <Room type>", from scripts/render-name.js — the module the gallery derives
+  // "<Style> <Room type>", from scripts/shared/render-name.js — the module the gallery derives
   // its own card and dialog headings from, so the two cannot drift.
   assert.equal(shareTitle(UNHEADLINED), 'Modern Living room');
   // The owner's own name for the render wins over the derived default...
@@ -548,13 +548,13 @@ test('both pages take the render\'s name from ONE module', () => {
 
   for (const file of ['gallery/view.js', 'share/view.js']) {
     const src = read(file);
-    assert.match(src, /from '\.\.\/render-name\.js'/, `${file} no longer imports the shared naming rule`);
+    assert.match(src, /from '\.\.\/shared\/render-name\.js'/, `${file} no longer imports the shared naming rule`);
     // The join itself, in either order, is what a re-implementation looks like.
     assert.ok(!/\$\{\s*(style|room)\s*\}\s+\$\{\s*(style|room)\s*\}/.test(src), `${file} rebuilt the name locally`);
   }
   // And the module it defers to really does hold the rule, or the assertions above pass
   // against a file that no longer decides anything.
-  const shared = read('render-name.js');
+  const shared = read('shared/render-name.js');
   assert.match(shared, /\$\{style\}\s\$\{room\}/, 'render-name.js no longer joins style and room');
 });
 

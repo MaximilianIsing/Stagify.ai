@@ -1,4 +1,4 @@
-// Tier: frontend pure helpers (no DOM) — public/scripts/pdf-page-to-image.js.
+// Tier: frontend pure helpers (no DOM) — public/scripts/shared/pdf-page-to-image.js.
 //
 // Floor plans arrive as PDFs, and the server has never been able to read one:
 // lib/chat/chat-upload-prep.js accepts application/pdf and reduces it to the literal
@@ -21,7 +21,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { isPdf, sniffPdf, scaleForPage } from '../../public/scripts/pdf-page-to-image.js';
+import { isPdf, sniffPdf, scaleForPage } from '../../public/scripts/shared/pdf-page-to-image.js';
 
 // ── isPdf ────────────────────────────────────────────────────────────────────
 

@@ -163,7 +163,7 @@ test('an unknown id is a 404 on both, not a silent success', async () => {
 test('an incident posted in the console reaches the PUBLIC status payload', async () => {
   // The end-to-end property, asserted against the same pure snapshot builder that
   // GET /api/status serves. If this passes and the public page still shows nothing,
-  // the bug is in public/scripts/status.js, not here.
+  // the bug is in public/scripts/status/status.js, not here.
   app = await mountAdmin({ realUptime: true });
   await post({ title: 'Staging is degraded while we fail over', affectsUptime: true });
 

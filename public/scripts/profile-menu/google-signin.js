@@ -1,5 +1,5 @@
 import { lang } from './dom-utils.js';
-import { localizedTarget } from '../i18n-routing.js';
+import { localizedTarget } from '../i18n/i18n-routing.js';
 
 /* global google */ // Google Identity Services, loaded from accounts.google.com
 

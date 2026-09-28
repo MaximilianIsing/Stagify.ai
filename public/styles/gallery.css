@@ -560,7 +560,7 @@ body[data-gal-modal] .language-picker-container { display: none; }
   .gal-card:hover { transform: none; }
 }
 
-/* Kept, not deleted, even though the page is PC-only (scripts/gallery-gate.js turns a
+/* Kept, not deleted, even though the page is PC-only (scripts/gates/gallery-gate.js turns a
    phone-sized viewport away at 768px). The gate fires on LOAD, so it is still possible
    to be on this page at 640px — narrow a desktop window after arriving — and this is the
    difference between a cramped layout and a broken one. */

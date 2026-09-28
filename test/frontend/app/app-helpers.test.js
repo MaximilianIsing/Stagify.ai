@@ -1,4 +1,4 @@
-// Unit tests for the pure helpers extracted from scripts/app.js into
+// Unit tests for the pure helpers extracted from scripts/app/app.js into
 // public/scripts/app/helpers.js. No DOM; File/atob are global in Node >=20.
 
 import { test } from 'node:test';

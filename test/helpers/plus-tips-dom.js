@@ -1,5 +1,5 @@
 // A no-jsdom document shim for the Compare-plans row tooltips
-// (public/scripts/stagify-plus-tips.js).
+// (public/scripts/plus/stagify-plus-tips.js).
 //
 // Split out from plus-page-dom.js rather than bolted onto it: that helper hands
 // stagify-plus.js four elements looked up by id, and this one needs a querySelectorAll,

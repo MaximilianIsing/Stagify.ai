@@ -3,7 +3,7 @@
 // Message bubbles (user/assistant, attached-file previews), assistant-styled
 // error bubbles with Retry, the typing indicator with rotating status text,
 // and the in-message image-loading indicator. Lifted verbatim from the entry
-// (scripts/ai-designer-app.js) as a factory. The rotating-status helpers
+// (scripts/ai-designer/ai-designer-app.js) as a factory. The rotating-status helpers
 // (getTypingStatusMessages / attachRotatingStatusText / clearRotatingStatusText)
 // stay internal — no external callers.
 //

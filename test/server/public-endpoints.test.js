@@ -98,7 +98,7 @@ test('blog hub and articles are served, and stay in sync with the sitemap', asyn
 });
 
 test('static assets are served with the right content type', async () => {
-  const js = await get('/scripts/app.js');
+  const js = await get('/scripts/app/app.js');
   assert.equal(js.status, 200);
   assert.match(js.headers.get('content-type') || '', /javascript/);
 

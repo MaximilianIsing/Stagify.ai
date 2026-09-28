@@ -19,7 +19,7 @@
 //     errors leaves the area on the version it already had.
 //
 // The absolute specifier: this island loads the shared mask maths with
-// `import('/scripts/mask-core.js')`, which node resolves against the filesystem root.
+// `import('/scripts/mask/mask-core.js')`, which node resolves against the filesystem root.
 // test/helpers/browser-abs-specifier.mjs maps it back into public/ — see the note
 // there for why the source is right to keep the served path.
 

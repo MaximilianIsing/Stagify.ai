@@ -1,5 +1,5 @@
 // Tier: frontend island logic + shipped markup — the pre-paint half of the Stagify+
-// checkout hint (public/stagify-plus.html, styles/stagify-plus.css, scripts/stagify-plus.js).
+// checkout hint (public/stagify-plus.html, styles/stagify-plus.css, scripts/plus/stagify-plus.js).
 //
 // WHY THIS EXISTS
 // #plus-checkout-hint ships with the SIGNED-OUT copy ("Create a free account first…"),
@@ -8,12 +8,12 @@
 // DOMContentLoaded — so a subscriber read the sign-up advice for a few hundred ms and then
 // watched the pricing card jump up as applyStripeCheckout() removed the paragraph.
 //
-// The page already loads scripts/session-class.js, which sets html.has-session from the
+// The page already loads scripts/site/session-class.js, which sets html.has-session from the
 // stored token BEFORE the first paint, so the fix is one CSS rule over a marker class and
 // one line of JS that surrenders the guess. All three pieces fail silently on their own —
 // a dropped class leaves the flash, a dropped rule leaves it too, and a JS render that
 // forgets to remove the class hides the hint from the signed-out visitors it is FOR — so
-// each is pinned here. Same guess-then-correct bargain as scripts/preview-gate.js, and the
+// each is pinned here. Same guess-then-correct bargain as scripts/gates/preview-gate.js, and the
 // class is never an authorization: no checkout is reachable without a client_reference_id
 // (test/frontend/plus-checkout-requires-account.test.js).
 
@@ -32,7 +32,7 @@ const PRO_USER = { id: 'u_abc123', email: 'pro@example.com', plan: 'pro', canMan
 const FREE_USER = { id: 'u_0123456789abcdef01234567', email: 'buyer@example.com', plan: 'free' };
 
 mountPlusPage({ profileMenu: fakeProfileMenu() });
-const { applyStripeCheckout } = await import('../../public/scripts/stagify-plus.js');
+const { applyStripeCheckout } = await import('../../public/scripts/plus/stagify-plus.js');
 
 /** Mount the page with the hint in the state the markup ships it in. */
 function mountPending(opts) {
@@ -54,7 +54,7 @@ test('the hint ships with the pending class', () => {
 
 test('the page still loads the script that sets html.has-session before paint', () => {
   // The CSS rule below is inert without it, and nothing else on this page uses the class.
-  assert.ok(pageHtml().includes('scripts/session-class.js'), 'session-class.js is what arms the pre-paint guess');
+  assert.ok(pageHtml().includes('scripts/site/session-class.js'), 'session-class.js is what arms the pre-paint guess');
 });
 
 test('the stylesheet hides the pending hint only for a visitor with a session', () => {

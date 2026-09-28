@@ -4,7 +4,7 @@
 // with the selected one used as the base for the next edit. Owns
 // selectedImageIndex as private state; the entry reads/writes the selection
 // through the returned getter/setter. syncImageThumbnailStrip was lifted
-// verbatim from the entry (scripts/ai-designer-app.js).
+// verbatim from the entry (scripts/ai-designer/ai-designer-app.js).
 import { getThumbnailLabel } from './image-history.js';
 import { getPdfAlt } from './i18n.js';
 

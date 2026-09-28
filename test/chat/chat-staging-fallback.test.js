@@ -64,7 +64,7 @@ test('/api/chat-upload: the room photo carries its filename, for the gallery ent
 test('/api/chat: a history image carries NO filename', () => {
   // There is no file — it is a data URL out of the conversation. An entry named after
   // whatever the user last uploaded would be actively misleading, so absence is correct
-  // and public/scripts/render-name.js simply appends no suffix.
+  // and public/scripts/shared/render-name.js simply appends no suffix.
   const out = resolveHistoryFallbackImage({ imageFromHistory: dataUrl('x'), isStagedImage: false });
   assert.equal(out.sourceName, undefined);
 });

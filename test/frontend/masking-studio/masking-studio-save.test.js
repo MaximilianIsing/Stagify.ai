@@ -265,7 +265,7 @@ test('DRIFT GUARD: neither shared mask editor saves anything', () => {
 });
 
 test('DRIFT GUARD: exactly one call site, and it is the Looks Good handler', () => {
-  const entry = stripComments(read('masking-studio-app.js'));
+  const entry = stripComments(read('masking-studio/masking-studio-app.js'));
   const calls = entry.match(/saveToGallery\(\)/g) || [];
   assert.equal(calls.length, 1, 'saveToGallery is called more than once');
   // ...and it is inside the #ms-view-result click handler, not the download one.

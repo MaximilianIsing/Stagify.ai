@@ -1,4 +1,4 @@
-// Tier: frontend gate behaviour — public/scripts/api-keys-gate.js.
+// Tier: frontend gate behaviour — public/scripts/gates/api-keys-gate.js.
 //
 // The API dashboard is a desktop page. The rule is enforced twice: the account menu's
 // row is `desktop-only` (a width, in CSS) and this gate turns away anyone who reaches
@@ -25,7 +25,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
-const GATE = path.join(ROOT, 'public', 'scripts', 'api-keys-gate.js');
+const GATE = path.join(ROOT, 'public', 'scripts', 'gates', 'api-keys-gate.js');
 const PAGE = path.join(ROOT, 'public', 'api-keys.html');
 
 const gateSource = fs.readFileSync(GATE, 'utf8');

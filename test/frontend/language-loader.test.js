@@ -1,4 +1,4 @@
-// Unit tests for public/scripts/language-loader.js — the site-wide i18n runtime.
+// Unit tests for public/scripts/i18n/language-loader.js — the site-wide i18n runtime.
 //
 // WHAT THIS COVERS
 // `getText`'s miss contract, which ~20 call sites across the frontend depend on and
@@ -81,7 +81,7 @@ async function loadPack(pack) {
 
 before(async () => {
   installDom();
-  await import('../../public/scripts/language-loader.js');
+  await import('../../public/scripts/i18n/language-loader.js');
 });
 
 beforeEach(() => {

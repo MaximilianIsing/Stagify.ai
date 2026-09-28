@@ -2,7 +2,7 @@
 // (lib/staging/unstageable.js) and the language packs (public/languages/*.json).
 //
 // The browser localizes a rejection by looking up `errors.unstageable.<CODE>`
-// (public/scripts/unstageable-message.js). A missing key degrades to the server's
+// (public/scripts/shared/unstageable-message.js). A missing key degrades to the server's
 // English rather than breaking — which is exactly why it would otherwise ship
 // unnoticed. Adding a 7th category without translating it is the mistake this
 // catches, in the same spirit as the hreflang/sitemap drift test in i18n.test.js.
@@ -68,7 +68,7 @@ test('non-English packs are actually translated, not copies of the English copy'
 // --- the follow-up button ---------------------------------------------------
 //
 // EXTERIOR is the one category that is a hand-off rather than a dead end: the browser
-// pairs it with a link to the Exterior Studio (public/scripts/unstageable-cta.js), whose
+// pairs it with a link to the Exterior Studio (public/scripts/shared/unstageable-cta.js), whose
 // label depends on the viewer's plan. Two labels, and the same "degrades to English"
 // fallback as the sentence above it — so the same guard is needed, or a language ships a
 // translated rejection under an English button.

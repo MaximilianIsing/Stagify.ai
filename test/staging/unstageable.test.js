@@ -137,7 +137,7 @@ test('EXTERIOR names the Exterior Studio but carries no URL', () => {
   // The message is the canonical English the API returns and the browser falls back to.
   // The destination is plan-dependent (Exterior Studio for Stagify+, the plus page for
   // everyone else) and has to carry the visitor's locale prefix, so it lives in
-  // public/scripts/unstageable-cta.js. A URL baked in here would be wrong for one of the
+  // public/scripts/shared/unstageable-cta.js. A URL baked in here would be wrong for one of the
   // two plans, wrong for ten of the eleven languages, and unclickable besides — every
   // consumer renders this string with textContent.
   const { message } = UNSTAGEABLE_CODES['7'];

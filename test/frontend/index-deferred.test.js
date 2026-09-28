@@ -1,6 +1,6 @@
 // The homepage's after-`load` script list, and the trap that comes with it.
 //
-// public/scripts/index-deferred.js injects ~13 below-fold scripts once the page has
+// public/scripts/home/index-deferred.js injects ~13 below-fold scripts once the page has
 // loaded, to keep them from being parsed on a throttled CPU while the browser is trying
 // to paint the hero. The hazard is specific and silent: anything injected after `load`
 // has MISSED both `DOMContentLoaded` and `load`, so a module that registers its init on
@@ -27,7 +27,7 @@ globalThis.window = globalThis.window || /** @type {any} */ ({ addEventListener(
 
 // Imported, not scraped: this asserts the real array, and it is also what makes
 // untested-frontend-modules.test.js count this module as loaded.
-const { DEFERRED } = await import('../../public/scripts/index-deferred.js');
+const { DEFERRED } = await import('../../public/scripts/home/index-deferred.js');
 
 /**
  * Strip comments before scanning for code.
@@ -69,7 +69,7 @@ test('every deferred script exists', () => {
  * codebase uses in these graphs (there are no dynamic `import()` calls in them). Anything
  * non-relative is a bare specifier and cannot be a file under public/.
  *
- * @param {string} entry public/-relative path, e.g. 'scripts/app.js'
+ * @param {string} entry public/-relative path, e.g. 'scripts/app/app.js'
  * @returns {string[]}
  */
 function importGraph(entry) {

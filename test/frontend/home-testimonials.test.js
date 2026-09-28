@@ -1,4 +1,4 @@
-// Tier: frontend island logic (DOM-stubbed) — public/scripts/home-testimonials.js.
+// Tier: frontend island logic (DOM-stubbed) — public/scripts/home/home-testimonials.js.
 //
 // #testimonials went from a two-up grid of 2 quotes to a DECK, now of 5. The grid could
 // not carry that many: they ran ~5 screens tall between the two heaviest blocks on the
@@ -52,13 +52,13 @@ const ENGLISH = JSON.parse(fs.readFileSync(path.join(PUBLIC, 'languages', 'engli
 // Imported with `document` still undefined, so the module's own auto-init at the bottom
 // does not fire and each test can drive a fresh fake DOM. ORDER MATTERS — stubbing the
 // globals first would arm the deck against a DOM that does not exist yet.
-const { initTestimonialDeck } = await import('../../public/scripts/home-testimonials.js');
+const { initTestimonialDeck } = await import('../../public/scripts/home/home-testimonials.js');
 
 // index-deferred.js, by contrast, touches both globals at eval time. readyState
 // 'loading' takes the branch that only registers a listener, so nothing is scheduled.
 globalThis.document = /** @type {any} */ ({ readyState: 'loading' });
 globalThis.window = /** @type {any} */ ({ addEventListener() {} });
-const { DEFERRED } = await import('../../public/scripts/index-deferred.js');
+const { DEFERRED } = await import('../../public/scripts/home/index-deferred.js');
 
 // ---- Minimal fake DOM ------------------------------------------------------
 
@@ -326,7 +326,7 @@ test('every deck rule stays scoped behind .tw-deck--ready', () => {
 test('the deck script is registered in index-deferred.js', () => {
   // A module that is never injected fails silently — no error, the deck just never arms.
   assert.ok(
-    DEFERRED.some((entry) => entry.src === 'scripts/home-testimonials.js' && entry.module),
+    DEFERRED.some((entry) => entry.src === 'scripts/home/home-testimonials.js' && entry.module),
     'home-testimonials.js must be in the deferred list, as a module',
   );
 });
@@ -334,7 +334,7 @@ test('the deck script is registered in index-deferred.js', () => {
 test('the brokerage logos are decode-warmed', () => {
   // All but the top one sit behind it when the section scrolls in, so without this
   // each one decodes as you reach it and pops in. A stale selector here does not throw.
-  const reveal = fs.readFileSync(path.join(PUBLIC, 'scripts', 'home-reveal.js'), 'utf8');
+  const reveal = fs.readFileSync(path.join(PUBLIC, 'scripts', 'home', 'home-reveal.js'), 'utf8');
   assert.match(reveal, /\.tw-logo/, 'home-reveal.js warmImages() should cover .tw-logo');
 });
 

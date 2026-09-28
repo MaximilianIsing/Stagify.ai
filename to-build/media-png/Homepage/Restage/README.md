@@ -88,7 +88,7 @@ pool costs a human look at every image.
    Ban lettering in the same breath: one farmhouse render came back with a mangled
    `HOME SWEET HOME` sign.
 
-4. **The count must match `public/scripts/restage-pool.js`.**
+4. **The count must match `public/scripts/home/restage-pool.js`.**
    `test/frontend/home-restage.test.js` fails the build if the checked-in list and the
    files on disk disagree, and also caps each render at 150 KB.
 

@@ -1,4 +1,4 @@
-// DOM stand-in for the owner's gallery page (public/scripts/gallery-app.js).
+// DOM stand-in for the owner's gallery page (public/scripts/gallery/gallery-app.js).
 //
 // Same approach and same reasoning as test/helpers/share-dom.js: no jsdom, and the
 // element registry is parsed from the REAL public/gallery.html so the fixture cannot

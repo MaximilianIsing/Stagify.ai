@@ -1,4 +1,4 @@
-// Tier: frontend gate behaviour — public/scripts/ai-designer-gate.js's PC-only rule.
+// Tier: frontend gate behaviour — public/scripts/gates/ai-designer-gate.js's PC-only rule.
 //
 // The AI Designer is a desktop tool. Two things enforce that, in two different
 // files, and they only work as a pair:
@@ -28,7 +28,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
-const GATE = path.join(ROOT, 'public', 'scripts', 'ai-designer-gate.js');
+const GATE = path.join(ROOT, 'public', 'scripts', 'gates', 'ai-designer-gate.js');
 const PAGE = path.join(ROOT, 'public', 'ai-designer.html');
 
 const gateSource = fs.readFileSync(GATE, 'utf8');

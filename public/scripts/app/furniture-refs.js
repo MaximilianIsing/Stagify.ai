@@ -1,4 +1,4 @@
-// Furniture reference photos island for the main Stagify tool (scripts/app.js).
+// Furniture reference photos island for the main Stagify tool (scripts/app/app.js).
 //
 // Owns the pro "furniture reference photos" picker: the hidden file input, the
 // row list + hover preview popover, the 5-photo cap, and drag-and-drop onto
@@ -6,7 +6,7 @@
 // state; the entry reads the accumulated files via getFiles() and clears them
 // via reset(). Stays a working no-op API on pages without the elements.
 import { abbreviateFileName } from './helpers.js';
-import { showErrorToast } from '../toast.js';
+import { showErrorToast } from '../shared/toast.js';
 
 export const FURNITURE_LIMIT = 5;
 

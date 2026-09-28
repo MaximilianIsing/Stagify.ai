@@ -1,4 +1,4 @@
-// Tier: pure frontend logic + markup/i18n drift guards — public/scripts/home-figures.js.
+// Tier: pure frontend logic + markup/i18n drift guards — public/scripts/home/home-figures.js.
 //
 // The module drives the two figures that replaced static blocks on the homepage: the
 // #compare savings calculator and the #ai-shift NAR chart. Three things about that are
@@ -46,7 +46,7 @@ const {
   weeksAtRamp,
   formatCurrency,
   fillCount,
-} = await import('../../public/scripts/home-figures.js');
+} = await import('../../public/scripts/home/home-figures.js');
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const INDEX = fs.readFileSync(path.join(ROOT, 'public', 'index.html'), 'utf8');

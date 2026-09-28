@@ -2,9 +2,10 @@
 
 The operator console at [`/admin`](../../public/admin.html) — accounts, logs, image
 hosting, data exports, and the analytics charts. It is a single static page gated by the
-`endpoint_key`, with no dedicated backend: it downloads the same CSV/JSON files the
-[export endpoints](../reference/endpoints.md) already serve and does every aggregation in
-the browser.
+`endpoint_key`. The core data loads from the same CSV/JSON files the
+[export endpoints](../reference/endpoints.md) already serve, and most aggregation happens
+in the browser. A handful of `/api/admin/*` endpoints (metrics, API usage, referrals, blog
+views, access log, status, renders) answer pre-shaped JSON; see each tab's section.
 
 > **Access.** Signing in sends `endpoint_key` in the `X-Stagify-Endpoint-Key` header —
 > never in a URL — to `POST /api/admin/session`, which returns a **session token**. The
@@ -44,10 +45,11 @@ Adding a section therefore means: a `.adm-tab` with `data-tab`/`data-title`/`dat
 — every one of those mismatches is otherwise silent at runtime.
 
 **Styling goes through the token block at the top of `admin.css`.** Surfaces, the four
-inks, the status triples (`--adm-pos` / `-wash` / `-line`) and the eight series tones are
-declared once on `.page-admin`; components compose them and never introduce a colour. The
-tones are the same eight hues as `charts.js#PALETTE` — the DOM half and the SVG half of one
-palette, so change them together.
+inks, the status triples (`--adm-pos` / `-wash` / `-line`) and the six series tones
+(`--adm-t-*`) are declared once on `.page-admin`; components compose them and never
+introduce a colour. The tones are the first six of the eight hues in `charts.js#PALETTE`
+(red and grey have no DOM token): the DOM half and the SVG half of one palette, so change
+them together.
 
 ## Module map
 
@@ -56,8 +58,8 @@ owns auth/fetch/wiring, each island owns one cohesive concern.
 
 | File | Role |
 |---|---|
-| [`scripts/admin.js`](../../public/scripts/admin.js) | **Entry.** Login + lockout, the in-closure key, `apiFetchQ` / `apiSend` / `secureBlobDownload`, `loadAll()`, tab switching (and the topbar heading that follows it), upload wiring, sign-out. |
-| [`scripts/admin/renderers.js`](../../public/scripts/admin/renderers.js) | The table tabs (users + detail drawer, enterprise, contacts, email opens, bugs, hosting, downloads) and `effectivePlan`, which both chart islands take as a dependency. |
+| [`scripts/admin/admin.js`](../../public/scripts/admin/admin.js) | **Entry.** Login + lockout, the session token (`_session`, persisted to localStorage), `apiFetchQ` / `apiSend` / `secureBlobDownload`, `loadAll()`, tab switching (and the topbar heading that follows it), upload wiring, sign-out. |
+| [`scripts/admin/renderers.js`](../../public/scripts/admin/renderers.js) | The table tabs (users + detail drawer, enterprise, contacts, email opens, bugs, hosting, downloads) and `effectivePlan`, which overview, insights, signals and the analyst tools take as a dependency. |
 | [`scripts/admin/overview.js`](../../public/scripts/admin/overview.js) | The **Overview** tab: the range selector, stat cards, the two generation charts, top users, recent signups. |
 | [`scripts/admin/insights.js`](../../public/scripts/admin/insights.js) | The **Insights** tab: the chart grid. |
 | [`scripts/admin/signals.js`](../../public/scripts/admin/signals.js) | The **Signals** tab: ranked findings + the written brief, and the Overview teaser. See [§Signals tab](#signals-tab). |
@@ -68,13 +70,13 @@ owns auth/fetch/wiring, each island owns one cohesive concern.
 | [`scripts/admin/grant.js`](../../public/scripts/admin/grant.js) | The comp-Stagify+ control inside the user detail drawer. |
 | [`scripts/admin/renders-panel.js`](../../public/scripts/admin/renders-panel.js) | The **render strip** in that drawer — what we actually produced for this account. Lazy: fetches on every expand. See [§The render inspector](#the-render-inspector). |
 | [`scripts/admin/danger.js`](../../public/scripts/admin/danger.js) | The **danger zone** at the foot of that drawer: sign out everywhere, and delete the account. See [§The danger zone](#the-danger-zone). |
-| [`scripts/admin/emails.js`](../../public/scripts/admin/emails.js) | The **Emails** tab: the preview gallery + per-template test send. Lazy-loaded on first open. |
+| [`scripts/admin/emails.js`](../../public/scripts/admin/emails.js) | The **Email templates** tab: the preview gallery + per-template test send. Lazy-loaded on first open. |
 | [`scripts/admin/status-panel.js`](../../public/scripts/admin/status-panel.js) | The **Server status** tab: the live monitor view and the incident composer. Lazy-loaded on first open, then polls while its tab is visible. |
-| [`scripts/admin/referrals.js`](../../public/scripts/admin/referrals.js) | The **Referrals** tab: one card per campaign short-URL. Lazy-loaded on first open; `Refresh` invalidates it. |
+| [`scripts/admin/referrals.js`](../../public/scripts/admin/referrals.js) | The **Referral links** tab: one card per campaign short-URL. Lazy-loaded on first open; `Refresh` invalidates it. |
 | [`scripts/admin/blog.js`](../../public/scripts/admin/blog.js) | The **Blog** tab: every article ranked by reads, with a per-post chart and its traffic sources. Lazy-loaded on first open and on each window change; `Refresh` invalidates it. |
 | [`scripts/admin/access.js`](../../public/scripts/admin/access.js) | The **Access** tab: who opened this console, from where, and what was refused. Lazy-loaded on first open; `Refresh` invalidates it, and sign-out blanks it (it is the one panel holding the operators' own addresses). |
 | [`scripts/admin/api-usage.js`](../../public/scripts/admin/api-usage.js) | The **API usage** tab: traffic, customers and credit economics for the public render API. Lazy-loaded on first open and on each range change; `Refresh` invalidates it. The only admin panel whose aggregation happens entirely server-side. |
-| [`scripts/admin/helpers.js`](../../public/scripts/admin/helpers.js) | DOM/format helpers + the icon set. `esc` is re-exported from the shared [`scripts/escape-html.js`](../../public/scripts/escape-html.js). |
+| [`scripts/admin/helpers.js`](../../public/scripts/admin/helpers.js) | DOM/format helpers + the icon set. `esc` is re-exported from the shared [`scripts/shared/escape-html.js`](../../public/scripts/shared/escape-html.js). |
 | [`styles/admin.css`](../../public/styles/admin.css) | Page styles: the token block, the shell, and everything the SVG charts are painted with. |
 
 State is one shared mutable `ctx` object created in the entry and handed to the islands by
@@ -179,6 +181,12 @@ reports render volume weighted by whoever staged the most rooms — a few hundre
 charted as tens of thousands of "people". Those two cards read `contact_logs.csv` (one row
 per answer) through `topValuesByPerson`, which deduplicates by email.
 
+Both sources are currently inert. Nothing in `public/` writes the `userRole` /
+`userReferralSource` localStorage keys, so render rows always carry `unknown` / `''`, and
+nothing posts to `/api/log-contact`, so `contact_logs.csv` has no writer.
+`findings-quality.js#inertColumns` reports all four columns so the cards read as
+decorative rather than as "no data yet".
+
 Rule of thumb: **a per-person attribute must be counted from a per-person table.** Only
 per-event columns (room type, style, model, outcome) may be counted off the render log, and
 those cards say "renders" in their unit.
@@ -243,8 +251,8 @@ wider than its parent. `paidConversion` reports it separately, beside the chart.
 The one place on the console that shows a **picture**. Everything else an account
 surface can tell you is text — a prompt, a timestamp, a room type — and the
 question a bug report always opens with is what the render actually looked like.
-`staged_renders` has held the parameters and `render_blobs` the bytes since the
-gallery shipped; nothing operator-facing read them until this.
+`staged_renders` holds the parameters and `render_blobs` the bytes; this is the only
+operator-facing reader of either.
 
 Served by [`routes/admin/renders.js`](../../routes/admin/renders.js), a **sibling
 router** rather than another handler in `routes/admin/index.js` — that file is at its
@@ -283,12 +291,9 @@ keeps its own small `SOURCE_LABELS` map rather than importing the customer's, be
 two answer different questions; an unrecognised id falls through to the raw value rather
 than going blank, since a retired studio's rows keep arriving long after its rule is gone.
 
-`api` is the value that separates the **paid API** from studio usage, and it is worth
-knowing why it took a fix to appear. `sourceTag: 'api'` was set from day one, but `'api'`
-was missing from `RENDER_SOURCES`, so `buildRenderExtra` rejected the whole payload and
-wrote `extra_json` NULL — which cost each render its `sourceName` as well, and bucketed
-the entire API into `unknown` in `renders.bySource` beside rows written before the column
-existed. See [§Adding a render source](#adding-a-render-source).
+`api` is the value that separates the **paid API** from studio usage. It only shows up
+because `'api'` is in `RENDER_SOURCES`; see [§Adding a render source](#adding-a-render-source)
+for what an unregistered id costs.
 
 **Two things never reach the body:** `staged_renders.user_id` and
 `render_blobs.storage_key`. `shapeAdminRender` builds its output field by field and
@@ -309,7 +314,7 @@ guards are what make the copy safe.
    `buildRenderExtra` on write *and* `readRenderExtra` on read, and an unknown id makes
    the former return `null`, which nulls the **whole** `extra_json` column and takes
    `sourceName` down with the source.
-2. **`public/scripts/render-name.js#SOURCE_RULES`** — optional, and the choice matters.
+2. **`public/scripts/shared/render-name.js#SOURCE_RULES`** — optional, and the choice matters.
    A rule with `namesRender: true` takes over the render's NAME. A rule with
    `namesRender: false` supplies only a label for the owner's "Made with" row. No rule at
    all (`interior`) means neither.
@@ -325,8 +330,8 @@ guards are what make the copy safe.
    shipped an unregistered id while the guard stayed green. A separate sweep checks every
    `sourceTag:` literal, because the API sets the tag and never calls `recordPending` at
    all — it was invisible to the first guard by construction.
-4. **`routes/admin/renders.js` + `public/scripts/admin/renders-panel.js`** — add the label
-   to `SOURCE_LABELS` so the console can name it.
+4. **`public/scripts/admin/renders-panel.js`**: add the label to `SOURCE_LABELS` so the
+   console can name it.
 
 ### The danger zone
 
@@ -344,8 +349,7 @@ break the mail the owner is holding. The response carries the **count**, and the
 panel prints it — revoking zero sessions is a legitimate outcome and reads
 identically to success without that number.
 
-**Delete account** wires the long-existing `POST /api/admin/delete-user`, which had
-no button anywhere until this shipped. Erasure has no undo, no tombstone, and no
+**Delete account** calls `POST /api/admin/delete-user`. Erasure has no undo, no tombstone, and no
 recovery short of restoring the database, so `confirm()` is not enough: the
 operator has to **type the account's own address**, and the button stays disabled
 until it matches (trimmed and case-folded — they are copying out of a table, not
@@ -357,13 +361,12 @@ decorative, so it becomes a second, separately-confirmed control carrying the
 server's own sentence — deleting a paying customer's account leaves a subscription
 billing against nobody, and the operator should cancel it in Stripe first.
 
-`apiSend` was extended to carry the server's `code` and `status` on the thrown
-Error for this. Additive: every existing caller still reads only `.message`, which
-is why referrals — which shows create rejections verbatim — needed no change.
+`apiSend` puts the server's `code` and `status` on the thrown Error, which is how
+the panel tells that refusal apart from any other failure.
 
 The store half lives in [`lib/data/session-revocation.js`](../../lib/data/session-revocation.js),
-its own module for the same reason `pro-grants.js` is: `auth-store.js` sits at an
-800-line cap with two lines of headroom, and the answer to that here is a sibling,
+its own module for the same reason `pro-grants.js` is: `auth-store.js` sits at its
+grandfathered 800-line cap with one line of headroom, and the answer to that here is a sibling,
 not a raised ceiling.
 
 ### Adding a chart
@@ -381,13 +384,14 @@ not a raised ceiling.
 Everything is fetched in one `Promise.all` in `admin.js#loadAll`. The CSV files are parsed
 by `helpers.js#parseCSV` (RFC 4180) into arrays of string cells addressed **by index**, so
 the column maps below are load-bearing. They live in code as `analytics.js#COL`, the single
-source of truth — if a writer gains a column, update `COL` and this table.
+source of truth — if a writer gains a column, update `COL` and this table. (`variation`,
+index 16, is not yet in `COL.PROMPT`.)
 
 | Endpoint | Written by | Columns |
 |---|---|---|
 | `/authstore` | `lib/data/auth-store.js` | JSON — `{users: [...]}`, **redacted** via `exportRedacted()`. Only `ADMIN_VISIBLE_USER_KEYS` are present; credentials and session/reset tokens are never sent (see the security guide). Need a new column here? Add it to that allowlist. Trial state (`lifetimeStaged`, `lastStagedAt`, `trialLifecycle`) rides along — but `trialLifecycle` is **projected** through `ADMIN_VISIBLE_TRIAL_EMAILS`, not allowlisted wholesale, so a future field parked inside that bag is not auto-exported. |
 | `/promptlogs` | `lib/services/logging.js` | `timestamp, roomType, furnitureStyle, additionalPrompt, removeFurniture, userRole, referralSource, email, ipAddress, status, durationMs, model, attempts, errorCode, architectureDrift, seed, variation` — `architectureDrift` and `seed` were appended after `COL` was written and went **unread** until the Signals tab; `architectureDrift` is `'yes' | 'no' | ''`, where empty means the question was never asked, NOT that the render was clean. `variation` is `"n/N"` for a studio render (`"1/1"` when only one was asked for) and empty for chat / Exterior / v1-API renders, which never fan out. |
-| `/rejectionlogs` | `lib/services/logging.js` | `timestamp, kind, code, detail, email, userId, ipAddress, userAgent` — requests refused **before** a render. Deliberately NOT rows in `prompt_logs.csv`: every row there is counted as a generation, so folding rejections in would inflate the headline volume and the success rate with work that never ran. `kind` is one of `unstageable`, `daily_limit`, `rate_limit`, `api_concurrency`, `file_too_large`; aggregated by `analytics-rejections.js`, never by `analytics.js`, which is at its line cap. |
+| `/rejectionlogs` | `lib/services/logging.js` | `timestamp, kind, code, detail, email, userId, ipAddress, userAgent` — requests refused **before** a render. Deliberately NOT rows in `prompt_logs.csv`: every row there is counted as a generation, so folding rejections in would inflate the headline volume and the success rate with work that never ran. `kind` is one of `unstageable`, `daily_limit`, `rate_limit`, `api_concurrency` (`file_too_large` is reserved in the reader and the analyst enum, but nothing writes it today); aggregated by `analytics-rejections.js`, never by `analytics.js`, which is at its line cap. |
 | `/chatlogs` | `lib/services/logging.js` | `timestamp, userId, userMessage, aiResponse, fileNames, fileTypes, ipAddress, userAgent` |
 | `/masklogs` | `lib/services/logging.js` | `timestamp, prompt, model, geminiModel, imageWidth, imageHeight, userId, ipAddress, userAgent` |
 | `/contactlogs` | `routes/public.js` | `timestamp, userRole, referralSource, email, userAgent, ipAddress` |
@@ -395,11 +399,13 @@ source of truth — if a writer gains a column, update `COL` and this table.
 | `/email-open-logs` | `lib/services/email.js` | `timestamp, email, ipAddress, userAgent` |
 | `/enterprise-domains` | `lib/data/enterprise-store.js` | JSON — `{domains: [...]}` |
 | `/api/hosted-images` | `lib/image/hosted-images.js` | JSON — `{images: [...]}` |
+| `/api/admin/metrics` | `lib/analytics/admin-metrics.js` | JSON: `{metrics}`, read-only SQL aggregates for the Signals tab. Has its own `.catch`, so an outage yields `metrics: null` rather than blanking the dashboard. See [§Why the metrics endpoint exists](#why-the-metrics-endpoint-exists). |
 
-One endpoint sits **outside** that burst: `/api/admin/api-usage`
-([`routes/admin/api-usage.js`](../../routes/admin/api-usage.js)) is fetched lazily by the
-API usage tab, and answers a single pre-aggregated JSON payload rather than a CSV — see
-that tab's section below.
+Several endpoints sit **outside** that burst and are fetched lazily by their own tab:
+`/api/admin/api-usage` ([`routes/admin/api-usage.js`](../../routes/admin/api-usage.js)),
+`/api/admin/referrals`, `/api/admin/blog-views`, `/api/admin/access-log`,
+`/api/admin/status`, `/api/admin/email-previews` and `/api/admin/renders`. Each answers
+pre-shaped JSON rather than a CSV; see that tab's section below.
 
 Three conventions the aggregators depend on:
 
@@ -424,19 +430,15 @@ success path and from the `catch` alike, guarded so only one row is written. It 
 `status`, `durationMs`, `model`, `attempts` (images produced, quality-gate retries
 included) and `errorCode`.
 
-`attempts` counts **that render only**. It used to read `req._stagingGenerations`, the
-request-wide total across every variation, so in a 3-variation job each row reported the
-running total rather than its own cost — and now that variations run concurrently, which
-total a row happened to observe would be timing-dependent as well. The request-wide
-counter still exists and is still what enterprise billing meters; it just isn't what a
-single render's row should say. Before this the row was written *before* the Gemini call, so it
-counted attempts and carried no result: the dashboard could show volume but not whether
-staging actually worked. A failure that happens before the prompt is even assembled still
-logs a row, with an empty prompt, so it lands in the error rate.
+`attempts` counts **that render only**. It is not `req._stagingGenerations`, the
+request-wide total across every variation that enterprise billing meters; with
+variations running concurrently, that counter would give each row a timing-dependent
+running total instead of its own cost. A failure that happens before the prompt is even
+assembled still logs a row, with an empty prompt, so it lands in the error rate.
 
 ## Testing
 
-Three suites, all pure/DOM-stubbed — no jsdom, no browser (see
+The main suites, all pure/DOM-stubbed — no jsdom, no browser (see
 [`testing.md`](testing.md)):
 
 - [`test/frontend/admin/admin-analytics.test.js`](../../test/frontend/admin/admin-analytics.test.js) — the aggregators:
@@ -464,7 +466,7 @@ Everything above this section shows **what happened**. Signals is the one tab th
 says **so what** — a ranked list of findings, each a claim with the numbers behind
 it and a concrete next step, plus an optional written brief over the top.
 
-It exists because reading 24 charts and knowing which shapes are bad is work that
+It exists because reading ~30 charts and knowing which shapes are bad is work that
 was being redone on every visit. The precedent was already in the codebase, as a
 single note chip on the Insights tab: a conditional that fires only when
 `welcome > 0 && ending === 0` and then says, in words, *"No trial-ending reminders
@@ -504,6 +506,7 @@ never leave the browser.
 | [`lib/analytics/admin-metrics.js`](../../lib/analytics/admin-metrics.js) | Read-only SQL aggregates — the numbers no CSV can give. |
 | [`lib/services/admin-brief.js`](../../lib/services/admin-brief.js) | The brief, with its redaction and its fail-open contract. |
 | [`scripts/admin/analyst.js`](../../public/scripts/admin/analyst.js) | The **Ask** drawer: the conversation, and the tool loop. DOM + orchestration. |
+| [`scripts/admin/analyst-answer.js`](../../public/scripts/admin/analyst-answer.js) | Renders an analyst answer (paragraphs, pipe tables, lists) to DOM via `el()`, never `innerHTML`, resolving `acct_*` handles on the way. |
 | [`scripts/admin/analyst-tools.js`](../../public/scripts/admin/analyst-tools.js) | The tool **executors** — pure, over `ctx.data`, via the existing aggregators. |
 | [`scripts/admin/analyst-identity.js`](../../public/scripts/admin/analyst-identity.js) | Opaque `acct_*` handles, and resolving them back to addresses for the DOM. |
 | [`lib/services/admin-analyst-tools.js`](../../lib/services/admin-analyst-tools.js) | The tool **schemas**. Declarations only; no execution. |
@@ -607,9 +610,8 @@ renders blank rather than 0%.
 
 ### Why the metrics endpoint exists
 
-The dashboard has deliberately had no backend — it downloads the CSV/JSON exports
-and aggregates in the browser. `GET /api/admin/metrics` is the exception, and it
-earns it by shipping numbers the CSVs structurally cannot:
+Most of the dashboard downloads the CSV/JSON exports and aggregates in the browser.
+`GET /api/admin/metrics` is the Signals tab's exception, and it earns it by shipping numbers the CSVs structurally cannot:
 
 - **Attribution.** A `prompt_logs.csv` row's email comes from the request *body*
   and is `unknown` whenever the client did not send one, which is why every funnel
@@ -634,11 +636,10 @@ Two rules the module keeps:
 
 ### Two columns this tab reads first
 
-`prompt_logs.csv` writes **17** columns; `analytics.js#COL` read 14.
-`architectureDrift` (index 14) and `seed` (index 15) were appended to the writer
-after the column map was written and went unread in production for weeks.
-`variation` (index 16) was appended later still, to make the drift rate splittable
-by which variation of a multi-render request produced the row — see
+`prompt_logs.csv` writes **17** columns; `analytics.js#COL.PROMPT` maps through
+index 15, including `architectureDrift` (`DRIFT`, 14) and `seed` (`SEED`, 15).
+`variation` (index 16) is not in `COL` yet. It was appended to make the drift rate
+splittable by which variation of a multi-render request produced the row; see
 "Drift by variation" below.
 
 `architectureDrift` is now `reliability.architecture-drift`: a per-render
@@ -1184,7 +1185,7 @@ credentials.
 - Build DOM with `helpers.js#el` and set `textContent`, never `innerHTML`, for anything
   derived from logged data — prompts, emails and user agents are user-supplied. If you
   genuinely must assemble markup, `helpers.js#esc` is the shared
-  [`escapeHtml`](../../public/scripts/escape-html.js) (it was a no-op returning its input
+  [`escapeHtml`](../../public/scripts/shared/escape-html.js) (it was a no-op returning its input
   until 2026-07-28 — anything written against the old behaviour is now escaped for real).
 - Style through a class in `admin.css`, not an inline `style` attribute. The tokens are
   declared once on `.page-admin`.

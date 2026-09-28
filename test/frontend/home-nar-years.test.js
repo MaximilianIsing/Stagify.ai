@@ -25,8 +25,8 @@ import { stripJsComments } from '../helpers/strip-js-comments.js';
 globalThis.window = globalThis.window || {};
 
 const { NAR_YEARS, NAR_SOURCE_URL, NAR_DEFAULT_YEAR, yearizeSource, paintNarYear } =
-  await import('../../public/scripts/home-nar-years.js');
-const { rampValue } = await import('../../public/scripts/count-up.js');
+  await import('../../public/scripts/home/home-nar-years.js');
+const { rampValue } = await import('../../public/scripts/home/count-up.js');
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const INDEX = fs.readFileSync(path.join(ROOT, 'public', 'index.html'), 'utf8');
@@ -447,7 +447,7 @@ test('the two kinds of text change are marked for their own treatment', () => {
 
 test('the dissolve ghost is inert and never outlives its transition', () => {
   const src = stripJsComments(
-    fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'home-nar-years.js'), 'utf8')
+    fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'home', 'home-nar-years.js'), 'utf8')
   );
   const fn = src.slice(src.indexOf('function dissolveCitation'));
   const body = fn.slice(0, fn.indexOf('\n}\n'));
@@ -524,7 +524,7 @@ test('the tween never runs on load — only the click path asks for it', () => {
   // discusses `animate` at length, and a scan that counted comments would be satisfied
   // by the explanation of the rule rather than by the rule.
   const src = stripJsComments(
-    fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'home-nar-years.js'), 'utf8')
+    fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'home', 'home-nar-years.js'), 'utf8')
   );
   const animateCalls = [...src.matchAll(/animate:\s*true/g)];
   assert.equal(animateCalls.length, 1, 'exactly one call site turns the animation on');
@@ -650,7 +650,7 @@ test('neither animation can be stranded by a backgrounded tab', () => {
   // the fix names requestAnimationFrame to say why it must not be used, which is
   // exactly the token being scanned for.
   const src = stripJsComments(
-    fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'home-nar-years.js'), 'utf8')
+    fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'home', 'home-nar-years.js'), 'utf8')
   );
 
   const fade = src.slice(src.indexOf('function crossfadeText'));

@@ -1,4 +1,4 @@
-// Shared fake DOM for the admin-dashboard frontend suites (public/scripts/admin.js
+// Shared fake DOM for the admin-dashboard frontend suites (public/scripts/admin/admin.js
 // and its islands). No jsdom — the same hand-rolled approach as the other
 // frontend-island harnesses (auth-modal-dom.js, mask-dom.js), covering only the
 // surface those modules actually touch.

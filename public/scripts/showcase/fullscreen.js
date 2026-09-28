@@ -18,7 +18,7 @@
 // out — `aria-pressed` carries the state, which means the label never has to change
 // and the i18n pack needs one key per path, not two.
 
-import { anyImmersiveOpen, createImmersive, isPhone, markRotateButton } from '../immersive-view.js';
+import { anyImmersiveOpen, createImmersive, isPhone, markRotateButton } from '../shared/immersive-view.js';
 
 /**
  * True while the front panel's media is expanded — natively, or portaled into the

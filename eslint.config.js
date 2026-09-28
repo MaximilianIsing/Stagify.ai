@@ -188,18 +188,18 @@ export default [
     // off `window` (window.closeImageModal, …) so no-undef stays on. No max-lines ratchet here:
     // it targets the ESM entry scripts above, and hero-picker.js predates it by a wide margin.
     files: [
-      'public/scripts/ai-designer-gate.js',
-      'public/scripts/ai-designer-model-selector.js',
-      'public/scripts/api-keys-gate.js',
-      'public/scripts/demo-player.js',
-      'public/scripts/developers-gate.js',
-      'public/scripts/faq-redirect.js',
-      'public/scripts/gallery-gate.js',
-      'public/scripts/hero-cta-boot.js',
-      'public/scripts/hero-picker.js',
-      'public/scripts/hero-restore.js',
-      'public/scripts/preview-gate.js',
-      'public/scripts/session-class.js',
+      'public/scripts/gates/ai-designer-gate.js',
+      'public/scripts/ai-designer/ai-designer-model-selector.js',
+      'public/scripts/gates/api-keys-gate.js',
+      'public/scripts/guides/demo-player.js',
+      'public/scripts/gates/developers-gate.js',
+      'public/scripts/gates/faq-redirect.js',
+      'public/scripts/gates/gallery-gate.js',
+      'public/scripts/home/hero-cta-boot.js',
+      'public/scripts/home/hero-picker.js',
+      'public/scripts/home/hero-restore.js',
+      'public/scripts/gates/preview-gate.js',
+      'public/scripts/site/session-class.js',
     ],
     languageOptions: {
       ecmaVersion: 2022,
@@ -268,7 +268,7 @@ export default [
     files: [
       'public/scripts/ai-designer/mask-editor.js',    // 718
       'public/scripts/app/stage-mask-editor.js',      // 659
-      'public/scripts/masking-studio-app.js',         // 725
+      'public/scripts/masking-studio/masking-studio-app.js',         // 725
     ],
     rules: {
       'max-lines': ['error', 850],

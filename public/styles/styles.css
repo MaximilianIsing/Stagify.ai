@@ -4427,7 +4427,7 @@ html::-webkit-scrollbar-thumb {
   flex:1 1 auto
 }
 /* The lock ships in the markup on every Stagify+ row and is revealed by the single
-   class the plan writer toggles (scripts/staging-menu.js), so the locked look is one
+   class the plan writer toggles (scripts/site/staging-menu.js), so the locked look is one
    class away rather than a DOM edit per row.
 
    It is the ONLY mark of the locked state, deliberately: the row also carried an
@@ -4629,7 +4629,7 @@ html::-webkit-scrollbar-thumb {
   }
 }
 /* The Gallery tab, shown before the first paint for a visitor who already has a token.
-   scripts/session-class.js sets the class synchronously in <head>; scripts/gallery-tab.js
+   scripts/site/session-class.js sets the class synchronously in <head>; scripts/site/gallery-tab.js
    owns the `.hidden` below and takes the class away again if /api/auth/me disagrees.
    Without this the tab could only appear a round trip late, and it sits mid-nav, so it
    shoved Guides and Contact sideways as it arrived.
@@ -4669,7 +4669,7 @@ html.has-session .site-header .nav-link.hidden[data-nav-gallery] {
 
    Built on <details>/<summary> rather than the button+panel of .lang-switch
    above: the footer is hand-copied into eleven files with no partial, so the
-   less the markup depends on JS the better. scripts/legal-menu.js only adds
+   less the markup depends on JS the better. scripts/site/legal-menu.js only adds
    Escape / outside-click / arrow keys on top of a control that already opens,
    closes and takes keyboard focus with scripting off.
 
@@ -4758,7 +4758,7 @@ html.has-session .site-header .nav-link.hidden[data-nav-gallery] {
       cut short. content-visibility is pinned in case an engine reaches for it.
    2. Centring on the trigger overflows on a phone: the trigger is the FIRST item in
       a centre-aligned footer line, so it sits well left of centre and half the panel
-      lands off-screen. --legal-menu-shift is the nudge scripts/legal-menu.js measures
+      lands off-screen. --legal-menu-shift is the nudge scripts/site/legal-menu.js measures
       and sets to pull it back inside; it is 0 the rest of the time, and 0 is also
       what you get with the script blocked, which is the pre-existing behaviour rather
       than a new failure. */
@@ -4802,7 +4802,7 @@ html.has-session .site-header .nav-link.hidden[data-nav-gallery] {
    [open] style — there is no previous computed style to interpolate from, and the
    transition above simply does not run. @starting-style supplies that first frame.
    Engines without it fall back to what this looked like before: an instant open and
-   an animated close, which is the half that scripts/legal-menu.js drives. */
+   an animated close, which is the half that scripts/site/legal-menu.js drives. */
 @starting-style {
   .legal-menu[open] .legal-menu__list {
     opacity:0;
@@ -5028,7 +5028,7 @@ html.has-session .site-header .nav-link.hidden[data-nav-gallery] {
 :lang(zh),:lang(ko),:lang(ja),:lang(zh) *,:lang(ko) *,:lang(ja) * {
   font-family:"Inter","Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic","Meiryo","Noto Sans KR","Malgun Gothic","Apple SD Gothic Neo","Noto Sans SC","PingFang SC","Microsoft YaHei","Hiragino Sans",ui-sans-serif,system-ui,sans-serif
 }
-/* === Aurora custom scrollbar (scripts/aurora-scrollbar.js) === */
+/* === Aurora custom scrollbar (scripts/fx/aurora-scrollbar.js) === */
 .aurora-on main::-webkit-scrollbar {
   display:none
 }
@@ -5081,7 +5081,7 @@ html.has-session .site-header .nav-link.hidden[data-nav-gallery] {
     animation:none
   }
 }
-/* === Card spotlight (scripts/card-spotlight.js) === */
+/* === Card spotlight (scripts/fx/card-spotlight.js) === */
 .has-spotlight {
   isolation:isolate
 }

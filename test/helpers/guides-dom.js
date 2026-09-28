@@ -1,4 +1,4 @@
-// DOM stand-in for the guides page (public/scripts/guides.js).
+// DOM stand-in for the guides page (public/scripts/guides/guides.js).
 //
 // Same approach as share-dom.js and gallery-dom.js: no jsdom, and the fixture is built
 // from the REAL public/guides.html so it cannot drift from the markup it stands in for.

@@ -226,7 +226,7 @@ test('every authored breadcrumb URL for a localized page is one the renderer can
 
 test('the client mirrors the server: language-loader selects the marked block', () => {
   // The two renderers are separate implementations of one rule, and both had this bug.
-  const src = fs.readFileSync(path.join(PUBLIC, 'scripts', 'language-loader.js'), 'utf8')
+  const src = fs.readFileSync(path.join(PUBLIC, 'scripts', 'i18n', 'language-loader.js'), 'utf8')
     .replace(/\/\/[^\n]*/g, '')          // a comment naming the selector is not the selector
     .replace(/\/\*[\s\S]*?\*\//g, '');
   assert.match(src, /querySelector\(\s*['"]script\[type="application\/ld\+json"\]\[data-lang-jsonld\]['"]\s*\)/);

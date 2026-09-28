@@ -7,7 +7,7 @@
 // the layout and not the cap.
 //
 // The fix is split across two files, and that is what makes it worth a test. CSS supplies the
-// hook (`--hp-sentence-fs` and `.is-fitted`); fitSentence() in scripts/hero-picker.js measures
+// hook (`--hp-sentence-fs` and `.is-fitted`); fitSentence() in scripts/home/hero-picker.js measures
 // the locale's widest room + widest style and writes both. Delete either half and NOTHING
 // ERRORS — the variable goes unread, or the class matches no rule, and the headline quietly
 // goes back to wrapping in exactly the locales nobody checks. There is no layout in jsdom, so
@@ -130,7 +130,7 @@ test('the phone break survives in all three files', () => {
       '"\\A" breaks through it rather than collapsing to a space.'
   );
 
-  const js = stripJs(read('public', 'scripts', 'hero-picker.js'));
+  const js = stripJs(read('public', 'scripts', 'home', 'hero-picker.js'));
   assert.match(
     js,
     /classList\.add\(\s*'is-two-line'\s*\)/,
@@ -146,7 +146,7 @@ test('the phone break survives in all three files', () => {
 });
 
 test('hero-picker.js still writes both halves of the contract', () => {
-  const js = stripJs(read('public', 'scripts', 'hero-picker.js'));
+  const js = stripJs(read('public', 'scripts', 'home', 'hero-picker.js'));
 
   assert.match(
     js,

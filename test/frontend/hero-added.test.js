@@ -3,7 +3,7 @@
 // The list under the hero photo names what the AI actually put into THAT render, and the
 // hero photo changes every time a visitor touches either dropdown — so the list is 48
 // separate lists of five, one per room/style pair the picker can reach, in each of the 11
-// language packs. scripts/hero-picker.js paints it from hero.added.items.<style>.<room>.
+// language packs. scripts/home/hero-picker.js paints it from hero.added.items.<style>.<room>.
 //
 // That shape is what this file exists for. Nothing about it fails loudly on its own:
 //
@@ -43,7 +43,7 @@ const packs = Object.fromEntries(
 // imported here; it is read as text. Comments are stripped FIRST — the block above ROOMS
 // discusses the two room types that are deliberately absent, and the one above STYLES
 // discusses how `custom` is generated, both in prose that names keys.
-const pickerSrc = read('public', 'scripts', 'hero-picker.js')
+const pickerSrc = read('public', 'scripts', 'home', 'hero-picker.js')
   .replace(/\/\*[\s\S]*?\*\//g, '')
   .replace(/^\s*\/\/.*$/gm, '');
 

@@ -133,7 +133,7 @@ export function installAuthModalDom(opts = {}) {
   const toggleEl = new FakeEl('div');
 
   // `<body>`'s child list, which is how the modal decides what to make inert: every
-  // direct child except itself (public/scripts/inert-background.js). The real page has
+  // direct child except itself (public/scripts/site/inert-background.js). The real page has
   // the modal first — profile-menu.js inserts it with body.insertBefore(…, firstChild)
   // — followed by the page chrome, so the fixture is seeded in that order. Without
   // background siblings here, backgroundOf() would return [] and every inert assertion

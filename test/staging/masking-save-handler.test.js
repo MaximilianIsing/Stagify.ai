@@ -56,7 +56,7 @@ const req = (body) => ({ body });
 // ── the qualifier that names the entry ───────────────────────────────────────
 
 test('the areas qualifier is pluralized here, where the count actually is', () => {
-  // public/scripts/render-name.js is shared with the public share page, which loads no
+  // public/scripts/shared/render-name.js is shared with the public share page, which loads no
   // language pack and has no plural machinery — so the string is built server-side.
   assert.equal(areasQualifier(1), '1 area');
   assert.equal(areasQualifier(3), '3 areas');

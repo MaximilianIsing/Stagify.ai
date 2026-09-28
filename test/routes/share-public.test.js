@@ -238,7 +238,7 @@ test('a live share returns the render, its disclosure, and nothing internal', as
 test('the studio and its setting ARE published, so both pages say the same thing', async () => {
   // Without these the share page would head an exterior render "Staged room" where its
   // owner sees "Exterior — Golden hour". The two pages agreeing is the entire reason
-  // public/scripts/render-name.js exists as a shared module.
+  // public/scripts/shared/render-name.js exists as a shared module.
   const { base, shares, addRender } = await mount();
   const id = addRender('user-1', {
     extra: { source: 'exterior', qualifier: 'Golden hour', sourceName: '412-rosewood-front' },

@@ -117,7 +117,7 @@ function jsBuiltHiddenRows() {
 function gateOf(page) {
   const html = fs.readFileSync(path.join(PUBLIC, page), 'utf8');
   const head = /<head[^>]*>([\s\S]*?)<\/head>/i.exec(html);
-  const m = /<script\s+src="scripts\/([a-z0-9-]+-gate\.js)"/i.exec(head ? head[1] : '');
+  const m = /<script\s+src="scripts\/(gates\/[a-z0-9-]+-gate\.js)"/i.exec(head ? head[1] : '');
   return m ? m[1] : null;
 }
 

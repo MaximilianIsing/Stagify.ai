@@ -1,4 +1,4 @@
-// The frontend's single HTML escaper (public/scripts/escape-html.js) and the
+// The frontend's single HTML escaper (public/scripts/shared/escape-html.js) and the
 // guard that keeps it single.
 //
 // WHY THIS MATTERS: `escapeHtml` is the last line between data and an `innerHTML`
@@ -23,7 +23,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { escapeHtml } from '../../public/scripts/escape-html.js';
+import { escapeHtml } from '../../public/scripts/shared/escape-html.js';
 import { esc as adminEsc } from '../../public/scripts/admin/helpers.js';
 import { escapeHtml as aiDesignerEscape } from '../../public/scripts/ai-designer/format.js';
 
@@ -121,7 +121,7 @@ test('no second HTML escaper exists in public/scripts', () => {
   assert.deepEqual(
     offenders,
     [],
-    'these files hand-roll HTML escaping — import escapeHtml from scripts/escape-html.js instead',
+    'these files hand-roll HTML escaping — import escapeHtml from scripts/shared/escape-html.js instead',
   );
 });
 
@@ -137,7 +137,7 @@ test('every translated string the profile menu interpolates goes through esc()',
   // Scanned rather than rendered: the dropdown builder lives inside an IIFE with no
   // export, and extracting it purely to test six wrappers would be a bigger and
   // riskier change than the wrappers themselves.
-  const src = readFileSync(join(SCRIPTS_DIR, 'profile-menu.js'), 'utf8');
+  const src = readFileSync(join(SCRIPTS_DIR, 'profile-menu', 'profile-menu.js'), 'utf8');
 
   const bare = [];
   // Tolerate whitespace after `esc(` so a reformat can't fail this for style.

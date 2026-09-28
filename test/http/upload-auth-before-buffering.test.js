@@ -108,7 +108,7 @@ const CLIENTS = [
     calls: 2,
   },
   {
-    file: 'public/scripts/ai-designer-app.js',
+    file: 'public/scripts/ai-designer/ai-designer-app.js',
     url: '/api/chat-upload',
     calls: 1,
   },
