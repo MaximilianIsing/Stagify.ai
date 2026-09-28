@@ -265,21 +265,37 @@ test('deduplicateMessages: keeps the FIRST occurrence and preserves order and ob
   const a = { role: 'user', content: 'a', id: 1 };
   const b = { role: 'assistant', content: 'b' };
   const aAgain = { role: 'user', content: 'a', id: 2 };
-  const out = deduplicateMessages([a, b, aAgain]);
-  assert.deepEqual(out, [a, b]);
+  const c = { role: 'assistant', content: 'c' };
+  const out = deduplicateMessages([a, b, aAgain, c]);
+  assert.deepEqual(out, [a, b, c]);
   assert.equal(out[0], a, 'the original object, not a copy');
 });
 
-test('deduplicateMessages: non-adjacent repeats are also dropped (a repeated "yes" later in the chat disappears)', () => {
-  // Pinned because it rewrites legitimate conversations: a user answering "yes"
-  // to two different questions loses the second answer.
+test('deduplicateMessages: a current turn that repeats an earlier message is kept', () => {
+  // A user answering "yes" to a second question used to lose that answer: the first
+  // "yes" won, so the turn being replied to vanished from the OpenAI payload.
   const out = deduplicateMessages([
     { role: 'user', content: 'yes' },
     { role: 'assistant', content: 'Stage the kitchen?' },
     { role: 'user', content: 'yes' },
   ]);
-  assert.equal(out.length, 2);
-  assert.deepEqual(out.map((m) => m.content), ['yes', 'Stage the kitchen?']);
+  assert.deepEqual(out.map((m) => m.content), ['yes', 'Stage the kitchen?', 'yes']);
+});
+
+test('deduplicateMessages: an immediate repeat of the current turn is still a double-send', () => {
+  const out = deduplicateMessages([
+    { role: 'assistant', content: 'Hi' },
+    { role: 'user', content: 'stage it' },
+    { role: 'user', content: 'stage it' },
+  ]);
+  assert.deepEqual(out.map((m) => m.content), ['Hi', 'stage it']);
+});
+
+test('deduplicateMessages: a wholesale-duplicated history still counts once, except the current turn', () => {
+  // The dedup exists so a re-sent history cannot double-count against the 20-message cap.
+  const turn = [{ role: 'user', content: 'a' }, { role: 'assistant', content: 'b' }, { role: 'user', content: 'c' }];
+  const out = deduplicateMessages([...turn, ...turn.map((m) => ({ ...m }))]);
+  assert.deepEqual(out.map((m) => m.content), ['a', 'b', 'c']);
 });
 
 test('deduplicateMessages: role is part of the key, so user and assistant saying the same thing both stay', () => {
