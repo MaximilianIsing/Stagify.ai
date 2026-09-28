@@ -1,10 +1,10 @@
 {
   "_meta": {
-    "sourceHash": "sha256:90f67dddc33524db8b141401d836a51d8e94ccab3730616f434ee848cfdf4513",
+    "sourceHash": "sha256:6f342374843beb1d2e5a3f58b27d56125ea616ae68c1b0d532dd0a6ac273d578",
     "slug": null,
     "lang": "german",
     "hreflang": "de",
-    "translatedAt": "2026-09-20",
+    "translatedAt": "2026-09-28",
     "reviewed": false
   },
   "meta": {
@@ -16,6 +16,13 @@
     "body": "Praxisnahe Ratgeber zu virtuellem Home Staging, zur Kennzeichnung im MLS und zur schnelleren Vermarktung Ihrer Objekte – für Makler, Verkäufer und Fotografen."
   },
   "cards": {
+    "virtual-staging-before-and-after": {
+      "tag": "Beispiele",
+      "title": "Virtuelles Home Staging vorher und nachher: Sechs Räume, nichts retuschiert",
+      "excerpt": "Ein leerer Raum in vier Varianten gestagt, ein schlichter Raum neu eingerichtet und eine Außenaufnahme, alles direkt aus Stagify. Was sich auf jedem Foto geändert hat, was sich nie bewegt hat und welches Bild besser nie entstanden wäre.",
+      "meta": "27. September 2026 · 6 Min. Lesezeit",
+      "alt": "Zwei Fotos desselben Eckraums in einem Hochhaus nebeneinander: links leer, beschriftet mit „Vorher“, rechts als Wohnzimmer mit grauem Ecksofa und geometrischem Teppich eingerichtet, beschriftet mit „Nachher“"
+    },
     "which-virtual-staging-style": {
       "tag": "Ratgeber",
       "title": "Ein Raum, sieben Stile. Nur einer davon verkauft das Haus.",

@@ -41,10 +41,10 @@ test('resolveChatModel: a non-pro account is pinned to the fast model, and isPro
   assert.equal(resolveChatModel('gpt-5-mini', {}), 'gpt-4o-mini');
 });
 
-test('getGeminiImageModel: gpt-5 → 3.1-flash-image (Stagify+), else 2.5-flash-image', () => {
+test('getGeminiImageModel: gpt-5 → 3.1-flash-image (Stagify+), else 3.1-flash-lite-image', () => {
   assert.equal(getGeminiImageModel('gpt-5-mini'), 'gemini-3.1-flash-image');
-  assert.equal(getGeminiImageModel('gpt-4o-mini'), 'gemini-2.5-flash-image');
-  assert.equal(getGeminiImageModel(undefined), 'gemini-2.5-flash-image');
-  assert.equal(getGeminiImageModel(null), 'gemini-2.5-flash-image');
-  assert.equal(getGeminiImageModel(''), 'gemini-2.5-flash-image');
+  assert.equal(getGeminiImageModel('gpt-4o-mini'), 'gemini-3.1-flash-lite-image');
+  assert.equal(getGeminiImageModel(undefined), 'gemini-3.1-flash-lite-image');
+  assert.equal(getGeminiImageModel(null), 'gemini-3.1-flash-lite-image');
+  assert.equal(getGeminiImageModel(''), 'gemini-3.1-flash-lite-image');
 });

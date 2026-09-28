@@ -231,8 +231,8 @@ test("createCadHandling: uses the INJECTED client rather than constructing its o
   assert.equal(genAI.calls.models.length, 1, "the injected client was the one used");
   assert.equal(
     genAI.calls.models[0],
-    "gemini-3-pro-image",
-    "CAD stays on Pro (see the model note in lib/config/model-config.js)",
+    "gemini-3.1-flash-image",
+    "CAD uses IMAGE_MODEL_CAD (see the model note in lib/config/model-config.js)",
   );
 });
 

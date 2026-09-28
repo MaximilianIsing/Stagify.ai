@@ -1,0 +1,98 @@
+{
+  "planForModel": {
+    "url": "/instagram/assets/sources/8fbe67b4a327c018648dc961876996586d9b260b0a747a8c3bd5e4deeb4081dc.png",
+    "sha256": "8fbe67b4a327c018648dc961876996586d9b260b0a747a8c3bd5e4deeb4081dc",
+    "width": 1088,
+    "height": 992
+  },
+  "additionalPrompt": "Style it midcentury modern: flat slab walnut cabinetry, a warm white terrazzo floor, a white quartz worktop, mustard yellow accents in a pendant shade and a tea towel, brass handles. No bar stools, no chairs and no seating of any kind anywhere in the room. The island is a simple rectangular box 2.2 m long and 1.0 m deep, its LONG side parallel to the window wall, square to the room, centred in front of the sink, with the worktop sitting centred on its base and an equal small overhang on every side. Stand against the middle of the wall opposite the window and look straight at the window wall, so the island is seen broadside in the foreground, the window with the double sink under it is centred behind it, and the run with the hob is on the left.",
+  "runs": [
+    {
+      "run": 1,
+      "url": "/instagram/assets/sources/811dbc39416fde3082c11bc1e61bf407fa629c9a26e71dcb3399254d7bebca62.webp",
+      "sha256": "811dbc39416fde3082c11bc1e61bf407fa629c9a26e71dcb3399254d7bebca62",
+      "width": 2528,
+      "height": 1696,
+      "quality": {
+        "perfect": false,
+        "attempts": 3,
+        "bestScore": 70,
+        "defects": [
+          "PERFECT: false\nSCORE: 70\nWHY: The perspective of the island is slightly distorted, making it appear to lean forward.",
+          "PERFECT: false\nSCORE: 70\nWHY: The island appears to have an impossible overhang on the left side, and the perspective of the island's front face is distorted.",
+          "PERFECT: false\nSCORE: 70\nWHY: The ceiling vent appears to be distorted and oddly shaped."
+        ],
+        "reviewerUnavailable": false
+      },
+      "params": {
+        "fn": "blueprintTo3D",
+        "view": "eye-level",
+        "room": "kitchen",
+        "additionalPrompt": "Style it midcentury modern: flat slab walnut cabinetry, a warm white terrazzo floor, a white quartz worktop, mustard yellow accents in a pendant shade and a tea towel, brass handles. No bar stools, no chairs and no seating of any kind anywhere in the room. The island is a simple rectangular box 2.2 m long and 1.0 m deep, its LONG side parallel to the window wall, square to the room, centred in front of the sink, with the worktop sitting centred on its base and an equal small overhang on every side. Stand against the middle of the wall opposite the window and look straight at the window wall, so the island is seen broadside in the foreground, the window with the double sink under it is centred behind it, and the run with the hob is on the left."
+      },
+      "model": "gemini-3.1-flash-image",
+      "seconds": 32
+    },
+    {
+      "run": 2,
+      "url": "/instagram/assets/sources/a71e216528e300baab71b37b1ed21e406965e1e87980adca1e89225f262704a2.webp",
+      "sha256": "a71e216528e300baab71b37b1ed21e406965e1e87980adca1e89225f262704a2",
+      "width": 2528,
+      "height": 1696,
+      "quality": {
+        "perfect": true,
+        "attempts": 1,
+        "bestScore": 100,
+        "defects": [],
+        "reviewerUnavailable": false
+      },
+      "params": {
+        "fn": "blueprintTo3D",
+        "view": "eye-level",
+        "room": "kitchen",
+        "additionalPrompt": "Style it midcentury modern: flat slab walnut cabinetry, a warm white terrazzo floor, a white quartz worktop, mustard yellow accents in a pendant shade and a tea towel, brass handles. No bar stools, no chairs and no seating of any kind anywhere in the room. The island is a simple rectangular box 2.2 m long and 1.0 m deep, its LONG side parallel to the window wall, square to the room, centred in front of the sink, with the worktop sitting centred on its base and an equal small overhang on every side. Stand against the middle of the wall opposite the window and look straight at the window wall, so the island is seen broadside in the foreground, the window with the double sink under it is centred behind it, and the run with the hob is on the left."
+      },
+      "model": "gemini-3.1-flash-image",
+      "seconds": 12
+    }
+  ],
+  "best": {
+    "run": 2,
+    "url": "/instagram/assets/sources/a71e216528e300baab71b37b1ed21e406965e1e87980adca1e89225f262704a2.webp",
+    "sha256": "a71e216528e300baab71b37b1ed21e406965e1e87980adca1e89225f262704a2",
+    "width": 2528,
+    "height": 1696,
+    "quality": {
+      "perfect": true,
+      "attempts": 1,
+      "bestScore": 100,
+      "defects": [],
+      "reviewerUnavailable": false
+    },
+    "params": {
+      "fn": "blueprintTo3D",
+      "view": "eye-level",
+      "room": "kitchen",
+      "additionalPrompt": "Style it midcentury modern: flat slab walnut cabinetry, a warm white terrazzo floor, a white quartz worktop, mustard yellow accents in a pendant shade and a tea towel, brass handles. No bar stools, no chairs and no seating of any kind anywhere in the room. The island is a simple rectangular box 2.2 m long and 1.0 m deep, its LONG side parallel to the window wall, square to the room, centred in front of the sink, with the worktop sitting centred on its base and an equal small overhang on every side. Stand against the middle of the wall opposite the window and look straight at the window wall, so the island is seen broadside in the foreground, the window with the double sink under it is centred behind it, and the run with the hob is on the left."
+    },
+    "model": "gemini-3.1-flash-image",
+    "seconds": 12
+  },
+  "frames": {
+    "diagonal": {
+      "leftY": 66,
+      "rightY": 36
+    },
+    "before": {
+      "url": "/instagram/assets/sources/648f1a6ced60cf872ffd900cd98350b45fd0d1fa69352e27185c5daff35807e3.png",
+      "sha256": "648f1a6ced60cf872ffd900cd98350b45fd0d1fa69352e27185c5daff35807e3"
+    },
+    "after": {
+      "url": "/instagram/assets/sources/a92677d4fe24ba9ce4ba2814640bfb19fbc237df6881ccc709b1e7376ba575bf.webp",
+      "sha256": "a92677d4fe24ba9ce4ba2814640bfb19fbc237df6881ccc709b1e7376ba575bf",
+      "fromRender": "a71e216528e300baab71b37b1ed21e406965e1e87980adca1e89225f262704a2",
+      "scaledHeight": 880,
+      "cropLeft": 104
+    }
+  }
+}

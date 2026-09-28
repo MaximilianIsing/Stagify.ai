@@ -17,12 +17,13 @@ import { createImageAnnotation } from '../../../lib/image/image-annotation.js';
 import { generateWithQualityRetry as runQualityRetry } from '../../../lib/staging/staging-pipeline.js';
 import { createStagingGeneration } from '../../../lib/staging/staging-generation.js';
 import { createMaskEditHandler } from '../../../lib/staging/mask-edit.js';
+import { createCadHandling } from '../../../lib/staging/cad-handling.js';
 import { maskReferencePromptSuffix } from '../../../lib/staging/prompts.js';
 import {
   downscaleImage, padBufferToAspectRatio, buildMarkedRoomImage,
   normalizeMaskOutputToRoom, compositeForReview,
 } from '../../../lib/image/image-primitives.js';
-import { FAST_MODEL } from '../../../lib/config/model-config.js';
+import { FAST_MODEL, IMAGE_MODEL_CAD } from '../../../lib/config/model-config.js';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 
@@ -383,6 +384,49 @@ export function createStagifyImages({ debug = false, config }) {
         // that, but the post's legend says "the same pixels", and it was false everywhere
         // rather than nowhere. Hand back the real thing so the caller cannot get it wrong.
         normalisedSource: normalisedRoom,
+      };
+    },
+
+    /**
+     * Floor plan to 3D, driven through the product's own blueprintTo3D.
+     *
+     * acquirePair only ever calls processStaging, so a post about the CAD feature could not
+     * previously show a genuine render. This is the same function the chat route calls, on
+     * the same Pro model, with one deliberate difference: the QA reviewer is ON. server.js
+     * ships CAD with the gate off to save a call per render; rule 3 says a post never trades
+     * quality for a cheaper call, and the reviewer brings a view-specific rubric already.
+     *
+     * No stamp: the post template carries the disclosure in its chrome, and a second badge
+     * burnt into the photo would sit under the scrim anyway.
+     * @param {{ blueprintBuffer: Buffer, mimeType?: string, view?: 'top-down'|'eye-level',
+     *           room?: string|null, additionalPrompt?: string|null }} o
+     * @returns {Promise<{ buffer: Buffer, mime: string, params: object, model: string, quality: object }>}
+     */
+    async blueprintRender({
+      blueprintBuffer, mimeType = 'image/png', view = 'eye-level', room = null, additionalPrompt = null,
+    }) {
+      requireGemini('Floor plan rendering');
+      const { blueprintTo3D } = createCadHandling({ genAI, reviewImageQuality: recordingReview });
+
+      verdicts = [];
+      const buffer = await blueprintTo3D(blueprintBuffer, { mimeType, view, room, additionalPrompt });
+
+      const scores = verdicts.map((v) => v.score ?? 0);
+      const quality = {
+        perfect: verdicts.some((v) => v.perfect === true),
+        attempts: verdicts.length,
+        bestScore: scores.length ? Math.max(...scores) : null,
+        defects: verdicts.filter((v) => v.perfect === false && v.reason).map((v) => v.reason),
+        reviewerUnavailable: verdicts.some((v) => v.degraded === true),
+      };
+
+      return {
+        buffer,
+        // upscaleForDelivery ships WebP.
+        mime: 'image/webp',
+        params: { fn: 'blueprintTo3D', view, room, additionalPrompt },
+        model: IMAGE_MODEL_CAD,
+        quality,
       };
     },
 

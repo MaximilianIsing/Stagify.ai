@@ -225,7 +225,7 @@ test('req.body.model never reaches the provider unclamped', async () => {
   const { handleExteriorMultipart, seen } = makeHandler();
   await handleExteriorMultipart(fakeReq({ model: 'gemini-3-pro-image-ultra-expensive' }), fakeRes(), PRO);
   assert.ok(
-    ['gemini-2.5-flash-image', 'gemini-3.1-flash-image'].includes(seen.staging[0].model),
+    ['gemini-3.1-flash-lite-image', 'gemini-3.1-flash-image'].includes(seen.staging[0].model),
     `an unrecognised body model must clamp to a shipped image model, got ${seen.staging[0].model}`,
   );
 });
@@ -246,7 +246,7 @@ test('a request that explicitly asks for the fast model still gets it', async ()
   // without another round trip through the clamp.
   const { handleExteriorMultipart, seen } = makeHandler();
   await handleExteriorMultipart(fakeReq({ model: 'gpt-4o-mini' }), fakeRes(), PRO);
-  assert.equal(seen.staging[0].model, 'gemini-2.5-flash-image');
+  assert.equal(seen.staging[0].model, 'gemini-3.1-flash-lite-image');
 });
 
 // ---- Metering --------------------------------------------------------------

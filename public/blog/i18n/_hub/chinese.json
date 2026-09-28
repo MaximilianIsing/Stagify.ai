@@ -1,10 +1,10 @@
 {
   "_meta": {
-    "sourceHash": "sha256:90f67dddc33524db8b141401d836a51d8e94ccab3730616f434ee848cfdf4513",
+    "sourceHash": "sha256:6f342374843beb1d2e5a3f58b27d56125ea616ae68c1b0d532dd0a6ac273d578",
     "slug": null,
     "lang": "chinese",
     "hreflang": "zh-Hans",
-    "translatedAt": "2026-09-20",
+    "translatedAt": "2026-09-28",
     "reviewed": false
   },
   "meta": {
@@ -16,6 +16,13 @@
     "body": "关于虚拟软装、MLS 披露以及如何更快推广房源的实用指南，写给经纪人、卖家和摄影师。"
   },
   "cards": {
+    "virtual-staging-before-and-after": {
+      "tag": "案例",
+      "title": "虚拟软装前后对比：六个房间，未经任何修图",
+      "excerpt": "同一间空房布置出四种样子，一间普通房间重新布置，外加一组外立面，全部直接出自 Stagify。每张照片改了什么，什么从来没动过，还有一张本不该做出来的图。",
+      "meta": "2026年9月27日 · 阅读时长 6 分钟",
+      "alt": "同一个高层转角房间的两张照片并排：左侧标注“之前”，房间空无一物；右侧标注“之后”，房间布置成客厅，有灰色转角沙发和几何图案地毯"
+    },
     "which-virtual-staging-style": {
       "tag": "指南",
       "title": "一个房间，七种风格。只有一种能卖掉房子。",

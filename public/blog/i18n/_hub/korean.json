@@ -1,10 +1,10 @@
 {
   "_meta": {
-    "sourceHash": "sha256:90f67dddc33524db8b141401d836a51d8e94ccab3730616f434ee848cfdf4513",
+    "sourceHash": "sha256:6f342374843beb1d2e5a3f58b27d56125ea616ae68c1b0d532dd0a6ac273d578",
     "slug": null,
     "lang": "korean",
     "hreflang": "ko",
-    "translatedAt": "2026-09-20",
+    "translatedAt": "2026-09-28",
     "reviewed": false
   },
   "meta": {
@@ -16,6 +16,13 @@
     "body": "버추얼 스테이징, MLS 고지, 매물을 더 빨리 알리는 법에 대한 실전 가이드. 중개인과 매도인, 사진가를 위해."
   },
   "cards": {
+    "virtual-staging-before-and-after": {
+      "tag": "사례",
+      "title": "버추얼 스테이징 전후 비교: 여섯 개의 방, 보정은 없다",
+      "excerpt": "빈방 하나를 네 가지로 스테이징하고, 평범한 방을 다시 꾸미고, 외관까지 손봤다. 모두 Stagify에서 나온 그대로다. 사진마다 무엇이 바뀌었고 무엇이 그대로였는지, 그리고 애초에 만들지 말았어야 할 한 장까지.",
+      "meta": "2026년 9월 27일 · 6분 읽기",
+      "alt": "고층 건물의 같은 코너 방을 찍은 사진 두 장. 왼쪽은 “스테이징 전” 표시가 붙은 빈 방, 오른쪽은 “스테이징 후” 표시가 붙은 거실로, 회색 코너 소파와 기하학 무늬 러그가 놓여 있다"
+    },
     "which-virtual-staging-style": {
       "tag": "가이드",
       "title": "방 하나, 일곱 가지 스타일. 그중 단 하나만이 집을 판다.",

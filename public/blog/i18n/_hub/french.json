@@ -1,10 +1,10 @@
 {
   "_meta": {
-    "sourceHash": "sha256:90f67dddc33524db8b141401d836a51d8e94ccab3730616f434ee848cfdf4513",
+    "sourceHash": "sha256:6f342374843beb1d2e5a3f58b27d56125ea616ae68c1b0d532dd0a6ac273d578",
     "slug": null,
     "lang": "french",
     "hreflang": "fr",
-    "translatedAt": "2026-09-20",
+    "translatedAt": "2026-09-28",
     "reviewed": false
   },
   "meta": {
@@ -16,6 +16,13 @@
     "body": "Des guides concrets sur le home staging virtuel, la divulgation au MLS et la commercialisation plus rapide de vos annonces, pour les agents, les vendeurs et les photographes."
   },
   "cards": {
+    "virtual-staging-before-and-after": {
+      "tag": "Exemples",
+      "title": "Home staging virtuel avant/après : six pièces, zéro retouche",
+      "excerpt": "Une pièce vide meublée de quatre façons, une pièce banale remeublée et une façade, le tout tel que sorti de Stagify. Ce qui a changé sur chaque photo, ce qui n’a jamais bougé, et celle qu’il n’aurait pas fallu produire.",
+      "meta": "27 septembre 2026 · 6 min de lecture",
+      "alt": "Deux photos de la même pièce d’angle d’une tour, côte à côte : vide à gauche, légendée « Avant », et meublée en salon avec un canapé d’angle gris et un tapis géométrique à droite, légendée « Après »"
+    },
     "which-virtual-staging-style": {
       "tag": "Guides",
       "title": "Une pièce, sept styles. Un seul vend la maison.",

@@ -394,7 +394,7 @@ Notes that bite:
   and for a lone render there was otherwise nothing on the wire to tell them apart.
 - **CAD has its own status category**, `floorplan` (`chatIntentType`), not `staging`. It is
   checked first, so a turn doing both reports the floor-plan work — that is the half the
-  user waits on (~30s on `gemini-3-pro-image` against ~8s for a staged photo).
+  user waits on (~10-20s on `IMAGE_MODEL_CAD` against ~4-9s for a staged photo).
 - Max **3** `cad` entries per turn, same cap as staging and generate. All three dispatch
   steps run **unconditionally** (`lib/chat/chat-post-routing.js`), so one response can
   legitimately carry `stagedImages`, `generatedImages` **and** `cadImages` together.

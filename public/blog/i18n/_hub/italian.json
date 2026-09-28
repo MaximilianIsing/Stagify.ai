@@ -1,10 +1,10 @@
 {
   "_meta": {
-    "sourceHash": "sha256:90f67dddc33524db8b141401d836a51d8e94ccab3730616f434ee848cfdf4513",
+    "sourceHash": "sha256:6f342374843beb1d2e5a3f58b27d56125ea616ae68c1b0d532dd0a6ac273d578",
     "slug": null,
     "lang": "italian",
     "hreflang": "it",
-    "translatedAt": "2026-09-20",
+    "translatedAt": "2026-09-28",
     "reviewed": false
   },
   "meta": {
@@ -16,6 +16,13 @@
     "body": "Guide pratiche sull’home staging virtuale, sulla divulgazione nell’MLS e su come promuovere i tuoi annunci più in fretta, per agenti, venditori e fotografi."
   },
   "cards": {
+    "virtual-staging-before-and-after": {
+      "tag": "Esempi",
+      "title": "Home staging virtuale prima e dopo: sei stanze, zero ritocchi",
+      "excerpt": "Una stanza vuota arredata in quattro modi, una stanza anonima riarredata e un esterno, tutto così come è uscito da Stagify. Che cosa è cambiato in ogni foto, che cosa non si è mai spostato, e quella che non andava fatta.",
+      "meta": "27 settembre 2026 · 6 min di lettura",
+      "alt": "Due fotografie della stessa stanza d’angolo di un grattacielo, affiancate: vuota a sinistra, con l’etichetta “Prima”, e arredata come soggiorno con un divano angolare grigio e un tappeto geometrico a destra, con l’etichetta “Dopo”"
+    },
     "which-virtual-staging-style": {
       "tag": "Guide",
       "title": "Una stanza, sette stili. Solo uno vende la casa.",
