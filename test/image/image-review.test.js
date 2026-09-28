@@ -9,6 +9,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import sharp from 'sharp';
 import { createImageReview } from '../../lib/image/image-review.js';
+import { STAGING_GRADER_MODEL, STAGING_GRADER_THINKING } from '../../lib/config/model-config.js';
 import { DEFAULT_UNSTAGEABLE_REASON, UNSTAGEABLE_CODES, GENERIC_UNSTAGEABLE_CODE } from '../../lib/staging/unstageable.js';
 
 const TINY_PNG =
@@ -299,4 +300,48 @@ test('reviewImageQuality: an absent or empty basePrompt keeps the interior defau
     await createImageReview({ genAI }).reviewImageQuality(TINY_PNG, opts);
     assert.match(sent, /interior real-estate/, `default rubric expected for ${JSON.stringify(opts)}`);
   }
+});
+
+// Which judge sees which question. Counting windows across two photographs is the check that
+// stands between an architecture drift and a published listing, so it goes to the stronger
+// model with thinking on; every glance judgement stays on the cheap no-thinking grader.
+function recordingGrader(reply) {
+  const configs = [];
+  return {
+    configs,
+    genAI: {
+      getGenerativeModel(opts) {
+        configs.push(opts);
+        return { generateContent: async () => ({ response: { text: () => reply } }) };
+      },
+    },
+  };
+}
+
+test('reviewImageQuality: a source photo routes the review to the comparative judge, thinking on, with headroom', async () => {
+  const { configs, genAI } = recordingGrader('PERFECT: true\nARCHITECTURE: same');
+  await createImageReview({ genAI }).reviewImageQuality(TINY_PNG, { sourceDataUrl: TINY_PNG });
+  assert.equal(configs[0].model, STAGING_GRADER_MODEL);
+  assert.deepEqual(configs[0].generationConfig.thinkingConfig, { ...STAGING_GRADER_THINKING });
+  assert.ok(configs[0].generationConfig.maxOutputTokens > 1000, 'thinking cannot starve the verdict');
+});
+
+test('reviewImageQuality: without a source it stays on the glance grader, thinking off', async () => {
+  const { configs, genAI } = recordingGrader('PERFECT: true');
+  await createImageReview({ genAI }).reviewImageQuality(TINY_PNG);
+  assert.equal(configs[0].model, 'gemini-2.5-flash-lite');
+  assert.equal(configs[0].generationConfig.thinkingConfig.thinkingBudget, 0);
+});
+
+test('compareRoomPhotos: sends every image, in order, to the comparative judge', async () => {
+  const seen = [];
+  const genAI = {
+    getGenerativeModel(opts) {
+      return { generateContent: async (parts) => { seen.push({ opts, parts }); return { response: { text: () => ' CLEAN: true ' } }; } };
+    },
+  };
+  const reply = await createImageReview({ genAI }).compareRoomPhotos('compare', [TINY_PNG, TINY_PNG], 160);
+  assert.equal(reply, 'CLEAN: true');
+  assert.equal(seen[0].opts.model, STAGING_GRADER_MODEL);
+  assert.equal(seen[0].parts.length, 3, 'text + two images');
 });

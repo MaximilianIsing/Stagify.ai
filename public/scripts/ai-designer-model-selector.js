@@ -1,3 +1,4 @@
+/* global updateMaskEditorTranslations, closeImageModal -- bridged onto window by ai-designer-app.js; test/frontend/classic-script-globals.test.js checks the bridge exists */
       // Model selector dropdown functionality
       (function initModelSelector() {
         const modelSelector = document.querySelector('.model-selector');
@@ -99,15 +100,11 @@
           attributeFilter: ['class']
         });
         
-        // Method 4: Poll for language changes (fallback)
-        let lastLanguage = localStorage.getItem('selectedLanguage') || 'english';
-        setInterval(() => {
-          const currentLanguage = localStorage.getItem('selectedLanguage') || 'english';
-          if (currentLanguage !== lastLanguage) {
-            lastLanguage = currentLanguage;
-            setTimeout(updateModelDisplay, 200);
-          }
-        }, 500);
+        // Method 4: a language picked in another tab. This used to be a 500ms localStorage
+        // poll that ran for the life of the page; the storage event only fires on change.
+        window.addEventListener('storage', (e) => {
+          if (e.key === 'selectedLanguage') setTimeout(updateModelDisplay, 200);
+        });
         
         // Expose getModelApiName for use in fetch calls
         window.getSelectedModelApiName = function() {

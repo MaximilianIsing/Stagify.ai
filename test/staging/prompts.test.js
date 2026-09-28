@@ -438,3 +438,40 @@ test('DRIFT: every cad schema property is also listed as required', () => {
     'cad: properties and required must match exactly',
   );
 });
+
+// --- Round 2 (2026-09-28 eval): named failure modes, and a drift-specific retry note ---
+
+test('qualityRetryFeedbackSuffix: an architecture-drift verdict gets the room-changed note, not the generic one', () => {
+  const s = qualityRetryFeedbackSuffix({
+    perfect: false,
+    architectureDrift: true,
+    reason: 'PERFECT: false\nARCHITECTURE: changed\nWHY: the closet door was removed',
+  });
+  assert.match(s, /THE PREVIOUS ATTEMPT CHANGED THE ROOM — specifically: "the closet door was removed"/);
+  assert.match(s, /Change only the movable furniture and decor\./);
+  assert.ok(!/REVISION NEEDED/.test(s), 'not the polish-this-defect wording');
+});
+
+test('the architecture lock names the observed failure modes, right after the COUNT rule, in both variants', () => {
+  for (const room of ['Living room', 'Bathroom']) {
+    const p = generatePrompt(room, 'standard', '', false);
+    const count = p.indexOf('COUNT THEM');
+    const named = p.indexOf('THE MISTAKES THAT ACTUALLY HAPPEN');
+    assert.ok(count > 0 && named > count, room);
+    for (const phrase of ['peninsula or breakfast bar', 'closet door off its hinges', 'dark, shadowed or partly visible wall', 'tile stays tile']) {
+      assert.ok(p.includes(phrase), `${room}: ${phrase}`);
+    }
+    assert.ok(p.trimEnd().endsWith('finishes of existing permanent fixtures.'), 'the lock still ends the prompt');
+  }
+});
+
+test('the reviewer checks the same named failures, and lets an ASKED-FOR repaint through', async () => {
+  const { architectureReviewClauseFor } = await import('../../lib/staging/preservation-rules.js');
+  for (const room of ['Living room', 'Bathroom']) {
+    const c = architectureReviewClauseFor(room);
+    assert.match(c, /door removed from its frame IS a change/);
+    assert.match(c, /whether it is open or closed does NOT matter/);
+    assert.match(c, /islands, peninsulas and breakfast bars the same footprint/);
+    assert.match(c, /Wall colour, wallpaper and floor finish may differ ONLY where the user's request above explicitly asked/);
+  }
+});

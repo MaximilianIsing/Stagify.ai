@@ -529,7 +529,11 @@
 
         rerender();
         load();
-        setInterval(load, REFRESH_MS);
+        // A hidden tab skips the tick; the visibilitychange handler below catches up on return.
+        setInterval(function () {
+          if (document.hidden) return;
+          load();
+        }, REFRESH_MS);
 
         var refreshBtn = $('[data-refresh]');
         if (refreshBtn) refreshBtn.addEventListener('click', onRefresh);

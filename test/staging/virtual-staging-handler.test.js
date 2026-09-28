@@ -557,6 +557,8 @@ test('remove-furniture: a successful erase stages from the EMPTIED room, not the
 
   assert.equal(cap.seen[0].buf, emptied, 'staging runs on the erased room');
   assert.equal(cap.seen[0].params.removeFurniture, false, 'and is not asked to remove furniture again');
+  assert.ok(Buffer.isBuffer(cap.seen[0].params.architectureReferenceBuffer), 'the reviewer is handed the ORIGINAL upload to judge architecture against');
+  assert.notEqual(cap.seen[0].params.architectureReferenceBuffer, emptied, '…not the erased intermediate, which would hide erase damage');
   assert.equal(res.body.emptyRoom, 'data:image/png;base64,AAAA', 'the empty room is returned for the before/after view');
 });
 
@@ -618,3 +620,4 @@ test('remove-furniture: a free account cannot reach the erase pass at all', asyn
   assert.equal(erased, 0, 'no erase pass for a free account');
   assert.equal(cap.seen[0].removeFurniture, false, 'and the flag is dropped, not honoured');
 });
+

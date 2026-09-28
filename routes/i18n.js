@@ -46,6 +46,31 @@ export default function createI18nRouter({ __dirname, DEBUG_MODE, blogViews = nu
   const renderer = createPageRenderer({ publicDir: path.join(__dirname, 'public'), DEBUG_MODE });
 
   /**
+   * The injected body per (locale, page), memoised on the counts it was injected with —
+   * the locale-side twin of withLiveStats in lib/http/text-assets.js. injectLiveStats walks
+   * the whole page, and the counts only move when someone stages a room or signs up.
+   * @type {Map<string, { key: string, source: string, body: string }>}
+   */
+  const injectedCache = new Map();
+
+  /**
+   * @param {string} cacheKey
+   * @param {string} html
+   * @param {import('../lib/data/public-stats.js').PublicStats} stats
+   * @returns {string}
+   */
+  function withLiveStats(cacheKey, html, stats) {
+    const key = `${stats.roomsStaged}:${stats.usersServed}`;
+    const hit = injectedCache.get(cacheKey);
+    // `html` by identity: the renderer hands back the same memoised instance until it
+    // re-renders (every request in DEBUG_MODE), so a fresh render always misses.
+    if (hit && hit.key === key && hit.source === html) return hit.body;
+    const body = injectLiveStats(html, stats);
+    injectedCache.set(cacheKey, { key, source: html, body });
+    return body;
+  }
+
+  /**
    * @param {import('express').Response} res
    * @param {import('../lib/i18n/locales.js').Locale} locale
    * @param {import('../lib/i18n/locales.js').LocalizedPage | Parameters<
@@ -59,7 +84,10 @@ export default function createI18nRouter({ __dirname, DEBUG_MODE, blogViews = nu
     // deploy. res.send() derives the ETag from this body, so the counts and the ETag move
     // together. test/i18n/hero-stats-i18n.test.js is the guard on this.
     const html = renderer.render(locale, page);
-    res.type('html').send(readPublicStats ? injectLiveStats(html, readPublicStats()) : html);
+    const body = readPublicStats
+      ? withLiveStats(`${locale.prefix}:${page.file}:${page.path}`, html, readPublicStats())
+      : html;
+    res.type('html').send(body);
   }
 
   /**

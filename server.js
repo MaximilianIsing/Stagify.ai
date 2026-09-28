@@ -336,8 +336,9 @@ const { deleteUser } = createUserDeletion({ baseDir: __dirname, getDataLogDir, f
 // GPT-vision / Gemini helpers extracted to lib/, instantiated with this server's
 // AI clients (the pure helpers they call are direct imports inside each module).
 const { annotateImage } = createImageAnnotation({ openai });
-const { reviewImageQuality, reviewMaskEdit, validateStageableImage, validateExteriorImage } = createImageReview({ genAI });
-const { roomIsAlreadyEmpty, eraseFurniture } = createErase({ genAI, openai });
+const { reviewImageQuality, reviewMaskEdit, validateStageableImage, validateExteriorImage, compareRoomPhotos } = createImageReview({ genAI });
+// Erase is verified on the Gemini comparative judge when configured, else OpenAI vision.
+const { roomIsAlreadyEmpty, eraseFurniture } = createErase({ genAI, openai, compareRoomPhotos: genAI ? compareRoomPhotos : null });
 // NO reviewer, on purpose — the quality gate is OFF for blueprint renders, and that is a
 // measured decision rather than an oversight (cad-handling.js still accepts one, and the
 // specs inject a fake, so re-enabling is a one-word change here).
@@ -363,13 +364,8 @@ const { healthHandler, protectLogs, requireEndpointKey, stagingEndpointKeyGuard 
   healthFlags: () => healthFlags(healthDeps),
 });
 
-// ---------------------------------------------------------------------------
-// Self-check quality gate
-// After generating an image we ask a cheap vision model whether it is basically
-// perfect (no obvious issues). If so, we accept it immediately. If not, it also
-// returns a 0-100 score; we regenerate up to QUALITY_MAX_ATTEMPTS total and, if
-// none come back perfect, return the highest-scoring attempt so the user always
-// gets the best available image.
+// Self-check quality gate: each render is reviewed (lib/image/image-review.js); a
+// not-perfect one is regenerated up to this many times and the best-scored one ships.
 const QUALITY_MAX_ATTEMPTS = 3;
 
 // The Gemini image-generation pipeline (the quality-gate retry wrapper +

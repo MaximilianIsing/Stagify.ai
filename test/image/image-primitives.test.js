@@ -386,3 +386,19 @@ test('detectImageMimeType falls back to image/png rather than throwing on junk',
   assert.equal(await detectImageMimeType(Buffer.from('not an image at all')), 'image/png');
   assert.equal(await detectImageMimeType(Buffer.alloc(0)), 'image/png');
 });
+
+// The default 1920×1080 BOX halves a portrait: 3024×4032 lands at 810×1080. The staging
+// path passes a long-edge bound instead, so orientation no longer decides resolution.
+test('downscaleImage: maxEdge bounds the LONG edge, so a portrait keeps its resolution', async () => {
+  const portrait = await png(1512, 2016);
+  const boxed = await meta(await downscaleImage(portrait));
+  assert.equal(boxed.height, 1080, 'default box: portrait squeezed to 1080 tall');
+
+  const bounded = await meta(await downscaleImage(portrait, { maxEdge: 2048 }));
+  assert.equal(bounded.width, 1512, 'already inside a 2048 long edge → not shrunk');
+  assert.equal(bounded.height, 2016);
+
+  const huge = await meta(await downscaleImage(await png(3024, 4032), { maxEdge: 2048 }));
+  assert.equal(huge.height, 2048);
+  assert.equal(huge.width, 1536);
+});

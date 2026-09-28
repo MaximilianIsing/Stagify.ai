@@ -415,3 +415,40 @@ test('mask-edit: a non-enterprise user (null domain) is never reported to report
   assert.equal((await res.json()).success, true);
   assert.equal(usageCalls.length, 0, 'reportEnterpriseUsage must not be called for non-enterprise users');
 });
+
+// The generation step itself, driven through the real generateOnce: a fake retry calls it
+// twice — once clean, once with a not-perfect verdict — and a fake genAI records what the
+// model was sent. Pins three fixes: the room is labelled as the JPEG it is, the output shape
+// is pinned like staging's, and a retry names the reviewer's defect instead of re-rolling.
+test('mask-edit: labels the room JPEG, pins the aspect ratio, and feeds the QA verdict into the retry', async () => {
+  const modelOut = (await sharp({ create: { width: 8, height: 8, channels: 3, background: { r: 1, g: 2, b: 3 } } }).png().toBuffer()).toString('base64');
+  const calls = [];
+  const genAI = {
+    getGenerativeModel: (opts) => ({
+      generateContent: async (parts) => {
+        calls.push({ opts, parts });
+        return { response: { candidates: [{ content: { parts: [{ inlineData: { data: modelOut } }] } }] } };
+      },
+    }),
+  };
+  const verdict = { perfect: false, score: 40, reason: 'PERFECT: false\nSCORE: 40\nWHY: the plant is cut off at the outline' };
+  app = await mountStaging({
+    requireProAccount: proUser,
+    genAI,
+    generateWithQualityRetry: async (generateOnce) => {
+      await generateOnce(1, null);
+      return generateOnce(2, verdict);
+    },
+  });
+  const res = await postJson(app.baseUrl, '/api/mask-edit', { image: IMAGE, mask: MASK, prompt: 'add a green plant' });
+  assert.equal(res.status, 200);
+  assert.equal(calls.length, 2);
+
+  assert.equal(calls[0].parts[1].inlineData.mimeType, 'image/jpeg', 'downscaleImage returns JPEG, so the room is declared JPEG');
+  assert.equal(calls[0].opts.generationConfig?.imageConfig?.aspectRatio, '1:1', 'a square room is pinned to the 1:1 bucket');
+
+  assert.ok(!/AUTOMATED QA/.test(calls[0].parts[0].text), 'the first attempt carries no retry note');
+  assert.match(calls[1].parts[0].text, /AUTOMATED QA — REVISION NEEDED/);
+  assert.match(calls[1].parts[0].text, /the plant is cut off at the outline/, 'the retry names the defect');
+  assert.equal(calls[1].parts.length, calls[0].parts.length, 'only the text changes; the images ride along unchanged');
+});

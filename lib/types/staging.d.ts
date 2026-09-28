@@ -61,6 +61,16 @@ export interface StagingParams {
    */
   reviewBasePrompt?: string | null;
   /**
+   * The photo the QA reviewer's architecture check should compare against, when it is not
+   * the image being staged.
+   *
+   * Set by the virtual-staging handler after a furniture erase: staging then starts from
+   * the erased intermediate, and a window the erase destroyed is missing from both that
+   * intermediate and the render, so a comparison against it reads "same". This is the
+   * user's original upload. Omitted, the reviewer compares against the staging input.
+   */
+  architectureReferenceBuffer?: Buffer | null;
+  /**
    * Turn the self-check quality gate off for this render.
    *
    * The gate pays a vision review per attempt and regenerates up to QUALITY_MAX_ATTEMPTS

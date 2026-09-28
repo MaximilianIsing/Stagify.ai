@@ -1,4 +1,8 @@
-// Undefined-global net for the UNLINTED classic frontend scripts.
+// Undefined-global net for the classic frontend scripts.
+//
+// ESLint's no-undef now covers these files too, but it cannot see across files:
+// a bridged name is declared to it with a `/* global */` comment, which stays
+// green even if the bridge is deleted. This test is what checks the bridge.
 //
 // test/frontend/classic-scripts-parse.test.js proves each classic script PARSES;
 // it says so itself that "undefined browser globals are runtime, so nothing is

@@ -271,7 +271,7 @@ const IMG_KEY = 'heroPickImg';
  * @returns {{room: object, style: object}|null}
  */
 function readStored() {
-  let raw = null;
+  let raw;
   try {
     raw = window.localStorage.getItem(STORE_KEY);
   } catch {
@@ -349,7 +349,6 @@ function initHeroPicker() {
   const cache = {};
 
   const base = (r, s) => DIR + s.slug + '-' + r.slug;
-  const src = (r, s) => base(r, s) + '.webp';
   const pairKey = (r, s) => s.slug + '-' + r.slug;
 
   const adoptedKey = restored ? pairKey(restored.room, restored.style) : pairKey(room, style);
@@ -882,7 +881,7 @@ function initHeroPicker() {
     const list = open.querySelector('.hp-menu__list');
     const rows = Number(list && /** @type {HTMLElement} */ (list).style.getPropertyValue('--hp-menu-rows')) || items.length;
 
-    let next = null;
+    let next;
     if (e.key === 'ArrowDown') next = at < 0 ? 0 : (at + 1) % items.length;
     /* `at < 0` — focus is not on an option, which happens after Tab used to walk out and can
        still happen if a click lands oddly. Up must mean "the last option"; the old

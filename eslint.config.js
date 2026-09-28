@@ -10,9 +10,13 @@
 //      type-checker (scripts/typecheck-frontend.js) consumes that same discovery, so the lint
 //      scope and the type-check scope are always the same set of files.
 //
-// Everything else under public/ — classic <script> files that share globals across files, plus
-// minified/generated bundles (carousel, star-border, sponsors-scroll, language-loader, demo-data,
-// vendor/*) — has neither marker, matches NO block, and is intentionally left unlinted. Do NOT add
+//   3. Classic scripts — hand-written <script> files under public/scripts/, listed by name in
+//      their own block (sourceType 'script'). A new classic file is NOT picked up automatically;
+//      add it to that list.
+//
+// Everything else under public/ — minified/generated bundles (carousel, star-border,
+// sponsors-scroll, language-loader, demo-data, vendor/*) — matches NO block and is
+// intentionally left unlinted. Do NOT add
 // a broad `public/**` ignore: ESLint can't un-ignore files beneath a `/**`-ignored ancestor, which
 // would make the frontend block unreachable; scoping via `files` (below) is what keeps the classic
 // scripts out.
@@ -176,6 +180,40 @@ export default [
       // it — don't raise this. The three files still over the line are grandfathered
       // just below, as tracked debt to shrink the same way.
       'max-lines': ['error', 650],
+    },
+  },
+
+  {
+    // Frontend: classic (non-module) <script> files. Listed explicitly rather than globbed so
+    // the generated demo-data.js and minified bundles stay out. Cross-file globals are read
+    // off `window` (window.closeImageModal, …) so no-undef stays on. No max-lines ratchet here:
+    // it targets the ESM entry scripts above, and hero-picker.js predates it by a wide margin.
+    files: [
+      'public/scripts/ai-designer-gate.js',
+      'public/scripts/ai-designer-model-selector.js',
+      'public/scripts/api-keys-gate.js',
+      'public/scripts/demo-player.js',
+      'public/scripts/developers-gate.js',
+      'public/scripts/faq-redirect.js',
+      'public/scripts/gallery-gate.js',
+      'public/scripts/hero-cta-boot.js',
+      'public/scripts/hero-picker.js',
+      'public/scripts/hero-restore.js',
+      'public/scripts/preview-gate.js',
+      'public/scripts/session-class.js',
+    ],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'script',
+      globals: {
+        ...globals.browser,
+        LanguageSystem: 'readonly',
+      },
+    },
+    rules: {
+      ...recommendedRules,
+      'no-empty': ['error', { allowEmptyCatch: true }],
+      'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrors: 'none' }],
     },
   },
 

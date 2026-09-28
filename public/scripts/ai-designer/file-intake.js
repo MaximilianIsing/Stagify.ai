@@ -45,6 +45,16 @@ export function createFileIntake(deps) {
 
       let dragCounter = 0; // Track drag enter/leave events to handle nested elements
 
+      // Object URLs behind the current preview thumbnails. Every re-render clears the list
+      // and mints new ones, so the old set is revoked first or each add/remove leaks a
+      // reference to the whole File.
+      let previewUrls = [];
+      function clearPreviewList(list) {
+        previewUrls.forEach((url) => URL.revokeObjectURL(url));
+        previewUrls = [];
+        list.innerHTML = '';
+      }
+
       // Update file preview
       // A `let` (not a function declaration) so the wrapper installed later that
       // also refreshes the send button can reassign it (see below). The recursive
@@ -55,12 +65,12 @@ export function createFileIntake(deps) {
 
         if (selectedFiles.length === 0) {
           container.classList.remove('has-files');
-          list.innerHTML = '';
+          clearPreviewList(list);
           return;
         }
 
         container.classList.add('has-files');
-        list.innerHTML = '';
+        clearPreviewList(list);
 
         selectedFiles.forEach((file, index) => {
           const item = document.createElement('div');
@@ -68,7 +78,9 @@ export function createFileIntake(deps) {
 
           if (file.type.startsWith('image/')) {
             const img = document.createElement('img');
-            img.src = URL.createObjectURL(file);
+            const url = URL.createObjectURL(file);
+            previewUrls.push(url);
+            img.src = url;
             img.alt = getPdfAlt('uploadPreview', { filename: file.name });
             item.appendChild(img);
           } else {

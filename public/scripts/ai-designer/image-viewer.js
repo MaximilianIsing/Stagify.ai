@@ -456,7 +456,7 @@ export function createImageViewer(deps) {
 
         viewport.addEventListener('touchstart', (e) => {
           touchStartX = e.changedTouches[0].screenX;
-        });
+        }, { passive: true });
 
         viewport.addEventListener('touchend', (e) => {
           touchEndX = e.changedTouches[0].screenX;

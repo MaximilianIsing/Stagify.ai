@@ -99,7 +99,7 @@ test('processImageGeneration: delivers the model output upscaled ×2 as WebP', a
 
 // Run processStaging over a room of the given size and report the generationConfig the
 // model was built with. Shared by the two aspect-ratio-pin cases below.
-async function capturePinFor(width, height) {
+async function capturePinFor(width, height, model = 'gemini-2.5-flash-image') {
   const modelPng = await png(1248, 832);
   let capturedOptions = null;
   const genAI = {
@@ -119,7 +119,7 @@ async function capturePinFor(width, height) {
   await processStaging(
     await jpg(width, height),
     { roomType: 'Bedroom', furnitureStyle: 'standard', additionalPrompt: '', removeFurniture: false },
-    { body: {} }, null, 'gemini-2.5-flash-image',
+    { body: {} }, null, model,
   );
   return capturedOptions?.generationConfig ?? null;
 }
@@ -636,4 +636,59 @@ test('labelVirtuallyStaged: the stamp call is NOT wrapped in its own try/catch',
     !/try\s*\{[^}]*$/.test(runUp),
     'stampVirtuallyStaged must not be wrapped in its own try/catch — it fails closed by design',
   );
+});
+
+// After a furniture erase, staging starts from the ERASED room. Comparing the render against
+// that is blind to anything the erase destroyed — a bricked-up window is missing from both
+// images — so the handler passes the original upload and the reviewer must use it.
+test('processStaging: architectureReferenceBuffer replaces the staging input as the reviewer source', async () => {
+  const modelPng = await png(900, 600);
+  let reviewOpts = null;
+  const { processStaging } = createStagingGeneration({
+    genAI: fakeGenAI(modelPng), DEBUG_MODE: false, runQualityRetry: reviewingRetry,
+    reviewImageQuality: async (_url, opts) => { reviewOpts = opts; return { perfect: true, score: 100 }; },
+    QUALITY_MAX_ATTEMPTS: 1, logPromptToFile: () => {},
+  });
+  const erased = await sharp({ create: { width: 900, height: 600, channels: 3, background: { r: 250, g: 250, b: 250 } } }).jpeg().toBuffer();
+  const original = await sharp({ create: { width: 900, height: 600, channels: 3, background: { r: 10, g: 10, b: 10 } } }).jpeg().toBuffer();
+  const params = { roomType: 'Bedroom', furnitureStyle: 'standard', additionalPrompt: '', removeFurniture: false };
+
+  await processStaging(erased, { ...params, architectureReferenceBuffer: original }, { body: {} }, null, 'gemini-2.5-flash-image');
+  const withRef = (await sharp(decode(reviewOpts.sourceDataUrl)).stats()).channels[0].mean;
+  assert.ok(withRef < 50, `the reviewer compared against the dark ORIGINAL, not the light erased room (mean ${withRef})`);
+
+  await processStaging(erased, params, { body: {} }, null, 'gemini-2.5-flash-image');
+  const withoutRef = (await sharp(decode(reviewOpts.sourceDataUrl)).stats()).channels[0].mean;
+  assert.ok(withoutRef > 200, 'without the field the staging input is still the reference');
+});
+
+// The model's output used to be labelled image/png unconditionally.
+test('processImageGeneration: honours the MIME type the model actually returned', async () => {
+  const modelJpeg = await jpg(800, 600);
+  let seenUrl = null;
+  const genAI = {
+    getGenerativeModel: () => ({
+      generateContent: async () => ({
+        response: { candidates: [{ content: { parts: [{ inlineData: { mimeType: 'image/jpeg', data: modelJpeg.toString('base64') } }] } }] },
+      }),
+    }),
+  };
+  const { processImageGeneration } = createStagingGeneration({
+    genAI, DEBUG_MODE: false,
+    runQualityRetry: async (generateOnce) => { seenUrl = await generateOnce(1, null); return seenUrl; },
+    reviewImageQuality: async () => ({ perfect: true, score: 100 }), QUALITY_MAX_ATTEMPTS: 1, logPromptToFile: () => {},
+  });
+  await processImageGeneration('a reading nook', { body: {} }, 'gemini-2.5-flash-image');
+  assert.match(seenUrl, /^data:image\/jpeg;base64,/);
+});
+
+
+// Output size is deliberately the model default (1K). 2K was measured on 25 real rooms: it
+// looked better but doubled latency and raised cost, with no gain in architecture fidelity,
+// so it was removed. This pins that no imageSize is requested on any tier.
+test('processStaging: never requests a non-default output size', async () => {
+  for (const model of ['gemini-3.1-flash-image', 'gemini-3.1-flash-lite-image', 'gemini-2.5-flash-image']) {
+    const cfg = await capturePinFor(900, 600, model);
+    assert.equal(cfg?.imageConfig?.imageSize, undefined, model);
+  }
 });

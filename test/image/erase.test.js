@@ -218,3 +218,40 @@ test('eraseFurniture: every generation attempt throwing → null after exhaustin
   assert.equal(await eraseFurniture(input, null), null);
   assert.equal(state.calls, 3, 'all three attempts were tried before giving up');
 });
+
+// The emptied room is what staging rebuilds the architecture from, so a drifted erase is
+// centre-cropped back to the source ratio like processStaging's output — never stretched,
+// which used to hand staging a room with its proportions already distorted.
+test('eraseFurniture: a drifted output is cropped back to the source ratio, not stretched', async () => {
+  const input = await pngBuffer(300, 200);                                 // 3:2 source
+  const drifted = (await pngBuffer(360, 200)).toString('base64');           // 1.8:1 — 20% wide
+  const { genAI } = fakeGenAI([drifted]);
+  const { eraseFurniture } = createErase({ genAI, openai: fakeOpenAI('CLEAN: true') });
+
+  const result = await eraseFurniture(input, null);
+  const m = await sharp(result.buffer).metadata();
+  assert.equal(m.height, 200, 'height untouched: a stretch would have changed it');
+  assert.equal(m.width, 300, 'the extra width was cropped away, restoring 3:2');
+});
+
+// With the Gemini comparative judge wired in, it owns the post-erase verdict; OpenAI is not
+// consulted. The verdict format and its parser are unchanged.
+test('verifyRoomEmptied: prefers the injected comparative judge over OpenAI', async () => {
+  const buf = await pngBuffer();
+  const calls = [];
+  const compareRoomPhotos = async (text, images, max) => { calls.push({ text, images, max }); return 'CLEAN: true\nROOM: damaged | the left window was filled in'; };
+  const openai = fakeOpenAI(new Error('OpenAI must not be called'));
+
+  const v = await createErase({ openai, compareRoomPhotos }).verifyRoomEmptied(buf, '', await pngBuffer());
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].images.length, 2, 'source first, then the erase');
+  assert.match(calls[0].text, /QUESTION 2 — DID THE ROOM SURVIVE/);
+  assert.equal(v.intact, false);
+  assert.equal(v.damage, 'the left window was filled in');
+});
+
+test('verifyRoomEmptied: a throwing comparative judge still fails OPEN', async () => {
+  const v = await createErase({ compareRoomPhotos: async () => { throw new Error('down'); } })
+    .verifyRoomEmptied(await pngBuffer(), '', await pngBuffer());
+  assert.deepEqual(v, CLEAN_INTACT);
+});

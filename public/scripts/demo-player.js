@@ -1,3 +1,4 @@
+/* global module */
 /* ==========================================================================
    Stagify local walkthrough player — faithful rebuild of the Supademo embed.
 
