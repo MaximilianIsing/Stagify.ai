@@ -1,12 +1,9 @@
 // Main Stagify tool (index.html) — the mask editor's optional reference photo.
 //
-// CHARACTERIZATION, written before consolidating the two mask editors onto one
-// set of behaviour slices. The AI Designer's already-extracted mask-reference.js
-// wires the picker and the remove button but has NO drag-and-drop; the stage
-// editor wires drop zones on both the "+ Add photo" button and the thumbnail.
-// Pointing the stage editor at the shared slice without carrying that across
-// would silently delete a working feature, and nothing would have caught it —
-// so it is pinned here first.
+// Both mask editors share scripts/mask/reference.js and pass it `dropZones`
+// (drag-and-drop onto the "+ Add photo" button and the thumbnail). `dropZones`
+// defaults to none, so this pins the stage editor's drop zones: a change to the
+// shared slice or to the editor's wiring cannot silently delete them.
 //
 // /api/validate-image is mocked and no generation is started, so this costs
 // nothing. Geometry is deliberately not asserted (that lives in the fit spec);

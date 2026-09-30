@@ -628,14 +628,11 @@ is written in this repo, not produced by a runtime exception.
 
 ## Secrets
 
-- `.env` and the `*.txt` key files are **gitignored**. Precedence depends on the secret:
-  - The Stripe keys and price ids, the Google OAuth client id/secret, `endpoint_key` and
-    the API-credit price ids (`lib/config/config.js`) read the **file first**, searched
-    in `STRIPE_SECRETS_DIR`, the app directory, the working directory, then
-    `/etc/secrets`, and fall back to the env var only when no file is found. A stale key
-    file on disk therefore overrides the dashboard value.
-  - The Resend key is env-first, with `resendkey.txt` as the fallback.
-  - The Gemini and OpenAI keys are env-only.
+- Every secret is an **env var only**: the Render dashboard in production, `.env`
+  locally (`.env` is **gitignored**). No secret is read from a `.txt` file, so a key
+  file left on disk can never shadow the dashboard value. A Stripe key or price id with
+  the wrong prefix (`sk_`, `pk_`, `price_`) is ignored with a boot warning
+  (`lib/config/config.js`, guarded by `test/config/env-only-secrets.test.js`).
 - Production secrets live in the **Render dashboard**, never in the repo (`render.yaml`
   declares no env vars). Full list: the env doc.
 - Sentry runs with **`sendDefaultPii: false`** — no cookies, auth headers, or client IP

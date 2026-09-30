@@ -7,7 +7,7 @@
 // same-named wrappers that pass its live globals, so its call sites are
 // unchanged.
 //
-// This mirrors the already-tested backend lib/chat-history.js
+// This mirrors the already-tested backend lib/chat/chat-history.js
 // (collectImagesFromHistory / getOriginalImageIndex) but operates on the
 // browser's `conversationHistory` shape rather than the API message format.
 

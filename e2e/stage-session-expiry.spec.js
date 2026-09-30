@@ -1,20 +1,9 @@
 // Main tool — the session expires between opening the stage dialog and pressing Process.
 //
-// This file was `stage-mobile-auth.spec.js`, and it existed to cover a branch that only
-// a phone could reach. `public/scripts/app/app.js` used to read:
-//
-//     if (error && error.code === 'AUTH_REQUIRED' && isMobileStagingViewport()) {
-//       …setAuthModeRegister(true); openAuthModal(true);…
-//
-// so a phone got the create-account prompt and a desktop got NOTHING — no message, no
-// prompt, just a progress bar that disappeared. The mobile-chrome project is what made
-// that asymmetry visible; the desktop half of this file used to be a negative control
-// asserting the silence, with a note saying it was reported rather than papered over.
-//
-// It is fixed now: scripts/app/staging-failure.js handles AUTH_REQUIRED on any viewport,
-// so this runs on BOTH projects and asserts the same outcome in each. The premise guard
-// that pinned the media query is gone with the media query — the handler no longer
-// consults one, which is the whole point.
+// scripts/app/staging-failure.js handles AUTH_REQUIRED on any viewport, so this runs on
+// BOTH projects and asserts the same outcome in each. It once handled it only behind a
+// phone-width media query, and a desktop user got no message and no prompt, just a
+// progress bar that disappeared. Do not reintroduce a viewport check here.
 //
 // Everything is mocked (auth/me, validate-image, process-image) — no account, no Gemini,
 // no cost.

@@ -152,9 +152,8 @@ export default function createI18nRouter({ __dirname, DEBUG_MODE, blogViews = nu
     router.get(`/${locale.prefix}/index.html`, (req, res) => res.redirect(301, `/${locale.prefix}`));
 
     // Pages that USED to be localized and no longer are (see RETIRED_LOCALIZED_PATHS).
-    // Without this they'd fall through to Express's default 404, because there is no
-    // custom 404 handler — and these URLs were in the sitemap for long enough to be
-    // indexed. 301 preserves the link equity against the surviving English page.
+    // Without this they'd fall through to the 404 handler, and these URLs were in the
+    // sitemap for long enough to be indexed. 301 preserves the link equity against the surviving English page.
     for (const retired of RETIRED_LOCALIZED_PATHS) {
       router.get(`/${locale.prefix}${retired}`, (req, res) => res.redirect(301, retired));
     }

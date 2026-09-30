@@ -148,7 +148,7 @@ test('the See-original toggle does not announce the opposite of its state', () =
       + 'aria-pressed carries it. Both together announce the inverse of the truth.',
   );
   /* BOTH labels live in the markup, each keeping its own key for good. That is what lets the
-     button carry the action without a second writer: applyTranslations() repaints from
+     button carry the action without a second writer: applyLanguageToElements() repaints from
      data-lang and nothing in hero-picker.js ever writes this button's text, so the two can
      never disagree. Rewrite one span from JS instead and a language change repaints the
      stale key over it. */

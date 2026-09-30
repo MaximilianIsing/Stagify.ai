@@ -1,4 +1,4 @@
-// Tier: core pipeline — the quality-retry loop (lib/staging-pipeline.js).
+// Tier: core pipeline — the quality-retry loop (lib/staging/staging-pipeline.js).
 //
 // This is the heart of staging/mask generation: generate an image, score it, retry
 // if it isn't good enough, and pick the best. Driven here with scripted generators

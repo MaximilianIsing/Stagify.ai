@@ -14,7 +14,7 @@
   //
   // KEEP THE PREFIX LIST IN SYNC WITH lib/i18n/locales.js. It is duplicated here on
   // purpose (an ES import would defer this script past the paint it exists to beat),
-  // and masking-studio-gate.js carries the identical copy. Both are guarded by
+  // and developers-gate.js carries the identical copy. Both are guarded by
   // test/i18n/locale-data.test.js, which runs this function against every prefix the
   // server serves — adding a locale without touching both gates fails the build.
   function localeTarget(rel) {

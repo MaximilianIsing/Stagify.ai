@@ -1,4 +1,4 @@
-// Email send + open-tracking (lib/email.js). The verification-code path must fail
+// Email send + open-tracking (lib/services/email.js). The verification-code path must fail
 // with the exact status/code contract the auth routes relay, must never leak prod
 // mail when EMAIL_DEBUG_MODE redirects recipients, and the open-tracking proxy-UA
 // filter gates whether an "open" counts at all. Fake `resend` transport + temp dir

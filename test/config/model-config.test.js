@@ -1,4 +1,4 @@
-// Model-selection maps (lib/model-config.js). Pure input→output — a wrong mapping
+// Model-selection maps (lib/config/model-config.js). Pure input→output — a wrong mapping
 // silently picks the wrong model or an unsupported temperature.
 
 import { test } from 'node:test';

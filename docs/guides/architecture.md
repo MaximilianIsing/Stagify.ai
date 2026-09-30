@@ -164,7 +164,7 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 
 | Module | Responsibility |
 |---|---|
-| `config.js` | Reads Stripe, Google OAuth, `endpoint_key` and API-credit price secrets from a `.txt` file **first** (`STRIPE_SECRETS_DIR`, repo root, cwd, `/etc/secrets`), then the env var. A stray file overrides the Render env. |
+| `config.js` | Reads the Stripe, Google OAuth, `endpoint_key`, meter-event and API-credit price settings from their env vars only (no file fallback). A value with the wrong prefix (`sk_`, `pk_`, `price_`) is ignored with a boot warning. |
 | `model-config.js` | Model selection + per-model temperature for the AI calls. |
 | `runtime-flags.js` | Computes the boot flags once (`DEBUG_MODE`, `IS_STAGING`, `HIDE_STAGING_BANNER`, stats overrides). The bootstrap layer beneath the logger. |
 
@@ -263,7 +263,7 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 
 | Module | Responsibility |
 |---|---|
-| `ai-clients.js` | Constructs the Gemini / OpenAI / Resend clients once at boot from env; only Resend still falls back to `resendkey.txt`. Sets `GEMINI_TIMEOUT_MS` / `OPENAI_TIMEOUT_MS` ceilings. |
+| `ai-clients.js` | Constructs the Gemini / OpenAI / Resend clients once at boot from env only (no file fallback). Sets `GEMINI_TIMEOUT_MS` / `OPENAI_TIMEOUT_MS` ceilings. |
 | `gemini-client.js` | Gemini on `@google/genai`, behind the call shape the codebase was written against. |
 | `lifecycle-emails.js` | Trial-lifecycle email renderers (welcome, nudge, ending, win-back). |
 | `trial-lifecycle.js` | Decides which lifecycle email fires when, and records it. |
@@ -483,13 +483,11 @@ handler defined by its position in the pipeline proves nothing when mounted alon
 ## Configuration & secrets
 
 Loaded by [`load-env.js`](../../load-env.js) (imported first in `server.js`, before any
-secret is read). Precedence depends on the secret:
-
-- **`.txt` file first, then env:** the `lib/config/config.js` secrets (Stripe keys and
-  price IDs, Google OAuth, `endpoint_key`), searched in `STRIPE_SECRETS_DIR`, the repo
-  root, the cwd and `/etc/secrets`. A stray file overrides the Render env.
-- **Env first, then file:** `RESEND_API_KEY`, `EMAIL_DEBUG`, `DEBUG_EMAIL`.
-- **Env only:** `GOOGLE_AI_API_KEY`, `GPT_KEY`, `DEBUG`.
+secret is read). Every secret and setting is an env var: the Render dashboard in
+production, `.env` locally. There are no `.txt` file fallbacks, so each value has one
+source of truth. `lib/config/config.js` ignores a Stripe key or price id with the wrong
+prefix (`sk_`, `pk_`, `price_`) and logs a warning at boot. Guarded by
+`test/config/env-only-secrets.test.js`.
 
 Full reference: [`environment-variables.md`](../reference/environment-variables.md).
 

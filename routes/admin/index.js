@@ -1,4 +1,4 @@
-// admin routes, extracted verbatim from server.js.
+// Admin console routes (the main admin router; its sibling routers live alongside it).
 import express from 'express';
 import { createAsyncRouter } from '../../lib/http/async-router.js';
 import { sendError, resolveAppOrigin, getStagingClientIp } from '../../lib/http/http-helpers.js';

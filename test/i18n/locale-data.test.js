@@ -153,12 +153,9 @@ test('every language switcher in the markup lists exactly the server locale set'
 // exists to hide. It therefore inlines the prefix regex and its own copy of
 // localeTarget().
 //
-// It used to have a twin: masking-studio-gate.js carried the identical copy until
-// that page became a public preview. A gate that never navigates needs no locale
-// target at all, so the duplicate was DELETED rather than kept in sync. The list
-// below is one entry today and the machinery is unchanged, because the remaining
-// gate has exactly the same failure mode — and because the next preview conversion
-// should shrink this list again rather than work around it.
+// A gate that never navigates (preview-gate.js) needs no locale target at all, so
+// only the redirecting gates carry a copy, and converting a page to a public preview
+// should shrink the list below rather than work around it.
 //
 // The copy is defensible; the silence was not. The guard above catches a file
 // naming three or more languages ('spanish', 'french', …) — this hardcodes

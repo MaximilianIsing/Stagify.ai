@@ -1,4 +1,4 @@
-// Pure request/response helpers (lib/http-helpers.js). isLikelyMobileStagingRequest
+// Pure request/response helpers (lib/http/http-helpers.js). isLikelyMobileStagingRequest
 // is security-relevant: it decides whether an unauthenticated request is blocked
 // (desktop → must sign in) or allowed onto the IP-based free tier (mobile). A
 // misclassification would let anonymous desktop clients bypass the sign-in gate.

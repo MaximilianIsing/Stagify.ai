@@ -1,11 +1,9 @@
 // Pins a mask-editor dialog to the mobile VISUAL viewport (the area not covered
 // by the browser URL bar / on-screen keyboard) and cleans up on close.
 //
-// Shared by both mask editors. It previously existed twice: once here (as
-// ai-designer/mask-viewport.js, resolving `#mask-editor-modal` by id) and once
-// inline in app/stage-mask-editor.js against its own `#stage-mask-modal`. The
-// logic was identical; only the element differed — so the element is now the
-// parameter and the logic is written once.
+// Shared by both mask editors: ai-designer/mask-editor.js (`#mask-editor-modal`) and
+// app/stage-mask-editor.js (`#stage-mask-modal`). Only the element differs, so the
+// element is the parameter.
 //
 //   createMaskViewport({ getModal }) -> { bind, unbind, sync }
 //

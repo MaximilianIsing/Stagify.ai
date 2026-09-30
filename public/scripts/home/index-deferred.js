@@ -8,10 +8,11 @@
 // in that window. Pulling them out is CPU relief, not bandwidth relief — the bandwidth
 // problem was fixed separately.
 //
-// ORDER IS LOAD-BEARING for the first three: demo-data.js defines
+// ORDER IS INTENT, NOT A GUARANTEE, for the guides trio: demo-data.js defines
 // `window.STAGIFY_DEMOS`, demo-player.js defines the player that reads it, and
-// designer-demo.js mounts the players. They are injected in array order and, because
-// none of them is `async`, the browser preserves execution order among them.
+// designer-demo.js mounts the players. A dynamically inserted script is async by default,
+// so the array order does not fix execution order; designer-demo.js waits for both
+// globals instead of assuming they arrived first.
 //
 // THE TRAP, if you add to this list. Everything here runs AFTER `load`, so a module
 // that registers work on `DOMContentLoaded` or `load` will never initialise — the event
@@ -21,9 +22,7 @@
 //     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
 //     else init();
 //
-// sponsors-scroll.js, star-border.js and index-inline.js all needed exactly that fix.
-// (star-border.js is no longer injected — the hero counters stopped being pills — but the
-// note stands for anything added to the list below.)
+// sponsors-scroll.js and index-inline.js both needed exactly that fix.
 //
 // CSP: `script-src 'self'` restricts where scripts may come from, not how the element
 // got into the document, and there is no 'strict-dynamic'. Same-origin injected tags are

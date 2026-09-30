@@ -1,4 +1,4 @@
-// chat routes, extracted verbatim from server.js.
+// Chat routes (/api/chat and /api/chat-upload).
 //
 // Both handlers are orchestration only: each cohesive step lives in a module
 // under lib/chat/ (see chat-request-prep / chat-upload-prep / chat-upload-context

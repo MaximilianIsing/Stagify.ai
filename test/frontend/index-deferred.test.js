@@ -1,15 +1,15 @@
 // The homepage's after-`load` script list, and the trap that comes with it.
 //
-// public/scripts/home/index-deferred.js injects ~13 below-fold scripts once the page has
+// public/scripts/home/index-deferred.js injects ~20 non-hero scripts once the page has
 // loaded, to keep them from being parsed on a throttled CPU while the browser is trying
 // to paint the hero. The hazard is specific and silent: anything injected after `load`
 // has MISSED both `DOMContentLoaded` and `load`, so a module that registers its init on
-// either event never runs. Nothing throws. The marquee just stops looping, the glow ring
-// never mounts, the #ai-designer-demo deep link quietly stops scrolling.
+// either event never runs. Nothing throws. The marquee just stops looping, the
+// #ai-designer-demo deep link quietly stops scrolling.
 //
-// Three of the files in that list (sponsors-scroll, star-border, index-inline) had
-// exactly that bug and were converted to the guarded form. This test stops the next
-// addition from reintroducing it.
+// Two of the files in that list (sponsors-scroll, index-inline) had exactly that bug and
+// were converted to the guarded form. This test stops the next addition from
+// reintroducing it.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -142,8 +142,9 @@ test('no deferred script registers its init on an event that has already fired',
 
 test('the guides walkthrough trio keeps its load order', () => {
   // demo-data.js defines window.STAGIFY_DEMOS, demo-player.js defines the renderer that
-  // reads it, designer-demo.js mounts the players. They are injected in array order and
-  // none is `async`, so execution order follows — but only if the array order is right.
+  // reads it, designer-demo.js mounts the players. Dynamically injected scripts are async,
+  // so this order is intent rather than a guarantee (designer-demo.js polls for both
+  // globals), but it is still the order the fetches should start in.
   const list = deferredList();
   const at = (name) => list.findIndex((s) => s.endsWith(name));
   const data = at('demo-data.js');

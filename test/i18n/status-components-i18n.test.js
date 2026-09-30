@@ -32,7 +32,7 @@ const componentsFor = (lang) => {
   return block;
 };
 
-/** @param {string} lang @param {object} block @param {string} keyPath */
+/** @param {string} lang @param {*} value @param {string} keyPath */
 function requireString(lang, value, keyPath) {
   assert.equal(typeof value, 'string', `${lang}.json is missing ${keyPath}`);
   assert.ok(value.trim().length > 0, `${lang}.json has an empty ${keyPath}`);

@@ -181,15 +181,21 @@ test('DRIFT GUARD: every gate redirects at exactly the width the nav hides links
   const breakpoint = cssBreakpoint();
 
   const wrong = [];
-  for (const file of fs.readdirSync(SCRIPTS).filter((f) => /-gate\.js$/.test(f))) {
-    const src = fs.readFileSync(path.join(SCRIPTS, file), 'utf8');
-    // Not every gate is a viewport gate — masking-studio-gate.js is a plan gate and
-    // asks no media query at all. Only the ones that do are held to the number.
+  let checked = 0;
+  const gatesDir = path.join(SCRIPTS, 'gates');
+  for (const file of fs.readdirSync(gatesDir).filter((f) => /-gate\.js$/.test(f))) {
+    const src = fs.readFileSync(path.join(gatesDir, file), 'utf8');
+    // Not every gate is a viewport gate — preview-gate.js only reshapes the page by plan
+    // and asks no media query at all. Only the ones that do are held to the number.
     const m = /\(max-width:\s*(\d+)px\)/.exec(src);
     if (!m) continue;
+    checked++;
     if (Number(m[1]) !== breakpoint) wrong.push(`${file} redirects at ${m[1]}px`);
   }
 
+  // A guard that finds no gates passes vacuously; that is how this one went blind when
+  // the gates moved into scripts/gates/.
+  assert.ok(checked > 0, 'found no viewport gates under scripts/gates/; this guard is checking nothing');
   assert.deepEqual(
     wrong,
     [],

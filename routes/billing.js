@@ -1,5 +1,5 @@
 // Billing & enterprise routes: Stripe webhook, customer portal, enterprise
-// config + checkout. Extracted from server.js.
+// config + checkout.
 //
 // Mounted BEFORE the global express.json (see server.js) so the Stripe webhook
 // can read the RAW request body for signature verification. The other routes

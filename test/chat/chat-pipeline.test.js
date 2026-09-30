@@ -1,4 +1,4 @@
-// Post-routing dispatch pipeline (lib/chat-pipeline.js) — the gnarliest stateful
+// Post-routing dispatch pipeline (lib/chat/chat-pipeline.js) — the gnarliest stateful
 // code in the chat surface. We drive createChatPipeline() with arg-recording fakes
 // (no real AI, no cost) and assert on the decisions that silently ruin a result
 // when they regress: which image buffer gets staged (the 3-way precedence), how

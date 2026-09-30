@@ -1,5 +1,5 @@
-// Per-user chat-memory store (lib/memory.js). Now SQLite-backed (shares the app DB
-// via lib/db.js): saveMemories upserts ONE user's row, and a one-time importer
+// Per-user chat-memory store (lib/data/memory.js). SQLite-backed (shares the app DB
+// via lib/data/db.js): saveMemories upserts ONE user's row, and a one-time importer
 // migrates a legacy memories.json into SQLite exactly once. Regressions here either
 // clobber a user's memories or silently re-import stale JSON over live data.
 // Windows lock gotcha: close the DB handle before removing the temp dir.

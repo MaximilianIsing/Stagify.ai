@@ -1,6 +1,5 @@
-// Sentry initialization. Imported at the very top of server.js (right after load-env,
-// so SENTRY_DSN is available) and before any app code, so the SDK can instrument the
-// libraries it loads. Errors are then captured automatically.
+// Sentry initialization. Runs before any app code (see below), so the SDK can instrument
+// the libraries server.js loads. Errors are then captured automatically.
 //
 // Degrades gracefully: with no SENTRY_DSN set (e.g. local dev), Sentry.init() is a
 // no-op — no network calls, no overhead — exactly like the Gemini/Stripe/Resend keys.
@@ -12,7 +11,7 @@ import './load-env.js';
 import * as Sentry from '@sentry/node';
 
 // Only report from PRODUCTION. This deploy is "staging" when IS_STAGING is 1/true/on/yes
-// (same parse as server.js:75); anything else — including "false", empty, or unset — is
+// (same parse as isTruthyFlag in lib/config/runtime-flags.js); anything else — including "false", empty, or unset — is
 // production. Note: process.env.IS_STAGING is a STRING, so the string "false" is truthy —
 // hence the explicit regex rather than a bare truthiness check.
 const IS_STAGING = /^(1|true|on|yes)$/i.test(String(process.env.IS_STAGING || '').trim());

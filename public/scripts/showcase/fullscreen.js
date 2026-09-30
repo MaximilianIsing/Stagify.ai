@@ -8,7 +8,7 @@
 //
 // DESKTOP: native fullscreen on the `.shw__media` box, exactly as before.
 //
-// PHONE: the rotate-to-landscape view (../immersive-view.js). iPhone Safari has no
+// PHONE: the rotate-to-landscape view (../shared/immersive-view.js). iPhone Safari has no
 // Element.requestFullscreen at all, so the desktop path was a no-op there, and even
 // where a phone does have it, a 16:9 demo inside a portrait viewport is a letterbox
 // nobody can read. The button opens a full-viewport overlay and turns the media 90deg

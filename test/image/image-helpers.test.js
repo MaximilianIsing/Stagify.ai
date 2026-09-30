@@ -1,7 +1,7 @@
 // Tier: pure unit (fake AI) — the erase / annotation / review factories in isolation.
 //
-// These test the parse/return contracts of lib/image-review.js, lib/image-annotation.js,
-// and lib/erase.js DIRECTLY: no Express, no router, no HTTP, no ports. Each factory is a
+// These test the parse/return contracts of lib/image/image-review.js,
+// lib/image/image-annotation.js and lib/image/erase.js DIRECTLY: no Express, no router, no HTTP, no ports. Each factory is a
 // plain function that takes an injected model client, so we hand it a scripted FAKE openai
 // (and, for erase, a null genAI it never touches on these paths) and assert exactly what the
 // real regexes/return shapes produce.

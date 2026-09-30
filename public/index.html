@@ -108,13 +108,9 @@
     <link rel="stylesheet" href="styles/toast.css">
     <link rel="stylesheet" href="styles/hero-picker.css">
     <link rel="stylesheet" href="styles/home.css">
-    <!-- index.css is render-blocking too, so it belongs here with the rest. It used to
-         sit below the module <script> tags, where the preload scanner reached it late
-         while first paint was already waiting on it.
-
-         It used to carry a cascade note about overriding star-border.css. That sheet is
-         gone from this page: the hero counters are no longer pills wrapped in an animated
-         glow, so nothing here loads or overrides it. -->
+    <!-- index.css is render-blocking too, so it belongs here with the rest. Below the
+         module <script> tags the preload scanner reaches it late, while first paint is
+         already waiting on it. -->
     <link rel="stylesheet" href="styles/index.css">
     <!-- Non-critical CSS (auth modals, below-fold text animations, demo player, FAQ plan) -->
     <!-- Loaded as print (non-render-blocking), then promoted to all once fetched. -->

@@ -1,4 +1,4 @@
-// SQLite layer (lib/db.js) — the pragmas we rely on and that data actually persists.
+// SQLite layer (lib/data/db.js) — the pragmas we rely on and that data actually persists.
 
 import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';

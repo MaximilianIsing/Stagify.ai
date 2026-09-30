@@ -917,16 +917,12 @@
 
 /* ------------------------------------------------------------------- the counters */
 
-/* Rooms Staged / Users Served. These were two solid --brand pills wrapped at runtime in an
-   animated glow (star-border.js), which is a control's costume: correct on the pale page
-   background they used to sit on, wrong floating over a photograph. They are typography now
-   — figure large, label in the same small-caps as the list title above — so the bottom-right
-   corner reads as one block instead of two widgets parked on a render.
+/* Rooms Staged / Users Served. Typography, not pills: a solid pill is a control's costume,
+   wrong floating over a photograph. Figure large, label in the same small-caps as the list
+   title above, so the bottom-right corner reads as one block instead of two widgets parked
+   on a render.
 
-   That retired star-border.js, star-border.css and the drift test that kept the pre- and
-   post-swap boxes pixel-identical. Nothing on this page loads any of them.
-
-   The reveal is the one thing kept from the old block: the figures ship blank and
+   The figures ship blank and
    count-up.js adds `.is-ready` once both count endpoints resolve, so the corner never shows
    a pair of zeroes or a layout that jumps when real numbers land. */
 .hero-stats {

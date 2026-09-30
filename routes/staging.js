@@ -1,4 +1,4 @@
-// staging routes, extracted verbatim from server.js.
+// Staging routes.
 import { createAsyncRouter } from '../lib/http/async-router.js';
 import { sendError } from '../lib/http/http-helpers.js';
 import { reportError } from '../lib/http/error-ref.js';

@@ -43,18 +43,15 @@ export default defineConfig({
     // `isMobileStagingViewport()` (`matchMedia('(max-width: 768px)')`) react to.
     //
     // Specs that are inherently desktop-only opt out with
-    // `test.skip(({ isMobile }) => isMobile, '<reason>')` — e2e/staging-nav.spec.js,
-    // e2e/basic-mask.spec.js and the two mask-fit specs, which pin desktop window
-    // sizes, plus the four AI Designer specs: that studio is a PC-only feature, and
-    // its head gate replaces a phone-sized viewport's URL with the home page before
-    // anything paints, so there is no UI on this project to drive.
-    // Four invert it to assert the mobile half of a decision rather than skip it:
-    // e2e/staging-nav.spec.js ("Staging dropdown — phone"), e2e/ai-designer.spec.js
-    // ("AI Designer — phone") and e2e/gallery-gate.spec.js — the last two prove the
-    // PC-only redirects actually fire, which is the half a stubbed matchMedia cannot
-    // show — plus e2e/stage-mask-fit.spec.js:220. Nothing is weakened to go green.
-    // (This used to name e2e/stage-mobile-auth.spec.js, which does not exist — so a
-    // reviewer asking whether this project earns its 2x runtime was sent to nothing.)
+    // `test.skip(({ isMobile }) => isMobile, '<reason>')`: the PC-only pages (AI Designer,
+    // gallery, API dashboard, …), whose head gates replace a phone-sized viewport's URL
+    // with the home page before anything paints, and specs that pin desktop window sizes
+    // (the two mask-fit specs, e2e/basic-mask.spec.js, e2e/perf-lcp.spec.js).
+    // Others invert it with `!isMobile` to assert the mobile half of a decision rather
+    // than skip it, e.g. e2e/ai-designer.spec.js ("AI Designer — phone") and
+    // e2e/gallery-gate.spec.js, which prove the PC-only redirects actually fire: the half
+    // a stubbed matchMedia cannot show. `grep -n isMobile e2e/` lists both sets.
+    // Nothing is weakened to go green.
     { name: 'mobile-chrome', use: { ...devices['Pixel 5'] } },
   ],
   webServer: {
@@ -66,8 +63,8 @@ export default defineConfig({
     // DEBUG is pinned OFF for the same reason, and it is not cosmetic: lib/http/text-assets.js
     // strips comments from .html/.css on the way out and bypasses itself entirely under
     // DEBUG_MODE, so a developer with DEBUG=true in their .env would run every browser smoke
-    // against markup that production never serves. Render sets no DEBUG (and debug.txt is no longer read),
-    // so false is the deployed value — this makes the smokes agree with it.
+    // against markup that production never serves. Render sets no DEBUG, so false is
+    // the deployed value — this makes the smokes agree with it.
     env: { PORT, NODE_ENV: 'test', HIDE_STAGING_BANNER: '1', DEBUG: 'false' },
     reuseExistingServer: !process.env.CI,
     timeout: 120000,

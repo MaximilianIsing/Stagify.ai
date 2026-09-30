@@ -73,8 +73,9 @@ export interface StagingParams {
   /**
    * Turn the self-check quality gate off for this render.
    *
-   * The gate pays a vision review per attempt and regenerates up to QUALITY_MAX_ATTEMPTS
-   * times chasing a better score. That is worth it when the model is INVENTING a room —
+   * The gate pays a vision review per attempt. For interior staging the verdict is advisory
+   * (recorded, no re-roll); other callers regenerate up to QUALITY_MAX_ATTEMPTS times. The
+   * review is worth it when the model is INVENTING a room —
    * a melted sofa is a real, catchable defect. It is not worth it for an edit that only
    * relights or cleans up a photograph it was handed: a re-roll returns a different sky,
    * not a better one, for three times the cost and three times the wait.

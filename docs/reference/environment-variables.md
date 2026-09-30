@@ -1,25 +1,23 @@
 # Environment variables
 
 ```dotenv
-# For any key with a "file fallback", use one source or the other. Precedence differs:
-# the Stripe keys, ENTERPRISE_PRICE_ID, API_CREDIT_PRICE_*, GOOGLE_CLIENT_ID/SECRET,
-# endpoint_key and ENTERPRISE_METER_EVENT_NAME read the FILE first (searched in
-# STRIPE_SECRETS_DIR, the repo root, cwd, then /etc/secrets), so a stray file beats the
-# env var. RESEND_API_KEY, EMAIL_DEBUG and DEBUG_EMAIL read the env var first and only
-# fall back to the gitignored .txt file when the var is unset.
+# Every secret and setting below is an env var only: the Render dashboard in production,
+# `.env` locally. There are no .txt file fallbacks; a key file on disk is never read.
+# Values that must carry a known prefix (STRIPE_SECRET_KEY sk_, STRIPE_PUBLISHABLE_KEY
+# pk_, ENTERPRISE_PRICE_ID and API_CREDIT_PRICE_* price_) are ignored, with a warning
+# at boot, when the prefix is wrong.
 
 # --- Stripe ---
 # Secret API key (starts with sk_). Powers all billing; billing endpoints return
-# 503 until it's set. File fallback: stripe_secret_key.txt
+# 503 until it's set.
 STRIPE_SECRET_KEY=
 # Webhook signing secret (starts with whsec_). Used to verify incoming Stripe
-# webhook signatures; the webhook endpoint 503s without it. File fallback: stripe_webhook_secret.txt
+# webhook signatures; the webhook endpoint 503s without it.
 STRIPE_WEBHOOK_SECRET=
 # Publishable key (starts with pk_). Safe for the browser; used to start checkout.
-# File fallback: stripe_publishable.txt
 STRIPE_PUBLISHABLE_KEY=
 # Stripe price id for the Enterprise plan (starts with price_). Used for metered
-# enterprise billing. File fallback: priceid.txt
+# enterprise billing.
 ENTERPRISE_PRICE_ID=
 
 # --- Public developer API (prepaid credits) ---
@@ -28,7 +26,6 @@ ENTERPRISE_PRICE_ID=
 # metered subscription: an account can hold both, and sharing a price would put one
 # generation on two meters. A pack with no id configured is simply not offered for sale.
 # The suffix is the CREDIT COUNT, not a price: 20 / 50 / 100 / 500 images.
-# File fallbacks: api-credit-price-20.txt / -50.txt / -100.txt / -500.txt
 API_CREDIT_PRICE_20=
 API_CREDIT_PRICE_50=
 API_CREDIT_PRICE_100=
@@ -41,15 +38,15 @@ API_CREDIT_PRICE_500=
 
 # --- Google Sign-In ---
 # OAuth client id. Enables the "Sign in with Google" button; ID-token sign-in
-# needs only this id. Sign-in is disabled if unset. File fallback: googleclientID.txt
+# needs only this id. Sign-in is disabled if unset.
 GOOGLE_CLIENT_ID=
 # OAuth client secret. Only required for OAuth authorization-code flows — plain
-# ID-token sign-in works without it. File fallback: googlesecret.txt
+# ID-token sign-in works without it.
 GOOGLE_CLIENT_SECRET=
 
 # --- AI providers ---
 # Google Generative AI (Gemini) key. Powers the core staging pipeline — staging
-# fails without it. This is the ONLY Gemini key variable. No file fallback.
+# fails without it. This is the ONLY Gemini key variable.
 # GEMINI_API_KEY is not read.
 # Set to an EMPTY value to disable the client outright (same rule as GPT_KEY and
 # RESEND_API_KEY): an empty (or whitespace) key leaves genAI null, so
@@ -57,7 +54,7 @@ GOOGLE_CLIENT_SECRET=
 # how tests switch the AI off — see docs/guides/testing.md.
 GOOGLE_AI_API_KEY=
 # OpenAI key. Powers the chat assistant only; the rest of the app works without
-# it (chat is simply disabled). No file fallback (gpt-key.txt is no longer read).
+# it (chat is simply disabled).
 GPT_KEY=
 # Per-request ceilings (ms) for the AI SDKs, set in lib/services/ai-clients.js.
 # Gemini defaults to 120000 (a normal image render takes ~57s) with one SDK retry;
@@ -67,12 +64,12 @@ OPENAI_TIMEOUT_MS=
 
 # --- Email (Resend) ---
 # Resend API key for transactional email (password resets, notifications). If
-# unset, email is silently skipped rather than erroring. File fallback: resendkey.txt
+# unset, email is silently skipped rather than erroring.
 RESEND_API_KEY=
 
 # --- Access / admin ---
 # Access key that guards the protected log/admin endpoints (see endpoints.md).
-# Compared in constant time. Note the lowercase name. File fallback: endpointkey.txt
+# Compared in constant time. Note the lowercase name.
 endpoint_key=
 # Admin console access log (lib/data/admin-access.js). "off" disables recording /
 # the IP geo lookup. Both are also off when NODE_ENV=test.
@@ -142,7 +139,7 @@ R2_SECRET_ACCESS_KEY=
 # PRO_GALLERY_LIMIT=200
 
 # --- Debug flags — all default OFF. Set true ONLY for local dev, never in production. ---
-# Verbose server logging (startup, key loading, etc.). true/false. No file fallback (debug.txt is no longer read).
+# Verbose server logging (startup, key loading, etc.). true/false.
 # Raises the diagnostic-logger floor to `debug` unless LOG_LEVEL (below) overrides it.
 DEBUG=false
 # Diagnostic-logger verbosity (lib/logger.js): debug | info | warn | error | silent.
@@ -152,12 +149,12 @@ DEBUG=false
 # LOG_LEVEL=
 # Redirects ALL outbound email to DEBUG_EMAIL instead of real recipients —
 # silently hides mail from real users, so keep this false in production.
-# true/false. File fallback: emaildebug.txt
+# true/false.
 EMAIL_DEBUG=false
 # The address EMAIL_DEBUG redirects to. Required whenever EMAIL_DEBUG is on: the
 # server refuses to boot with the flag enabled and no address rather than quietly
 # fall back to mailing the real recipients. Ignored when EMAIL_DEBUG is off, so it
-# stays commented out here. File fallback: debugemail.txt
+# stays commented out here.
 # DEBUG_EMAIL=you@example.com
 # Replaces the real home-page hero stats with the two values below. true/false.
 STATS_DEBUG=false
@@ -255,13 +252,7 @@ HIDE_STAGING_BANNER=false
 # Referral campaign short-URLs (/columbia), per IP / 15 min. One university's NAT
 # gateway is a single IP carrying a whole campus's clicks, so keep this generous:
 # RL_REFERRAL=120
-# Extra directory searched first for every config.js secret file (stripe_*.txt,
-# priceid.txt, googleclientID.txt, googlesecret.txt, endpointkey.txt,
-# api-credit-price-*.txt, enterprise_meter_event.txt). The search then continues
-# through the repo root, cwd and /etc/secrets.
-# STRIPE_SECRETS_DIR=
 # Stripe meter event name for enterprise usage billing. Default user_generation.
-# File fallback, which wins over the env var: enterprise_meter_event.txt
 # ENTERPRISE_METER_EVENT_NAME=user_generation
 # "From" address for outbound Resend email. Default team@stagify.ai.
 # RESEND_FROM_EMAIL=team@stagify.ai

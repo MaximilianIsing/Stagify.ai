@@ -8,7 +8,7 @@
 //     opts in (streamResponse:true) AND the routed intent is a slow-image action
 //     (staging / generate / cad). A plain-text reply is ALWAYS application/json,
 //     even with streamResponse:true.
-//   - the SSE frame protocol from lib/chat-sse.js (status → message → images → done),
+//   - the SSE frame protocol from lib/chat/chat-sse.js (status → message → images → done),
 //     where the FINAL image lands in the "images" event (not "message", not a
 //     trailing chunk), and there is NO [DONE] sentinel.
 //   - the equivalent non-streaming JSON body,
@@ -69,7 +69,7 @@ const postChat = (base, body, headers = {}) =>
   });
 
 // Parse a raw SSE stream body into an ordered array of { event, data }.
-// Each frame is "event: NAME\ndata: <JSON>\n\n" (see lib/chat-sse.js).
+// Each frame is "event: NAME\ndata: <JSON>\n\n" (see lib/chat/chat-sse.js).
 function parseSse(raw) {
   return raw
     .split('\n\n')

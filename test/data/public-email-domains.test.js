@@ -95,7 +95,7 @@ test('the list itself is well-formed', () => {
 });
 
 // ---- i18n drift guard ------------------------------------------------------
-// Same shape as test/unstageable-i18n.test.js: the browser localizes the refusal
+// Same shape as test/i18n/unstageable-i18n.test.js: the browser localizes the refusal
 // by code, and a missing key silently degrades to the server's English — so the
 // omission would ship unnoticed without this.
 

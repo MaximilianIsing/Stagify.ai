@@ -3,7 +3,7 @@
 // Regression for the bug where the dialog over-committed its height budget (the
 // image took a flat 70vh, the controls needed ~300px more, and the 90vh cap made
 // flex squash the `overflow: hidden` canvas box): the photo was clipped at the
-// bottom with nothing to scroll. mask-fit.js now measures the chrome and gives
+// bottom with nothing to scroll. mask/fit.js now measures the chrome and gives
 // the image whatever height is actually left.
 import { test, expect } from '@playwright/test';
 import { roomPngBuffer, seedProSession } from './fixtures.js';

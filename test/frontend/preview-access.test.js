@@ -365,13 +365,10 @@ test('auth.js calls every preview writer, and does it BEFORE the signed-out retu
   const earlyReturn = body.indexOf('if (!u) {');
   assert.notEqual(earlyReturn, -1, 'the early return moved — this guard needs rewriting');
 
-  for (const name of ['syncExteriorAccess', 'syncMaskingStudioAccess', 'syncDesignerAccess']) {
+  for (const name of ['syncExteriorAccess', 'syncMaskingStudioAccess', 'syncDesignerAccess', 'syncBasicMaskAccess']) {
     assert.ok(src.includes(`import { ${name} }`), `auth.js does not import ${name}`);
     const called = body.indexOf(`${name}();`);
     assert.notEqual(called, -1, `auth.js never calls ${name}`);
     assert.ok(called < earlyReturn, `${name}() is called after the signed-out return`);
   }
-  // basic-mask.html is the exception, and deliberately: it does not load auth.js's UI
-  // writers on a schedule of its own — its entry point settles once at load, and the page
-  // has no in-page sign-in to change the answer under it.
 });

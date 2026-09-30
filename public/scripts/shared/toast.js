@@ -1,10 +1,7 @@
 // Non-blocking toast notifications — the app's single user-facing message channel.
 //
-// Previously this existed twice, byte-for-byte apart from a 20ms timing drift:
-// once in scripts/ai-designer/toast.js and once inline in scripts/masking-studio/masking-studio-app.js.
-// The main Stagify studio had neither, so it reached for native alert() instead —
-// nine modal, unstyled, untranslatable-looking browser dialogs in the flagship
-// upload/staging flow. One module now serves all three.
+// Shared by the studios and the admin console. Use it instead of native alert(),
+// which is modal, unstyled and looks untranslatable.
 //
 // NOT to be confused with the "Converting photo…" indicator in scripts/shared/heic-convert.js:
 // that one is a reference-counted, indefinite-duration progress spinner, not a

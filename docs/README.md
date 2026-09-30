@@ -141,16 +141,10 @@ and fill in what you need. At minimum, staging requires a Gemini key:
 GOOGLE_AI_API_KEY=your_key_here
 ```
 
-Some secrets can alternatively be supplied as local `.txt` files (e.g.
-`stripe_secret_key.txt`, `resendkey.txt`) — see the env doc for the full mapping. The
-Gemini and OpenAI keys and `DEBUG` are env-only. `load-env.js` never
-overwrites a variable already present in the real environment, so host-provided
-env beats `.env`.
-
-> **Warning: a stray `.txt` file overrides the Render env.** The secrets read by
-> `lib/config/config.js` (Stripe keys and price IDs, Google OAuth, `endpoint_key`) check
-> for their `.txt` file **first** and only then the env var. See
-> [Configuration & secrets](#configuration--secrets).
+Every secret is an env var: `.env` locally, the Render dashboard in production. There
+are no `.txt` file fallbacks. `load-env.js` never overwrites a variable already present
+in the real environment, so host-provided env beats `.env`. See
+[Configuration & secrets](#configuration--secrets).
 
 ## Running the app
 
@@ -184,14 +178,12 @@ before any secret is read. The full, commented list lives in
 - **Debug:** `DEBUG`, `EMAIL_DEBUG` (+ `DEBUG_EMAIL`, required when it is on),
   `STATS_DEBUG` (+ `DEBUG_ROOMS` / `DEBUG_USERS`).
 
-Precedence differs by secret:
-
-- **`.txt` file first, then env:** everything read by `lib/config/config.js` (Stripe
-  secret/webhook/publishable keys, `ENTERPRISE_PRICE_ID`, API-credit price IDs, Google
-  OAuth, `endpoint_key`). Files are searched in `STRIPE_SECRETS_DIR`, the repo root, the
-  cwd and `/etc/secrets`. **A stray file there overrides the Render env.**
-- **Env first, then file:** `RESEND_API_KEY` (`resendkey.txt`), `EMAIL_DEBUG`, `DEBUG_EMAIL`.
-- **Env only:** `GOOGLE_AI_API_KEY`, `GPT_KEY`, `DEBUG`.
+Every secret and setting is **env-only**: the Render dashboard in production, `.env`
+locally. No secret is read from a file, so there is one source of truth per value.
+Values that must carry a known prefix (`sk_` for `STRIPE_SECRET_KEY`, `pk_` for
+`STRIPE_PUBLISHABLE_KEY`, `price_` for `ENTERPRISE_PRICE_ID` and the API-credit price
+IDs) are ignored with a boot warning when the prefix is wrong
+(`test/config/env-only-secrets.test.js` guards this).
 
 ## Architecture
 
@@ -205,9 +197,8 @@ served as plain static files.
 - **Request flow:** browser loads a static HTML page → vanilla JS (`public/scripts/`)
   calls JSON endpoints → `server.js` validates, calls the relevant AI/billing/email
   provider, persists to `data/`, and responds.
-- **Secret resolution:** mixed. The `config.js` secrets prefer a local `.txt` file over
-  the env var; others are env-first or env-only. See
-  [Configuration & secrets](#configuration--secrets).
+- **Secret resolution:** env-only. Every secret comes from its env var, with no file
+  fallback. See [Configuration & secrets](#configuration--secrets).
 - **Persistence:** one SQLite database (`auth-store.db`) for **all** structured state —
   accounts/sessions, enterprise domains, memories, uptime, gallery rows — plus flat CSV
   logs and `hosted-images/` under `data/`, and gallery render bytes in Cloudflare R2
@@ -229,7 +220,7 @@ grouped into subdirectories by concern (full breakdown in
 
 | Area | Key modules |
 |---|---|
-| `lib/config/` | `config.js` (secrets: `.txt` file first, then env), `model-config.js`, `runtime-flags.js` (`DEBUG_MODE` / `IS_STAGING` flags). |
+| `lib/config/` | `config.js` (secrets, env-only), `model-config.js`, `runtime-flags.js` (`DEBUG_MODE` / `IS_STAGING` flags). |
 | `lib/data/` | `db.js` (the single shared `better-sqlite3` connection), `auth-store.js` (accounts/sessions, **SQLite-backed**), `session-tokens.js` (the token tables + token hashing), `password-hash.js` (the parameter-tagged password hash format + its rehash-on-login upgrade path), `enterprise-store.js`, `stripe-linking.js` (which account a subscription attaches to), `stripe-events.js` (webhook idempotency ledger), `memory.js`, `counters.js`, `uptime-monitor.js`, `pro-grants.js` (admin comp grants), `admin-sessions.js` / `admin-access.js` (console token + access log), `api-keys.js` / `api-billing.js` / `credit-packs.js` (public API identity, prepaid credits, packs), `referral-links.js`, `blog-views.js`, `email-optout.js`, `user-deletion.js`, plus the gallery stores (`staged-renders.js`, `gallery-shares.js`, `object-store*.js`, `blob-tombstones.js`, …). |
 | `lib/http/` | `async-router.js` (`createAsyncRouter()`), `http-helpers.js` (`sendError`, sensitive headers), `error-ref.js` (`reportError` — 5xx bodies carry a log reference, never the exception), `http-guards.js` (`endpoint_key`), `rate-limiters.js`, `uploads.js` (multer), `app-middleware.js` (helmet/CORS/compression + body-parse/static, wired from `server.js`), `not-found.js` (`createNotFoundHandler` — the terminal 404, a plain handler rather than a router on purpose), `api-key-auth.js` / `api-concurrency.js` (public API auth + in-flight cap), `text-assets.js` (comment-stripped HTML/CSS), `llms-txt-asset.js`, `stats-endpoint.js` (`/api/stats`), `vanity-redirects.js`, `multer-errors.js`. |
 | `lib/i18n/` | `locales.js` (the single source of truth for the language set and `LOCALIZED_PAGES`), `render-page.js` (`renderLocalizedPage` — the pure string transform), `page-renderer.js` (its raw-HTML/translations/render caches, shared by `routes/i18n.js` and `lib/http/not-found.js`), `sitemap.js`. See [`guides/i18n.md`](guides/i18n.md). |
@@ -426,8 +417,8 @@ around:
 
 ## Security notes
 
-- **Never commit secrets.** `.env` and the `*.txt` key files are gitignored; real
-  secrets belong in the Render dashboard.
+- **Never commit secrets.** `.env` is gitignored; real secrets belong in the Render
+  dashboard. No secret is read from a file.
 - `data/auth-store.db` contains password hashes and (hashed) session tokens — handle with care.
 - Admin/log endpoints are protected by `endpoint_key`, compared in constant time, with
   a per-IP ceiling on **wrong** keys (`RL_ENDPOINT_KEY`) so the shared secret can't be

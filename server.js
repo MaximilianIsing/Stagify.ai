@@ -366,13 +366,14 @@ const { healthHandler, protectLogs, requireEndpointKey, stagingEndpointKeyGuard 
 
 // Self-check quality gate: each render is reviewed (lib/image/image-review.js); a
 // not-perfect one is regenerated up to this many times and the best-scored one ships.
+// Interior staging is the exception: its review is advisory and only provider errors
+// retry (see processStaging in lib/staging/staging-generation.js).
 const QUALITY_MAX_ATTEMPTS = 3;
 
 // The Gemini image-generation pipeline (the quality-gate retry wrapper +
 // text-to-image + virtual staging) → lib/staging/staging-generation.js, bound to
-// this server's AI clients + reviewers. The router-facing signatures are
-// unchanged (generateWithQualityRetry keeps its positional shape), so the router
-// dep-objects below still pass these under the same names.
+// this server's AI clients + reviewers. generateWithQualityRetry keeps its
+// positional shape for the router dep-objects below.
 const { generateWithQualityRetry, processImageGeneration, processStaging } = createStagingGeneration({
   genAI,
   DEBUG_MODE,
@@ -394,8 +395,7 @@ const { generateWithQualityRetry, processImageGeneration, processStaging } = cre
 // handler registered after the throwing route.
 
 // The virtual-staging multipart handler → lib/staging/virtual-staging-handler.js.
-// Instantiated AFTER createStagingGeneration because it consumes processStaging;
-// keeps its (req, res, meta) signature so the staging router deps are unchanged.
+// Instantiated AFTER createStagingGeneration because it consumes processStaging.
 // Turns a finished render into a gallery entry: rows synchronously so the free-tier cap
 // is unraceable, bytes afterwards so nobody waits on an object store for a history
 // feature. A no-op whenever the object store is unconfigured.
@@ -446,12 +446,12 @@ const { handleMaskingSave } = createMaskingSaveHandler({ renderPersistence });
 const MAX_MASK_PROMPT_LENGTH = 1000;
 
 // --- AI-assisted selection (Masking Studio) ----------------------------------
-// Gemini 2.5 Flash segmentation: given a room photo and an optional natural-
-// language target ("the sofa", "the empty floor area"), returns box-cropped
-// probability masks. With no target it segments every distinct object, which
-// the client caches and hit-tests so each wand click is instant. box_2d is
-// [y0, x0, y1, x1] normalized to 0-1000 of the image sent here, so the client
-// maps masks onto its full-resolution canvas without knowing our dimensions.
+// Gemini box detection (SEGMENT_MODEL, lib/staging/segment.js): given a room photo
+// and an optional natural-language target ("the sofa", "the empty floor area"),
+// returns labelled bounding boxes (no pixel masks). With no target it boxes every
+// distinct object, which the client caches and hit-tests so each wand click is
+// instant. box_2d is [y0, x0, y1, x1] normalized to 0-1000 of the image sent here,
+// so the client maps boxes onto its full-resolution canvas without knowing our dimensions.
 const MAX_SEGMENT_QUERY_LENGTH = 200;
 
 // auth routes (routes/auth.js)
@@ -571,7 +571,7 @@ if (objectStore.backend === 'local') {
 // are operator-created data, so this router matches `/:slug` and looks the slug up
 // per request. Here it only ever sees paths nothing else claimed, which is what
 // makes it impossible for a dashboard-created link to shadow a real page. Anything
-// it does not recognise falls through to Express's 404 exactly as before.
+// it does not recognise falls through to the branded 404 below.
 app.use(createReferralRouter({ referralLinks }));
 
 // Nothing claimed the path — serve the branded 404 (lib/http/not-found.js). It sits

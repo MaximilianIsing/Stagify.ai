@@ -40,10 +40,9 @@ const BLOCKING_ALLOWED = {
   // growing. A preview page ships in its anonymous shape, so a Stagify+ visitor used to
   // watch the sales pitch paint and vanish once /api/auth/me answered — a full round trip
   // later. This reads the plan auth.js cached and applies the Pro shape in CSS, which is
-  // worth nothing at all after first paint. `masking-studio-gate.js` and
-  // `exterior-studio-gate.js` both used to sit here; the first was deleted when that page
-  // became a preview, the second when its page was folded onto this shared file.
-  'gates/preview-gate.js': 'applies the cached-Pro page shape before first paint on all four preview pages, so a subscriber never sees the pitch',
+  // worth nothing at all after first paint. Every preview page shares this one file; do
+  // not add a per-page copy.
+  'gates/preview-gate.js': 'applies the cached-Pro page shape before first paint on the three preview pages that load it, so a subscriber never sees the pitch',
   // The only one on EVERY nav-bearing page, so it is also the only one whose cost is paid
   // site-wide. It is deliberately last in <head>: first paint is already blocked on the
   // stylesheets above it, so a small same-origin file fetched alongside them is free,

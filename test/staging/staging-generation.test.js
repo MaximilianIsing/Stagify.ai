@@ -417,8 +417,10 @@ test('processStaging: skipQualityReview generates ONCE and never calls the revie
   assert.equal(generations, 1, 'and the image was generated exactly once');
 });
 
-test('processStaging: without the flag, a not-perfect verdict still re-rolls', async () => {
-  // The other half — proof the test above measures the flag and not a broken harness.
+test('processStaging: without the flag, the review runs but a not-perfect verdict does NOT re-roll', async () => {
+  // The other half — proof the test above measures the flag and not a broken harness: the
+  // vision pass is still paid for (its verdict feeds the render row). Re-rolling on it was
+  // dropped after the 2026-09-28 retry audit found it bought no extra publishable renders.
   let reviews = 0;
   let generations = 0;
   const gen = makeGeneration(null, {
@@ -440,8 +442,34 @@ test('processStaging: without the flag, a not-perfect verdict still re-rolls', a
     { roomType: 'Bedroom', furnitureStyle: 'standard' },
     { body: {} },
   );
-  assert.equal(generations, 3, 'the interior path still spends its full attempt budget');
-  assert.equal(reviews, 3);
+  assert.equal(reviews, 1, 'the interior render is still reviewed');
+  assert.equal(generations, 1, 'but a rejection does not buy a regeneration');
+});
+
+test('processStaging: a provider error is still retried', async () => {
+  // Advisory review must not cost the half of the retry loop worth keeping.
+  let generations = 0;
+  const gen = makeGeneration(null, {
+    genAI: {
+      getGenerativeModel: () => ({
+        generateContent: async () => {
+          generations += 1;
+          if (generations === 1) throw new Error('transient provider error');
+          return { response: { candidates: [{ content: { parts: [{ inlineData: { data: 'iVBORw0KGgo=' } }] } }] } };
+        },
+      }),
+    },
+    runQualityRetry: (await import('../../lib/staging/staging-pipeline.js')).generateWithQualityRetry,
+    reviewImageQuality: async () => ({ perfect: false, score: 10 }),
+    QUALITY_MAX_ATTEMPTS: 3,
+  });
+
+  await gen.processStaging(
+    await jpg(80, 60),
+    { roomType: 'Bedroom', furnitureStyle: 'standard' },
+    { body: {} },
+  );
+  assert.equal(generations, 2, 'one failed call, one retry that succeeded, then stop');
 });
 
 test('processStaging: a skipped review is NOT recorded as a degraded (broken-reviewer) run', async () => {

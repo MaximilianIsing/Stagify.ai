@@ -8,7 +8,7 @@
 // frame of the grid on the way out. External rather than inline so the CSP can
 // keep 'unsafe-inline' out of script-src.
 //
-// NO localeTarget() here, unlike ai-designer-gate.js and masking-studio-gate.js —
+// NO localeTarget() here, unlike ai-designer-gate.js and developers-gate.js —
 // this is not an oversight. gallery.html is behind auth, noindex and disallowed in
 // robots.txt, so it is deliberately absent from LOCALIZED_PAGES in
 // lib/i18n/locales.js: there is no /es/gallery.html to keep a visitor inside, and

@@ -1,4 +1,4 @@
-// Conversation-history / image-resolution helpers (lib/chat-history.js). These are
+// Conversation-history / image-resolution helpers (lib/chat/chat-history.js). These are
 // pure functions, but they decide WHICH stored image a staging/CAD/recall request
 // targets and how uploads split into room-vs-furniture. A silent regression here
 // stages the wrong image or swaps room/furniture — the user just sees a bad result

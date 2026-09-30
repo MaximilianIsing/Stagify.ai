@@ -1089,10 +1089,8 @@ main {
   margin-right:8px;
   transition:transform .2s,font-weight .2s,opacity .2s
 }
-/* The six per-word hover effects (.w-free/.w-virtual/.w-staging/.w-with/.w-one/.w-click,
-   plus the `glitch` and `wordWaveRoll` keyframes only they used) are GONE with the headline
-   they decorated. The hero H1 is no longer six hoverable words; it is one sentence with two
-   dropdown slots in it. See .hp-sentence in styles/hero-picker.css. */
+/* The hero H1 is one sentence with two dropdown slots; see .hp-sentence in
+   styles/hero-picker.css. */
 .hero-content .subtitle {
   margin:0 0 18px;
   color:var(--muted);

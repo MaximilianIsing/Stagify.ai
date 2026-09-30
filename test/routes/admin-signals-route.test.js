@@ -6,8 +6,8 @@
 //
 //   - `GET /api/admin/metrics` is the first admin route that COMPUTES. It runs
 //     analytical SQL against the production database on a click.
-//   - `POST /api/admin/brief` is the only admin route that sends anything to a
-//     third party.
+//   - `POST /api/admin/brief` sends data to a third party (the only other admin
+//     route that does is POST /api/admin/analyst, in routes/admin/analyst.js).
 //
 // So the assertions here are about the contract, not the arithmetic: the gate, the
 // degradation when a dependency is missing, and — the one that matters most — that

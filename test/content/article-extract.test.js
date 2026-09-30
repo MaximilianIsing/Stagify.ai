@@ -3,7 +3,7 @@
 // WHAT THIS COVERS
 // The extractor that decides what a blog article's translatable content IS, and the
 // fingerprint that decides when a translation of it has gone stale. Both are used by
-// scripts/translate-blog.js when it writes a pack and by test/content/blog-packs.test.js
+// scripts/blog-pack.js when it writes a pack and by test/content/blog-packs.test.js
 // when it checks one, so a bug here does not surface as a crash — it surfaces as ten
 // languages quietly serving last month's article, or as every pack being declared stale
 // on an edit nobody made to the prose.

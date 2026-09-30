@@ -1,6 +1,6 @@
 // Unit tests for the AI Designer conversation-history image bookkeeping
 // extracted into public/scripts/ai-designer/image-history.js. This is the
-// client-side parallel of the already-tested backend lib/chat-history.js; the
+// client-side parallel of the already-tested backend lib/chat/chat-history.js; the
 // functions operate on plain data (no DOM), so they run under node --test.
 
 import { test } from 'node:test';

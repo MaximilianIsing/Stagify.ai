@@ -3,14 +3,10 @@
 // wiring. Owns the reference data URL; the editor reads it via getDataUrl() when
 // building the /api/mask-edit request.
 //
-// Shared by both mask editors. The two copies had the same validation rules and
-// the same error copy but differed in two ways, both now parameters: the elements
-// (the AI Designer's slice resolved `#mask-editor-ref-*` by id; the stage editor
-// held its own `#stage-mask-ref-*` refs), and drag-and-drop, which only the stage
-// editor had.
-//
-// `dropZones` defaults to none so adopting this module changes no behaviour on
-// either page. Pass zones to opt in — the AI Designer could, and today doesn't.
+// Shared by both mask editors. What differs is passed in: the elements
+// (`#mask-editor-ref-*` in the AI Designer, `#stage-mask-ref-*` in the stage
+// editor) and the drag-and-drop targets. `dropZones` defaults to none; both
+// editors currently pass the add button and the preview.
 //
 //   createMaskReference({ lang, showError, onChange }) -> { clear, getDataUrl, wire }
 

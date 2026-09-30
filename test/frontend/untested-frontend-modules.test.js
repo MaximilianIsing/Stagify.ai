@@ -143,6 +143,8 @@ const E2E_COVERED = [
   // left here is the side effect of running at module load, which only a browser has.
   // Driven by basic-mask-preview.spec.js.
   { module: 'basic-mask/basic-mask-page.js', page: 'basic-mask.html' },
+  // The Exterior Studio's composition root: wiring, and its three islands (access,
+  // compare, enhance) each have their own suite. Driven by exterior-studio.spec.js.
   { module: 'exterior-studio/exterior-studio-app.js', page: 'exterior-studio.html' },
   // The homepage hero's room/style picker (replaced carousel.js). It runs at PARSE time
   // rather than on DOMContentLoaded because the <img> it adopts is the page's LCP element,
@@ -153,11 +155,9 @@ const E2E_COVERED = [
   { module: 'home/hero-picker.js', page: 'index.html' },
   // The Masking Studio's composition root. Its islands are the eight
   // masking-studio/* entries — several still on UNTESTED above, which is the debt
-  // worth paying rather than testing this file. Driven by the six
+  // worth paying rather than testing this file. Driven by the seven
   // masking-studio*.spec.js.
   { module: 'masking-studio/masking-studio-app.js', page: 'masking-studio.html' },
-  // The Exterior Studio's composition root: wiring, and its three islands (access,
-  // compare, enhance) each have their own suite. Driven by exterior-studio.spec.js.
   // developers.html's only script: three lines that fill the pricing grid from the live
   // pack table. The fetch+render it calls is unit-tested (api-keys/credit-packs.js);
   // what is left is the module-load side effect. Driven by api-keys.spec.js.
@@ -189,11 +189,7 @@ const BLOCKED_CLASSIC = [
   'gates/faq-redirect.js',
   'gates/gallery-gate.js',
   // The shared reshaping gate, behaviourally covered by test/frontend/preview-gate.test.js
-  // on the same `new Function` harness. Two entries used to sit beside it and are DELETED,
-  // not delisted for coverage: `masking-studio-gate.js`, because that page became a public
-  // preview and the gate that redirected everyone without a token had nothing left to do,
-  // and `exterior-studio-gate.js`, which was a copy of this file for the one page that had
-  // not been folded onto it yet.
+  // on the same `new Function` harness.
   'gates/preview-gate.js',
   'guides/demo-data.js',
   'guides/demo-player.js',

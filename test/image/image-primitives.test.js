@@ -1,4 +1,4 @@
-// Sharp image transforms (lib/image-primitives.js). These are deterministic given
+// Sharp image transforms (lib/image/image-primitives.js). These are deterministic given
 // their input buffers, but they sit on the staging / mask-edit hot path: a flipped
 // threshold or channel index silently warps output, paints a magenta splotch into
 // results, or reviews the wrong pixels. We feed real sharp-generated images and

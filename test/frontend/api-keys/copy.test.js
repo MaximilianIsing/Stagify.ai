@@ -11,7 +11,7 @@
 // would be deleted within a week.
 //
 // The one exemption is the shared site header, whose logo alt text is byte-identical on
-// every page (test/frontend/shared-nav.test.js pins that) and is therefore site-wide
+// every page (test/frontend/site-header-parity.test.js pins that) and is therefore site-wide
 // copy rather than this page's. Changing it here alone would break the parity check.
 
 import { test } from 'node:test';

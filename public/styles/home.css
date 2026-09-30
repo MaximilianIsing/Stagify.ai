@@ -4488,7 +4488,7 @@ body.page-home main {
    IT LIVES HERE, NOT IN faq-plan.css, for two reasons. That sheet is gated entirely
    behind one `min-width: 1001px` media query — a structural rule its own spec enforces —
    and, more to the point, it is LAZY: it ships `media="print"` and is flipped to `all`
-   by index-lazy-css.js. A print rule inside it would be the one rule that stops working
+   by site/lazy-css.js. A print rule inside it would be the one rule that stops working
    whenever the lazy load loses its race. home.css is render-blocking, so this is always
    there. Scoped to `.faq-room__a`, which only index.html uses; guides.html shares
    `.faq-q` for its troubleshooting list and still prints in full. */

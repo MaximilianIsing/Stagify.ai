@@ -920,8 +920,8 @@ function initHeroPicker() {
    * Chinese, French, Japanese and Korean, so there is no number that works for every locale.
    * See `.hp-original__label` in hero-picker.css.
    *
-   * The pay-off for i18n is that each span keeps a PERMANENT `data-lang`: applyTranslations()
-   * repainting either one is always correct, with no attribute to keep in step with the text.
+   * The pay-off for i18n is that each span keeps a PERMANENT `data-lang`:
+   * applyLanguageToElements() repainting either one is always correct, with no attribute to keep in step with the text.
    */
   function paintOriginalLabel() {
     if (!originalBtn) return;
@@ -1001,14 +1001,14 @@ function initHeroPicker() {
    *
    * They ship with `data-lang` so the server-rendered locale pages and the no-JS case are
    * correct, but from here their text depends on what the visitor has picked, and
-   * applyTranslations() writes textContent straight from the key. Leave the attributes on
+   * applyLanguageToElements() writes textContent straight from the key. Leave the attributes on
    * and the next language change silently resets the sentence to "bedroom"/"Modern" and the
    * toggle to "See original" while the photo stays where the visitor put it. Dropping the
    * attributes makes the languagechange handler above the only writer. */
   [roomLabel, styleLabel].forEach((el) => el && el.removeAttribute('data-lang'));
   /* The toggle is NOT on that list, and both of its spans keep their key forever. Nothing
      here ever writes that button's text: paintOriginalLabel() only moves `is-on` between two
-     labels the markup already carries, so applyTranslations() is the sole writer and cannot
+     labels the markup already carries, so applyLanguageToElements() is the sole writer and cannot
      disagree with anyone. This is the case the removeAttribute() above exists to prevent,
      solved by having one writer rather than by disarming the second. */
   /* baseImg belongs on that list too, and its absence was a real conflict rather than an

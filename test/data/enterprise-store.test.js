@@ -1,4 +1,4 @@
-// Tier 2 (extends B/C) — enterprise domain store (lib/enterprise-store.js).
+// Tier 2 (extends B/C) — enterprise domain store (lib/data/enterprise-store.js).
 //
 // The last untested billing module. Pure file-backed logic — a temp dir per test,
 // no mocks, no Stripe. Covers domain activation and keeping domain status in sync

@@ -1,4 +1,4 @@
-// Routing-decision helpers (lib/chat-routing.js). Pure, but they gate real work:
+// Routing-decision helpers (lib/chat/chat-routing.js). Pure, but they gate real work:
 // parseDesignerRoutingCompletion must not throw on a model refusal, and
 // aiResponseDefersImageAction decides whether a clarifying-question reply
 // SUPPRESSES an (expensive) staging/generate/CAD action the model also set.

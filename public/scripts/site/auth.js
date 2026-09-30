@@ -4,6 +4,7 @@ import { syncGalleryTab } from './gallery-tab.js';
 import { syncExteriorAccess } from '../exterior-studio/access.js';
 import { syncMaskingStudioAccess } from '../masking-studio/access.js';
 import { syncDesignerAccess } from '../ai-designer/access.js';
+import { syncBasicMaskAccess } from '../basic-mask/access.js';
 import { syncPlusRail } from '../app/plus-rail.js';
 import { updateHeroFreeGensLine } from '../app/hero-stats.js';
 
@@ -198,6 +199,7 @@ import { updateHeroFreeGensLine } from '../app/hero-stats.js';
       syncExteriorAccess();
       syncMaskingStudioAccess();
       syncDesignerAccess();
+      syncBasicMaskAccess();
 
       // The "What Stagify+ could add" rail at the foot of the staging toolbar — the
       // inverse of the pro panel below, and the reason it is called up here with the

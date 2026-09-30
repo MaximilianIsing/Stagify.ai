@@ -18,36 +18,23 @@
            measured at 390x844, 375x667 and 360x640 the CTA moves from 236px to 274px and
            the whole hero, photo included, still ends above the fold on the smallest of
            the three. */
-        /* Extra breathing room above the mobile hero. MOVED HERE FROM auth.css,
-           where it was `body.page-home .hero`. index.html is the only page with
-           .page-home AND the only page that loads auth.css lazily
-           (media="print" data-lazy-css), so that rule applied to exactly one page
-           and always arrived late: the hero painted at 16px of top padding and
-           then jumped to 46px when index-lazy-css.js swapped the sheet in. It only
-           ever affected the homepage, so it belongs in the homepage's own
-           render-blocking stylesheet. Keep hero layout out of auth.css. */
+        /* Extra breathing room above the mobile hero. It lives in the homepage's own
+           render-blocking stylesheet, not auth.css: auth.css loads lazily
+           (media="print" data-lazy-css), so a hero rule there arrives late and the
+           hero paints at 16px of top padding, then jumps to 46px when
+           site/lazy-css.js swaps the sheet in. Keep hero layout out of auth.css. */
         body.page-home .hero {
           padding-top: 46px;
         }
       }
       
-      /* The desktop button used to be sized up 20% here (24px label, !important). It is a
-         drawn street now — `#hero-upload.hu` in styles/hero-picker.css owns every desktop
-         dimension — so that block is gone; anything re-added here with !important would
-         override the plate. The mobile button is untouched (styles.css, max-width:768px). */
-      /* THE HERO STAT PILLS USED TO LIVE HERE, and they were the most intricate block in
-         this file: two `.stat-pill` divs that star-border.js destroyed and replaced with
-         `.star-border-container > .inner-content` a second after load, kept pixel-identical
-         across that swap by a drift test so the recolour was invisible.
-
-         All of it is gone. The hero counters are typography on a scrim now, not pills, so
-         there is no second state to match and no reason for this file to own them: their
-         rules sit with the rest of the hero in styles/hero-picker.css. star-border.js and
-         star-border.css are no longer loaded by this page.
-
-         What replaced them keeps exactly one thing from the old block — the reveal. The
-         numbers are blank until both count endpoints resolve, and count-up.js adds
-         `.is-ready` to `#hero-stats` when they do. */
+      /* The desktop hero button is a drawn street: `#hero-upload.hu` in
+         styles/hero-picker.css owns every desktop dimension, and anything added here with
+         !important would override the plate. The mobile button lives in styles.css
+         (max-width:768px). */
+      /* The hero counters' rules also sit in styles/hero-picker.css. The numbers are blank
+         until both count endpoints resolve, and count-up.js adds `.is-ready` to
+         `#hero-stats` when they do. */
 
       /* Stack subtext under the CTA; wrap shrink-wraps to the button so only the line is centered to the button */
       .hero-cta-button-wrap {

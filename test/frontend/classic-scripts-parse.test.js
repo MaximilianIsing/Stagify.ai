@@ -1,12 +1,13 @@
-// Parse safety net for the UNLINTED classic frontend scripts.
+// Parse safety net for the classic (non-module) frontend scripts.
 //
-// eslint only lints the ES-module files under public/scripts/ (those with a top-level
-// `import … from` / `export`); the classic <script> files that share globals across
-// files — admin.js, profile-menu.js, auth.js, carousel.js, … — match no lint block and
-// escape the net entirely (see eslint.config.js). A syntax typo in one of them ships
-// silently: it isn't imported by any node test and the linter never sees it.
+// eslint auto-discovers the ES-module files under public/scripts/ (those with a top-level
+// `import … from` / `export`), but classic <script> files (the render-blocking gates,
+// hero-picker.js, session-class.js, …) are linted only if listed by name in
+// eslint.config.js, and the generated demo-data.js is never linted. A classic file that
+// was never added to that list escapes the linter, and a syntax typo in it ships
+// silently: it isn't imported by any node test either.
 //
-// This gives them the one guarantee a browser needs before anything else: the file
+// This gives every classic file the one guarantee a browser needs before anything else: the file
 // PARSES. We compile each with `new vm.Script(...)` (compile-only, never executed) which
 // parses in the same sloppy-script mode the browser uses for a classic <script>. It only
 // catches syntax errors — undefined browser globals are runtime, so nothing is stubbed —

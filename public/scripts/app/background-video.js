@@ -157,7 +157,7 @@ export function initBackgroundVideoSync() {
                     clearInterval(playInterval);
                     return;
                 }
-                // Not started on purpose (homepage, pre-bg-video-start.js). Keep waiting
+                // Not started on purpose (homepage, before home/bg-video-start.js runs). Keep waiting
                 // WITHOUT spending an attempt, or the budget is gone before the deferred
                 // starter has had a chance to run.
                 if (!startAttempted()) return;

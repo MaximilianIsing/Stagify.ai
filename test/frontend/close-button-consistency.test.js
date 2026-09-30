@@ -41,7 +41,7 @@ const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..')
 /** @param {string} rel */
 const read = (rel) => fs.readFileSync(path.join(ROOT, rel), 'utf8');
 
-/** WCAG 2.5.8 (AA) minimum target edge, in px — the same floor carousel-touch-target.test.js defends. */
+/** WCAG 2.5.8 (AA) minimum target edge, in px. */
 const FLOOR = 24;
 
 /**

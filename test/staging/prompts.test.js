@@ -1,4 +1,4 @@
-// AI Designer system-instruction builders (lib/prompts.js). These are pure string
+// AI Designer system-instruction builders (lib/staging/prompts.js). These are pure string
 // builders; a regression (dropped context, missing JSON contract) is silent and
 // degrades the model's behavior. We assert the caller-supplied context is embedded
 // and the response contract is present — without pinning the exact prose.
