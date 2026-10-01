@@ -382,6 +382,9 @@ design around them:
   it) — recover the DB from the R2 replica instead.
 - **The CSV logs and `hosted-images/` are NOT replicated to R2** — they live only on the
   disk, so still **snapshot `/data`** before risky operations to protect those.
+  Deliberately left that way: they are analytics rows and operator uploads, and Render's
+  disk snapshots cover them. The replica itself is checked weekly by the restore drill
+  (`.github/workflows/backup-drill.yml`).
 - **Gallery render bytes have no second copy either.** The rows are in the replica, the
   objects are only in `stagify-renders` and rely on R2's own durability. So a restore
   from the Litestream replica brings back a gallery whose rows point at objects that

@@ -1,100 +1,51 @@
-# Dependencies
+# Dependencies (npm-only: CI and Render run `npm ci`)
 node_modules/
 npm-debug.log*
-# npm-only repo: CI and Render run `npm ci` against package-lock.json
 pnpm-lock.yaml
 pnpm-workspace.yaml
 yarn.lock
 
-# Environment variables (real secrets for local dev live in .env — never commit it)
+# Secrets: real values live in .env, template in .env.example
 .env
-.env.local
-.env.production
+.env.*
 !.env.example
 
-# API keys & secrets now live in a single local .env (see .env.example for the
-# template). Legacy per-secret *.txt files are covered by the *.txt rule below.
+# Runtime state (SQLite, CSV logs) and the Litestream binary fetched at build.
+# Anchored: unanchored `bin/` would swallow instagram/bin/.
+/data/
+/bin/
 
-# Temporary files
+# Scratch and logs
+*.log
 *.tmp
-*.temp
 /tmp/
 
-# Logs
-*.log
-logs/
-/data/
-
-# Runtime data
-pids/
-*.pid
-*.seed
-
-# OS generated files
+# OS / editor
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
 Thumbs.db
-
-# Editor files
 .vscode/
 .idea/
 *.swp
-*.swo
 
-# Build output
-dist/
-build/
-
-# Playwright e2e artifacts (browsers live in the OS cache, not the repo)
+# Playwright artifacts
 test-results/
 playwright-report/
 blob-report/
 .playwright/
-# Litestream binary — downloaded into ./bin during the Render build, never committed.
-# ANCHORED. Unanchored `bin/` matches at any depth, which silently swallowed every CLI in
-# instagram/bin/ and made `git add instagram/` skip the whole directory without a word.
-/bin/
 
-# Noto font masters for scripts/build-disclosure-badges.js — ~40 MB, downloaded on demand.
-# The RENDERED output (lib/image/badges/) IS committed; see to-build/disclosure-badges/README.md
+# Noto font masters (~40 MB), downloaded on demand by build-disclosure-badges.js
 to-build/disclosure-badges/fonts/
-
-# Text files (but allow specific ones)
-*.txt
-!public/robots.txt
-# Two more SERVED text files, routed explicitly in routes/public.js (/llms.txt and
-# /.well-known/security.txt). The *.txt rule was written for the legacy secret files
-# at the repo root (resendkey.txt, stripe_*.txt, …); left ignored, these two ship absent and
-# both routes 404 — and test/seo/organization-jsonld.test.js reads llms.txt, so the
-# build fails before it gets that far.
-!public/llms.txt
-!public/well-known/security.txt
-# The brand kit's usage sheet, generated into public/brand/ by
-# scripts/build-brand-kit.js and served straight out of express.static. That script
-# does not run on Render, so an ignored README.txt ships absent and /brand/README.txt
-# 404s — the one file of the kit that is not also inside the zip.
-!public/brand/README.txt
-# The instagram/ hand-off files are plain text BY DESIGN (caption, hashtags, alt text)
-# and are meant to be committed. The *.txt rule above was written for the legacy
-# secret files at the repo root (resendkey.txt, stripe_*.txt, …), not for these. Re-inclusion
-# works here because no ANCESTOR DIRECTORY is excluded, only the files themselves.
-!instagram/posts/**/*.txt
-
-.claude/
-# design-sync generated bundle (regenerable from design-system/ + public/fonts)
+# design-sync bundle, regenerable
 ds-bundle/
-
-# instagram/ scratch renders. Fixtures and dry runs land here; real posts do not.
-instagram/posts/_scratch/
-# instagram/ per-run working files. Regenerable, and not part of the hand-off.
-instagram/posts/_work/
+# scripts/eval-staging.js default output
 eval-out/
 
-# Throwaway design previews (/preview) and prototypes (/prototype): local only
+# Instagram per-run files (real posts are committed)
+instagram/posts/_scratch/
+instagram/posts/_work/
+
+# Local-only tooling output
+.claude/
 previews/*
 !previews/README.md
 prototypes/

@@ -68,6 +68,16 @@ match:
 > commit you're shipping** (GitHub → the commit/PR → CI). Treat a red `e2e` as a
 > deploy-blocker even though the build won't.
 
+> **Why the build reruns checks CI already ran (reviewed 2026-10-01, kept as-is).**
+> `scripts/build.sh` repeats `npm test` and `npm audit` even though CI runs them too. This
+> is on purpose. With `autoDeploy` off, a manual deploy can ship any commit, so the build
+> is the only gate that is guaranteed to run. Lint, the coverage floor and `e2e` are
+> **not** rerun there, so a manual deploy of a commit with red CI could still ship. That
+> gap is accepted: checking CI before **Manual Deploy** (above) covers it. Render's
+> "Auto-Deploy: After CI checks pass" would close it, but it was turned down because it
+> ships every green push to `main` and gives up manual control over when deploys happen.
+> Don't reopen this unless the deploy flow changes (e.g. more people deploying).
+
 ## Environments: staging vs production
 
 There is a separate **staging** service (`stagify-ai-staging.onrender.com`). The only
@@ -124,9 +134,10 @@ run by `scripts/start.sh`:
   `start.sh` restores it from R2 *before* the app starts — so recovering a lost disk is
   just a redeploy.
 - **While running**, changes stream to R2 continuously (seconds of RPO).
-- Needs `LITESTREAM_ACCESS_KEY_ID` + `LITESTREAM_SECRET_ACCESS_KEY` on the **production**
-  service ([`environment-variables.md`](../reference/environment-variables.md)). If
-  they're unset — or on staging (`IS_STAGING`) — replication is skipped and the app
+- Needs `LITESTREAM_ACCESS_KEY_ID` + `LITESTREAM_SECRET_ACCESS_KEY` + `R2_ACCOUNT_ENDPOINT`
+  on the **production** service ([`environment-variables.md`](../reference/environment-variables.md));
+  `LITESTREAM_BUCKET` is optional and defaults to `stagify-backups`. If a required one is
+  unset — or on staging (`IS_STAGING`) — replication is skipped and the app
   still runs normally.
 
 **Covered:** only the SQLite DB (`auth-store.db`) — i.e. all *structured* state.
@@ -153,14 +164,28 @@ Three of the four things that silently disable it are environment, not code, so 
 If none of these appear at all, `start.sh` is not your Start Command — see the warning at
 the top of this page.
 
-**A backup you have never restored is a hypothesis.** Prove it occasionally, from the
-Render Shell:
+You no longer have to catch this by reading logs. Each skip path passes a
+`LITESTREAM_SKIP_REASON` to the app, and `lib/health/backup-status.js` turns a production
+boot (on Render, not staging) without `LITESTREAM_ACTIVE=1` into an `[backup] … DISABLED`
+error line **and a Sentry event**. A reason of `not-started-via-start-sh` means the Start
+Command bypassed `start.sh` entirely.
+
+**A backup you have never restored is a hypothesis.** The **Backup restore drill**
+workflow (`.github/workflows/backup-drill.yml`) proves it weekly: it restores the replica
+on a GitHub runner and runs `scripts/verify-restore.js`, which fails on a bad
+`integrity_check`, an empty `users` table, or an uptime heartbeat older than 24h. The
+heartbeat check is what catches replication that died **after** a healthy boot. A failed
+run emails you. It needs a **read-only** R2 token for the backup bucket as repo secrets
+(`LITESTREAM_ACCESS_KEY_ID`, `LITESTREAM_SECRET_ACCESS_KEY`, `R2_ACCOUNT_ENDPOINT`; optional
+`LITESTREAM_BUCKET`). Run it on demand with `gh workflow run backup-drill.yml`.
+
+The same check by hand, from the Render Shell:
 
 ```sh
+export LITESTREAM_BUCKET="${LITESTREAM_BUCKET:-stagify-backups}"
 ./bin/litestream snapshots -config litestream.yml /data/auth-store.db
 ./bin/litestream restore -config litestream.yml -o /tmp/restore-test.db /data/auth-store.db
-node -e "const D=require('better-sqlite3');const d=new D('/tmp/restore-test.db',{readonly:true});\
-console.log('integrity:',d.pragma('integrity_check')[0].integrity_check,'users:',d.prepare('SELECT COUNT(*) n FROM users').get().n)"
+node scripts/verify-restore.js /tmp/restore-test.db
 rm /tmp/restore-test.db
 ```
 

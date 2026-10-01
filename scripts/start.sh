@@ -7,7 +7,10 @@
 #
 # Fails SAFE: if the litestream binary or the R2 credentials are missing, it just
 # runs the app normally (without replication) rather than refusing to boot — a
-# backup misconfiguration must never take the site down.
+# backup misconfiguration must never take the site down. It is NOT silent, though:
+# each path tells the app which one it took (LITESTREAM_ACTIVE=1, or
+# LITESTREAM_SKIP_REASON=<code>), and lib/health/backup-status.js reports a skipped
+# production boot to the logs and Sentry.
 #
 # Local dev is unaffected: keep using `npm start` / `npm run dev`. This script only
 # does anything when the binary + R2 env vars are present.
@@ -30,13 +33,22 @@ esac
 
 if [ ! -x "$LITESTREAM" ]; then
   echo "[start] litestream binary not found — starting WITHOUT replication."
-  exec npm start
+  LITESTREAM_SKIP_REASON=binary-missing exec npm start
 fi
 
 if [ -z "$LITESTREAM_ACCESS_KEY_ID" ] || [ -z "$LITESTREAM_SECRET_ACCESS_KEY" ]; then
   echo "[start] R2 credentials not set — starting WITHOUT replication."
-  exec npm start
+  LITESTREAM_SKIP_REASON=r2-credentials-missing exec npm start
 fi
+
+# litestream.yml reads the endpoint and bucket from env. The endpoint is the same
+# account host the renders bucket uses; the bucket defaults to the prod backup one.
+if [ -z "$R2_ACCOUNT_ENDPOINT" ]; then
+  echo "[start] R2_ACCOUNT_ENDPOINT not set — starting WITHOUT replication."
+  LITESTREAM_SKIP_REASON=r2-endpoint-missing exec npm start
+fi
+: "${LITESTREAM_BUCKET:=stagify-backups}"
+export LITESTREAM_BUCKET
 
 # Restore only if the DB isn't already on the disk. -if-replica-exists makes the
 # very first run (empty bucket) a graceful no-op instead of an error.
@@ -50,4 +62,5 @@ if [ ! -f "$DB" ]; then
 fi
 
 echo "[start] launching app under litestream replicate…"
+export LITESTREAM_ACTIVE=1
 exec "$LITESTREAM" replicate -exec "npm start" -config "$CONFIG"

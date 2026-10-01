@@ -27,6 +27,7 @@ import { createGalleryShares } from './lib/data/gallery-shares.js';
 import { getDb } from './lib/data/db.js';
 import { createAdminMetrics } from './lib/analytics/admin-metrics.js';
 import { createServiceHealth, healthFlags } from './lib/health/service-health.js';
+import { checkBackupStatus } from './lib/health/backup-status.js';
 import { createApiUsageStats } from './lib/analytics/api-usage.js';
 import { createAdminBrief } from './lib/services/admin-brief.js';
 import { createAdminAnalyst } from './lib/services/admin-analyst.js';
@@ -98,6 +99,7 @@ const { readStripeSecretKey, readStripeWebhookSecret, readStripePublishableKey, 
 const authStore = createAuthStore(__dirname);
 const enterpriseStore = createEnterpriseStore(__dirname);
 const uptimeMonitor = createUptimeMonitor(__dirname);
+checkBackupStatus({ isStaging: IS_STAGING, logger, sentry: Sentry }); // alerts if prod booted without Litestream
 // Webhook idempotency ledger — Stripe delivers at-least-once, so the billing
 // router claims each event id here before handling it.
 const stripeEvents = createStripeEventLog(__dirname);

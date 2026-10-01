@@ -98,10 +98,12 @@ SENTRY_DSN=
 # (Object Read & Write, scoped to the bucket). Litestream reads these two exact
 # names automatically. PRODUCTION: set both in the Render dashboard.
 # If EITHER is unset, Litestream does not replicate and the app still runs normally
-# (backups are simply OFF until both are set). The bucket + endpoint are non-secret
-# and live in litestream.yml, not here.
+# (backups are simply OFF until both are set). Replication also needs
+# R2_ACCOUNT_ENDPOINT from the block below (same account host). LITESTREAM_BUCKET is
+# optional; scripts/start.sh defaults it to stagify-backups.
 LITESTREAM_ACCESS_KEY_ID=
 LITESTREAM_SECRET_ACCESS_KEY=
+LITESTREAM_BUCKET=
 
 # --- Gallery render storage (Cloudflare R2) ---
 # Where saved renders' BYTES live (lib/data/object-store.js). A separate bucket AND
@@ -110,8 +112,8 @@ LITESTREAM_SECRET_ACCESS_KEY=
 # to the wrong key would corrupt disaster recovery. The same Cloudflare account is fine —
 # scope this token to this bucket only (Object Read & Write).
 #
-# R2_ACCOUNT_ENDPOINT is the account-level host with NO bucket in it, i.e. the same host
-# litestream.yml already uses, because it is the same account.
+# R2_ACCOUNT_ENDPOINT is the account-level host with NO bucket in it. litestream.yml reads
+# it too, because it is the same account.
 #
 # If ANY of the four is unset the gallery is OFF rather than half-working. Off Render that
 # means the local disk is used instead (dev and CI). ON Render it means the gallery is
