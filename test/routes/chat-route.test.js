@@ -531,7 +531,7 @@ test('a CAD-only turn writes a gallery row', async () => {
     renderPersistence: {
       enabled: () => true,
       recordPending: (arg) => { recorded.push(arg); return { entries: ['e1'] }; },
-      uploadInBackground: async (arg) => { uploads.push(arg); },
+      startUpload: (arg) => { uploads.push(arg); },
     },
   });
 
@@ -572,7 +572,7 @@ test('an eye-level render is filed in the gallery under its ROOM', async () => {
     renderPersistence: {
       enabled: () => true,
       recordPending: (arg) => { recorded.push(arg); return { entries: ['e1'] }; },
-      uploadInBackground: async () => {},
+      startUpload: () => {},
     },
   });
 

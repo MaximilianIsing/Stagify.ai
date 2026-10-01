@@ -26,7 +26,7 @@ function fakePersistence(seen, { enabled = true, throwOnRecord = false } = {}) {
       seen.recorded.push(arg);
       return { entries: [{ id: `r${seen.recorded.length}`, native: arg.natives[0].buffer }], evicted: [] };
     },
-    uploadInBackground: async (arg) => { seen.uploaded.push(arg); return { ok: 1, failed: 0 }; },
+    startUpload: (arg) => { seen.uploaded.push(arg); },
   };
 }
 

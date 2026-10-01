@@ -70,7 +70,7 @@ function fakePersistence(seen, { enabled = true } = {}) {
       seen.gallery.push(arg);
       return { entries: [{ id: 'r1', native: arg.natives[0].buffer }], evicted: [] };
     },
-    uploadInBackground: async () => ({ ok: 1, failed: 0 }),
+    startUpload: () => {},
   };
 }
 
@@ -355,7 +355,7 @@ test('a gallery failure can never fail the paid render', async () => {
     renderPersistence: {
       enabled: () => true,
       recordPending: () => { throw new Error('sqlite is on fire'); },
-      uploadInBackground: async () => ({ ok: 0, failed: 1 }),
+      startUpload: () => {},
     },
     processStaging: async (_b, params) => { params.onNative(Buffer.from('n'), {}); return 'img'; },
   });

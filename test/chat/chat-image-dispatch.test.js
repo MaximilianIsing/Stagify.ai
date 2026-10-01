@@ -50,7 +50,7 @@ afterEach(() => {
 });
 
 /** A render-persistence double that records every call. */
-function fakePersistence(seen, { enabled = true, recordThrows = false, recordReturnsNull = false, uploadRejects = false } = {}) {
+function fakePersistence(seen, { enabled = true, recordThrows = false, recordReturnsNull = false } = {}) {
   return {
     enabled: () => enabled,
     recordPending: (arg) => {
@@ -59,11 +59,7 @@ function fakePersistence(seen, { enabled = true, recordThrows = false, recordRet
       if (recordReturnsNull) return null;
       return { entries: [{ id: `r${seen.recorded.length}` }], evicted: [] };
     },
-    uploadInBackground: async (arg) => {
-      seen.uploaded.push(arg);
-      if (uploadRejects) throw new Error('r2 down');
-      return { ok: 1, failed: 0 };
-    },
+    startUpload: (arg) => { seen.uploaded.push(arg); },
   };
 }
 
@@ -513,17 +509,12 @@ test('gallery: recordPending throwing is logged and never fails the paid turn', 
   assert.ok(errors.some((e) => String(e[0]).startsWith('[gallery]')));
 });
 
-test('gallery: a null pending result skips the upload; a rejected upload is swallowed', async () => {
-  const nul = makeDispatch({}, { recordReturnsNull: true });
-  await nul.d.runCadRequests({ cadRequestFromAI: { shouldProcessCAD: true }, ...cadArgs() });
-  assert.equal(nul.seen.recorded.length, 1);
-  assert.equal(nul.seen.uploaded.length, 0);
-
-  const rej = makeDispatch({}, { uploadRejects: true });
-  const out = await rej.d.runCadRequests({ cadRequestFromAI: { shouldProcessCAD: true }, ...cadArgs() });
-  await new Promise((r) => setImmediate(r));
-  assert.equal(rej.seen.uploaded.length, 1);
-  assert.equal(out.cadResults.length, 1);
+test('gallery: a null pending result skips the upload', async () => {
+  // A rejected upload is startUpload's concern: test/staging/render-persistence.test.js.
+  const { d, seen } = makeDispatch({}, { recordReturnsNull: true });
+  await d.runCadRequests({ cadRequestFromAI: { shouldProcessCAD: true }, ...cadArgs() });
+  assert.equal(seen.recorded.length, 1);
+  assert.equal(seen.uploaded.length, 0);
 });
 
 // ---------------------------------------------------------------- DEBUG_MODE

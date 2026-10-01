@@ -192,6 +192,44 @@ test('uploadInBackground NEVER rejects, whatever the store does', async () => {
   await assert.doesNotReject(() => persistence.uploadInBackground({ entries: [], user }));
 });
 
+test('startUpload returns at once and the entry still lands in the background', async () => {
+  const { persistence, stagedRenders, user } = await setup();
+  const pending = persistence.recordPending({ user, isPro: true, natives: [{ buffer: await png() }], params: {} });
+
+  assert.equal(persistence.startUpload({ entries: pending.entries, user }), undefined, 'nothing for the caller to await');
+  for (let i = 0; i < 200 && !stagedRenders.listForUser({ userId: user.id }).length; i++) {
+    await new Promise((r) => setTimeout(r, 10));
+  }
+  assert.equal(stagedRenders.listForUser({ userId: user.id }).length, 1);
+});
+
+test('startUpload never surfaces a rejection, even if uploadInBackground breaks its contract', async () => {
+  // The response-path callers do not await it, so anything that escaped here would be an
+  // unhandled rejection, which exits Node 22. Nonsense entries plus a store that throws
+  // synchronously are the worst inputs uploadInBackground is pinned against above.
+  const nasty = {
+    configured: true, backend: 'nasty',
+    put() { throw new Error('thrown synchronously'); },
+    async get() { throw new Error('no'); },
+    async remove() { return false; },
+    async head() { return null; },
+    presignGet() { return ''; },
+  };
+  const { persistence, user } = await setup({ objectStore: nasty });
+  const unhandled = [];
+  const onUnhandled = (reason) => unhandled.push(reason);
+  process.on('unhandledRejection', onUnhandled);
+  try {
+    assert.doesNotThrow(() => persistence.startUpload({ entries: [{ id: 'x', native: null }], user }));
+    // @ts-expect-error: deliberately malformed, to force a throw inside uploadInBackground
+    assert.doesNotThrow(() => persistence.startUpload(undefined));
+    await new Promise((r) => setTimeout(r, 50));
+  } finally {
+    process.off('unhandledRejection', onUnhandled);
+  }
+  assert.deepEqual(unhandled, []);
+});
+
 test('a source photo that will not decode costs the slider, not the entry', async () => {
   const { persistence, stagedRenders, user } = await setup();
   const pending = persistence.recordPending({ user, isPro: true, natives: [{ buffer: await png() }], params: {} });

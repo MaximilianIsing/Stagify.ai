@@ -38,7 +38,7 @@ function fakePersistence(seen) {
       seen.push(arg);
       return { entries: arg.natives.map((n, i) => ({ id: `r${i}`, native: n.buffer })), evicted: [] };
     },
-    uploadInBackground: async () => ({ ok: 1, failed: 0 }),
+    startUpload: () => {},
   };
 }
 
