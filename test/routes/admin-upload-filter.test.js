@@ -9,7 +9,7 @@
 // green.
 //
 // That gap matters because the route does not re-check the type:
-//   routes/admin/index.js  — `HOSTED_IMAGE_MIME_EXT[req.file.mimetype] || 'bin'` SAVES an
+//   routes/admin/hosted-images.js  — `HOSTED_IMAGE_MIME_EXT[req.file.mimetype] || 'bin'` SAVES an
 //                      unknown type rather than refusing it, and stores the client's
 //                      mimetype verbatim in the manifest;
 //   routes/public.js — serves /i/<id> back with that stored mime and

@@ -1,10 +1,9 @@
 // The admin console's blog-readership endpoint: how often each article under
 // /blog/ is opened, and which ones are working.
 //
-// WHY IT IS A SEPARATE ROUTER FROM routes/admin/index.js. That file sits at its 650-line
-// lint cap; the repo's answer to a full file is a sibling, not a raised ceiling —
-// the same reason routes/admin/renders.js and routes/admin/api-usage.js exist, and
-// it is mounted the same way.
+// WHY IT IS ITS OWN ROUTER. It serves the Blog tab alone and joins two sources no
+// other admin route touches (below). Mounted with the rest of the console in
+// routes/admin/mount.js.
 //
 // The two halves come from different places on purpose. The ARTICLE LIST is scanned
 // out of public/blog/ by lib/content/blog-posts.js, so a newly published post shows

@@ -6,10 +6,12 @@ frontend in `public/`. Entry point: `server.js`.
 ## Layout
 - `server.js`: composition root, builds the shared stores/helpers and mounts middleware
   (`lib/http/app-middleware.js`, limiters in `lib/http/rate-limiters.js`) and routers. It is
-  at its 650-line ESLint cap, so new logic goes in a `routes/` or `lib/` factory.
+  capped at 650 lines (ESLint), so new logic goes in a `routes/` or `lib/` factory grouped
+  by domain, not into server.js.
 - `routes/` — Express routers (`chat`, `staging`, `auth`, `public`, `billing`, `i18n`, …).
-  The admin console's routers live in `routes/admin/` (`index.js` is the main one; the
-  rest are sibling routers split off because it is at its line cap).
+  The admin console's routers live in `routes/admin/`: `index.js` is the core, each sibling
+  owns one tab or drawer, and `mount.js` (`mountAdminConsole`) builds the admin-only
+  services and mounts them all in order. server.js calls only `mountAdminConsole`.
   New route files create their router with `createAsyncRouter()` (`lib/http/async-router.js`),
   the shared factory. On Express 5 it is a plain `express.Router()`: async-handler
   rejections reach the catch-all error handler in `server.js` natively.

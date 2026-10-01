@@ -254,10 +254,8 @@ question a bug report always opens with is what the render actually looked like.
 `staged_renders` holds the parameters and `render_blobs` the bytes; this is the only
 operator-facing reader of either.
 
-Served by [`routes/admin/renders.js`](../../routes/admin/renders.js), a **sibling
-router** rather than another handler in `routes/admin/index.js` — that file is at its
-650-line cap, and the answer to a full file here is a sibling, not a raised
-ceiling. `GET /api/admin/renders?userId=&limit=` behind the same `protectLogs`.
+Served by [`routes/admin/renders.js`](../../routes/admin/renders.js), the tab's own
+router (the console is one router per tab, mounted by `routes/admin/mount.js`). `GET /api/admin/renders?userId=&limit=` behind the same `protectLogs`.
 
 **It shows the rows the owner's gallery hides, and that is the point.**
 `stagedRenders.listForUser` filters to `ok AND evicted_at IS NULL` because a
@@ -511,7 +509,7 @@ never leave the browser.
 | [`scripts/admin/analyst-identity.js`](../../public/scripts/admin/analyst-identity.js) | Opaque `acct_*` handles, and resolving them back to addresses for the DOM. |
 | [`lib/services/admin-analyst-tools.js`](../../lib/services/admin-analyst-tools.js) | The tool **schemas**. Declarations only; no execution. |
 | [`lib/services/admin-analyst.js`](../../lib/services/admin-analyst.js) | One model turn, its system prompt, and the transcript allowlist. |
-| [`routes/admin/analyst.js`](../../routes/admin/analyst.js) | `POST /api/admin/analyst`. A sibling router — `routes/admin/index.js` is at its cap. |
+| [`routes/admin/analyst.js`](../../routes/admin/analyst.js) | `POST /api/admin/analyst`. The drawer's own router; it is reachable from every tab. |
 
 ### Severities
 
@@ -1039,8 +1037,7 @@ lives on.
 
 **Endpoint** (behind `protectLogs`): `GET /api/admin/blog-views?days=` — `days` is clamped to
 7–365, never rejected. It lives in its own router,
-[`routes/admin/blog.js`](../../routes/admin/blog.js), because `routes/admin/index.js` is at its
-650-line lint cap. Without the store configured it answers the catalog with zeroed counts and
+[`routes/admin/blog.js`](../../routes/admin/blog.js), the tab's own router. Without the store configured it answers the catalog with zeroed counts and
 `configured: false`, so the tab says the counter is off rather than showing an error.
 
 ## API usage tab
@@ -1064,9 +1061,8 @@ is failing.
 `LEFT JOIN users` for the account email, all of which live in the one shared SQLite
 connection.
 
-It is a **sibling router** because [`routes/admin/index.js`](../../routes/admin/index.js) is at its
-650-line lint cap, exactly as [`routes/admin/renders.js`](../../routes/admin/renders.js)
-is. Same guard (`protectLogs`), same tab strip, separate file.
+It is the tab's own router, like every other tab's (`routes/admin/mount.js` mounts the
+family). Same guard (`protectLogs`), same tab strip, separate file.
 
 ### Why it is not a flag on `usageSummary`
 
@@ -1132,8 +1128,7 @@ capped list, or they would under-report the moment there are 51 API customers.
 
 Who opened this console, from where, and what was refused. Backed by
 [`lib/data/admin-access.js`](../../lib/data/admin-access.js) and served by
-[`routes/admin/access.js`](../../routes/admin/access.js) — a sibling router, because
-`routes/admin/index.js` is at its line cap.
+[`routes/admin/access.js`](../../routes/admin/access.js), the tab's own router.
 
 **Why it exists.** The console is gated by one shared secret. `admin_sessions` records a
 hashed token, a key fingerprint and two timestamps, so it can say a session exists but
@@ -1153,7 +1148,7 @@ label on this table.
 | Outcome | Where | Why there |
 |---|---|---|
 | `signin` | `POST /api/admin/session` in [`routes/admin/index.js`](../../routes/admin/index.js) | The one moment the master key is actually typed. |
-| `open` | `GET /api/admin/ping` | The probe the console already fires once per page load before revealing the dashboard. A fresh sign-in deliberately does **not** ping (pinned by `admin-shell.test.js`), so the two partition cleanly and nothing is double counted. It is instrumented by a **pass-through handler in `routes/admin/access.js` that calls `next()`**, mounted ahead of the main admin router — `routes/admin/index.js` had no room left. If that handler ever stops calling `next()`, the real handler never answers and every operator is locked out at the login screen; `admin-access-route.test.js` pins it. |
+| `open` | `GET /api/admin/ping` | The probe the console already fires once per page load before revealing the dashboard. A fresh sign-in deliberately does **not** ping (pinned by `admin-shell.test.js`), so the two partition cleanly and nothing is double counted. It is instrumented by a **pass-through handler in `routes/admin/access.js` that calls `next()`**, mounted ahead of the main admin router so the access log keeps one owner. If that handler ever stops calling `next()`, the real handler never answers and every operator is locked out at the login screen; `admin-access-route.test.js` pins it. |
 | `denied` | `rejectWith()` in [`lib/http/http-guards.js`](../../lib/http/http-guards.js) | The single funnel every refusal passes through, so one hook covers `protectLogs`, `requireEndpointKey`, `stagingEndpointKeyGuard` **and** the module-level `rejectEndpointKey` that `POST /api/getpro` uses. Instrumenting routes instead would have missed the two endpoints holding the same secret — one of which grants Pro. The store is installed process-wide by `createHttpGuards` because `rejectEndpointKey` has no factory closure. |
 
 Recording happens **before** the rate limiter, not after: over the per-IP ceiling the

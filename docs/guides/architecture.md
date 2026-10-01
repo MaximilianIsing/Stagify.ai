@@ -71,11 +71,11 @@ const { forgetEmailOpenState } = email;   // a createUserDeletion FACTORY input,
 app.use(createPublicRouter({ /* … */ hostedImages, email, /* … */ }));
 ```
 
-Their shapes live in `lib/types/deps.d.ts`, so the three routers that take them (`routes/admin/index.js`, `routes/auth.js`,
+Their shapes live in `lib/types/deps.d.ts`, so the routers that take them (`routes/admin/hosted-images.js`, `routes/auth.js`,
 `routes/public.js`) reference one typedef
 instead of re-declaring the same JSDoc.
 
-**Why only those two.** `routes/admin/index.js`, `routes/auth.js` and `routes/public.js`
+**Why only those two.** `routes/admin/hosted-images.js`, `routes/auth.js` and `routes/public.js`
 consume `deps` themselves and forward nothing onward, so grouping a name they read is a
 local change. `routes/chat.js` and `routes/staging.js` are different — they pass the
 **whole bag** to sub-factories:
@@ -426,7 +426,7 @@ Each is a factory returning a router (built with `createAsyncRouter()`), mounted
 | `public.js` | SEO files (`robots.txt`, `sitemap.xml`), landing/status pages, `/health`, hero-stat counts (`/api/prompt-count`, `/api/contact-count`, and the canonical `/api/stats` that `llms.txt` points at), contact/bug logging, `/api/send-email`, hosted-image serving (`/i/:id`), email-open pixel. |
 | `i18n.js` | The localized-URL pages: `/es`, `/fr/guides.html`, … rendered server-side per language from `public/languages/*.json` (`lib/i18n/`). Mounted before `public.js`; prefixes are disjoint from every other route. See [`i18n.md`](i18n.md). |
 | `auth.js` | `register` / `verify` / `login` / `logout` / `me` / `forgot-password` / `reset-password` / `google`, plus the staging-banner controls. |
-| `admin/index.js` | `endpoint_key`-gated log/data exports and hosted-image management (see [`endpoints.md`](../reference/endpoints.md)). Siblings `admin/access.js`, `analyst.js`, `api-usage.js`, `blog.js`, `renders.js` are mounted just before it. |
+| `admin/index.js` | The console core: the page, sign-in (ping + sessions), `endpoint_key`-gated log/data exports, and per-account actions (see [`endpoints.md`](../reference/endpoints.md)). Siblings `admin/hosted-images.js`, `status.js`, `signals.js`, `emails.js`, `referrals.js`, `renders.js`, `api-usage.js`, `analyst.js`, `blog.js`, `access.js` each own one console tab or drawer. `admin/mount.js` (`mountAdminConsole`) builds the admin-only services and mounts the whole family, access before index; server.js calls only it. |
 | `staging.js` | Core AI: `process-image`, `mask-edit`, `segment`, `validate-image`, `stage-by-endpoint-key`, `enhance-exterior`, `masking-studio/save`, `stamp-image`, `download-result`, `disclosure-preview`. |
 | `api-keys.js` | Session-authed API key CRUD, credit balance/packs/checkout, usage. |
 | `api-v1.js` | Public render API `/api/v1/*` (Bearer key; see [below](#the-public-api-is-synchronous-on-purpose)). |
@@ -781,8 +781,8 @@ ties them together.
 - **No frontend build — on purpose.** Write browser-native HTML/CSS/ESM; don't reach
   for a bundler, transpiler, or npm frontend package. The reasoning and the (narrow)
   conditions that would reopen it are in [Decision: no frontend build step](#decision-no-frontend-build-step).
-- **`server.js` is at its line cap** (650, ESLint `max-lines`). New logic goes in a
-  `routes/` or `lib/` factory. The `route-inventory` test guards against accidentally
+- **`server.js` is capped** (650, ESLint `max-lines`). New logic goes in a
+  `routes/` or `lib/` factory grouped by domain (the admin console's is `routes/admin/mount.js`). The `route-inventory` test guards against accidentally
   dropping a route during a refactor.
 - **Deploys are manual.** `render.yaml` sets `autoDeploy: false`, so a push does **not**
   ship — you deploy from the Render dashboard. The build still runs the test suite, so a

@@ -1,5 +1,5 @@
 // Tier: route contract (real guard, faked readers) — the two Signals-tab endpoints
-// in routes/admin/index.js.
+// in routes/admin/signals.js.
 //
 // WHY A SEPARATE FILE. Every other admin route serves a store read, a file, or a
 // mutation. These two break that pattern in ways worth isolating:

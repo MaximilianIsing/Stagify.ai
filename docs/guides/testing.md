@@ -77,7 +77,7 @@ test**, never which harness it happens to use:
 specs). Three styles, cheapest first:
 
 **Router-mount** — `staging-app.js`, `chat-app.js`, `auth-app.js`, `billing-app.js`,
-`admin-app.js`. Each mounts **one real router factory** (`routes/*.js`; `admin-app.js` mounts `routes/admin/index.js`) on a bare
+`admin-app.js`. Each mounts **one real router factory** (`routes/*.js`; `admin-app.js` mounts `routes/admin/index.js` and its per-tab siblings) on a bare
 `express()` app with its dependency bag faked, listens on an ephemeral port, and returns
 `{ baseUrl, …, close }` so the test drives it with `fetch`. This exercises the actual
 handlers — auth gate, body parsing, validation, response shaping, error mapping — with the

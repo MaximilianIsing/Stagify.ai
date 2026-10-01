@@ -1,9 +1,9 @@
 // The admin console's API-usage endpoint: one site-wide read of the public render
 // API's traffic, its customers, and its prepaid credit economics.
 //
-// WHY IT IS A SEPARATE ROUTER FROM routes/admin/index.js. That file sits at its 650-line
-// lint cap. The repo's answer to a full file is a sibling, not a raised ceiling — the
-// same reason routes/admin/renders.js exists, and it is mounted the same way.
+// WHY IT IS ITS OWN ROUTER. It serves one console tab from one data source (the
+// public API's billing tables), with its own rule about what never leaves the
+// server (below). Mounted with the rest of the console in routes/admin/mount.js.
 //
 // WHAT IT DOES NOT RETURN. No key ids, no key prefixes, no idempotency keys and no
 // request fingerprints. A key prefix is the half of a credential a support ticket

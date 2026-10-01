@@ -28,9 +28,6 @@ import { getDb } from './lib/data/db.js';
 import { createAdminMetrics } from './lib/analytics/admin-metrics.js';
 import { createServiceHealth, healthFlags } from './lib/health/service-health.js';
 import { checkBackupStatus } from './lib/health/backup-status.js';
-import { createApiUsageStats } from './lib/analytics/api-usage.js';
-import { createAdminBrief } from './lib/services/admin-brief.js';
-import { createAdminAnalyst } from './lib/services/admin-analyst.js';
 import createGalleryRouter from './routes/gallery.js';
 import createSharePublicRouter from './routes/share-public.js';
 import { createRenderPersistence } from './lib/staging/render-persistence.js';
@@ -44,12 +41,7 @@ import createReferralRouter from './routes/referrals.js';
 import createObjectLocalRouter from './routes/object-local.js';
 import createChatRouter from './routes/chat.js';
 import createStagingRouter from './routes/staging.js';
-import createAdminRouter from './routes/admin/index.js';
-import { createAdminRendersRouter } from './routes/admin/renders.js';
-import { createAdminApiUsageRouter } from './routes/admin/api-usage.js';
-import { createAdminAnalystRouter } from './routes/admin/analyst.js';
-import { createAdminBlogRouter } from './routes/admin/blog.js';
-import { createAdminAccessRouter } from './routes/admin/access.js';
+import { mountAdminConsole } from './routes/admin/mount.js';
 import createAuthRouter from './routes/auth.js';
 import { DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, IS_STAGING, HIDE_STAGING_BANNER, SHOW_STAGING_BANNER, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS } from './lib/config/runtime-flags.js';
 import createNotFoundHandler from './lib/http/not-found.js';
@@ -76,7 +68,7 @@ import { createExteriorHandler } from './lib/staging/exterior-handler.js';
 import { createMaskingSaveHandler } from './lib/staging/masking-save-handler.js';
 import { createLifecycleEmails } from './lib/services/lifecycle-emails.js';
 import { createTrialLifecycle } from './lib/services/trial-lifecycle.js';
-import { createEmailCatalog } from './lib/services/email-catalog.js';
+import { createEmailCatalog, createTestEmailSender } from './lib/services/email-catalog.js';
 import { createReferralLinks } from './lib/data/referral-links.js';
 import { createBlogViews } from './lib/data/blog-views.js';
 import { createEmailOptOut } from './lib/data/email-optout.js';
@@ -211,37 +203,8 @@ const trialLifecycle = createTrialLifecycle({ authStore, emails: lifecycleEmails
 // use) powers the admin dashboard's Emails tab — preview gallery + "send test to me".
 const emailCatalog = createEmailCatalog({ appUrl: APP_URL });
 
-/**
- * Send a one-off copy of a catalog email to an admin-supplied address (the Emails
- * tab's "send test" button). Sends to the exact address requested — no
- * EMAIL_DEBUG_MODE redirect, because the operator is deliberately testing delivery
- * to themselves. Never throws; returns a { ok, status?, error? } shape.
- * @param {{ id: string, toEmail: string }} arg - Catalog id + recipient.
- * @returns {Promise<{ ok: boolean, status?: number, error?: string }>}
- */
-async function sendTestEmail({ id, toEmail }) {
-  if (!resend) return { ok: false, status: 503, error: 'Email delivery is not configured on this server.' };
-  const entry = emailCatalog.renderById(id);
-  if (!entry) return { ok: false, status: 400, error: 'Unknown email template.' };
-  try {
-    const result = await resend.emails.send({
-      from: RESEND_FROM_EMAIL,
-      to: toEmail,
-      subject: `[Test] ${entry.subject}`,
-      html: entry.html,
-      text: entry.text,
-    });
-    if (result && result.error) {
-      const msg = typeof result.error?.message === 'string' ? result.error.message : JSON.stringify(result.error);
-      logger.error('[admin] test email send failed:', msg);
-      return { ok: false, status: 502, error: 'The email provider rejected the send.' };
-    }
-    return { ok: true };
-  } catch (err) {
-    logger.error('[admin] test email send threw:', errorMessage(err));
-    return { ok: false, status: 502, error: 'Could not send the test email.' };
-  }
-}
+// The Emails tab's "send test to me" button → lib/services/email-catalog.js.
+const sendTestEmail = createTestEmailSender({ resend, from: RESEND_FROM_EMAIL, emailCatalog });
 
 // API credit packs and the Stripe events that move a balance. Built here so the
 // billing router below can dispatch a paid one-time session into it — credits are the
@@ -460,46 +423,25 @@ const MAX_SEGMENT_QUERY_LENGTH = 200;
 // auth routes (routes/auth.js)
 app.use(createAuthRouter({ authStore, googleOAuthClient, resend, LOGS_ACCESS_KEY, authLimiter, emailLimiter, RESEND_FROM_EMAIL, EMAIL_DEBUG_MODE, DEBUG_EMAIL, IS_STAGING, SHOW_STAGING_BANNER, endpointKeyMatches, setSensitiveHeaders, getAuthUserFromRequest, toPublicAuthUser, email, __dirname, googleClientId }));
 
-// admin routes (routes/admin/index.js)
+// The admin console (routes/admin/mount.js): every /api/admin/* router plus the
+// admin-only services behind them.
 //
-// adminMetrics is built here rather than inside the router because it prepares
-// its statements once, at construction — see the N+1 guard in
-// test/analytics/admin-metrics.test.js. It must come AFTER the gallery stores
+// adminMetrics is built here rather than there because serviceHealth below reads its
+// counters, and serviceHealth is shared with the public router and listen(). It
+// prepares its statements once, at construction (see the N+1 guard in
+// test/analytics/admin-metrics.test.js), so it must come AFTER the gallery stores
 // above, which are what create the tables it prepares against.
 const adminMetrics = createAdminMetrics({ db: getDb(__dirname), getDataLogDir });
-const adminBrief = createAdminBrief({ openai });
-// Per-subsystem health for /status and the console's status tab. Built here because it
-// needs adminMetrics above; `getInFlight` is read through a closure because the API
-// concurrency gate is created further down (nothing calls it until a request arrives).
+// Per-subsystem health for /status and the console's status tab. `getInFlight` is read
+// through a closure because the API concurrency gate is created further down (nothing
+// calls it until a request arrives).
 const serviceHealth = createServiceHealth({
   ...healthDeps, genAI,
   getHealthCounters: () => adminMetrics.healthCounters(),
   getInFlight: () => apiInFlight(),
   concurrencyLimit: Number(process.env.API_CONCURRENCY_GLOBAL || 12),
 });
-// The Signals drawer's analyst. Same client, opposite instrument: the brief restates
-// findings that are already computed, this one answers a question by calling tools
-// the browser then runs against the data it already holds.
-const adminAnalyst = createAdminAnalyst({ openai });
-// Site-wide reads of the public render API, for the console's API usage tab. Built
-// here for the same reason adminMetrics is: it prepares its statements once, at
-// construction, so it must come after the stores that create the tables it reads.
-const apiUsageStats = createApiUsageStats({ db: getDb(__dirname) });
-// The render inspector rides beside the admin router rather than inside it —
-// routes/admin/index.js is at its line cap. Same guard, same tab, separate file.
-app.use(createAdminRendersRouter({ stagedRenders, objectStore, protectLogs, setSensitiveHeaders }));
-// Same reasoning again: routes/admin/index.js is full, so the API usage tab's one endpoint
-// rides beside it rather than inside it.
-app.use(createAdminApiUsageRouter({ apiUsageStats, protectLogs, setSensitiveHeaders }));
-// And once more: the analyst drawer's single endpoint is a sibling for the same
-// reason. It is reachable from every tab, so it is wired beside the router rather
-// than inside the Signals tab's.
-app.use(createAdminAnalystRouter({ adminAnalyst, protectLogs, setSensitiveHeaders }));
-app.use(createAdminBlogRouter({ blogViews, protectLogs, __dirname }));
-// MUST stay above createAdminRouter: it records GET /api/admin/ping by matching it
-// first and falling through to the real handler there. See routes/admin/access.js.
-app.use(createAdminAccessRouter({ adminAccess, protectLogs }));
-app.use(createAdminRouter({ authStore, uptimeMonitor, serviceHealth, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, deleteUser, getDataLogDir, hostedImages, protectLogs, requireEndpointKey, adminSessions, __dirname, HOSTED_IMAGE_MIME_EXT, emailCatalog, sendTestEmail, referralLinks, adminMetrics, adminBrief, adminAccess }));
+mountAdminConsole(app, { openai, db: getDb(__dirname), stagedRenders, objectStore, blogViews, authStore, uptimeMonitor, serviceHealth, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, deleteUser, getDataLogDir, hostedImages, protectLogs, requireEndpointKey, adminSessions, __dirname, HOSTED_IMAGE_MIME_EXT, emailCatalog, sendTestEmail, referralLinks, adminMetrics, adminAccess });
 
 // staging routes (routes/staging.js)
 app.use(createStagingRouter({ genAI, genLimiter, stagingProcessUpload, DEBUG_MODE, MAX_MASK_PROMPT_LENGTH, MAX_SEGMENT_QUERY_LENGTH, QUALITY_MAX_ATTEMPTS, setSensitiveHeaders, getAuthUserFromRequest, enterpriseDomainForUser, reportEnterpriseUsage, recordStagingActivity, requireProAccount, logMaskEditToFile, logRejectionToFile, downscaleImage, padBufferToAspectRatio, buildMarkedRoomImage, normalizeMaskOutputToRoom, reviewMaskEdit, compositeForReview, generateWithQualityRetry, maskReferencePromptSuffix, validateStageableImage, handleVirtualStagingMultipart, handleExteriorMultipart, handleMaskingSave, stagingEndpointKeyGuard }));

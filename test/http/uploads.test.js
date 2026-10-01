@@ -15,7 +15,7 @@
 //                             not an incidental case. It accepts exactly the keys
 //                             of HOSTED_IMAGE_MIME_EXT and nothing else.
 //
-// HOSTED_IMAGE_MIME_EXT is the mime→extension map routes/admin/index.js uses to name
+// HOSTED_IMAGE_MIME_EXT is the mime→extension map routes/admin/hosted-images.js uses to name
 // the file on save; we pin the exact mapping so a drifted extension (or a newly
 // allowed type) trips a test.
 //

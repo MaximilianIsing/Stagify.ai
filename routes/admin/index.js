@@ -1,128 +1,44 @@
-// Admin console routes (the main admin router; its sibling routers live alongside it).
+// The admin console's core router: the console page itself, sign-in (ping + sessions),
+// the raw data exports and CSV logs the dashboard aggregates in the browser, and the
+// per-account actions (grant/revoke Stagify+, sign out everywhere, GDPR erasure).
+// Each other tab has its own sibling router in this folder; routes/admin/mount.js
+// mounts the whole family.
 import express from 'express';
 import { createAsyncRouter } from '../../lib/http/async-router.js';
-import { sendError, resolveAppOrigin, getStagingClientIp } from '../../lib/http/http-helpers.js';
+import { sendError, getStagingClientIp } from '../../lib/http/http-helpers.js';
 import { ADMIN_SESSION_HEADER } from '../../lib/http/http-guards.js';
 import { reportError } from '../../lib/http/error-ref.js';
 import path from 'path';
 import fs from 'fs';
-import crypto from 'crypto';
 import { logger } from '../../lib/logger.js';
-import { statusPayload } from '../../lib/health/service-health.js';
 
 /**
- * Build the admin router (dashboard, hosted-image upload/list/delete, CSV log
- * downloads, memory + uptime resets). `deps` is the injection bag from server.js.
+ * Build the core admin router. `deps` is the injection bag from routes/admin/mount.js.
  *
  * @param {{
  *   authStore: any,
- *   uptimeMonitor: any,
- *   serviceHealth?: ReturnType<typeof import('../../lib/health/service-health.js').createServiceHealth> | null,
  *   enterpriseStore: any,
- *   hostImageUpload: import('express').RequestHandler,
  *   DEBUG_MODE: boolean,
  *   setSensitiveHeaders: (res: import('express').Response) => void,
  *   exportAllMemories: Function,
  *   resetAllMemories: Function,
  *   deleteUser: ReturnType<typeof import('../../lib/data/user-deletion.js').createUserDeletion>['deleteUser'],
  *   getDataLogDir: ReturnType<typeof import('../../lib/services/logging.js').createLogging>['getDataLogDir'],
- *   hostedImages: import('../../lib/types/deps.js').HostedImagesDeps,
  *   protectLogs: import('express').RequestHandler,
  *   requireEndpointKey: import('express').RequestHandler,
  *   adminSessions?: ReturnType<typeof import('../../lib/data/admin-sessions.js').createAdminSessions>,
  *   __dirname: string,
- *   HOSTED_IMAGE_MIME_EXT: Record<string, string>,
- *   emailCatalog: ReturnType<typeof import('../../lib/services/email-catalog.js').createEmailCatalog>,
- *   sendTestEmail: (arg: { id: string, toEmail: string }) => Promise<{ ok: boolean, status?: number, error?: string }>,
- *   referralLinks?: ReturnType<typeof import('../../lib/data/referral-links.js').createReferralLinks>,
- *   adminMetrics?: ReturnType<typeof import('../../lib/analytics/admin-metrics.js').createAdminMetrics>,
- *   adminBrief?: ReturnType<typeof import('../../lib/services/admin-brief.js').createAdminBrief>,
  *   adminAccess?: ReturnType<typeof import('../../lib/data/admin-access.js').createAdminAccess> | null,
- * }} deps - Stores, the hosted-image upload middleware + log-access guard, data-dir
- *   and manifest helpers, memory/uptime admin actions, the mime→ext map, the
- *   user-facing email catalog + test-send helper for the Emails tab, the
- *   campaign-link hit store behind the Referrals tab, and the two Signals-tab
- *   readers (SQL aggregates + the written brief). Both of the last two are
- *   OPTIONAL: absent, their routes answer with a null payload rather than 503, so
- *   the tab degrades to its deterministic half instead of erroring. `adminAccess`
- *   is optional for the same reason: without it, a sign-in simply is not recorded, and
- *   `serviceHealth` likewise — absent, the status tab is exactly the uptime view it was.
+ * }} deps - `adminSessions` absent answers 503 on the session endpoints; `adminAccess`
+ *   absent means a sign-in simply is not recorded.
  */
 export default function createAdminRouter(deps) {
-  const { authStore, uptimeMonitor, serviceHealth, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, deleteUser, getDataLogDir, hostedImages, protectLogs, requireEndpointKey, adminSessions, __dirname, HOSTED_IMAGE_MIME_EXT, emailCatalog, sendTestEmail, referralLinks, adminMetrics, adminBrief, adminAccess } = deps;
+  const { authStore, enterpriseStore, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, deleteUser, getDataLogDir, protectLogs, requireEndpointKey, adminSessions, __dirname, adminAccess } = deps;
   const router = createAsyncRouter();
 
 router.get('/admin', (req, res) => {
   setSensitiveHeaders(res);
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
-});
-
-router.post('/api/host-image', protectLogs, (req, res) => {
-  hostImageUpload(req, res, (err) => {
-    if (err) {
-      return sendError(res, 400, err.message || 'Upload failed');
-    }
-    if (!req.file || !req.file.buffer || !req.file.buffer.length) {
-      return sendError(res, 400, 'No image file provided');
-    }
-    try {
-      const ext = HOSTED_IMAGE_MIME_EXT[req.file.mimetype] || 'bin';
-      const id = crypto.randomBytes(16).toString('hex'); // 32 hex chars, unguessable
-      const file = id + '.' + ext;
-      fs.writeFileSync(path.join(hostedImages.getHostedImagesDir(), file), req.file.buffer);
-      const entry = {
-        id,
-        file,
-        mime: req.file.mimetype,
-        ext,
-        originalName: req.file.originalname || file,
-        size: req.file.size || req.file.buffer.length,
-        uploadedAt: new Date().toISOString(),
-      };
-      const manifest = /** @type {import('../../lib/types/image.js').HostedImageEntry[]} */ (hostedImages.readHostedImagesManifest());
-      manifest.push(entry);
-      hostedImages.writeHostedImagesManifest(manifest);
-      // Was hand-parsing x-forwarded-proto. `trust proxy` (server.js:132) already
-      // resolves that into req.protocol, and doing it by hand is the same mistake
-      // getStagingClientIp warns about for X-Forwarded-For.
-      const url = resolveAppOrigin(req) + '/i/' + id;
-      logger.info('[host-image] hosted', file, '(' + entry.size + ' bytes)');
-      return res.json({ ok: true, id, path: '/i/' + id, url, entry });
-    } catch (e) {
-      logger.error('[host-image] save failed', e);
-      return sendError(res, 500, 'Failed to save image');
-    }
-  });
-});
-
-router.get('/api/hosted-images', protectLogs, (req, res) => {
-  const images = /** @type {import('../../lib/types/image.js').HostedImageEntry[]} */ (hostedImages.readHostedImagesManifest())
-    .slice()
-    .sort((a, b) => new Date(b.uploadedAt || 0).getTime() - new Date(a.uploadedAt || 0).getTime())
-    .map((e) => Object.assign({}, e, { path: '/i/' + e.id }));
-  return res.json({ images });
-});
-
-router.delete('/api/hosted-images/:id', protectLogs, (req, res) => {
-  const id = String(req.params.id || '');
-  if (!/^[a-f0-9]{16,64}$/.test(id)) {
-    return sendError(res, 400, 'Invalid id');
-  }
-  const manifest = /** @type {import('../../lib/types/image.js').HostedImageEntry[]} */ (hostedImages.readHostedImagesManifest());
-  const idx = manifest.findIndex((e) => e && e.id === id);
-  if (idx === -1) {
-    return sendError(res, 404, 'Not found');
-  }
-  const [entry] = manifest.splice(idx, 1);
-  try {
-    const filePath = path.join(hostedImages.getHostedImagesDir(), entry.file);
-    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-  } catch (e) {
-    logger.error('[host-image] file delete failed', e);
-  }
-  hostedImages.writeHostedImagesManifest(manifest);
-  logger.info('[host-image] unhosted', entry.file);
-  return res.json({ ok: true });
 });
 
 // Cheap credential check for the admin sign-in screen. It exists so the login probe
@@ -276,57 +192,6 @@ router.get('/resetmemories', protectLogs, (req, res) => {
   });
 });
 
-// ── Server status (admin view) ────────────────────────────────────────────
-//
-// The public /api/status payload is fetched by every visitor to /status on a timer,
-// so the extra depth the console wants — the 30-day graph, the manual entries as
-// their own list, the monitor's configuration — hangs off a separate admin route
-// rather than being added to it.
-
-// includeDetail, unlike the public route: the operator is the one person who needs the
-// R2 error body, the SQLite message and the probe latencies to act on a red pill.
-router.get('/api/admin/status', protectLogs, (req, res) => {
-  res.set('Cache-Control', 'no-store');
-  return res.json(statusPayload(uptimeMonitor.getAdminSnapshot(), serviceHealth, { includeDetail: true }));
-});
-
-// Post an incident by hand. The heartbeat can only see the process dying, so this is
-// the only way an outage the server SURVIVED — a dead upstream, a bad deploy, an
-// expired key — reaches the status page at all. `affectsUptime` decides whether it
-// also moves the percentages, which is why an informational notice and a real outage
-// can both live here.
-router.post('/api/admin/incidents', protectLogs, express.json(), (req, res) => {
-  const result = uptimeMonitor.addIncident(req.body || {});
-  // The message is written for the operator reading the form, so it goes back
-  // verbatim — it is the only thing telling them what to type instead.
-  if (!result.ok) return sendError(res, 400, result.error);
-  logger.info('[status] incident posted: ' + result.incident.title);
-  return res.status(201).json({ ok: true, incident: result.incident });
-});
-
-router.post('/api/admin/incidents/:id/resolve', protectLogs, (req, res) => {
-  const result = uptimeMonitor.resolveIncident(String(req.params.id || ''));
-  if (!result.ok) return sendError(res, 404, result.error);
-  return res.json({ ok: true, incident: result.incident });
-});
-
-router.delete('/api/admin/incidents/:id', protectLogs, (req, res) => {
-  const result = uptimeMonitor.deleteIncident(String(req.params.id || ''));
-  if (!result.ok) return sendError(res, 404, result.error);
-  return res.json({ ok: true });
-});
-
-// Wipe all recorded uptime/incident history (admin "reset server status" button).
-router.post('/api/status/reset', protectLogs, (req, res) => {
-  try {
-    const snapshot = uptimeMonitor.reset();
-    if (DEBUG_MODE) logger.debug('✓ Server status (uptime) history reset');
-    res.status(200).json({ success: true, message: 'Server status history reset; monitoring restarted.', snapshot });
-  } catch (error) {
-    sendError(res, 500, 'Failed to reset server status', { ref: reportError('admin.status-reset', error) });
-  }
-});
-
 router.get('/chatlogs', protectLogs, (req, res) => {
   try {
     const logFile = path.join(getDataLogDir(), 'chat_logs.csv');
@@ -469,170 +334,6 @@ router.post('/api/admin/revoke-sessions', protectLogs, express.json(), (req, res
   // and the operator has to be able to tell it from a successful one.
   logger.info('[admin] revoked', result.revoked, 'session(s) for', result.userId);
   return res.json({ ok: true, userId: result.userId, email: result.email, revoked: result.revoked });
-});
-
-// ── Signals tab ───────────────────────────────────────────────────────────
-//
-// The dashboard has deliberately had no backend — it downloads the CSV/JSON
-// exports and aggregates in the browser. These two are the exceptions, and each
-// earns it for a different reason:
-//
-//   - /metrics ships numbers that exist ONLY in SQL. Chiefly `staged_renders`,
-//     whose `user_id` comes from the validated session, unlike the render log's
-//     email (which is `unknown` whenever the client didn't send one). That is
-//     what turns the funnel's documented "floor, not a count" into a count.
-//   - /brief needs the OpenAI key, which obviously cannot go to the browser.
-//
-// Both fail OPEN. A missing dependency answers 200 with a null payload rather
-// than an error, because the Signals tab's findings are computed client-side and
-// must still render when these do not.
-
-// Read-only aggregates over the shared SQLite database. Every statement is a
-// GROUP BY prepared once at factory time — see the N+1 guard in
-// test/analytics/admin-metrics.test.js before adding a query here.
-router.get('/api/admin/metrics', protectLogs, (req, res) => {
-  if (!adminMetrics || typeof adminMetrics.snapshot !== 'function') {
-    return res.json({ metrics: null, reason: 'unavailable' });
-  }
-  try {
-    return res.json({ metrics: adminMetrics.snapshot({}) });
-  } catch (error) {
-    return sendError(res, 500, 'Failed to read metrics', { ref: reportError('admin.metrics', error) });
-  }
-});
-
-// The written brief. The body is the FINISHED findings the browser already
-// computed — titles, severities and numeric evidence — never raw log rows, and
-// never an email or an IP. The model restates; it does not compute. See
-// lib/services/admin-brief.js for the prompt contract and the redaction it
-// applies on the way in.
-//
-// protectLogs runs BEFORE express.json() so an unauthenticated request is
-// rejected without its body being parsed.
-router.post('/api/admin/brief', protectLogs, express.json({ limit: '256kb' }), async (req, res) => {
-  if (!adminBrief || typeof adminBrief.generateBrief !== 'function') {
-    return res.json({ summary: null, reason: 'unavailable' });
-  }
-  const findings = req.body && req.body.findings;
-  if (!Array.isArray(findings)) {
-    return sendError(res, 400, 'A findings array is required');
-  }
-  // generateBrief never throws — it reports its own failure as a reason, so a
-  // model outage reads as "no brief" rather than a 500 on the whole tab.
-  const result = await adminBrief.generateBrief(findings);
-  return res.json(result);
-});
-
-// Emails tab: the preview gallery. Returns every user-facing email (subject + HTML +
-// text) built from the same renderers the senders use, so a preview matches what
-// actually ships. Read-only; nothing is sent here.
-router.get('/api/admin/email-previews', protectLogs, (req, res) => {
-  if (!emailCatalog || typeof emailCatalog.list !== 'function') {
-    return sendError(res, 500, 'Email catalog not configured');
-  }
-  return res.json({ emails: emailCatalog.list() });
-});
-
-// Emails tab: send one catalog email as a live test to an admin-supplied address.
-// protectLogs runs BEFORE the body parser so an unauthenticated request is rejected
-// without parsing its body.
-router.post('/api/admin/email-test-send', protectLogs, express.json(), async (req, res) => {
-  const { id, email } = req.body || {};
-  if (!id || !email) {
-    return sendError(res, 400, 'An email template id and a recipient email are required');
-  }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email))) {
-    return sendError(res, 400, 'Enter a valid email address');
-  }
-  if (typeof sendTestEmail !== 'function') {
-    return sendError(res, 500, 'Test send is not configured');
-  }
-  const out = await sendTestEmail({ id: String(id), toEmail: String(email).trim() });
-  if (!out.ok) {
-    return sendError(res, out.status || 500, out.error || 'Could not send the test email');
-  }
-  // Log the template but NOT the recipient address (PII).
-  logger.info('[admin] test email sent:', String(id));
-  return res.json({ ok: true });
-});
-
-// ── Referrals tab: campaign short-URLs (/columbia, …) ──────────────────────
-// Links are operator-created data, so this is full CRUD rather than a read-only
-// rollup. Retiring a link DEACTIVATES it (the URL stops resolving, the history
-// stays); DELETE is the separate, explicit wipe.
-
-/**
- * Guard shared by every referral endpoint: a missing store is a 500, not an empty list.
- * @param {import('express').Response} res
- */
-function referralStoreOr500(res) {
-  if (!referralLinks || typeof referralLinks.summary !== 'function') {
-    sendError(res, 500, 'Referral tracking is not configured');
-    return null;
-  }
-  return referralLinks;
-}
-
-router.get('/api/admin/referrals', protectLogs, (req, res) => {
-  const store = referralStoreOr500(res);
-  if (!store) return undefined;
-  const requested = Number(req.query.days);
-  // Clamped, not validated-and-rejected: `days` only sizes a chart, and the query
-  // reads every row in the window, so an unbounded value is a scan the caller picks.
-  const days = Number.isFinite(requested) ? Math.min(365, Math.max(7, Math.round(requested))) : 30;
-  try {
-    return res.json({ days, links: store.summary({ days }) });
-  } catch (error) {
-    return sendError(res, 500, 'Failed to retrieve referral stats', {
-      ref: reportError('admin.referrals', error),
-    });
-  }
-});
-
-// Create a link. The store owns validation (slug shape, reserved names, duplicates)
-// and returns a `code` per rejection so the dashboard can say what is wrong; 409 for
-// a name already in use, 400 for anything malformed.
-router.post('/api/admin/referrals', protectLogs, express.json(), (req, res) => {
-  const store = referralStoreOr500(res);
-  if (!store) return undefined;
-  const { slug, label, note } = req.body || {};
-  const result = store.createLink({ slug, label, note });
-  if (!result.ok) {
-    const conflict = result.code === 'SLUG_TAKEN' || result.code === 'SLUG_RESERVED';
-    return sendError(res, conflict ? 409 : 400, result.error || 'Could not create the link', { code: result.code });
-  }
-  logger.info('[admin] created referral link /' + result.link.slug);
-  return res.json({ ok: true, link: result.link });
-});
-
-// Retire / restore. POST because both mutate; separate paths so a retire can never
-// be misread as a delete.
-router.post('/api/admin/referrals/:slug/deactivate', protectLogs, (req, res) => {
-  const store = referralStoreOr500(res);
-  if (!store) return undefined;
-  const result = store.deactivateLink(req.params.slug);
-  if (!result.ok) return sendError(res, 404, result.error || 'Not found', { code: result.code });
-  logger.info('[admin] retired referral link /' + result.link.slug);
-  return res.json({ ok: true, link: result.link });
-});
-
-router.post('/api/admin/referrals/:slug/activate', protectLogs, (req, res) => {
-  const store = referralStoreOr500(res);
-  if (!store) return undefined;
-  const result = store.activateLink(req.params.slug);
-  if (!result.ok) return sendError(res, 404, result.error || 'Not found', { code: result.code });
-  logger.info('[admin] restored referral link /' + result.link.slug);
-  return res.json({ ok: true, link: result.link });
-});
-
-// The irreversible one: drops the link AND every click it ever recorded.
-router.delete('/api/admin/referrals/:slug', protectLogs, (req, res) => {
-  const store = referralStoreOr500(res);
-  if (!store) return undefined;
-  const result = store.deleteLink(req.params.slug);
-  if (!result.ok) return sendError(res, 404, result.error || 'Not found', { code: result.code });
-  logger.info('[admin] deleted referral link /' + result.slug + ' and its ' + result.hitsDeleted + ' recorded hits');
-  return res.json({ ok: true, slug: result.slug, hitsDeleted: result.hitsDeleted });
 });
 
 router.get('/enterprise-domains', protectLogs, (req, res) => {

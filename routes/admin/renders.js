@@ -7,9 +7,10 @@
 // console at all. `staged_renders` has held the parameters and `render_blobs` the
 // bytes since the gallery shipped; nothing operator-facing ever read them.
 //
-// WHY IT IS A SEPARATE ROUTER FROM routes/admin/index.js. That file sits at its 650-line
-// lint cap. The repo's answer to a full file is a sibling, not a raised ceiling —
-// the same reason lib/data/session-revocation.js is its own module.
+// WHY IT IS ITS OWN ROUTER. It is the one admin surface that hands out customer
+// photographs, through bearer URLs, so its privacy rules (below) sit in one file
+// instead of among the text exports in routes/admin/index.js. Mounted with the rest
+// of the console in routes/admin/mount.js.
 //
 // WHY IT SHOWS ROWS THE OWNER'S GALLERY HIDES. `stagedRenders.listForUser` filters
 // to `ok AND evicted_at IS NULL`, because a customer should never meet a broken

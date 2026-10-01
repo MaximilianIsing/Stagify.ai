@@ -1,10 +1,9 @@
 // The admin console's analyst endpoint: one turn of a tool-calling conversation
 // about the operator's own data.
 //
-// WHY IT IS A SEPARATE ROUTER FROM routes/admin/index.js. That file sits at its 650-line
-// lint cap. The repo's answer to a full file is a sibling, not a raised ceiling —
-// the same reason routes/admin/renders.js and routes/admin/api-usage.js exist, and
-// it is mounted the same way.
+// WHY IT IS ITS OWN ROUTER. The analyst drawer is reachable from every tab and is
+// the console's only model-backed conversation, with its own hostile-input posture
+// (below). Mounted with the rest of the console in routes/admin/mount.js.
 //
 // WHY IT IS STATELESS. The browser owns the conversation and the tool execution:
 // it posts the whole transcript, gets back either an answer or a set of tool calls,

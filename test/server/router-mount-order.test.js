@@ -25,10 +25,11 @@ import { stripJsComments as stripComments } from '../helpers/strip-js-comments.j
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const SERVER_JS = path.join(ROOT, 'server.js');
+const ADMIN_MOUNT_JS = path.join(ROOT, 'routes', 'admin', 'mount.js');
 
-/** Router factories INVOKED in server.js, in source order. */
-function mountedRouters() {
-  const code = stripComments(fs.readFileSync(SERVER_JS, 'utf8'));
+/** Router factories INVOKED in `file` (server.js by default), in source order. */
+function mountedRouters(file = SERVER_JS) {
+  const code = stripComments(fs.readFileSync(file, 'utf8'));
   return [...code.matchAll(/\bcreate(\w+)Router\s*\(/g)]
     .map((m) => `create${m[1]}Router`)
     // createAsyncRouter is the shared factory each router builds itself with; it is
@@ -68,4 +69,15 @@ test('the referral router is mounted LAST in server.js', () => {
     'routes/referrals.js matches /:slug — mounted anywhere but last, a campaign link can shadow a real page.\n'
       + `Current order: ${routers.join(' → ')}`,
   );
+});
+
+// routes/admin/access.js records GET /api/admin/ping by matching it first and calling
+// next(), so the real handler in routes/admin/index.js still answers. Mount it after
+// the main admin router and the 'open' event silently stops being recorded.
+test('the admin access router is mounted before the main admin router', () => {
+  const routers = mountedRouters(ADMIN_MOUNT_JS);
+  const access = routers.indexOf('createAdminAccessRouter');
+  const admin = routers.indexOf('createAdminRouter');
+  assert.ok(access >= 0 && admin >= 0, `precondition: both mounts found (${routers.join(', ')})`);
+  assert.ok(access < admin, `access must precede the admin router. Current order: ${routers.join(' → ')}`);
 });

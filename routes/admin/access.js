@@ -1,10 +1,9 @@
 // The admin console's access log: who opened this console, from where, and what
 // was refused. Backed by lib/data/admin-access.js.
 //
-// WHY IT IS A SEPARATE ROUTER FROM routes/admin/index.js. That file sits at its 650-line
-// lint cap; the repo's answer to a full file is a sibling, not a raised ceiling —
-// the same reason routes/admin/renders.js, routes/admin/api-usage.js and
-// routes/admin/blog.js exist, and it is mounted the same way.
+// WHY IT IS ITS OWN ROUTER. It owns the access-log domain end to end: the Access
+// tab's reads and the 'open' event below. Mounted with the rest of the console in
+// routes/admin/mount.js.
 //
 // THIS FILE ALSO OWNS THE 'open' EVENT, and does it by falling through. The console
 // already fires GET /api/admin/ping exactly once per page load, before it reveals
@@ -14,9 +13,9 @@
 // a second endpoint would have meant a second client call for an event we were
 // already being told about.
 //
-// It is instrumented HERE rather than in routes/admin/index.js's handler because that file
-// has three lines of headroom left. This router is mounted BEFORE the main admin
-// router (server.js), so a GET /api/admin/ping matches this handler first; it records
+// It is instrumented HERE rather than in routes/admin/index.js's handler so that the
+// access log has one owner. This router is mounted BEFORE the main admin router
+// (routes/admin/mount.js), so a GET /api/admin/ping matches this handler first; it records
 // and calls next(), and Express carries the request on to the real handler in
 // routes/admin/index.js, which answers it exactly as before. The only cost is that
 // protectLogs runs twice — two hashed-token reads against SQLite, which is cheaper

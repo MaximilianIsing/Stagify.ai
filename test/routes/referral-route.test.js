@@ -236,7 +236,10 @@ test('RESERVED_ROUTE_ROOTS covers every route root the app registers', () => {
   // would happily mint, producing a link that silently never counts — so the list
   // is checked against the routers themselves.
   const found = new Set();
-  for (const file of ['public.js', 'admin/index.js', 'auth.js', 'billing.js', 'staging.js', 'chat.js']) {
+  // Every admin router, not just index.js: the console is a per-tab family, and a new
+  // sibling should not have to remember to add itself here.
+  const adminFiles = fs.readdirSync(path.join(ROOT, 'routes', 'admin')).filter((f) => f.endsWith('.js')).map((f) => `admin/${f}`);
+  for (const file of ['public.js', ...adminFiles, 'auth.js', 'billing.js', 'staging.js', 'chat.js']) {
     const src = fs.readFileSync(path.join(ROOT, 'routes', file), 'utf8');
     for (const m of src.matchAll(/router\.(?:get|post|put|delete|all)\(\s*['"`]\/([^/'"`:)\s]+)/g)) {
       found.add(m[1].toLowerCase());
