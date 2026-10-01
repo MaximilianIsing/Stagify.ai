@@ -31,9 +31,12 @@ import {
   gradeRate, MIN_AFFECTED, MIN_CRITICAL_AFFECTED,
 } from '../../../public/scripts/admin/findings.js';
 import { activityIndexFrom } from '../../../public/scripts/admin/analytics-users.js';
+import { FREE_DAILY_LIMIT } from '../../../public/scripts/admin/plan-limits.js';
 
 const DAY = 24 * 60 * 60 * 1000;
 const NOW = Date.parse('2026-06-15T12:00:00Z');
+// The UTC day `usageDay` holds for an account that rendered today.
+const TODAY = '2026-06-15';
 
 // ── Fixtures ────────────────────────────────────────────────────────────────
 
@@ -501,7 +504,8 @@ test('a comp grant about to lapse is reported, because nothing else announces it
 
 test('a revoked grant and one on a paying account are both left alone', () => {
   const users = [
-    user({ id: 'g1', email: 'revoked@example.com', proGrantExpiresAt: new Date(NOW + 3 * DAY).toISOString(), proGrantRevokedAt: new Date(NOW).toISOString() }),
+    // What revokeProGrant leaves behind: the expiry cleared, the revocation stamped.
+    user({ id: 'g1', email: 'revoked@example.com', proGrantExpiresAt: null, proGrantRevokedAt: new Date(NOW).toISOString() }),
     user({ id: 'g2', email: 'upgraded@example.com', proGrantExpiresAt: new Date(NOW + 3 * DAY).toISOString(), stripeSubscriptionId: 'sub_9' }),
   ];
   assert.equal(findingById(baseInput({ users }), 'revenue.comp-grants'), null);
@@ -703,7 +707,7 @@ test('no email ever reaches a rendered string — only the accounts array', () =
   const users = [
     user({ id: 'p1', email: 'dana@example.com', plan: 'pro', stripeSubscriptionId: 'sub_1' }),
     user({ id: 'p2', email: 'marcus@example.com', plan: 'pro', proGrantExpiresAt: new Date(NOW + 2 * DAY).toISOString() }),
-    ...Array.from({ length: 30 }, (_, i) => user({ id: `f${i}`, email: `free${i}@example.com`, usageCount: 49 })),
+    ...Array.from({ length: 30 }, (_, i) => user({ id: `f${i}`, email: `free${i}@example.com`, usageDay: TODAY, usageCount: 90 })),
   ];
   const promptRows = rows(300, { email: 'heavy@example.com' });
   const input = baseInput({
@@ -810,13 +814,29 @@ test('with no refusals recorded the rule keeps its degraded wording, not a false
   // A fresh deploy has refused nothing. That must not read as "nobody is
   // hitting the cap" — the weaker heuristic still runs, and says it is weaker.
   const users = Array.from({ length: 8 }, (_, i) => user({
-    id: `f${i}`, email: `f${i}@example.com`, usageCount: 48, dailyGenerationLimit: 50,
+    id: `f${i}`, email: `f${i}@example.com`, usageDay: TODAY, usageCount: 88,
   }));
   const f = findingById(baseInput({ users, rejectionRows: [] }), 'revenue.upgrade-candidates');
   assert.ok(f, 'the degraded branch must still report');
   assert.equal(f.confidence, 'low');
   assert.ok(f.evidence.some((e) => e.label === 'Cap refusals recorded' && e.value === 'none yet'));
   assert.match(f.detail, /PARTIAL view/);
+});
+
+test('upgrade candidates measure today against the real free cap, not a stale counter', () => {
+  // `usageCount` only resets on the account's next render on a later day, so a
+  // counter left over from a past day is not today's usage. The cap is 100, so
+  // 50 today is half of it, not "at the cap".
+  const users = [
+    user({ id: 'stale', email: 'stale@example.com', usageDay: '2026-05-20', usageCount: 95 }),
+    user({ id: 'half', email: 'half@example.com', usageDay: TODAY, usageCount: 50 }),
+    user({ id: 'near', email: 'near@example.com', usageDay: TODAY, usageCount: 85 }),
+    ...Array.from({ length: 5 }, (_, i) => user({ id: `q${i}`, email: `q${i}@example.com` })),
+  ];
+  const f = findingById(baseInput({ users, rejectionRows: [] }), 'revenue.upgrade-candidates');
+  assert.ok(f);
+  assert.deepEqual(f.accounts.map((a) => a.email), ['near@example.com']);
+  assert.equal(f.accounts[0].note, `85/${FREE_DAILY_LIMIT} today`);
 });
 
 test('anonymous cap refusals are reported as a gap rather than absorbed', () => {

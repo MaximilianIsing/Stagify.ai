@@ -460,7 +460,8 @@ export function atRiskPayingAccounts(users, index, opts = {}) {
  *
  * A grant that has been revoked by hand, or that sits on an account which has
  * since bought a real subscription, is not reported — neither one is about to
- * surprise anybody.
+ * surprise anybody. Revoking clears `proGrantExpiresAt` (pro-grants.js
+ * revokeProGrant), so the first filter already drops those.
  *
  * @param {any[]} users
  * @param {{now?: number, withinDays?: number}} [opts]
@@ -471,7 +472,7 @@ export function expiringCompGrants(users, opts = {}) {
   const withinDays = typeof opts.withinDays === 'number' ? opts.withinDays : 7;
 
   return (users || [])
-    .filter((u) => u && u.proGrantExpiresAt && !u.proGrantRevokedAt && !u.stripeSubscriptionId)
+    .filter((u) => u && u.proGrantExpiresAt && !u.stripeSubscriptionId)
     .map((u) => {
       const exp = toDate(u.proGrantExpiresAt);
       return exp && {

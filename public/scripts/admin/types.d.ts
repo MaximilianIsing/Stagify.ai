@@ -36,11 +36,8 @@ export interface AdminUser {
   proPassGrantedAt?: string | null;
   proGrantedAt?: string | null;
   proGrantExpiresAt?: string | null;
-  proGrantRevokedAt?: string | null;
   lifetimeStaged?: number;
   lastStagedAt?: string | null;
-  /** Read by the upgrade-candidates rule, but NOT in the /authstore allowlist, so absent in practice. */
-  dailyGenerationLimit?: number | null;
   trialLifecycle?: { startAt: string | null; sent: Record<string, string | null> };
 }
 

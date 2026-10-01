@@ -36,6 +36,7 @@ import { trialOutcomes, trialEmailsSent } from './analytics-users.js';
 import { ratio } from './stats.js';
 import { finding, suppressed, fmtCount, fmtPct, fmtBytes, MIN_AFFECTED } from './findings.js';
 import { capHitDaysByPerson, capHitCoverage } from './analytics-rejections.js';
+import { FREE_DAILY_LIMIT } from './plan-limits.js';
 
 /** @typedef {import('./types.js').RuleInput} RuleInput */
 
@@ -402,7 +403,9 @@ const enterpriseUnderuse = {
  *
  * TWO STRENGTHS, AND THE CARD SAYS WHICH ONE IT IS RUNNING AT.
  *
- * `usageCount` is TODAY's counter and resets on the day rollover, so on its own
+ * `usageCount` is the counter for `usageDay` and only resets on the account's next
+ * render on a later UTC day, so it counts as today's usage only when `usageDay` is
+ * today; otherwise it is a stale figure from whenever they last rendered. On its own
  * this rule can only see who is at the cap right now and who renders a lot —
  * someone blocked on three separate days looks identical to someone never
  * blocked at all. That was the only version available while the dashboard did
@@ -437,11 +440,12 @@ const upgradeCandidates = {
     const blockedBy = {};
     blocked.forEach((b) => { blockedBy[String(b.identity).toLowerCase()] = { days: b.days, hits: b.hits }; });
     const measured = blocked.length > 0;
+    const today = new Date(input.now).toISOString().slice(0, 10);
 
     const candidates = free
       .map((u) => {
-        const limit = Number(u.dailyGenerationLimit) || 50;
-        const used = Number(u.usageCount) || 0;
+        const limit = FREE_DAILY_LIMIT;
+        const used = u.usageDay === today ? Number(u.usageCount) || 0 : 0;
         const email = String(u.email || '').toLowerCase();
         const renders = index.rendersByEmail[email] || 0;
         const hit = blockedBy[email] || blockedBy[String(u.id || '').toLowerCase()] || null;
