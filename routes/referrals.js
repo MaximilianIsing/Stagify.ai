@@ -44,7 +44,7 @@ export default function createReferralRouter({ referralLinks, referralLimiter })
     // path in the app, so running the limiter first would let stray 404 traffic
     // eat the bucket that protects the real links.
     (req, res, next) => {
-      const link = referralLinks.getActiveLink(req.params.slug);
+      const link = referralLinks.getActiveLink(String(req.params.slug || ''));
       if (!link) return next('route'); // not a campaign URL — fall through to 404
       res.locals.referralLink = link;
       return next();

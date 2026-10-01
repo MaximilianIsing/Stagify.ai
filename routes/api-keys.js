@@ -92,7 +92,7 @@ export default function createApiKeysRouter(deps) {
     const user = requireSession(req, res);
     if (!user) return undefined;
 
-    const out = apiKeys.revoke({ id: req.params.id, userId: user.id });
+    const out = apiKeys.revoke({ id: String(req.params.id || ''), userId: user.id });
     if (!out.ok) {
       // 'not_found' covers both "no such key" and "somebody else's key" on purpose.
       // 'already_revoked' is also a 404: the caller's intent is satisfied either way
@@ -106,7 +106,7 @@ export default function createApiKeysRouter(deps) {
     const user = requireSession(req, res);
     if (!user) return undefined;
 
-    const out = apiKeys.rename({ id: req.params.id, userId: user.id, name: req.body?.name });
+    const out = apiKeys.rename({ id: String(req.params.id || ''), userId: user.id, name: req.body?.name });
     if (!out.ok) return sendError(res, 404, 'No such API key', { code: 'NOT_FOUND' });
     return res.json({ record: out.record });
   });
