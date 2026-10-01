@@ -118,7 +118,8 @@ mounted between them so the Stripe webhook still sees the raw body):
 3. **Vanity redirects** (`applyVanityRedirects`, `lib/http/vanity-redirects.js`), e.g.
    `/brand`. Before static because `public/brand/` is a real directory.
 4. **Static assets.** First the text-asset middleware (`lib/http/text-assets.js`: serves
-   `.html`/`.css` with comments stripped and injects the live hero counts) and the
+   `.html`/`.css` with comments stripped, `.js` with comments and whitespace stripped, and
+   injects the live hero counts) and the
    `llms.txt` middleware (`lib/http/llms-txt-asset.js`), then
    **`express.static('public')`**. Cache headers: long-lived immutable for
    images/fonts/media, `no-cache` for html/css/js/json/txt/xml. This is why `/` serves
@@ -234,7 +235,7 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 | `rate-limiters.js` | The `express-rate-limit` configs (`RL_AUTH` / `RL_EMAIL` / `RL_GEN` / `RL_CHECKOUT` / `RL_ENDPOINT_KEY` / …). |
 | `uploads.js` | The multer upload configs (staging / chat / hosted-image). |
 | `app-middleware.js` | The base HTTP middleware, lifted out of `server.js`. `applyEdgeMiddleware(app)` (helmet/CSP, CORS allow-list, compression — mounted **before** the billing router) and `applyBodyAndStatic(app)` (text-asset + `llms.txt` middleware and `express.static`, then JSON body parsing + its error handler — mounted **after**, so Stripe's webhook still sees the raw body). |
-| `text-assets.js` | Serves `.html`/`.css` with comments stripped; writes live hero counts into the home page. |
+| `text-assets.js` | Serves `.html`/`.css` with comments stripped and `.js` whitespace-minified; writes live hero counts into the home page. |
 | `llms-txt-asset.js` | Serves `/llms.txt` with the live usage figures substituted. |
 | `vanity-redirects.js` | Short URLs like `/brand`, mounted before static. |
 | `stats-endpoint.js` | `GET /api/stats`, the canonical public usage figures. |

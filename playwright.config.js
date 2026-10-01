@@ -61,7 +61,7 @@ export default defineConfig({
     // IS_STAGING (the banner otherwise intercepts clicks over the studio).
     //
     // DEBUG is pinned OFF for the same reason, and it is not cosmetic: lib/http/text-assets.js
-    // strips comments from .html/.css on the way out and bypasses itself entirely under
+    // strips comments from .html/.css and minifies .js on the way out, and bypasses that under
     // DEBUG_MODE, so a developer with DEBUG=true in their .env would run every browser smoke
     // against markup that production never serves. Render sets no DEBUG, so false is
     // the deployed value — this makes the smokes agree with it.

@@ -16,13 +16,24 @@
 // real stylesheet and page in public/ and assert structural invariants that a mis-strip
 // cannot preserve — balanced braces, an unchanged count of rule blocks, unchanged
 // <script>/<style> bodies, and idempotence.
+//
+// Scripts get the same whole-corpus treatment at the end of the file, against a second
+// parser (acorn) so esbuild is not marking its own homework.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { stripCssComments, stripHtmlComments } from '../../lib/http/text-assets.js';
+import express from 'express';
+import * as acorn from 'acorn';
+import {
+  createTextAssetMiddleware,
+  isPrebuiltScript,
+  minifyJs,
+  stripCssComments,
+  stripHtmlComments,
+} from '../../lib/http/text-assets.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const PUBLIC = path.join(ROOT, 'public');
@@ -228,5 +239,154 @@ test('the homepage keeps every hook its other drift tests key on', () => {
     'class="hp-canvas__img is-on"',
   ]) {
     assert.ok(out.includes(hook), `stripping removed \`${hook}\` from the served homepage`);
+  }
+});
+
+/* ------------------------------------------------------------------ JS, by fixture */
+
+test('minifyJs removes comments but not a "//" or "/*" that is code', () => {
+  const src = [
+    '// a line comment',
+    '/* a block comment */',
+    'const url = "https://example.com/*not*/";',
+    String.raw`const re = /\/\/+/g;`,
+    'const tpl = `// kept ${url} /* kept */`;',
+  ].join('\n');
+  const out = minifyJs(src);
+  assert.ok(!out.includes('a line comment') && !out.includes('a block comment'), out);
+  assert.ok(out.includes('"https://example.com/*not*/"'), 'string contents changed');
+  assert.ok(out.includes(String.raw`/\/\/+/g`), 'regex literal changed');
+  assert.ok(out.includes('`// kept ${url} /* kept */`'), 'template literal changed');
+});
+
+test('minifyJs keeps an ES module\'s import and export specifiers exactly', () => {
+  const src = [
+    "import { a } from './a.js';",
+    "import * as b from '../lib/b.js';",
+    "export { a };",
+    "export function c() { return b; }",
+    "export const d = await import('./d.js');",
+  ].join('\n');
+  const out = minifyJs(src);
+  for (const spec of ['"./a.js"', '"../lib/b.js"', '"./d.js"']) assert.ok(out.includes(spec), `${spec} lost`);
+  assert.match(out, /export\s*\{\s*a\s*\}/);
+  assert.match(out, /export function c\(\)/);
+});
+
+test('minifyJs keeps a classic script\'s top-level names, which other scripts read as globals', () => {
+  const out = minifyJs('var sharedState = {};\nfunction helperUsedElsewhere(x) { return x; }\n');
+  assert.match(out, /var sharedState=/);
+  assert.match(out, /function helperUsedElsewhere\(/);
+});
+
+test('minifyJs throws on a syntax error, which strippedBody turns into the raw file', () => {
+  assert.throws(() => minifyJs('function ('));
+});
+
+test('isPrebuiltScript leaves vendor builds and the generated demo data alone', () => {
+  assert.equal(isPrebuiltScript('/scripts/vendor/pdf.min.js'), true);
+  assert.equal(isPrebuiltScript('/scripts/guides/demo-data.js'), true);
+  assert.equal(isPrebuiltScript('/scripts/home/hero-picker.js'), false);
+});
+
+/* ------------------------------------------------------------------ JS, served */
+
+/** @param {import('node:test').TestContext} t */
+async function serveScripts(t) {
+  const app = express();
+  app.use(createTextAssetMiddleware(PUBLIC));
+  app.use(express.static(PUBLIC));
+  const server = await new Promise((resolve) => {
+    const s = app.listen(0, '127.0.0.1', () => resolve(s));
+  });
+  t.after(() => server.close());
+  return `http://127.0.0.1:${server.address().port}`;
+}
+
+test('a script is served minified, as JavaScript, and revalidated on every load', async (t) => {
+  const base = await serveScripts(t);
+  const rel = 'scripts/home/hero-picker.js';
+  const res = await fetch(`${base}/${rel}`);
+  const body = await res.text();
+
+  assert.equal(res.status, 200);
+  assert.match(res.headers.get('content-type') || '', /^text\/javascript/);
+  assert.equal(res.headers.get('cache-control'), 'no-cache');
+  assert.equal(body, minifyJs(fs.readFileSync(path.join(PUBLIC, rel), 'utf8')));
+  assert.ok(body.length < fs.statSync(path.join(PUBLIC, rel)).size, 'nothing was saved');
+});
+
+test('a vendor *.min.js is passed through to express.static byte-for-byte', async (t) => {
+  const base = await serveScripts(t);
+  const rel = 'scripts/vendor/heic2any.min.js';
+  const body = await (await fetch(`${base}/${rel}`)).text();
+  assert.equal(body, fs.readFileSync(path.join(PUBLIC, rel), 'utf8'));
+});
+
+/* ------------------------------------------------------------------ JS, whole corpus */
+
+/** Parse the way a browser would load it: as a module if it is one, else as a script. */
+function parseJs(src) {
+  try {
+    return acorn.parse(src, { ecmaVersion: 'latest', sourceType: 'module' });
+  } catch {
+    return acorn.parse(src, { ecmaVersion: 'latest', sourceType: 'script' });
+  }
+}
+
+/**
+ * The names a script exposes to the rest of the page: its import/export specifiers, its
+ * exported names, its top-level bindings (classic-script globals), and every function and
+ * class name (readable at runtime through `.name`).
+ *
+ * esbuild's printer may rename a LOCAL that would otherwise collide (`p` -> `p2`), which is
+ * invisible outside its scope. None of the names collected here may change.
+ */
+function publicNames(ast) {
+  /** @type {string[]} */
+  const out = [];
+  const visit = (node) => {
+    if (!node || typeof node !== 'object') return;
+    if (Array.isArray(node)) return node.forEach(visit);
+    if (/^(Function|Class)(Declaration|Expression)$/.test(node.type) && node.id) out.push(`fn:${node.id.name}`);
+    if (node.source && typeof node.source.value === 'string') out.push(`from:${node.source.value}`);
+    if (node.type === 'ExportSpecifier') out.push(`export:${node.exported.name ?? node.exported.value}`);
+    for (const [k, v] of Object.entries(node)) if (k !== 'loc') visit(v);
+  };
+  visit(ast);
+  for (const st of ast.body) {
+    const decl = /^Export/.test(st.type) && st.declaration ? st.declaration : st;
+    if (decl.type === 'VariableDeclaration') {
+      for (const d of decl.declarations) if (d.id.type === 'Identifier') out.push(`top:${d.id.name}`);
+    }
+  }
+  return out.sort();
+}
+
+test('every real script minifies to code that exposes exactly the same names', () => {
+  const scripts = filesUnder(path.join(PUBLIC, 'scripts'), /\.js$/).filter(
+    (f) => !isPrebuiltScript('/' + path.relative(PUBLIC, f).split(path.sep).join('/'))
+  );
+  assert.ok(scripts.length >= 100, `expected the site's scripts, found ${scripts.length}`);
+
+  for (const file of scripts) {
+    const name = path.relative(PUBLIC, file);
+    const src = fs.readFileSync(file, 'utf8');
+    const out = minifyJs(src);
+
+    // A second, independent parser must accept the output, in the same mode as the source.
+    const before = parseJs(src);
+    const after = parseJs(out);
+    assert.equal(after.sourceType, before.sourceType, `${name}: module/script mode changed`);
+
+    assert.deepEqual(
+      publicNames(after),
+      publicNames(before),
+      `${name}: an import, export, global, or function/class name changed. Other scripts ` +
+        `and pages depend on those, and minifyWhitespace must never touch them.`
+    );
+
+    assert.equal(minifyJs(out), out, `${name}: minifying is not idempotent`);
+    assert.ok(out.length < src.length, `${name}: minifying saved nothing`);
   }
 });

@@ -11,7 +11,8 @@ versioned URLs. Get those headers right and edge caching is safe to turn on.
 The server serves `public/` through `express.static` and sets `Cache-Control`
 per file type in the `setHeaders` callback of `applyBodyAndStatic()`
 ([`lib/http/app-middleware.js`](../../lib/http/app-middleware.js), wired from `server.js`).
-`.html` and `.css` are actually answered first by the comment-stripping middleware
+`.html`, `.css` and `.js` (except vendor `*.min.js` and `demo-data.js`) are actually
+answered first by the comment-stripping middleware
 ([`lib/http/text-assets.js`](../../lib/http/text-assets.js)), and `llms.txt` by
 [`lib/http/llms-txt-asset.js`](../../lib/http/llms-txt-asset.js). Both are mounted ahead of
 `express.static` and set the same `no-cache`:
