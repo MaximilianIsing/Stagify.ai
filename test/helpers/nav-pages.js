@@ -1,4 +1,4 @@
-// Discovery + extraction for the hand-copied site chrome — the header (shared by
+// Discovery + extraction for the baked site chrome — the header (shared by
 // test/frontend/staging-menu.test.js and test/frontend/site-header-parity.test.js) and
 // the footer (test/frontend/site-footer-parity.test.js).
 //
@@ -10,53 +10,25 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { HEADER_OPEN, elementEnd, maskComments } from '../../lib/site/chrome.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const PUBLIC = path.join(ROOT, 'public');
 
-/** The opening tag every nav-bearing page starts its header with. */
-export const HEADER_OPEN = '<header class="site-header">';
+// The comment masking and depth matching live in lib/site/chrome.js, which bakes this
+// chrome into the pages; the guards reuse them so there is one copy of the parsing.
+export { HEADER_OPEN, maskComments };
 
 /**
- * Blank out HTML comment BODIES while preserving their length, so offsets computed
- * against the masked copy still index the original exactly.
- *
- * This is not a nicety. `public/gallery.html` carries a comment that QUOTES the string
- * `<header class="site-header">` verbatim (explaining why its id sits on the <nav>
- * instead). Depth-counting `<header>` over the raw source reads that quotation as a
- * second opening tag, never returns to depth 0, and silently extracts nothing — the
- * page then drops out of the comparison and the guard passes over nine files while
- * reporting ten.
  * @param {string} html
- * @returns {string}
- */
-export function maskComments(html) {
-  return html.replace(/<!--[\s\S]*?-->/g, (m) => ' '.repeat(m.length));
-}
-
-/**
- * The full element beginning at `start`, matched by tag depth over a comment-masked copy.
- *
- * Depth counting rather than a lazy `[\s\S]*?</tag>` regex, because guides.html,
- * enterprise.html and stagify-plus.html all contain LATER nested <header> elements
- * (`guides-trouble-card__head`, `ent-hero`, `sp-hero`) — a lazy match stops at the
- * first close it sees and a greedy one runs past into the page body.
- * @param {string} html raw source; the returned slice indexes THIS string
- * @param {string} masked comment-masked copy of `html`, same length
- * @param {number} start offset of the opening tag
- * @param {string} tagName e.g. 'header'
- * @returns {string | null} null when the element never closes
+ * @param {string} masked
+ * @param {number} start
+ * @param {string} tagName
+ * @returns {string | null}
  */
 function extractByDepth(html, masked, start, tagName) {
-  const tag = new RegExp(`<${tagName}\\b|</${tagName}>`, 'g');
-  tag.lastIndex = start;
-  let depth = 0;
-  let m;
-  while ((m = tag.exec(masked))) {
-    depth += m[0].startsWith('</') ? -1 : 1;
-    if (depth === 0) return html.slice(start, m.index + m[0].length);
-  }
-  return null; // unbalanced — caller asserts on this rather than comparing a truncation
+  const end = elementEnd(masked, start, tagName);
+  return end === null ? null : html.slice(start, end);
 }
 
 /**
@@ -74,9 +46,8 @@ export function extractSiteHeader(html) {
 /**
  * The page's *site* footer — the shared marketing block linking Privacy / Terms / Status.
  *
- * Identified by CONTENT, not by class: the same block ships as an inline-styled
- * `<footer style="…">` on five pages and as `<footer class="ent-site-footer">` on
- * enterprise.html, and matching on either would silently miss the other. Pages whose
+ * Identified by CONTENT, not by class, so a page that copied the footer by hand under
+ * some other class is still found and fails the bake guard. Pages whose
  * footer is a different thing entirely (listing-share's `.sh-footer`, the legal pages,
  * the blog's `.blog-footer`) contain no such link pair and return null.
  * @param {string} html

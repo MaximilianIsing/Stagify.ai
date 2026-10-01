@@ -60,6 +60,11 @@ copies accumulated. Drift tests in `test/i18n/i18n.test.js` and
 latter also checks the per-page switcher markup, which is the one part the build
 cannot generate. Full guide: `docs/guides/i18n.md`.
 
+The same build bakes the **site header and footer** into every page in `CHROME_PAGES`
+(`lib/site/chrome.js`), between generated markers. Never edit that markup in a page: edit
+`lib/site/partials/site-{header,footer}.html` and rerun the build. The parity tests in
+`test/frontend/` fail on a stale or hand-copied copy. See `docs/guides/frontend.md`.
+
 The **blog is localized too, but through its own packs**: article prose would triple the
 size of the shared `languages/*.json` that every page downloads, so each article and the hub
 carry `public/blog/i18n/<slug>/<lang>.json`, merged under a `post.*` / `hub.*` namespace at

@@ -624,24 +624,31 @@ body {
   border-color:var(--primary-light);
   box-shadow:0 0 0 3px rgba(59,130,246,.1)
 }
+/* The shared site footer, baked into every page from lib/site/partials/site-footer.html.
+   Named .page-footer, NOT .site-footer: the rule further up this file display:none's
+   that class and the footer would vanish. */
+.page-footer {
+  text-align:center;
+  padding:20px 16px 28px;
+  font-size:13px;
+  color:var(--accent)
+}
+.page-footer a {
+  color:var(--brand);
+  text-decoration:none
+}
+.page-footer a:hover {
+  text-decoration:underline
+}
 @media (max-width:768px) {
-  /* The shared footer's links are inline-styled `color:#2563eb` on all five pages that
-     carry it, so only !important can reach them. The footer is hand-copied markup with
-     no class (its shape is pinned by test/frontend/site-footer-parity.test.js), which is
-     exactly what :not([class]) keys on — every OTHER <footer> under public/ has one
-     (.ent-site-footer, .blog-footer, .pp-footer, .sh-footer) and must not be caught here.
-     #2563eb is 2.99:1 on the #b2c4f6 body and fails PageSpeed's colour-contrast audit;
+  /* #2563eb is 2.99:1 on the #b2c4f6 body and fails PageSpeed's colour-contrast audit;
      --brand-deep is 5.98:1. Mobile-only because that is where axe can see the body
-     background at all — above 769px the fixed #background-video sits in the paint stack
-     and the check comes back "incomplete" rather than failing.
-     Do NOT "fix" this by adding class="site-footer" to the markup — the rule further up
-     this file display:none's that class and the footer would vanish.
-     The Legal menu's rows are excluded: they sit on the panel's near-white background,
-     not on the body, so the ratio this fixes does not apply to them — and being caught
-     by an !important rule is why they rendered a different colour on a phone than on a
-     desktop, which is the one thing the panel's own styling is trying not to do. */
-  footer:not([class]) a:not(.legal-menu__item) {
-    color:var(--brand-deep)!important
+     background at all: above 769px the fixed #background-video sits in the paint stack
+     and the check comes back "incomplete" rather than failing. The Legal menu's rows
+     are not caught: .legal-menu .legal-menu__item outranks this selector, and they sit
+     on the panel's near-white background, where this ratio does not apply. */
+  .page-footer a {
+    color:var(--brand-deep)
   }
   .role-popup-content {
     background:rgba(255,255,255,.6);
@@ -4733,12 +4740,10 @@ html.has-session .site-header .nav-link.hidden[data-nav-gallery] {
   outline:2px solid var(--primary);
   outline-offset:2px
 }
-/* The same contrast fix the footer's other links get at this breakpoint (see the
-   `footer:not([class]) a` rule further up): #2563eb is 2.99:1 on the #b2c4f6 body
-   and fails the colour-contrast audit, --brand-deep is 5.98:1. The trigger is a
-   <summary>, not an <a>, so that rule never reached it — and it needs no !important
-   because, like the enterprise footer's links, it is not inline-styled. One rule here
-   covers the inline-styled pages and enterprise.html alike. */
+/* The same contrast fix the footer's links get at this breakpoint (see the
+   `.page-footer a` rule further up): #2563eb is 2.99:1 on the #b2c4f6 body and fails
+   the colour-contrast audit, --brand-deep is 5.98:1. The trigger is a <summary>, not
+   an <a>, so that rule never reaches it. */
 @media (max-width:768px) {
   .legal-menu__trigger {
     color:var(--brand-deep)
@@ -4875,9 +4880,9 @@ html.has-session .site-header .nav-link.hidden[data-nav-gallery] {
     transition:opacity .01s linear,visibility 0s
   }
 }
-/* Two class selectors on purpose: .ent-site-footer a (enterprise.css) and its
-   mobile contrast override both target the footer's anchors, and this panel is
-   not part of that line of links. One class would lose to them. */
+/* Two class selectors on purpose: .page-footer a and its mobile contrast override
+   both target the footer's anchors, and this panel is not part of that line of
+   links. One class would lose to them. */
 .legal-menu .legal-menu__item {
   display:block;
   padding:9px 10px;

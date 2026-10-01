@@ -3,7 +3,7 @@
 //
 //   node scripts/build-i18n-seo.js
 //
-// It does eight things, all derived from config modules so they can't drift:
+// It does nine things, all derived from config modules so they can't drift:
 //   0. Regenerates lib/i18n/blog-i18n-manifest.js from the translation packs on disk
 //      under public/blog/i18n/ — which blog article exists in which language. Steps 3
 //      and 4 read it, so when it changes the script re-execs itself once (see below).
@@ -23,6 +23,9 @@
 //   7. Bakes the <link rel="alternate" type="text/plain"> pointer to llms.txt into every
 //      indexable page, so that file is discoverable from any URL rather than by guessing
 //      the well-known path.
+//   8. Bakes the site header and footer from lib/site/partials/ into every page listed in
+//      CHROME_PAGES (lib/site/chrome.js), between generated markers. Edit the chrome
+//      THERE and rerun this script; the parity tests fail on a stale page.
 //
 // Idempotent: re-running removes the previously-injected cluster and rewrites it,
 // so it's safe to run any time. A test (test/i18n/i18n.test.js) asserts the committed
@@ -40,6 +43,7 @@ import { articleLocales, buildBlogManifestModule } from '../lib/i18n/blog-packs.
 import { injectLangNav } from '../lib/i18n/blog-langs.js';
 import { ORGANIZATION_ID, renderOrganizationBlock } from '../lib/seo/organization.js';
 import { buildLlmsTxt } from '../lib/seo/llms-txt.js';
+import { CHROME_PAGES, injectChrome } from '../lib/site/chrome.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC = path.join(__dirname, '..', 'public');
@@ -350,7 +354,21 @@ function run() {
     }
   }
 
-  console.log(`Done. ${changed} English page(s) + ${blogChanged} blog page(s) updated, ${identity} identity block(s) written.`);
+  // Step 8 — the site chrome. Its own loop because its page set (every nav-bearing page,
+  // including noindex ones like gallery and plus-welcome) matches neither list above.
+  let chrome = 0;
+  for (const page of CHROME_PAGES) {
+    const file = path.join(PUBLIC, page.file);
+    const before = fs.readFileSync(file, 'utf8');
+    const after = injectChrome(before, page);
+    if (after !== before) {
+      fs.writeFileSync(file, after);
+      chrome += 1;
+      console.log(`site chrome → ${page.file}`);
+    }
+  }
+
+  console.log(`Done. ${changed} English page(s) + ${blogChanged} blog page(s) updated, ${identity} identity block(s), ${chrome} site chrome page(s) written.`);
 }
 
 // Only build when run directly (`node scripts/build-i18n-seo.js`), so importing

@@ -10,32 +10,20 @@
 // untranslated (see the pure-string-transform note below).
 //
 // WHY THIS EXISTS
-// This is site-header-parity.test.js's argument, one block further down the page. The
-// footer is hand-copied into six public/*.html files and there cannot be a runtime
-// partial: lib/i18n/render-page.js is a PURE STRING TRANSFORM over the static English
-// HTML, so a footer injected by client-side JS would never be server-side translated.
-// The markup has to stay literal in every file, which means the only thing standing
-// between it and drift is a test.
+// The footer has to sit literally in every page: lib/i18n/render-page.js is a PURE
+// STRING TRANSFORM over the static English HTML, so a footer injected by client-side JS
+// would never be server-side translated. It used to be hand-copied, and it drifted:
 //
-// The header had that test. The footer did not, and it drifted — which is the whole
-// reason this file exists. What it cost, before this guard:
+//   • guides.html and 404.html carried NO data-lang attributes on the links, so both
+//     shipped an English footer on all eleven locales.
+//   • stagify-plus.html and enterprise.html lacked data-lang="footer.copyright".
+//   • Two rival year mechanisms coexisted (`<span id="year">` vs `.footer-year`).
+//   • enterprise.html's classed copy drifted to a lighter colour and another font stack.
 //
-//   • guides.html and 404.html carried NO data-lang attributes at all on the three
-//     links. guides.html is in LOCALIZED_PAGES and 404.html is rendered per-locale by
-//     lib/http/not-found.js, so both shipped an English "Privacy Policy / Terms of
-//     Service / Status" footer on all eleven locales. All four keys already existed in
-//     all eleven language packs — nothing was missing but the attributes.
-//   • plus-welcome.html was missing them too (English-only, so inert — but it is one
-//     copy-paste away from a localized page, and parity is cheaper than judgement).
-//   • stagify-plus.html and enterprise.html had the link keys but not
-//     data-lang="footer.copyright".
-//   • Two rival year mechanisms coexisted: `<span id="year">` wired in app.js (index
-//     only) versus `.footer-year` + scripts/site/footer-year.js (everywhere else).
-//
-// WHAT IS COMPARED
-// Whitespace is collapsed before comparing, so indentation and line breaks are NOT
-// policed — every attribute, element, key and text node is. Same tradeoff as the header
-// guard: failing CI over a re-indent trains people to weaken the guard.
+// It is now baked from lib/site/partials/site-footer.html by scripts/build-i18n-seo.js,
+// between generated markers, and styled by `.page-footer` in styles/styles.css instead
+// of inline style= attributes. This file fails the build when a page's baked copy is
+// stale, or a page carries the footer without being listed in CHROME_PAGES.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -43,36 +31,17 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { publicPages, footerPages, allHtmlPages, extractSiteFooter } from '../helpers/nav-pages.js';
+import { CHROME_PAGES, FOOTER_BEGIN, bakedRegion, expectedRegion, injectChrome, renderSiteFooter } from '../../lib/site/chrome.js';
 
-const STYLES = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'public', 'styles');
+const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
+const REBUILD = 'rerun `node scripts/build-i18n-seo.js`';
 
-/**
- * enterprise.html's footer is the one sanctioned second shape. It carries the same
- * links, keys and year span, but is styled by a class (`.ent-site-footer`, in
- * styles/enterprise.css) instead of the inline `style=` the other five use. That is not
- * cosmetic preference: the mobile contrast override at the bottom of enterprise.css
- * needs no `!important` precisely because these links are not inline-styled.
- *
- * It used ALSO to sit inside the page's layout wrapper, and that half was not
- * sanctioned, just unnoticed — see the placement test below. Its i18n hooks are
- * asserted with everyone else's.
- */
-const OWN_SHAPE = new Set(['enterprise.html']);
-
-/** Collapse to the semantic content: comments out, whitespace flat. */
-function normalize(block) {
-  return block
-    .replace(/<!--[\s\S]*?-->/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
+const listed = CHROME_PAGES.filter((p) => p.footer);
 
 /** Every discovered page's footer — a page that stops being extractable must fail loudly. */
 function footersByPage() {
   const pages = footerPages();
-  // A ratchet, not a description: it went 6 → 8 when contact.html and status.html got
-  // the footer (2026-08-16). Raise it when a page gains one; lowering it means a page
-  // LOST its footer, which is the thing to explain rather than accommodate.
+  // A ratchet: lowering it means a page LOST its footer, which is the thing to explain.
   assert.ok(
     pages.length >= 8,
     `expected the shared footer on at least 8 pages, found ${pages.length} ` +
@@ -81,41 +50,48 @@ function footersByPage() {
   return pages.map(({ name, html }) => {
     const block = extractSiteFooter(html);
     assert.ok(block, `${name}: could not extract a balanced site <footer> block`);
-    return { name, block };
+    return { name, html, block };
   });
 }
 
-test('the site footer is identical on every page that uses the shared shape', () => {
-  /** @type {Map<string, string[]>} */
-  const shapes = new Map();
-  for (const { name, block } of footersByPage()) {
-    if (OWN_SHAPE.has(name)) continue;
-    const key = normalize(block);
-    if (!shapes.has(key)) shapes.set(key, []);
-    shapes.get(key).push(name);
-  }
-
-  assert.equal(
-    shapes.size,
-    1,
-    'the site footer has drifted between pages — it is copied by hand into every file ' +
-      'that carries it and must stay identical. Groups that disagree:\n' +
-      [...shapes.values()].map((g) => '  ' + g.join(', ')).join('\n'),
+test('every page carrying the site footer is listed in CHROME_PAGES', () => {
+  assert.deepEqual(
+    footersByPage().map((p) => p.name).sort(),
+    listed.map((p) => p.file).sort(),
+    'the set of pages with the site footer differs from CHROME_PAGES in lib/site/chrome.js. ' +
+      `Add the page there (do not copy the footer by hand), then ${REBUILD}`,
   );
 });
 
-test('enterprise.html is the only page with its own footer shape', () => {
-  // Pinned so a SIXTH shape cannot appear and be waved through as "that one's allowed
-  // to differ" — the escape hatch has to stay exactly one page wide.
-  const odd = footersByPage()
-    .filter(({ block }) => !block.includes('style="text-align:center;'))
-    .map(({ name }) => name);
-  assert.deepEqual(
-    odd.sort(),
-    [...OWN_SHAPE].sort(),
-    'the set of pages with a non-inline-styled site footer changed — if that is ' +
-      'deliberate, update OWN_SHAPE and say why in its comment',
-  );
+test('every listed page carries the current baked footer', () => {
+  const stale = [];
+  for (const { name, html, block } of footersByPage()) {
+    const page = listed.find((p) => p.file === name);
+    if (!page) continue; // reported by the listing test above
+    const region = bakedRegion(html, 'footer');
+    assert.ok(region, `${name}: no ${FOOTER_BEGIN.slice(0, 22)}… marker. ${REBUILD}`);
+    assert.ok(region.includes(block), `${name}: the site footer sits outside its markers`);
+    if (region !== expectedRegion(html, page, 'footer')) stale.push(name);
+  }
+  assert.deepEqual(stale, [], `the baked site footer is stale on: ${stale.join(', ')}. ${REBUILD}`);
+});
+
+test('the footer is styled by .page-footer, not inline styles', () => {
+  const footer = renderSiteFooter();
+  assert.ok(footer.startsWith('<footer class="page-footer">'), 'site-footer.html must open with <footer class="page-footer">');
+  assert.ok(!/ style="/.test(footer), 'site-footer.html carries an inline style= — put it in .page-footer');
+  const css = fs.readFileSync(path.join(ROOT, 'public', 'styles', 'styles.css'), 'utf8');
+  assert.match(css, /\.page-footer\s*\{/, 'styles.css has no .page-footer rule');
+  assert.match(css, /\.page-footer a\s*\{/, 'styles.css has no .page-footer a rule');
+});
+
+test('injectChrome bakes the bare footer, then refreshes idempotently', () => {
+  const bare = '<main></main>\n    <footer style="x"><a href="privacy.html">P</a><a href="/status">S</a></footer>\n';
+  const page = { file: 'x.html', footer: true };
+  const once = injectChrome(bare, page);
+  assert.equal(injectChrome(once, page), once, 'a second run changed the output');
+  assert.ok(once.includes(`\n    ${FOOTER_BEGIN}\n    <footer class="page-footer">`));
+  assert.ok(!once.includes('style="x"'));
 });
 
 test('every site footer localizes every string and uses the shared year span', () => {
@@ -234,101 +210,6 @@ test('the site footer sits after </main>, never inside it', () => {
     'the site footer is inside <main>, which is the scroll container, so it scrolls away ' +
       `with the page content instead of sitting under it: ${offenders.join(', ')}`,
   );
-});
-
-/** `:root`'s custom properties from styles.css, so `var(--accent)` can be compared to `#374151`. */
-function rootTokens() {
-  const css = fs.readFileSync(path.join(STYLES, 'styles.css'), 'utf8');
-  /** @type {Record<string, string>} */
-  const out = {};
-  for (const m of css.matchAll(/(--[a-z0-9-]+)\s*:\s*([^;}]+)/gi)) out[m[1]] = m[2].trim();
-  return out;
-}
-
-/** `prop: value; …` → a map, with `var(--x)` resolved and whitespace flattened. */
-function declarations(body, tokens) {
-  /** @type {Record<string, string>} */
-  const out = {};
-  for (const part of body.split(';')) {
-    const at = part.indexOf(':');
-    if (at === -1) continue;
-    const prop = part.slice(0, at).trim().toLowerCase();
-    if (!prop || prop.startsWith('--')) continue;
-    const value = part
-      .slice(at + 1)
-      .replace(/var\((--[a-z0-9-]+)\)/gi, (_m, name) => tokens[name] ?? _m)
-      .replace(/\s+/g, ' ')
-      .trim()
-      .toLowerCase();
-    out[prop] = value;
-  }
-  return out;
-}
-
-test('enterprise.html’s class-styled footer renders the same as the inline-styled one', () => {
-  // The class is a MECHANISM (it keeps the mobile override below free of !important),
-  // not a licence to restyle. It had become both: colour --muted instead of #374151, and
-  // a -apple-system font-family stack that opted this one page out of Inter — narrower
-  // glyphs at the same 13px, so the footer looked smaller as well as greyer than the
-  // identical block one page over. Neither is visible to the markup comparison above,
-  // because the markup was never wrong. The rendered result is what has to match.
-  const tokens = rootTokens();
-
-  const inline = /<footer style="([^"]+)"/.exec(
-    footerPages().find((p) => !OWN_SHAPE.has(p.name)).html,
-  );
-  assert.ok(inline, 'no inline-styled footer left to compare against — update this guard');
-  const shared = declarations(inline[1], tokens);
-
-  const css = fs.readFileSync(path.join(STYLES, 'enterprise.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
-  const rule = /\.ent-site-footer\s*\{([^}]*)\}/.exec(css);
-  assert.ok(rule, '.ent-site-footer no longer has a rule in enterprise.css');
-  const own = declarations(rule[1], tokens);
-
-  for (const [prop, value] of Object.entries(shared)) {
-    assert.equal(own[prop], value, `.ent-site-footer sets ${prop}: ${own[prop] ?? '(nothing)'}, the other pages ${value}`);
-  }
-  // And nothing EXTRA: font-family was the declaration that made this footer look
-  // different without changing a single value the loop above compares.
-  assert.deepEqual(
-    Object.keys(own).filter((p) => !(p in shared)).sort(),
-    [],
-    '.ent-site-footer declares properties the shared footer does not, so the two render differently: ',
-  );
-
-  // The link colour is the fifth value, and it lives in its own rule on this page.
-  const linkRule = /\.ent-site-footer a\s*\{([^}]*)\}/.exec(css);
-  assert.ok(linkRule, '.ent-site-footer a no longer has a rule');
-  const sharedLink = /<a [^>]*style="([^"]+)"/.exec(
-    extractSiteFooter(footerPages().find((p) => !OWN_SHAPE.has(p.name)).html),
-  );
-  assert.ok(sharedLink, 'the shared footer’s links are no longer inline-styled — update this guard');
-  const wantedLink = declarations(sharedLink[1], tokens);
-  const gotLink = declarations(linkRule[1], tokens);
-  for (const [prop, value] of Object.entries(wantedLink)) {
-    assert.equal(gotLink[prop], value, `.ent-site-footer a sets ${prop}: ${gotLink[prop] ?? '(nothing)'}, the other pages ${value}`);
-  }
-});
-
-// ---- sanity: the guard would actually notice ------------------------------------
-// A normalizer that flattens too much passes forever for the wrong reason.
-
-test('sanity: normalize() does not hide a dropped data-lang', () => {
-  const [{ block }] = footersByPage();
-  const mutated = block.replace(' data-lang="footer.terms"', '');
-  assert.notEqual(mutated, block, 'the mutation did not apply — update this sanity check');
-  assert.notEqual(normalize(mutated), normalize(block));
-});
-
-test('sanity: normalize() does not hide a dropped link or a changed key', () => {
-  const [{ block }] = footersByPage();
-  const dropped = block.replace(/<a href="\/status"[^>]*>Status<\/a>/, '');
-  assert.notEqual(dropped, block, 'the mutation did not apply — update this sanity check');
-  assert.notEqual(normalize(dropped), normalize(block));
-
-  const rekeyed = block.replace('data-lang="footer.privacy"', 'data-lang="footer.privacyPolicy"');
-  assert.notEqual(rekeyed, block, 'the mutation did not apply — update this sanity check');
-  assert.notEqual(normalize(rekeyed), normalize(block));
 });
 
 test('sanity: the extractor picks the site footer, not some other <footer> on the page', () => {

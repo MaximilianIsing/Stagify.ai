@@ -88,11 +88,12 @@
   <source src="background.mp4" type="video/mp4" media="(min-width: 769px)">
 </video>
 
-<header class="site-header">
-      <!-- id on the <nav>, deliberately NOT on <header class="site-header">: two guards
-           (staging-menu.test.js, desktop-only-gates.test.js) match that opening tag
-           literally across every page, and an attribute on it would break the byte
-           comparison. gallery-app.js marks this inert while the detail panel is open. -->
+<!-- id="gal-nav" goes on the <nav>, deliberately NOT on <header class="site-header">:
+     two guards (staging-menu.test.js, desktop-only-gates.test.js) match that opening tag
+     literally across every page. gallery-app.js marks the nav inert while the detail
+     panel is open. Set via CHROME_PAGES in lib/site/chrome.js. -->
+    <!-- BEGIN SITE HEADER (generated: edit lib/site/partials/site-header.html, then run node scripts/build-i18n-seo.js) -->
+    <header class="site-header">
       <nav class="nav" id="gal-nav">
         <a href="index.html" class="brand"><img src="media-webp/logo/Logo64x64.webp" data-lang-attr="navigation.logoAlt|alt" alt="Stagify.ai logo — go to homepage" class="brand-logo" fetchpriority="high"><span class="brand-strong" data-lang="navigation.brand">Stagify</span><span class="brand-light" data-lang="navigation.brandSuffix">.ai</span></a>
         <div class="nav-center">
@@ -129,6 +130,7 @@
         </div>
       </nav>
     </header>
+    <!-- END SITE HEADER -->
 
 <main class="gal-main" id="gal-main">
   <!--

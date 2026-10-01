@@ -93,58 +93,48 @@ commit destinations, and their own modes — and their own phase machines, which
 DOM toggling and would need about as much configuration as they'd save. Share the
 algorithms and the data; leave the wiring.
 
-### Shared chrome: the header and footer are copied by hand, on purpose
+### Shared chrome: the header and footer are baked from one source
 
-The site header (`<header class="site-header">`, ~37 lines) is duplicated into **16**
-`public/*.html` files, and the site footer (Privacy · Terms · Status · ©) into **11**.
-This looks like the obvious thing to extract, and periodically gets flagged as such.
+The site header (`<header class="site-header">`, ~37 lines) appears in **16**
+`public/*.html` files, and the site footer (Legal · About · Status · API · ©) in **11**.
 **It cannot become a runtime include.**
 [`lib/i18n/render-page.js`](../../lib/i18n/render-page.js) is a *pure string transform
-over the static English HTML* — so chrome injected by client-side JS would never be
+over the static English HTML*, so chrome injected by client-side JS would never be
 server-side translated, and `/es`, `/fr/guides.html` … would ship an English header to
 crawlers and to no-JS clients. The markup has to stay literal in every file.
 
-Note the shape of that constraint: it rules out a *runtime* partial, not a *build-time*
-one. [`scripts/build-i18n-seo.js`](../../scripts/build-i18n-seo.js) already rewrites
-these files in place (idempotent, anchor-based, drift-tested), and a header injector
-could follow the same pattern. That has not been done — it fixes no bug and adds a build
-step that is deliberately *not* wired into `scripts/build.sh` — but it is the shape to
-reach for if nav churn ever justifies it. What is **not** available is pointing the
-renderer at the English pages: `express.static` is mounted in
-[`app-middleware.js`](../../lib/http/app-middleware.js) well before any router and
-already answers `/` and every `*.html`.
+So it is a **build-time** partial. The markup lives once, in
+[`lib/site/partials/site-header.html`](../../lib/site/partials/site-header.html) and
+[`site-footer.html`](../../lib/site/partials/site-footer.html), and
+[`scripts/build-i18n-seo.js`](../../scripts/build-i18n-seo.js) (step 8) writes it into
+every page listed in `CHROME_PAGES` ([`lib/site/chrome.js`](../../lib/site/chrome.js))
+between `<!-- BEGIN SITE HEADER … -->` / `<!-- END SITE HEADER -->` markers (same for
+the footer). The two per-page variants are options in that list, not hand edits:
+`gallery.html`'s `id="gal-nav"` on the `<nav>`, and the empty `.nav-trailing` on the three
+marketing pages whose own hero headline sits right below the nav. The footer is styled by
+`.page-footer` in `styles.css`, not inline styles.
 
-Because the markup must stay duplicated, **the guard is the fix**, and each block has one:
+**To change the chrome, edit the partial and run `node scripts/build-i18n-seo.js`.** To add
+a page, give it a bare header/footer (or copy one), add it to `CHROME_PAGES`, and rerun.
+The build is not wired into `scripts/build.sh`; the guards catch a forgotten rerun:
 
 | Block | Guard |
 |---|---|
-| Whole header | [`test/frontend/site-header-parity.test.js`](../../test/frontend/site-header-parity.test.js) |
+| Whole header (stale bake, unlisted page) | [`test/frontend/site-header-parity.test.js`](../../test/frontend/site-header-parity.test.js) |
 | Staging dropdown sub-block | [`test/frontend/staging-menu.test.js`](../../test/frontend/staging-menu.test.js) |
 | Header `aria-label` i18n | [`test/i18n/nav-aria-i18n.test.js`](../../test/i18n/nav-aria-i18n.test.js) |
-| Whole footer | [`test/frontend/site-footer-parity.test.js`](../../test/frontend/site-footer-parity.test.js) |
+| Whole footer (stale bake, unlisted page) | [`test/frontend/site-footer-parity.test.js`](../../test/frontend/site-footer-parity.test.js) |
 
-All four share discovery and extraction via
-[`test/helpers/nav-pages.js`](../../test/helpers/nav-pages.js), so they cannot disagree
-about *which* pages carry a block — a guard that quietly narrows its own file list keeps
-passing while checking less, which is the failure mode it exists to prevent. Two traps
-that helper already handles, and any future scan over this markup must too: comment
-bodies are masked length-preservingly (`gallery.html` quotes the header's opening tag
-inside a comment), and blocks are matched by **tag depth**, because several pages nest
-further `<header>` elements inside the page body.
+The guards share discovery via [`test/helpers/nav-pages.js`](../../test/helpers/nav-pages.js),
+which reuses chrome.js's parsing. Two traps it handles, and any future scan over this
+markup must too: comment bodies are masked length-preservingly (`gallery.html` quotes the
+header's opening tag inside a comment), and blocks are matched by **tag depth**, because
+several pages nest further `<header>` elements inside the page body.
 
-The footer is the cautionary tale. It went unguarded until 2026-08-10 and drifted into
-three variants — `guides.html` and `404.html` lost their `data-lang` attributes entirely
-and shipped an English footer on all eleven locales, while two rival year mechanisms
-(`id="year"` in `app.js` vs `.footer-year` + `scripts/site/footer-year.js`) meant the block
-could not be one shape. Every key involved already existed in all eleven packs; only the
-attributes were missing. Three sanctioned variations remain, each pinned by a named
-constant in its spec: `gallery.html`'s `id="gal-nav"` (`PER_PAGE_ATTRS`, header spec), the
-empty `.nav-trailing` on three marketing pages (`EMPTY_TRAILING`, header spec), and
-`enterprise.html`'s class-styled `.ent-site-footer` (`OWN_SHAPE`, footer spec).
-
-**When you add a page with this chrome, copy the block verbatim and run `npm test`** —
-the guards will tell you what you dropped. When you change the chrome, change it in every
-file; there is no shortcut, by design.
+The history is why it is baked: hand-copied, the footer drifted into three variants
+(`guides.html` and `404.html` lost their `data-lang` attributes and shipped an English
+footer on all eleven locales), and the header lost the account menu's
+`data-lang-attr` on nine pages.
 
 **User-facing messages go through [`scripts/shared/toast.js`](../../public/scripts/shared/toast.js)**
 (`showToast(msg, type)` / `showErrorToast(msg)`) — the single message channel for all
@@ -693,6 +683,18 @@ write a terse comment to "keep the file small". Two consequences worth knowing:
   `<style>` body is data. `test/http/text-assets.test.js` runs them over every real sheet
   and page in `public/` and asserts brace balance, unchanged raw-text bodies, idempotence,
   and that string-aware stripping never deletes *more* than the naive regex would.
+
+**Scripts are minified at serve time too, by the same middleware.** Every `.js` under
+`public/scripts/` goes through esbuild with `minifyWhitespace` only: comments and whitespace
+go, while import specifiers, exports, classic-script globals and function names stay exactly
+as written, and nothing is bundled. Across the site's scripts that took the brotli payload
+from 716 KB to 293 KB. Vendor `*.min.js` and the generated `guides/demo-data.js` pass
+straight through. esbuild still makes a few rewrites that don't change behaviour (`{ x: x }`
+to `{ x }`, `undefined` to `void 0`, joining adjacent string literals, renaming a shadowed
+local such as `p` to `p2`), so a stack trace can show a slightly different local name than
+the source. `DEBUG_MODE` serves the files as written. `test/http/text-assets.test.js`
+re-parses every minified script with acorn and asserts that its imports, exports, globals and
+function/class names are unchanged.
 
 **Non-render-blocking (lazy) CSS.** Pages split their stylesheets by criticality. On
 `index.html`, `styles.css` / `toast.css` / `hero-picker.css` / `home.css` / `index.css`

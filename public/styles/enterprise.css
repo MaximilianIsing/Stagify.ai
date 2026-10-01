@@ -331,36 +331,3 @@
         text-decoration: none;
       }
       .ent-legal a:hover { text-decoration: underline; }
-
-      /* These five declarations MUST equal the inline style the other five pages carry
-         (`text-align:center;padding:20px 16px 28px;font-size:13px;color:#374151` with
-         `color:#2563eb` links) — see test/frontend/site-footer-parity.test.js for why
-         this page gets a class instead. The class exists to keep the mobile override
-         below free of !important, NOT to restyle the footer, and it had quietly drifted
-         into doing both: --muted (#6b7280) instead of #374151 read visibly lighter than
-         the same footer one page over, and a -apple-system font-family stack opted this
-         one page out of Inter, which renders narrower at the same 13px and made the
-         footer look smaller as well as greyer. */
-      .ent-site-footer {
-        text-align: center;
-        padding: 20px 16px 28px;
-        font-size: 13px;
-        color: var(--accent);
-      }
-      .ent-site-footer a {
-        color: var(--brand);
-        text-decoration: none;
-      }
-      .ent-site-footer a:hover { text-decoration: underline; }
-
-      /* This page sits on the same #b2c4f6 body as every other one — enterprise.css never
-         overrides it — so #2563eb lands at 2.99:1 and fails the colour-contrast audit;
-         --brand-deep is 5.98:1. Mobile-only, matching the `min-width: 769px` gate above:
-         below that breakpoint #background-video is display:none and axe can resolve the
-         background down to <body>, which is when the failure is actually reported. No
-         !important needed here — unlike the other five pages, these links are not
-         inline-styled, which is the whole reason this footer has a class.
-         The TEXT colour no longer needs an override: #374151 is 5.95:1 on that body. */
-      @media (max-width: 768px) {
-        .ent-site-footer a { color: var(--brand-deep); }
-      }
