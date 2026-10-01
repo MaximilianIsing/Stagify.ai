@@ -45,7 +45,7 @@ app.use(createPublicRouter({ authStore, uptimeMonitor, resend, LOGS_ACCESS_KEY,
 // routes/public.js
 export default function createPublicRouter(deps) {
   const { authStore, healthHandler, getPromptCount, /* … */ } = deps;
-  const router = createAsyncRouter();          // not express.Router() — see Error handling
+  const router = createAsyncRouter();          // the shared router factory — see Error handling
   router.get('/health', healthHandler);
   // …
   return router;
@@ -227,7 +227,7 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 
 | Module | Responsibility |
 |---|---|
-| `async-router.js` | `createAsyncRouter()` — the async-safe `express.Router()` used by every route file (see [Error handling](#error-handling)). |
+| `async-router.js` | `createAsyncRouter()` — the shared `express.Router()` factory used by every route file (see [Error handling](#error-handling)). |
 | `http-helpers.js` | Small pure helpers: `sendError()` (the standard JSON error shape), `setSensitiveHeaders()`, client-IP + user-identifier helpers. |
 | `error-ref.js` | `reportError(context, err)` — logs a caught error under a random 8-char reference and returns it, so a 5xx body carries `{ ref }` instead of `error.message`. See [A caught exception never goes in the body](#a-caught-exception-never-goes-in-the-body). |
 | `http-guards.js` | The `endpoint_key` guards (`protectLogs`, `stagingEndpointKeyGuard`) and the `/health` handler. |
@@ -370,13 +370,14 @@ CSV business-event writer) — don't conflate the two.
 
 ## Error handling
 
-Route handlers are `async`, and on **Express 4** a rejected promise from an async handler
-is **not** forwarded to error middleware — it surfaces as an `unhandledRejection` and the
-request hangs. Two pieces close that gap:
+Route handlers are `async`. On **Express 5** a rejected promise from an async handler is
+forwarded to error middleware natively (Express 4 dropped it and the request hung). Two
+pieces make that end in a clean response:
 
 - **`createAsyncRouter()`** ([`lib/http/async-router.js`](../../lib/http/async-router.js)) —
-  every route file builds its router with this instead of `express.Router()`. It wraps each
-  terminal handler so an escaped rejection is routed to `next(err)`.
+  every route file builds its router with this. It is now a plain `express.Router()`; it
+  used to wrap each handler for Express 4, and it remains the one seam all routers share.
+  `test/http/async-router.test.js` pins the native rejection-to-500 behavior.
 - **A final catch-all** in `server.js` (after the Sentry hook) — turns any error reaching
   Express's pipeline into a clean JSON `500`. Without it, an unhandled error falls through
   to Express's built-in handler, which renders the full stack trace to the client.

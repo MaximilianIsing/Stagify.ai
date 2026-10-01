@@ -1,16 +1,15 @@
 // Tier 2 — the async-safe router (lib/http/async-router.js).
 //
-// Express 4 does NOT forward a rejected promise from an `async` handler to error
-// middleware — the request would hang until the socket times out. createAsyncRouter()
-// wraps the terminal handler so the rejection reaches next(err), where server.js's
-// catch-all turns it into a clean 500. These tests prove the wrap fires for a
-// rejecting handler, stays out of the way for a normal one, and leaves preceding
-// middleware (guards, rate limiters) running in order.
+// Express 5 forwards a rejected promise from an `async` handler to error middleware
+// natively, where server.js's catch-all turns it into a clean 500. Express 4 did not (the
+// request hung), which is why createAsyncRouter() once wrapped every handler. These tests
+// pin the native behavior so a downgrade or regression fails CI: a rejecting handler
+// reaches the catch-all, and preceding middleware (guards, rate limiters) runs in order.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import express from 'express';
-import { asyncHandler, createAsyncRouter } from '../../lib/http/async-router.js';
+import { createAsyncRouter } from '../../lib/http/async-router.js';
 
 // Boot a throwaway express app on a random port; resolve with base URL + closer.
 function listen(app) {
@@ -21,21 +20,6 @@ function listen(app) {
     });
   });
 }
-
-test('asyncHandler forwards a rejected promise to next(err)', async () => {
-  const boom = new Error('boom');
-  let received;
-  await asyncHandler(async () => { throw boom; })({}, {}, (err) => { received = err; });
-  assert.equal(received, boom);
-});
-
-test('asyncHandler does not call next when the handler resolves', async () => {
-  let called = false;
-  const res = {};
-  await asyncHandler(async (_req, r) => { r.ok = true; })({}, res, () => { called = true; });
-  assert.equal(called, false);
-  assert.equal(res.ok, true);
-});
 
 test('a rejecting async route reaches the catch-all (500) instead of hanging', async (t) => {
   const app = express();
@@ -54,7 +38,7 @@ test('a rejecting async route reaches the catch-all (500) instead of hanging', a
   assert.deepEqual(await r.json(), { error: 'Internal server error' });
 });
 
-test('preceding middleware still runs, in order, before the wrapped handler', async (t) => {
+test('preceding middleware still runs, in order, before the handler', async (t) => {
   const app = express();
   const router = createAsyncRouter();
   const calls = [];

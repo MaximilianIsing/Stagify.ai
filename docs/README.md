@@ -48,7 +48,7 @@ This README is the entry point for the `docs/` folder. See also:
 
 - **Runtime:** Node.js ≥ 22.8.0 (`engines` in `package.json`; `.node-version` pins the
   exact version CI and Render resolve), ES modules (`"type": "module"`).
-- **Server:** Express 4 — a composition-root `server.js` that mounts route modules
+- **Server:** Express 5 — a composition-root `server.js` that mounts route modules
   (`routes/*.js`) and wires shared `lib/` dependencies, serving both the static
   frontend and the JSON API from one origin.
 - **Frontend:** Plain HTML/CSS/vanilla JS in `public/`. **No framework and no bundler** —

@@ -561,13 +561,14 @@ The body parsers are the cheapest DoS surface, so they're **scoped**, not global
 
 ## Error responses (no stack-trace leak)
 
-Route handlers are async, and on **Express 4** an unhandled rejection would otherwise
-either hang the request or fall through to Express's built-in handler — which, when
+Route handlers are async. **Express 5** forwards an escaped rejection to `next(err)`
+natively, but left alone it falls through to Express's built-in handler — which, when
 `NODE_ENV` isn't `production`, renders the full **stack trace** to the client. Two layers
 prevent that information leak:
 
 - Every router is built with **`createAsyncRouter()`** ([`lib/http/async-router.js`](../../lib/http/async-router.js)),
-  which funnels any escaped async rejection to `next(err)`.
+  a plain `express.Router()`; `test/http/async-router.test.js` pins that a rejection reaches
+  the error pipeline rather than hanging.
 - A **final catch-all** in `server.js` (after the Sentry hook) returns a generic
   `{ error: 'Internal server error' }` `500` — the stack trace is logged server-side (and
   captured by Sentry), never sent to the client. Guarded by

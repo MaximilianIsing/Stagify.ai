@@ -10,9 +10,9 @@ frontend in `public/`. Entry point: `server.js`.
 - `routes/` — Express routers (`chat`, `staging`, `auth`, `public`, `billing`, `i18n`, …).
   The admin console's routers live in `routes/admin/` (`index.js` is the main one; the
   rest are sibling routers split off because it is at its line cap).
-  New route files must create their router with `createAsyncRouter()` (`lib/http/async-router.js`),
-  not `express.Router()` — on Express 4 it auto-forwards async-handler rejections to the
-  catch-all error handler in `server.js` instead of hanging the request.
+  New route files create their router with `createAsyncRouter()` (`lib/http/async-router.js`),
+  the shared factory. On Express 5 it is a plain `express.Router()`: async-handler
+  rejections reach the catch-all error handler in `server.js` natively.
 - `lib/` — extracted modules (auth store, prompts, chat pipeline, logging, i18n renderer, etc.).
 - `public/` — everything served to browsers (HTML, styles, scripts, fonts, media).
 - `test/` — `node --test` suite (unit/integration; gates the deploy). Specs live in

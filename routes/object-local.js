@@ -38,8 +38,10 @@ export default function createObjectLocalRouter({ objectStore }) {
 
   // A wildcard, because a storage key contains slashes (`renders/<id>/after.webp`) and
   // a single `:param` would only capture the first segment.
-  router.get(`${LOCAL_OBJECT_ROUTE}/*`, async (req, res) => {
-    const key = String(/** @type {any} */ (req.params)[0] ?? '');
+  router.get(`${LOCAL_OBJECT_ROUTE}/*key`, async (req, res) => {
+    // Express 5 hands a named wildcard back as an array of decoded path segments.
+    const segments = /** @type {any} */ (req.params).key;
+    const key = Array.isArray(segments) ? segments.join('/') : String(segments ?? '');
 
     // Gate 1 before anything touches the filesystem. Every refusal below is the same
     // bare 404 with no body: a route that says "bad signature" for a real key and
