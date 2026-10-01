@@ -1,0 +1,53 @@
+name: Backup restore drill
+
+# Weekly proof that the Litestream replica in R2 actually restores, is intact, and is
+# recent. A failed run emails the repo owner. See docs/operations/deployment.md.
+#
+# Needs repo secrets for a READ-ONLY R2 token scoped to the backup bucket:
+#   LITESTREAM_ACCESS_KEY_ID, LITESTREAM_SECRET_ACCESS_KEY, R2_ACCOUNT_ENDPOINT
+# Optional: LITESTREAM_BUCKET (defaults to stagify-backups, same as scripts/start.sh).
+
+on:
+  schedule:
+    - cron: '17 6 * * 1'   # Mondays 06:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  drill:
+    runs-on: ubuntu-latest
+    env:
+      LITESTREAM_ACCESS_KEY_ID: ${{ secrets.LITESTREAM_ACCESS_KEY_ID }}
+      LITESTREAM_SECRET_ACCESS_KEY: ${{ secrets.LITESTREAM_SECRET_ACCESS_KEY }}
+      R2_ACCOUNT_ENDPOINT: ${{ secrets.R2_ACCOUNT_ENDPOINT }}
+      LITESTREAM_BUCKET: ${{ secrets.LITESTREAM_BUCKET || 'stagify-backups' }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download Litestream (same pinned version as the build)
+        run: |
+          VERSION=$(sed -n 's/^VERSION="\(.*\)"$/\1/p' scripts/build.sh)
+          test -n "$VERSION"
+          mkdir -p ./bin
+          curl -fsSL "https://github.com/benbjohnson/litestream/releases/download/${VERSION}/litestream-${VERSION}-linux-amd64.tar.gz" | tar -xz -C ./bin litestream
+          ./bin/litestream version
+
+      - name: Restore from R2
+        run: |
+          test -n "$LITESTREAM_ACCESS_KEY_ID" || { echo "R2 secrets not configured"; exit 1; }
+          ./bin/litestream snapshots -config litestream.yml /data/auth-store.db
+          ./bin/litestream restore -config litestream.yml -o /tmp/drill.db /data/auth-store.db
+
+      - name: Verify restored copy
+        run: node scripts/verify-restore.js /tmp/drill.db
