@@ -48,7 +48,9 @@ export function createFileIntake(deps) {
       // Object URLs behind the current preview thumbnails. Every re-render clears the list
       // and mints new ones, so the old set is revoked first or each add/remove leaks a
       // reference to the whole File.
+      /** @type {string[]} */
       let previewUrls = [];
+      /** @param {HTMLElement} list */
       function clearPreviewList(list) {
         previewUrls.forEach((url) => URL.revokeObjectURL(url));
         previewUrls = [];
@@ -60,8 +62,8 @@ export function createFileIntake(deps) {
       // also refreshes the send button can reassign it (see below). The recursive
       // call inside resolves the outer binding, so it hits the wrapped version too.
       let updateFilePreview = function () {
-        const container = document.getElementById('file-preview-container');
-        const list = document.getElementById('file-preview-list');
+        const container = /** @type {HTMLElement} */ (document.getElementById('file-preview-container'));
+        const list = /** @type {HTMLElement} */ (document.getElementById('file-preview-list'));
 
         if (selectedFiles.length === 0) {
           container.classList.remove('has-files');
@@ -86,7 +88,7 @@ export function createFileIntake(deps) {
           } else {
             const icon = document.createElement('div');
             icon.style.cssText = 'width: 40px; height: 40px; background: #2563eb; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;';
-            icon.textContent = file.name.split('.').pop().toUpperCase().substring(0, 3);
+            icon.textContent = /** @type {string} */ (file.name.split('.').pop()).toUpperCase().substring(0, 3);
             item.appendChild(icon);
           }
 
@@ -119,6 +121,7 @@ export function createFileIntake(deps) {
       }
 
       // Helper function to handle files (used by file input, drag & drop, paste)
+      /** @param {FileList | File[]} files */
       async function handleFiles(files) {
         // iPhone HEIC/HEIF photos can't be decoded/previewed by most browsers;
         // convert them to JPEG before they enter the upload list.
@@ -149,7 +152,9 @@ export function createFileIntake(deps) {
           }
         }
 
+        /** @type {File[]} */
         const accepted = [];
+        /** @type {string[]} */
         const rejected = [];
 
         incoming.forEach(file => {
@@ -192,7 +197,7 @@ export function createFileIntake(deps) {
 
       // File upload - add to preview instead of uploading immediately
       fileInput.addEventListener('change', function(e) {
-        const files = Array.from(/** @type {HTMLInputElement} */ (e.target).files);
+        const files = Array.from(/** @type {FileList} */ (/** @type {HTMLInputElement} */ (e.target).files));
         handleFiles(files);
         /** @type {HTMLInputElement} */ (e.target).value = ''; // Reset input
       });
@@ -202,7 +207,7 @@ export function createFileIntake(deps) {
         e.preventDefault();
         e.stopPropagation();
         dragCounter++;
-        if (e.dataTransfer.types.includes('Files')) {
+        if (/** @type {DataTransfer} */ (e.dataTransfer).types.includes('Files')) {
           chatMessages.classList.add('drag-over');
           chatContainer.classList.add('drag-over');
         }
@@ -211,8 +216,8 @@ export function createFileIntake(deps) {
       chatMessages.addEventListener('dragover', function(e) {
         e.preventDefault();
         e.stopPropagation();
-        if (e.dataTransfer.types.includes('Files')) {
-          e.dataTransfer.dropEffect = 'copy';
+        if (/** @type {DataTransfer} */ (e.dataTransfer).types.includes('Files')) {
+          /** @type {DataTransfer} */ (e.dataTransfer).dropEffect = 'copy';
         }
       });
 
@@ -233,7 +238,7 @@ export function createFileIntake(deps) {
         chatMessages.classList.remove('drag-over');
         chatContainer.classList.remove('drag-over');
 
-        const files = Array.from(e.dataTransfer.files);
+        const files = Array.from(/** @type {DataTransfer} */ (e.dataTransfer).files);
         if (files.length > 0) {
           handleFiles(files);
         }
@@ -243,7 +248,7 @@ export function createFileIntake(deps) {
       chatContainer.addEventListener('dragenter', function(e) {
         e.preventDefault();
         e.stopPropagation();
-        if (e.dataTransfer.types.includes('Files')) {
+        if (/** @type {DataTransfer} */ (e.dataTransfer).types.includes('Files')) {
           dragCounter++;
           chatMessages.classList.add('drag-over');
           chatContainer.classList.add('drag-over');
@@ -253,8 +258,8 @@ export function createFileIntake(deps) {
       chatContainer.addEventListener('dragover', function(e) {
         e.preventDefault();
         e.stopPropagation();
-        if (e.dataTransfer.types.includes('Files')) {
-          e.dataTransfer.dropEffect = 'copy';
+        if (/** @type {DataTransfer} */ (e.dataTransfer).types.includes('Files')) {
+          /** @type {DataTransfer} */ (e.dataTransfer).dropEffect = 'copy';
         }
       });
 
@@ -276,7 +281,7 @@ export function createFileIntake(deps) {
         chatMessages.classList.remove('drag-over');
         chatContainer.classList.remove('drag-over');
 
-        const files = Array.from(e.dataTransfer.files);
+        const files = Array.from(/** @type {DataTransfer} */ (e.dataTransfer).files);
         if (files.length > 0) {
           handleFiles(files);
         }

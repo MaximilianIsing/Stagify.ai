@@ -48,6 +48,7 @@ export function entryName(entry) {
 }
 
 /** A photo's alt text. Built from the same name the card shows. */
+/** @param {any} entry A gallery entry, as renderMeta takes it. */
 const stagedAlt = (entry) => t('gallery.cardAlt', '{room}, staged', { room: entryName(entry) });
 
 /**
@@ -61,7 +62,8 @@ const stagedAlt = (entry) => t('gallery.cardAlt', '{room}, staged', { room: entr
 function dateLocale() {
   try {
     const chosen = window.localStorage.getItem('selectedLanguage');
-    return chosen && LANG_BCP47[chosen] ? LANG_BCP47[chosen] : undefined;
+    const tags = /** @type {Record<string, string>} */ (LANG_BCP47);
+    return chosen && tags[chosen] ? tags[chosen] : undefined;
   } catch {
     // Storage blocked, or no window at all (the specs) — the browser default is right.
     return undefined;
@@ -301,7 +303,9 @@ export function renderCompare({ container, entry, doc, onImage }) {
  * @param {{ container: Element | null, entry: any, doc?: Document }} arg
  */
 export function renderMeta({ container, entry, doc }) {
+  /** @type {HTMLElement[]} */
   const rows = [];
+  /** @param {string} label @param {string | null | undefined} value */
   const add = (label, value) => {
     if (!value) return;
     rows.push(el('dt', { doc, text: label }));

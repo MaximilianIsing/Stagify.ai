@@ -19,6 +19,7 @@
 // the widest screens the slowest setting. Duration is now distance / speed, so
 // px-per-second is constant at every viewport width by construction.
 
+/** @type {ResizeObserver | null} */
 let sponsorsResizeObserver = null;
 let sponsorsInitialized = false;
 
@@ -57,16 +58,16 @@ function initSponsorsScroll() {
   // to whole pixels, and the old approach (sum 11 widths + 11 gaps) accumulated
   // that rounding into a ~1px error, which is a 1px jump once per loop. Rects are
   // fractional, and one subtraction cannot drift.
-  function computeResetWidth() {
+  const computeResetWidth = () => {
     const items = /** @type {HTMLElement[]} */ (Array.from(track.querySelectorAll('.sponsor-item')));
     const half = Math.floor(items.length / 2);
     if (half < 1 || !items[half]) return 0;
     return items[half].getBoundingClientRect().left - items[0].getBoundingClientRect().left;
-  }
+  };
 
   let appliedDistance = 0;
 
-  function applyMarquee() {
+  const applyMarquee = () => {
     const distance = computeResetWidth();
     if (!(distance > 0)) return false;
     track.style.setProperty('--marquee-distance', `${distance}px`);
@@ -74,7 +75,7 @@ function initSponsorsScroll() {
     track.classList.add('is-animating');
     appliedDistance = distance;
     return true;
-  }
+  };
 
   // computeResetWidth() sums offsetWidth, which is 0 for an <img> that has not
   // loaded — and these 22 tags carry no width/height attributes (deliberately;
@@ -82,7 +83,7 @@ function initSponsorsScroll() {
   // this file after `load`, so the images are normally settled already, but the
   // DOMContentLoaded path at the bottom can arrive first and would otherwise bake
   // a nonsense duration into the animation. Measure only once they are ready.
-  function whenLogosReady() {
+  const whenLogosReady = () => {
     const pending = Array.from(track.querySelectorAll('img'))
       .filter((img) => !img.complete || img.naturalWidth === 0);
     if (!pending.length) return Promise.resolve();
@@ -90,7 +91,7 @@ function initSponsorsScroll() {
       img.addEventListener('load', resolve, { once: true });
       img.addEventListener('error', resolve, { once: true });
     })));
-  }
+  };
 
   sponsorsInitialized = true;
 
@@ -104,6 +105,7 @@ function initSponsorsScroll() {
     // hears about. Transforms do not affect layout size, so the running animation
     // cannot feed this back into itself.
     if (typeof ResizeObserver !== 'function') return;
+    /** @type {ReturnType<typeof setTimeout> | undefined} */
     let resizeTimer;
     sponsorsResizeObserver = new ResizeObserver(() => {
       clearTimeout(resizeTimer);

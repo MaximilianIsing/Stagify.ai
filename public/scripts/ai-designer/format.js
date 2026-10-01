@@ -11,6 +11,7 @@
 import { escapeHtml } from '../shared/escape-html.js';
 
 // Human-readable byte size (e.g. 1536 -> "1.5 KB").
+/** @param {number} bytes @returns {string} */
 export function formatFileSize(bytes) {
   if (bytes === 0) return '0 Bytes';
   const k = 1024;
@@ -20,6 +21,7 @@ export function formatFileSize(bytes) {
 }
 
 // " (n)" suffix used to number multiple images; empty when there is only one.
+/** @param {number} index @param {number} total @returns {string} */
 export function imageCountSuffix(index, total) {
   return total > 1 ? ` (${index + 1})` : '';
 }
@@ -32,6 +34,7 @@ export function imageCountSuffix(index, total) {
 export { escapeHtml };
 
 // Apply inline **bold** / *italic* to text that is ALREADY html-escaped.
+/** @param {string} escaped @returns {string} */
 export function applyInlineFormatting(escaped) {
   return escaped
     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
@@ -41,6 +44,7 @@ export function applyInlineFormatting(escaped) {
 // Render a small markdown subset (bullet lists + inline bold/italic + line
 // breaks) to an HTML string. Escapes FIRST, then adds our own tags, so model
 // or user text can never inject raw HTML.
+/** @param {string | null | undefined} text @returns {string} */
 export function formatMarkdown(text) {
   if (!text) return '';
 
@@ -87,6 +91,7 @@ export function formatMarkdown(text) {
 }
 
 // Filename without its extension, trimmed; null when there is nothing usable.
+/** @param {unknown} filename @returns {string | null} */
 export function getFileStem(filename) {
   if (!filename || typeof filename !== 'string') return null;
   const base = filename.replace(/\.[^.]+$/, '').trim();
@@ -94,6 +99,7 @@ export function getFileStem(filename) {
 }
 
 // Clamp a thumbnail label to 22 chars with an ellipsis; "Upload" when empty.
+/** @param {string | null | undefined} stem @returns {string} */
 export function truncateThumbnailStem(stem) {
   if (!stem) return 'Upload';
   if (stem.length <= 22) return stem;
@@ -101,6 +107,7 @@ export function truncateThumbnailStem(stem) {
 }
 
 // Filename-safe slug for downloads (e.g. "Main Living.png" -> "main-living").
+/** @param {unknown} s @returns {string} */
 export function slugifyName(s) {
   return String(s || '')
     .toLowerCase()
@@ -113,6 +120,7 @@ export function slugifyName(s) {
 // Map the user's selected message tag to a loading-status category. This
 // replaces the old English-keyword guessing (which never worked for ES/ZH
 // or paraphrased requests). "auto" stays generic until the server tells us.
+/** @param {string | null | undefined} tag @returns {string} */
 export function messageTypeFromTag(tag) {
   switch (tag) {
     case 'generate': return 'generating';

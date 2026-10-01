@@ -33,6 +33,16 @@ export interface MsBase {
   canvas: HTMLCanvasElement;
 }
 
+/**
+ * One raw item from `/api/segment`: `box_2d` is [y0, x0, y1, x1] normalized to 0-1000, and
+ * `mask` (often null — the server drops unusable ones) is a PNG data URL covering that box.
+ */
+export interface MsSegApiItem {
+  box_2d: [number, number, number, number];
+  mask?: string | null;
+  label?: string;
+}
+
 /** One decoded Gemini segmentation mask, cached for wand hit-testing. */
 export interface MsSegItem {
   canvas: HTMLCanvasElement;
@@ -137,6 +147,29 @@ export interface MsState {
    * unchanged result does not create a second entry — and so a genuinely refined one does.
    */
   savedDigest: string;
+}
+
+/**
+ * One area layer as persisted to IndexedDB by `serializeLayer` (session.js). Read back
+ * from storage it may be a legacy or partial record, hence every field optional.
+ */
+export interface MsStoredLayer {
+  colorIdx?: number;
+  name?: string;
+  prompt?: string;
+  mode?: string;
+  furniture?: string | null;
+  furnitureName?: string;
+  painted?: boolean;
+  mask?: Blob | null;
+}
+
+/** The saved-session envelope from `serializeSession`; optional fields for the same reason. */
+export interface MsStoredSession {
+  savedAt?: number;
+  baseBlob?: Blob | null;
+  layers?: MsStoredLayer[];
+  sourceName?: string;
 }
 
 /** A palette slot. The set is fixed in the entry; `colorIdx` indexes into it. */

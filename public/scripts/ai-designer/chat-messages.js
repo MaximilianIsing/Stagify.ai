@@ -25,6 +25,7 @@ export function createChatMessages(deps) {
   } = deps;
 
       // Render an assistant-styled error bubble with an optional Retry button.
+      /** @param {string} text @param {(() => void) | null} [onRetry] */
       function addErrorMessage(text, onRetry) {
         const emptyState = chatMessages.querySelector('.empty-state');
         if (emptyState) emptyState.remove();
@@ -67,6 +68,7 @@ export function createChatMessages(deps) {
         return /** @type {HTMLElement | null} */ (document.querySelector('.message.assistant:last-child .message-content'));
       }
 
+      /** @param {string | null | undefined} text */
       function updateLastAssistantText(text) {
         const content = getLastAssistantContentEl();
         if (!content || !text) return;
@@ -76,6 +78,7 @@ export function createChatMessages(deps) {
         }
       }
 
+      /** @param {string} messageType @returns {string[]} */
       function getTypingStatusMessages(messageType) {
         // Prefer the localized list for the current language; fall back to the
         // English defaults below if the key is missing or not yet loaded.
@@ -161,6 +164,7 @@ export function createChatMessages(deps) {
         ];
       }
 
+      /** @param {HTMLElement} element @param {string} messageType */
       function attachRotatingStatusText(element, messageType) {
         const messages = getTypingStatusMessages(messageType);
         let currentIndex = Math.floor(Math.random() * messages.length);
@@ -173,10 +177,11 @@ export function createChatMessages(deps) {
           currentIndex = nextIndex;
           element.textContent = messages[currentIndex];
         }, 1500);
-        element.dataset.intervalId = messageInterval;
+        element.dataset.intervalId = String(messageInterval);
         return messageInterval;
       }
 
+      /** @param {HTMLElement | null} element */
       function clearRotatingStatusText(element) {
         if (element && element.dataset.intervalId) {
           clearInterval(parseInt(element.dataset.intervalId, 10));
@@ -212,6 +217,7 @@ export function createChatMessages(deps) {
         chatMessages.innerHTML = '';
       }
 
+      /** @param {string} messageType */
       function showMessageImageLoading(messageType) {
         removeMessageImageLoading();
         const content = getLastAssistantContentEl();
@@ -232,6 +238,11 @@ export function createChatMessages(deps) {
         }
       }
 
+      /**
+       * @param {string} role
+       * @param {string} content
+       * @param {File[] | null} [files]
+       */
       function addMessage(role, content, files = null) {
         // Remove empty state if present
         const emptyState = chatMessages.querySelector('.empty-state');
@@ -360,10 +371,11 @@ export function createChatMessages(deps) {
         return 'typing-indicator';
       }
 
+      /** @param {string} id */
       function removeTypingIndicator(id) {
         const indicator = document.getElementById(id);
         if (indicator) {
-          const typingEl = indicator.querySelector('.typing-indicator');
+          const typingEl = /** @type {HTMLElement | null} */ (indicator.querySelector('.typing-indicator'));
           if (typingEl) clearRotatingStatusText(typingEl);
           indicator.remove();
         }

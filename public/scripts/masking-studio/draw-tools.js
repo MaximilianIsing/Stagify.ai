@@ -15,6 +15,8 @@ import { BRUSH_STEP_MIN, BRUSH_STEP_MAX, BRUSH_STEP_DEFAULT, brushPx } from '../
  * @typedef {import('./types.js').MsState} MsState
  * @typedef {import('./types.js').MsLayer} MsLayer
  * @typedef {import('./types.js').MsSegItem} MsSegItem
+ * @typedef {import('./types.js').MsUndoEntry} MsUndoEntry
+ * @typedef {import('./types.js').MsBase} MsBase
  */
 /**
  * @param {{
@@ -73,13 +75,16 @@ export function createDrawTools(deps) {
   } = deps;
 
         let tool = 'brush';
+        /** @type {{ x: number, y: number, sl: number, st: number } | null} */
         let panStart = null;      // { x, y, sl, st } at pan pointerdown
 
         // ---------------------------------------------------------------------
         // Drawing
         // ---------------------------------------------------------------------
         let drawing = false;
+        /** @type {number | null} */
         let lastX = null;
+        /** @type {number | null} */
         let lastY = null;
 
         // Drawing is only allowed in the draw phase: review keeps the strokes
@@ -89,12 +94,17 @@ export function createDrawTools(deps) {
           return state.base && state.phase === 'draw' && activeLayer();
         }
 
+        /**
+         * @param {{ clientX: number, clientY: number }} e
+         * @returns {{ x: number, y: number } | null}
+         */
         function canvasPoint(e) {
+          const base = /** @type {MsBase} */ (state.base); // callers only run with a photo loaded
           const rect = baseCanvas.getBoundingClientRect();
           if (!rect.width || !rect.height) return null;
           return {
-            x: (e.clientX - rect.left) * (state.base.w / rect.width),
-            y: (e.clientY - rect.top) * (state.base.h / rect.height),
+            x: (e.clientX - rect.left) * (base.w / rect.width),
+            y: (e.clientY - rect.top) * (base.h / rect.height),
           };
         }
 
@@ -109,6 +119,13 @@ export function createDrawTools(deps) {
 
         // Apply one stroke segment to a canvas context (dot for taps, line for
         // moves). Solid pixels; the translucent look comes from CSS opacity.
+        /**
+         * @param {CanvasRenderingContext2D} ctx
+         * @param {number} x
+         * @param {number} y
+         * @param {GlobalCompositeOperation} composite
+         * @param {string} color
+         */
         function strokeSegment(ctx, x, y, composite, color) {
           const width = brushWidth();
           ctx.globalCompositeOperation = composite;
@@ -130,21 +147,22 @@ export function createDrawTools(deps) {
           ctx.globalCompositeOperation = 'source-over';
         }
 
+        /** @param {PointerEvent} e */
         function paint(e) {
           if (!drawing || !canDraw()) return;
           const p = canvasPoint(e);
           if (!p) return;
-          const layer = activeLayer();
+          const layer = /** @type {MsLayer} */ (activeLayer()); // canDraw() just checked it
           const color = layerColor(layer);
           if (tool === 'erase') {
-            strokeSegment(layer.canvasEl.getContext('2d'), p.x, p.y, 'destination-out', color);
+            strokeSegment(/** @type {CanvasRenderingContext2D} */ (layer.canvasEl.getContext('2d')), p.x, p.y, 'destination-out', color);
           } else {
-            strokeSegment(layer.canvasEl.getContext('2d'), p.x, p.y, 'source-over', color);
+            strokeSegment(/** @type {CanvasRenderingContext2D} */ (layer.canvasEl.getContext('2d')), p.x, p.y, 'source-over', color);
             // Claim these pixels: erase the same stroke from every other area so
             // masks never overlap — each spot belongs to exactly one area.
             state.layers.forEach((other) => {
               if (other !== layer) {
-                strokeSegment(other.canvasEl.getContext('2d'), p.x, p.y, 'destination-out', color);
+                strokeSegment(/** @type {CanvasRenderingContext2D} */ (other.canvasEl.getContext('2d')), p.x, p.y, 'destination-out', color);
               }
             });
             if (!layer.painted) {
@@ -160,12 +178,13 @@ export function createDrawTools(deps) {
         // full canvas is ~50x less data per stroke-end. drawImage's area
         // averaging keeps even a minimum-size brush dot well above threshold.
         const scanScratch = document.createElement('canvas');
+        /** @param {HTMLCanvasElement} canvas */
         function scanHasContent(canvas) {
           const sw = Math.min(256, canvas.width);
           const sh = Math.max(1, Math.round(canvas.height * (sw / canvas.width)));
           scanScratch.width = sw;  // resizing also clears the scratch canvas
           scanScratch.height = sh;
-          const sctx = scanScratch.getContext('2d', { willReadFrequently: true });
+          const sctx = /** @type {CanvasRenderingContext2D} */ (scanScratch.getContext('2d', { willReadFrequently: true }));
           sctx.drawImage(canvas, 0, 0, sw, sh);
           const d = sctx.getImageData(0, 0, sw, sh).data;
           for (let i = 3; i < d.length; i += 4) {
@@ -181,14 +200,16 @@ export function createDrawTools(deps) {
         // force a GPU readback, so starting a stroke stays stutter-free.
         const UNDO_LIMIT = 5;
         function snapshotForUndo() {
-          if (!state.base) return;
+          const base = state.base;
+          if (!base) return;
+          /** @type {MsUndoEntry[]} */
           const entries = [];
           state.layers.forEach((l) => {
             if (l.painted || l.id === state.activeId) {
               const copy = document.createElement('canvas');
-              copy.width = state.base.w;
-              copy.height = state.base.h;
-              copy.getContext('2d').drawImage(l.canvasEl, 0, 0);
+              copy.width = base.w;
+              copy.height = base.h;
+              /** @type {CanvasRenderingContext2D} */ (copy.getContext('2d')).drawImage(l.canvasEl, 0, 0);
               entries.push({ id: l.id, canvas: copy });
             }
           });
@@ -198,26 +219,34 @@ export function createDrawTools(deps) {
 
         // Current state of the given layers, in undo-entry form — pushed to the
         // opposite stack so undo and redo are exact inverses of each other.
+        /**
+         * @param {string[]} ids
+         * @returns {MsUndoEntry[]}
+         */
         function captureLayers(ids) {
+          const base = /** @type {MsBase} */ (state.base); // undo/redo check it first
+          /** @type {MsUndoEntry[]} */
           const entries = [];
           ids.forEach((id) => {
             const l = getLayer(id);
             if (!l) return;
             const copy = document.createElement('canvas');
-            copy.width = state.base.w;
-            copy.height = state.base.h;
-            copy.getContext('2d').drawImage(l.canvasEl, 0, 0);
+            copy.width = base.w;
+            copy.height = base.h;
+            /** @type {CanvasRenderingContext2D} */ (copy.getContext('2d')).drawImage(l.canvasEl, 0, 0);
             entries.push({ id: id, canvas: copy });
           });
           return entries;
         }
 
+        /** @param {MsUndoEntry[]} entries */
         function restoreEntries(entries) {
+          const base = /** @type {MsBase} */ (state.base); // undo/redo check it first
           entries.forEach((en) => {
             const l = getLayer(en.id);
             if (!l) return; // area was removed since this stroke
-            const ctx = l.canvasEl.getContext('2d');
-            ctx.clearRect(0, 0, state.base.w, state.base.h);
+            const ctx = /** @type {CanvasRenderingContext2D} */ (l.canvasEl.getContext('2d'));
+            ctx.clearRect(0, 0, base.w, base.h);
             ctx.drawImage(en.canvas, 0, 0);
           });
           state.layers.forEach((l) => {
@@ -232,7 +261,7 @@ export function createDrawTools(deps) {
 
         function undoStroke() {
           if (!state.undoStack.length || state.phase !== 'draw' || !state.base) return;
-          const entries = state.undoStack.pop();
+          const entries = /** @type {MsUndoEntry[]} */ (state.undoStack.pop()); // length checked above
           state.redoStack.push(captureLayers(entries.map((en) => en.id)));
           if (state.redoStack.length > UNDO_LIMIT) state.redoStack.shift();
           restoreEntries(entries);
@@ -241,13 +270,14 @@ export function createDrawTools(deps) {
 
         function redoStroke() {
           if (!state.redoStack.length || state.phase !== 'draw' || !state.base) return;
-          const entries = state.redoStack.pop();
+          const entries = /** @type {MsUndoEntry[]} */ (state.redoStack.pop()); // length checked above
           state.undoStack.push(captureLayers(entries.map((en) => en.id)));
           if (state.undoStack.length > UNDO_LIMIT) state.undoStack.shift();
           restoreEntries(entries);
         }
         redoBtn.addEventListener('click', redoStroke);
 
+        /** @param {PointerEvent} e */
         function startDraw(e) {
           if (!canDraw()) return;
           snapshotForUndo();
@@ -260,9 +290,12 @@ export function createDrawTools(deps) {
 
         // --- Rectangle tool: drag out a marquee, fill it on release ------------
         let rectDragging = false;
+        /** @type {{ x: number, y: number } | null} */
         let rectStartPt = null;
+        /** @type {HTMLDivElement | null} */
         let rectPreviewEl = null;
 
+        /** @param {PointerEvent} e */
         function beginRect(e) {
           const p = canvasPoint(e);
           if (!p) return;
@@ -278,20 +311,25 @@ export function createDrawTools(deps) {
           updateRectPreview(p);
         }
 
+        /** @param {{ x: number, y: number }} p */
         function updateRectPreview(p) {
+          const base = /** @type {MsBase} */ (state.base); // a rect drag needs a photo
+          const previewEl = /** @type {HTMLDivElement} */ (rectPreviewEl); // beginRect creates it first
+          const startPt = /** @type {{ x: number, y: number }} */ (rectStartPt); // set for the whole drag
           const rect = baseCanvas.getBoundingClientRect();
           if (!rect.width) return;
-          const sx = rect.width / state.base.w;
-          const sy = rect.height / state.base.h;
-          rectPreviewEl.style.display = 'block';
-          rectPreviewEl.style.left = (Math.min(rectStartPt.x, p.x) * sx) + 'px';
-          rectPreviewEl.style.top = (Math.min(rectStartPt.y, p.y) * sy) + 'px';
-          rectPreviewEl.style.width = (Math.abs(p.x - rectStartPt.x) * sx) + 'px';
-          rectPreviewEl.style.height = (Math.abs(p.y - rectStartPt.y) * sy) + 'px';
+          const sx = rect.width / base.w;
+          const sy = rect.height / base.h;
+          previewEl.style.display = 'block';
+          previewEl.style.left = (Math.min(startPt.x, p.x) * sx) + 'px';
+          previewEl.style.top = (Math.min(startPt.y, p.y) * sy) + 'px';
+          previewEl.style.width = (Math.abs(p.x - startPt.x) * sx) + 'px';
+          previewEl.style.height = (Math.abs(p.y - startPt.y) * sy) + 'px';
           const layer = activeLayer();
-          if (layer) rectPreviewEl.style.setProperty('--cursor-color', layerColor(layer));
+          if (layer) previewEl.style.setProperty('--cursor-color', layerColor(layer));
         }
 
+        /** @param {PointerEvent} e */
         function endRect(e) {
           if (!rectDragging) return;
           rectDragging = false;
@@ -311,13 +349,13 @@ export function createDrawTools(deps) {
             return;
           }
           state.redoStack = []; // committed rectangle forks history
-          const ctx = layer.canvasEl.getContext('2d');
+          const ctx = /** @type {CanvasRenderingContext2D} */ (layer.canvasEl.getContext('2d'));
           ctx.fillStyle = layerColor(layer);
           ctx.fillRect(x0, y0, w, h);
           // Claim these pixels from every other area, same as brush strokes.
           state.layers.forEach((other) => {
             if (other !== layer) {
-              const octx = other.canvasEl.getContext('2d');
+              const octx = /** @type {CanvasRenderingContext2D} */ (other.canvasEl.getContext('2d'));
               octx.globalCompositeOperation = 'destination-out';
               octx.fillRect(x0, y0, w, h);
               octx.globalCompositeOperation = 'source-over';
@@ -366,21 +404,26 @@ export function createDrawTools(deps) {
         // every other area, rescan painted flags, invalidate cached masks, and
         // re-render. Shared by the segmentation wand and the refine "Snap to
         // object" step so all three "programmatic stroke" paths stay identical.
+        /**
+         * @param {MsLayer} layer
+         * @param {HTMLCanvasElement} maskCanvas - Alpha mask at base resolution.
+         */
         function paintMaskIntoLayer(layer, maskCanvas) {
+          const base = /** @type {MsBase} */ (state.base); // wand/snap only run with a photo
           snapshotForUndo();
           state.redoStack = []; // committed selection forks history
           const tint = document.createElement('canvas');
-          tint.width = state.base.w;
-          tint.height = state.base.h;
-          const tctx = tint.getContext('2d');
+          tint.width = base.w;
+          tint.height = base.h;
+          const tctx = /** @type {CanvasRenderingContext2D} */ (tint.getContext('2d'));
           tctx.drawImage(maskCanvas, 0, 0);
           tctx.globalCompositeOperation = 'source-in';
           tctx.fillStyle = layerColor(layer);
-          tctx.fillRect(0, 0, state.base.w, state.base.h);
-          layer.canvasEl.getContext('2d').drawImage(tint, 0, 0);
+          tctx.fillRect(0, 0, base.w, base.h);
+          /** @type {CanvasRenderingContext2D} */ (layer.canvasEl.getContext('2d')).drawImage(tint, 0, 0);
           state.layers.forEach((other) => {
             if (other === layer) return;
-            const octx = other.canvasEl.getContext('2d');
+            const octx = /** @type {CanvasRenderingContext2D} */ (other.canvasEl.getContext('2d'));
             octx.globalCompositeOperation = 'destination-out';
             octx.drawImage(maskCanvas, 0, 0);
             octx.globalCompositeOperation = 'source-over';
@@ -398,7 +441,9 @@ export function createDrawTools(deps) {
         // Touch: two-finger pinch zooms (phones have no Ctrl+wheel). A second
         // finger aborts whatever the first one started so a pinch never leaves
         // a half-stroke behind.
+        /** @type {Map<number, { x: number, y: number }>} */
         const touchPts = new Map();
+        /** @type {{ d0: number, zoom0: number } | null} */
         let pinch = null; // { d0, zoom0 }
 
         stack.addEventListener('pointerdown', (e) => {
@@ -409,7 +454,7 @@ export function createDrawTools(deps) {
                 drawing = false;
                 lastX = null;
                 lastY = null;
-                if (state.undoStack.length) restoreEntries(state.undoStack.pop());
+                if (state.undoStack.length) restoreEntries(/** @type {MsUndoEntry[]} */ (state.undoStack.pop()));
               }
               if (rectDragging) cancelRect();
               state.comparing = false;
@@ -459,8 +504,9 @@ export function createDrawTools(deps) {
           }
           if (state.panning) {
             e.preventDefault();
-            viewerEl.scrollLeft = panStart.sl - (e.clientX - panStart.x);
-            viewerEl.scrollTop = panStart.st - (e.clientY - panStart.y);
+            const ps = /** @type {{ x: number, y: number, sl: number, st: number }} */ (panStart); // set whenever panning starts
+            viewerEl.scrollLeft = ps.sl - (e.clientX - ps.x);
+            viewerEl.scrollTop = ps.st - (e.clientY - ps.y);
             return;
           }
           if (state.comparing) {
@@ -499,6 +545,7 @@ export function createDrawTools(deps) {
 
         // Brush-size circle that follows the pointer over the photo, tinted with
         // the active area's color (dashed gray while erasing).
+        /** @type {HTMLDivElement | null} */
         let cursorEl = null;
         function ensureCursor() {
           if (cursorEl) return;
@@ -507,26 +554,30 @@ export function createDrawTools(deps) {
           cursorEl.setAttribute('aria-hidden', 'true');
           stack.appendChild(cursorEl);
         }
+        /** @param {PointerEvent} e */
         function updateCursorPreview(e) {
           ensureCursor();
+          const cursor = /** @type {HTMLDivElement} */ (cursorEl); // ensureCursor just made it
           const layer = activeLayer();
           if (!canDraw() || !layer || e.pointerType === 'touch' || state.spaceDown || tool === 'rect' || tool === 'wand') {
-            cursorEl.style.display = 'none';
+            cursor.style.display = 'none';
             return;
           }
           const rect = baseCanvas.getBoundingClientRect();
           if (!rect.width) return;
           const stackRect = stack.getBoundingClientRect();
-          const size = brushWidth() * (rect.width / state.base.w);
-          cursorEl.style.display = 'block';
-          cursorEl.style.width = size + 'px';
-          cursorEl.style.height = size + 'px';
-          cursorEl.style.left = (e.clientX - stackRect.left) + 'px';
-          cursorEl.style.top = (e.clientY - stackRect.top) + 'px';
-          cursorEl.style.setProperty('--cursor-color', layerColor(layer));
-          cursorEl.classList.toggle('is-erase', tool === 'erase');
+          const base = /** @type {MsBase} */ (state.base); // canDraw() above checked it
+          const size = brushWidth() * (rect.width / base.w);
+          cursor.style.display = 'block';
+          cursor.style.width = size + 'px';
+          cursor.style.height = size + 'px';
+          cursor.style.left = (e.clientX - stackRect.left) + 'px';
+          cursor.style.top = (e.clientY - stackRect.top) + 'px';
+          cursor.style.setProperty('--cursor-color', layerColor(layer));
+          cursor.classList.toggle('is-erase', tool === 'erase');
         }
 
+        /** @param {string} t */
         function setTool(t) {
           tool = t === 'erase' ? 'erase' : t === 'rect' ? 'rect' : t === 'wand' ? 'wand' : 'brush';
           // Annotated because TS widens a mixed literal array to
@@ -557,6 +608,7 @@ export function createDrawTools(deps) {
 
         // Clamped here as well as by the input, because the [ and ] shortcuts set
         // the step directly and never pass through the slider's min/max.
+        /** @param {number} v */
         function setBrushStep(v) {
           state.brushStep = Math.min(BRUSH_STEP_MAX, Math.max(BRUSH_STEP_MIN, v));
           brushSlider.value = String(state.brushStep);

@@ -30,6 +30,7 @@ import { showToast, showErrorToast } from '../shared/toast.js';
  */
 const STAMP_IDS = { checkboxId: 'ex-label-virtually-staged', optsId: 'ex-stamp-opts' };
 
+/** @param {string} id */
 const $ = (id) => document.getElementById(id);
 
 /**

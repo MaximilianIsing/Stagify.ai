@@ -122,7 +122,9 @@ const ROLL_MAX_S = 2.2;
 const PARK_MAX_S = 1.4;
 
 /** One coordinate of a unit cubic bezier (P0 = 0, P3 = 1) with inner controls a, b. */
+/** @type {(a: number, b: number, t: number) => number} */
 const bez = (a, b, t) => 3 * a * t * (1 - t) * (1 - t) + 3 * b * t * t * (1 - t) + t * t * t;
+/** @type {(a: number, b: number, t: number) => number} */
 const bezD = (a, b, t) => 3 * a * (1 - t) * (1 - t) + 6 * (b - a) * t * (1 - t) + 3 * (1 - b) * t * t;
 
 /**
@@ -265,7 +267,7 @@ export function initHeroVan(doc = document, win = window) {
   let swapTimer = 0;
 
   /** End the swap now: drop the old bands, settle the new ones, stop the road. Idempotent. */
-  function finishSwap() {
+  const finishSwap = () => {
     if (!leaving.length && !entering.length) return;
     for (const el of leaving) el.remove();
     for (const el of entering) el.classList.remove('hu-in');
@@ -274,7 +276,7 @@ export function initHeroVan(doc = document, win = window) {
     btn.classList.remove('hu-swap');
     if (swapTimer && win.clearTimeout) win.clearTimeout(swapTimer);
     swapTimer = 0;
-  }
+  };
 
   const reducedMotion = () => !!(win.matchMedia && win.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
@@ -292,7 +294,7 @@ export function initHeroVan(doc = document, win = window) {
    * a cached build reuses them.
    * @param {string} key
    */
-  function setStyle(key) {
+  const setStyle = (key) => {
     if (key === current) return;
     const mounted = !!current;
     current = key;
@@ -325,7 +327,7 @@ export function initHeroVan(doc = document, win = window) {
     }
     btn.classList.add('hu-swap');
     if (win.setTimeout) swapTimer = win.setTimeout(finishSwap, SWAP_MS + SWAP_SLACK_MS);
-  }
+  };
 
   // The picker's tag precedes ours, so its current pick is already on the stage element.
   // Fall back to the default when the attribute is absent — an older cached picker, or
@@ -440,9 +442,9 @@ export function initHeroVan(doc = document, win = window) {
     leavingBay = false;
   };
   /** The wheel angle at scene x on the current segment, kept within one turn. */
-  const spinAt = (x) => (seg ? ((seg.spin0 || 0) + (x - seg.from) * DEG_PER_UNIT) % 360 : restSpin);
+  const spinAt = (/** @type {number} */ x) => (seg ? ((seg.spin0 || 0) + (x - seg.from) * DEG_PER_UNIT) % 360 : restSpin);
   /** Publish a planned segment's wheel rotation for the CSS `hu-spin-seg` keyframes. */
-  const setSpin = (s) => {
+  const setSpin = (/** @type {Pick<Segment, "from" | "to" | "spin0">} */ s) => {
     const spin0 = s.spin0 ?? 0;
     btn.style.setProperty('--hu-spin-from', `${spin0.toFixed(1)}deg`);
     btn.style.setProperty('--hu-spin-to', `${(spin0 + (s.to - s.from) * DEG_PER_UNIT).toFixed(1)}deg`);

@@ -35,7 +35,7 @@ export function createAuthModal({ onRefresh, onCloseDropdown }) {
     if (document.getElementById('auth-modal')) return;
     const wrap = document.createElement('div');
     wrap.innerHTML = AUTH_MODAL_HTML;
-    document.body.insertBefore(wrap.firstElementChild, document.body.firstChild);
+    document.body.insertBefore(/** @type {Element} */ (wrap.firstElementChild), document.body.firstChild);
   }
 
   // ── Element handles ─────────────────────────────────────────────────────────
@@ -58,6 +58,7 @@ export function createAuthModal({ onRefresh, onCloseDropdown }) {
     const modal = document.getElementById('auth-modal');
     if (!modal) return null;
     if (handles && handles.modal === modal) return handles;
+    /** @param {string} id */
     const byId = (id) => document.getElementById(id);
     handles = {
       modal,
@@ -94,6 +95,7 @@ export function createAuthModal({ onRefresh, onCloseDropdown }) {
   }
 
   /** Clear a feedback line and its success/warn styling. */
+  /** @param {HTMLElement | null} node */
   function clearFeedback(node) {
     if (!node) return;
     node.textContent = '';
@@ -236,6 +238,7 @@ export function createAuthModal({ onRefresh, onCloseDropdown }) {
     if (stageModal) stageModal.classList.remove('hidden');
   }
 
+  /** @param {boolean} [forStaging] */
   function openAuthModal(forStaging) {
     ensureAuthModal();
     bindAuthOnce();
@@ -434,6 +437,7 @@ export function createAuthModal({ onRefresh, onCloseDropdown }) {
     if (goPlus) window.location.href = localizedTarget('stagify-plus.html');
   }
 
+  /** @param {Event} event */
   async function handleSubmit(event) {
     event.preventDefault();
     if (authFlowForgot) return;
@@ -515,10 +519,12 @@ export function createAuthModal({ onRefresh, onCloseDropdown }) {
     syncAuthFormMode,
     bindAuthOnce,
     // Set the register/sign-in toggle without re-syncing (caller syncs next).
+    /** @param {boolean} v */
     setAuthModeRegister(v) {
       authModeRegister = !!v;
     },
     // External entry points reset the forgot-password flow and re-sync in one step.
+    /** @param {boolean} v */
     selectMode(v) {
       authModeRegister = !!v;
       authFlowForgot = false;

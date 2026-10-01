@@ -13,51 +13,57 @@ import { LANG_FLAG as FLAGS, LANG_BCP47 as BCP47 } from "./locale-data.js";
     const root = document.querySelector("[data-lang-switch]");
     if (!select || !root) return;
 
-    const trigger = /** @type {HTMLElement | null} */ (root.querySelector(".lang-switch__trigger"));
-    const flagEl = /** @type {HTMLImageElement | null} */ (root.querySelector(".lang-switch__flag"));
-    const labelEl = root.querySelector(".lang-switch__label");
+    // Every [data-lang-switch] in the markup carries its trigger, flag and label, and
+    // sync()/open() below already used them unconditionally.
+    const trigger = /** @type {HTMLElement} */ (root.querySelector(".lang-switch__trigger"));
+    const flagEl = /** @type {HTMLImageElement} */ (root.querySelector(".lang-switch__flag"));
+    const labelEl = /** @type {HTMLElement} */ (root.querySelector(".lang-switch__label"));
     const options = /** @type {HTMLElement[]} */ (Array.from(root.querySelectorAll(".lang-switch__option")));
 
+    /** @param {string} value */
     const labelFor = (value) => {
       const opt = options.find((o) => o.dataset.value === value);
-      return opt ? opt.querySelector("span").textContent : value;
+      return opt ? /** @type {HTMLElement} */ (opt.querySelector("span")).textContent : value;
     };
 
-    function currentValue() {
+    const currentValue = () => {
       // Prefer the persisted choice — language-loader.js sets the <select>
       // value asynchronously, so localStorage is the reliable source on load.
       return localStorage.getItem("selectedLanguage") || select.value || "english";
-    }
+    };
 
-    function sync() {
+    const sync = () => {
       const value = currentValue();
       if (select.value !== value) select.value = value;
-      document.documentElement.lang = BCP47[value] || "en";
-      if (FLAGS[value]) flagEl.src = FLAGS[value];
+      document.documentElement.lang = (/** @type {Record<string, string>} */ (BCP47))[value] || "en";
+      const flag = (/** @type {Record<string, string>} */ (FLAGS))[value];
+      if (flag) flagEl.src = flag;
       labelEl.textContent = labelFor(value);
       options.forEach((o) =>
         o.setAttribute("aria-selected", String(o.dataset.value === value))
       );
-    }
+    };
 
-    function open() {
+    const open = () => {
       root.setAttribute("data-open", "");
       trigger.setAttribute("aria-expanded", "true");
       document.addEventListener("pointerdown", onOutside, true);
       document.addEventListener("keydown", onKey);
-    }
+    };
 
-    function close() {
+    const close = () => {
       root.removeAttribute("data-open");
       trigger.setAttribute("aria-expanded", "false");
       document.removeEventListener("pointerdown", onOutside, true);
       document.removeEventListener("keydown", onKey);
-    }
+    };
 
-    function onOutside(e) {
-      if (!root.contains(e.target)) close();
-    }
+    /** @param {PointerEvent} e */
+    const onOutside = (e) => {
+      if (!root.contains(/** @type {Node | null} */ (e.target))) close();
+    };
 
+    /** @param {KeyboardEvent} e */
     function onKey(e) {
       const focusable = options;
       const idx = focusable.indexOf(/** @type {HTMLElement} */ (document.activeElement));
@@ -73,7 +79,8 @@ import { LANG_FLAG as FLAGS, LANG_BCP47 as BCP47 } from "./locale-data.js";
       }
     }
 
-    function choose(value) {
+    /** @param {string} value */
+    const choose = (value) => {
       if (value !== select.value) {
         select.value = value;
         // language-loader.js listens for "change": persists + reloads strings.
@@ -82,7 +89,7 @@ import { LANG_FLAG as FLAGS, LANG_BCP47 as BCP47 } from "./locale-data.js";
       sync();
       close();
       trigger.focus();
-    }
+    };
 
     trigger.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -96,11 +103,12 @@ import { LANG_FLAG as FLAGS, LANG_BCP47 as BCP47 } from "./locale-data.js";
     });
 
     options.forEach((opt) => {
-      opt.addEventListener("click", () => choose(opt.dataset.value));
+      // Every .lang-switch__option carries data-value.
+      opt.addEventListener("click", () => choose(/** @type {string} */ (opt.dataset.value)));
       opt.addEventListener("keydown", (e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          choose(opt.dataset.value);
+          choose(/** @type {string} */ (opt.dataset.value));
         }
       });
     });

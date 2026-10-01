@@ -31,20 +31,26 @@ import { showErrorToast } from '../shared/toast.js';
   // Storage can throw (Safari private mode, disabled cookies/storage). It failing is
   // not a reason to break the console — it just means this browser re-authenticates
   // on every load, which is where we started.
+  /** @param {string} k */
   function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
+  /** @param {string} k @param {string} v */
   function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){/* memory-only session */}}
+  /** @param {string} k */
   function lsDel(k){try{localStorage.removeItem(k)}catch(e){/* nothing to clear */}}
 
   // Whichever credential we hold. After sign-in this is always the token: the key
   // is deliberately not kept, so there is nothing here that could leak it.
+  /** @returns {Record<string, string>} */
   function authHeaders(){
     return _session ? {'X-Stagify-Admin-Session':_session} : {};
   }
 
   // Shared, mutable app state handed to the renderers island by reference so both
   // sides see the same data / filter / sort. signOut swaps ctx.data wholesale.
+  /** @typedef {import('./types.js').AdminData} AdminData */
+  /** @type {import('./types.js').AdminCtx} */
   var ctx = {
-    data: { users:[], promptRows:[], chatRows:[], bugRows:[], maskRows:[], contactRows:[], emailOpenRows:[], rejectionRows:[], enterprise:[], hostedImages:[], metrics:null },
+    data: /** @type {AdminData} */ ({ users:[], promptRows:[], chatRows:[], bugRows:[], maskRows:[], contactRows:[], emailOpenRows:[], rejectionRows:[], enterprise:[], hostedImages:[], metrics:null }),
     userFilter: 'all',
     userSortCol: 'created',
     userSortDir: 'desc',
@@ -73,6 +79,7 @@ import { showErrorToast } from '../shared/toast.js';
   // URL (no leak via logs/history/Referer). Header-only is also what keeps the admin
   // routes CSRF-proof by construction: nothing a browser sends automatically can
   // reach them, which is precisely why this is a token in storage and not a cookie.
+  /** @param {string} url @returns {Promise<Response>} */
   function apiFetchQ(url){
     checkSessionExpiry();
     return fetch(url,{headers:authHeaders()})
@@ -81,8 +88,10 @@ import { showErrorToast } from '../shared/toast.js';
 
   // Mutating requests (POST/DELETE). For FormData bodies, the browser sets the
   // multipart Content-Type+boundary, so we must not set it ourselves.
+  /** @type {import('./types.js').ApiSend} */
   function apiSend(url,method,body,isForm){
     checkSessionExpiry();
+    /** @type {RequestInit & { headers: Record<string, string> }} */
     var opts={method:method,headers:authHeaders()};
     if(body!==undefined&&body!==null){
       if(isForm){opts.body=body}
@@ -123,6 +132,7 @@ import { showErrorToast } from '../shared/toast.js';
 
   // ── Secure blob download (key never in URL bar or history) ──
 
+  /** @param {string} url @param {string} filename @returns {Promise<void>} */
   function secureBlobDownload(url, filename){
     return apiFetchQ(url).then(function(r){return r.blob()}).then(function(blob){
       var a=document.createElement('a');
@@ -213,6 +223,7 @@ import { showErrorToast } from '../shared/toast.js';
 
   // Mirror the active rail item into the sticky topbar. Tolerates a button with
   // no data-* (the DOM-stubbed suite builds bare ones) by falling back to its text.
+  /** @param {HTMLElement} btn */
   function setPageHeading(btn){
     var t=qs('#adm-page-title');
     var sub=qs('#adm-page-sub');
@@ -222,7 +233,7 @@ import { showErrorToast } from '../shared/toast.js';
   }
 
   qs('#adm-tabs').addEventListener('click',function(e){
-    var btn=e.target.closest('.adm-tab');if(!btn)return;
+    var btn=/** @type {HTMLElement | null} */ (/** @type {Element} */ (e.target).closest('.adm-tab'));if(!btn)return;
     qsa('.adm-tab').forEach(function(t){t.classList.remove('active');t.setAttribute('aria-selected','false')});
     btn.classList.add('active');btn.setAttribute('aria-selected','true');
     qsa('.adm-panel').forEach(function(p){p.classList.remove('active')});
@@ -262,7 +273,7 @@ import { showErrorToast } from '../shared/toast.js';
 
   qsa('.adm-filter').forEach(function(btn){
     btn.addEventListener('click',function(){
-      ctx.userFilter=btn.dataset.filter;
+      ctx.userFilter=/** @type {string} */ (btn.dataset.filter);
       qsa('.adm-filter').forEach(function(b){b.classList.toggle('active',b.dataset.filter===ctx.userFilter)});
       renderers.renderUsers();
     });
@@ -271,22 +282,23 @@ import { showErrorToast } from '../shared/toast.js';
 
   // ── Search ──
 
-  qs('#adm-user-search').addEventListener('input',function(){renderers.renderUsers(this.value)});
-  qs('#adm-bug-search').addEventListener('input',function(){renderers.renderBugs(this.value)});
-  qs('#adm-contact-search').addEventListener('input',function(){renderers.renderContacts(this.value)});
-  qs('#adm-email-open-search').addEventListener('input',function(){renderers.renderEmailOpens(this.value)});
+  qs('#adm-user-search').addEventListener('input',/** @this {HTMLInputElement} */ function(){renderers.renderUsers(this.value)});
+  qs('#adm-bug-search').addEventListener('input',/** @this {HTMLInputElement} */ function(){renderers.renderBugs(this.value)});
+  qs('#adm-contact-search').addEventListener('input',/** @this {HTMLInputElement} */ function(){renderers.renderContacts(this.value)});
+  qs('#adm-email-open-search').addEventListener('input',/** @this {HTMLInputElement} */ function(){renderers.renderEmailOpens(this.value)});
 
   // ── Image hosting: upload wiring ──
 
+  /** @type {File | null} */
   var _hostFile=null;
   qs('#adm-host-pick').addEventListener('click',function(){qs('#adm-host-file').click()});
-  qs('#adm-host-file').addEventListener('change',function(){
+  qs('#adm-host-file').addEventListener('change',/** @this {HTMLInputElement} */ function(){
     _hostFile=(this.files&&this.files[0])||null;
     qs('#adm-host-fname').textContent=_hostFile?_hostFile.name:'No file selected';
-    qs('#adm-host-upload-btn').disabled=!_hostFile;
+    /** @type {HTMLButtonElement} */ (qs('#adm-host-upload-btn')).disabled=!_hostFile;
     qs('#adm-host-result').classList.add('hidden');
   });
-  qs('#adm-host-upload-btn').addEventListener('click',function(){
+  qs('#adm-host-upload-btn').addEventListener('click',/** @this {HTMLButtonElement} */ function(){
     if(!_hostFile)return;
     var btn=this;btn.disabled=true;btn.textContent='Uploading…';
     var resBox=qs('#adm-host-result');resBox.classList.add('hidden');resBox.classList.remove('adm-host-err');
@@ -301,7 +313,7 @@ import { showErrorToast } from '../shared/toast.js';
       cp.addEventListener('click',function(){copyToClipboard(url,cp)});
       row.appendChild(cp);
       resBox.appendChild(row);
-      _hostFile=null;qs('#adm-host-file').value='';qs('#adm-host-fname').textContent='No file selected';
+      _hostFile=null;/** @type {HTMLInputElement} */ (qs('#adm-host-file')).value='';qs('#adm-host-fname').textContent='No file selected';
       btn.textContent='Upload & Host';btn.disabled=true;
       if(j.entry){ctx.data.hostedImages.unshift(Object.assign({},j.entry,{path:j.path||('/i/'+j.id)}))}
       renderers.updateTabCounts();renderers.renderHosting();
@@ -315,7 +327,7 @@ import { showErrorToast } from '../shared/toast.js';
   // ── Refresh ──
 
   qs('#adm-refresh').addEventListener('click',function(){
-    var btn=qs('#adm-refresh');btn.disabled=true;btn.textContent='Refreshing\u2026';
+    var btn=/** @type {HTMLButtonElement} */ (qs('#adm-refresh'));btn.disabled=true;btn.textContent='Refreshing\u2026';
     loadAll();
     setTimeout(function(){btn.disabled=false;btn.textContent='Refresh'},1500);
   });
@@ -323,7 +335,7 @@ import { showErrorToast } from '../shared/toast.js';
   // \u2500\u2500 Reset server status (uptime) data \u2500\u2500
 
   (function(){
-    var rb=qs('#adm-reset-status');if(!rb)return;
+    var rb=/** @type {HTMLButtonElement} */ (qs('#adm-reset-status'));if(!rb)return;
     rb.addEventListener('click',function(){
       if(!confirm('Reset ALL server status data?\n\nThis wipes every recorded uptime percentage and incident and restarts monitoring from now. It changes the public status page and cannot be undone.'))return;
       var msg=qs('#adm-reset-status-msg');var orig=rb.textContent;
@@ -342,9 +354,9 @@ import { showErrorToast } from '../shared/toast.js';
 
   qs('#adm-login-form').addEventListener('submit',function(e){
     e.preventDefault();
-    var k=qs('#adm-key').value.trim();if(!k)return;
+    var k=/** @type {HTMLInputElement} */ (qs('#adm-key')).value.trim();if(!k)return;
     var errEl=qs('#adm-login-err');
-    var btn=qs('#adm-login-btn');
+    var btn=/** @type {HTMLButtonElement} */ (qs('#adm-login-btn'));
 
     if(Date.now()<_lockoutUntil){
       var secs=Math.ceil((_lockoutUntil-Date.now())/1000);
@@ -382,6 +394,7 @@ import { showErrorToast } from '../shared/toast.js';
 
   // Hold a freshly minted session, in memory and in storage. Storage failing is
   // survivable — the tab stays signed in, it just won't outlive a reload.
+  /** @param {unknown} token @param {unknown} expiresAt */
   function adoptSession(token,expiresAt){
     _session=String(token||'');
     _sessionExp=Number(expiresAt)||0;
@@ -420,10 +433,10 @@ import { showErrorToast } from '../shared/toast.js';
     // summary of them — both have to go with it, or the next operator to sign
     // in sees the previous one's account names before the first fetch lands.
     renderers.resetSignals();
-    ctx.data={users:[],promptRows:[],chatRows:[],bugRows:[],maskRows:[],contactRows:[],emailOpenRows:[],rejectionRows:[],enterprise:[],hostedImages:[],metrics:null};
+    ctx.data=/** @type {AdminData} */ ({users:[],promptRows:[],chatRows:[],bugRows:[],maskRows:[],contactRows:[],emailOpenRows:[],rejectionRows:[],enterprise:[],hostedImages:[],metrics:null});
     qs('#adm-dash').classList.add('hidden');
     qs('#adm-login').style.display='';
-    qs('#adm-key').value='';
+    /** @type {HTMLInputElement} */ (qs('#adm-key')).value='';
   }
 
   qs('#adm-signout').addEventListener('click',signOut);

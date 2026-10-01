@@ -34,6 +34,7 @@ import {
   ARTICLES_BY_SLUG, BLOG_HUB, LOCALES, LOCALIZED_ARTICLES, localeByPrefix, localeByLang,
 } from '../lib/i18n/locales.js';
 import { HUB_PACK_DIR, PACK_ROOT } from '../lib/i18n/blog-packs.js';
+import { errorMessage } from '../lib/errors.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
@@ -112,7 +113,11 @@ const QUOTED_UI_STRINGS = {
   Custom: 'furnitureStyles.custom',
 };
 
-/** The value of a dotted key in a language pack, or null. */
+/**
+ * The value of a dotted key in a language pack, or null.
+ * @param {string} lang
+ * @param {string} dotted
+ */
 function uiString(lang, dotted) {
   try {
     const packs = JSON.parse(fs.readFileSync(path.join(PUBLIC, 'languages', `${lang}.json`), 'utf8'));
@@ -182,7 +187,7 @@ export function verifyPack(slug, pack) {
   // A slot that came back identical to English is usually a slot the translator skipped.
   // Not fatal — "Blog" and a product name legitimately survive translation — so it is
   // reported for the untranslatable-by-accident case rather than enforced.
-  const suspicious = ['title', 'eyebrow', 'crumb'].filter(
+  const suspicious = /** @type {const} */ (['title', 'eyebrow', 'crumb']).filter(
     (k) => typeof pack[k] === 'string' && pack[k].trim() === String(english[k]).trim(),
   );
   if (suspicious.length === 3) problems.push('every headline slot is byte-identical to English — untranslated?');
@@ -271,7 +276,7 @@ export function checkPacks(onlySlug) {
       try {
         pack = JSON.parse(fs.readFileSync(path.join(dir, name), 'utf8'));
       } catch (err) {
-        report.broken.push(`${id}: unparseable JSON (${err.message})`);
+        report.broken.push(`${id}: unparseable JSON (${errorMessage(err)})`);
         continue;
       }
       const problems = verifyPack(slug, pack);
@@ -355,6 +360,7 @@ export function addHubPack(langToken, translated) {
 
 // --- CLI -----------------------------------------------------------------------------
 
+/** @param {string[]} argv */
 function main(argv) {
   const [cmd, ...rest] = argv;
 
@@ -422,7 +428,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   try {
     process.exitCode = main(process.argv.slice(2));
   } catch (err) {
-    process.stderr.write(`${err.message}\n`);
+    process.stderr.write(`${errorMessage(err)}\n`);
     process.exitCode = 1;
   }
 }

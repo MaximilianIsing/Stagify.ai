@@ -86,7 +86,7 @@ const child = spawn(
 // a test-file row when the file column (everything before the first `|`) names
 // something under the test/ directory — this catches both `test\foo.test.js` and
 // `test\helpers\bar.js`, on either path separator.
-const isTestRow = (line) => {
+const isTestRow = (/** @type {string} */ line) => {
   const bar = line.indexOf('|');
   if (bar === -1) return false;
   return /(^|[\s#ℹ\\/])test[\\/]/.test(line.slice(0, bar));

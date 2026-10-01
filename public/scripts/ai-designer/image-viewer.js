@@ -11,6 +11,16 @@ import { imageCountSuffix, slugifyName } from './format.js';
 import { getPdfAlt } from './i18n.js';
 
 /**
+ * A masked-image carousel root. The carousel hangs its own controls off the element so a
+ * later append can drive it without re-querying.
+ * @typedef {HTMLElement & {
+ *   _updateCarousel?: () => void,
+ *   _getCurrentIndex?: () => number,
+ *   _setCurrentIndex?: (idx: number) => void,
+ * }} CarouselElement
+ */
+
+/**
  * @param {{
  *   openMaskEditor: (imageSrc: string, imageType?: string) => void,
  * }} deps - Late-bound arrow into the mask-editor island, which is constructed
@@ -23,9 +33,11 @@ export function createImageViewer(deps) {
 
       // Where focus was when the lightbox opened — a thumbnail somewhere in the chat,
       // so it has to be captured rather than looked up.
+      /** @type {HTMLElement | null} */
       let imageModalOpener = null;
 
       // Image modal functions
+      /** @param {string} imageSrc @param {string} [altText] */
       function openImageModal(imageSrc, altText) {
         const modal = document.getElementById('image-modal');
         const modalImg = /** @type {HTMLImageElement} */ (document.getElementById('image-modal-img'));
@@ -64,6 +76,7 @@ export function createImageViewer(deps) {
       }
 
       // Download image function
+      /** @param {string} imageSrc @param {string} [filename] */
       function downloadImage(imageSrc, filename = 'image') {
         // Convert base64 data URL to blob
         fetch(imageSrc)
@@ -103,6 +116,10 @@ export function createImageViewer(deps) {
       // Helper function to create AI image with download button. `baseName` is an
       // optional room/source label so downloads are named e.g.
       // "123-main-living-staged-room-1.png" instead of "image.png".
+      /**
+       * @param {string} imageSrc @param {string} altText @param {string} [imageType]
+       * @param {string | null} [baseName] @returns {HTMLElement}
+       */
       function createAIImageWithDownload(imageSrc, altText, imageType = 'image', baseName) {
         const container = document.createElement('div');
         container.className = 'ai-image-container';
@@ -170,15 +187,23 @@ export function createImageViewer(deps) {
       }
 
       // Create or update masked image carousel - Simple, clean implementation
+      /**
+       * @param {string} originalSrc @param {string[]} maskedVersions @param {HTMLElement} originalContainer
+       * @returns {HTMLElement}
+       */
       function createOrUpdateMaskedImageCarousel(originalSrc, maskedVersions, originalContainer) {
         // Check if carousel already exists
+        /** @type {CarouselElement | null} */
         let carousel = originalContainer && originalContainer.classList.contains('masked-image-carousel')
           ? originalContainer
           : null;
 
         // If carousel exists, append new items instead of recreating
         if (carousel) {
-          const track = carousel.querySelector('.masked-image-carousel-track');
+          // A const the click handlers below can close over: `carousel` is reassigned
+          // further down, so it does not stay narrowed inside a closure.
+          const live = carousel;
+          const track = /** @type {HTMLElement | null} */ (carousel.querySelector('.masked-image-carousel-track'));
 
           if (track) {
             // Get current number of items (original + existing masked versions)
@@ -217,15 +242,15 @@ export function createImageViewer(deps) {
 
               // Add click handler - use carousel's updateCarousel function
               nextBtn.addEventListener('click', () => {
-                if (carousel._updateCarousel && carousel._getCurrentIndex && carousel._setCurrentIndex) {
-                  let currentIdx = carousel._getCurrentIndex();
+                if (live._updateCarousel && live._getCurrentIndex && live._setCurrentIndex) {
+                  let currentIdx = live._getCurrentIndex();
                   const items = track.querySelectorAll('.masked-image-carousel-item');
                   const totalItemsCount = items.length;
 
                   if (currentIdx < totalItemsCount - 1) {
                     currentIdx++;
-                    carousel._setCurrentIndex(currentIdx);
-                    carousel._updateCarousel();
+                    live._setCurrentIndex(currentIdx);
+                    live._updateCarousel();
                   }
                 }
               });
@@ -251,9 +276,9 @@ export function createImageViewer(deps) {
 
                 // Add click handler - use carousel's updateCarousel function
                 dot.addEventListener('click', () => {
-                  if (carousel._setCurrentIndex && carousel._updateCarousel) {
-                    carousel._setCurrentIndex(i);
-                    carousel._updateCarousel();
+                  if (live._setCurrentIndex && live._updateCarousel) {
+                    live._setCurrentIndex(i);
+                    live._updateCarousel();
                   }
                 });
               }
@@ -283,9 +308,9 @@ export function createImageViewer(deps) {
                 });
 
                 // Update nav buttons
-                const prevBtn = carousel.querySelector('.masked-image-carousel-nav.prev');
+                const prevBtn = /** @type {HTMLButtonElement | null} */ (carousel.querySelector('.masked-image-carousel-nav.prev'));
                 if (prevBtn) prevBtn.disabled = newCurrentIndex === 0;
-                track.querySelectorAll('.masked-image-carousel-nav.next').forEach((btn) => {
+                /** @type {NodeListOf<HTMLButtonElement>} */ (track.querySelectorAll('.masked-image-carousel-nav.next')).forEach((btn) => {
                   btn.disabled = newCurrentIndex === newTotalItems - 1;
                 });
               }

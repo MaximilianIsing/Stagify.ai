@@ -27,7 +27,8 @@
 
   /** @param {Element} root the <details> element */
   function wire(root) {
-    var trigger = /** @type {HTMLElement | null} */ (root.querySelector(".legal-menu__trigger"));
+    // Non-null cast: the guard below still runs, but `var` loses its narrowing in closures.
+    var trigger = /** @type {HTMLElement} */ (root.querySelector(".legal-menu__trigger"));
     var list = /** @type {HTMLElement | null} */ (root.querySelector(".legal-menu__list"));
     var items = /** @type {HTMLElement[]} */ (Array.prototype.slice.call(root.querySelectorAll(".legal-menu__item")));
     if (!trigger) return;

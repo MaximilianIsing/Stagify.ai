@@ -67,7 +67,7 @@ export function canvasDigest(canvas, doc) {
  *   state: import('./types.js').MsState,
  *   resultCanvas: HTMLCanvasElement,
  *   authToken: () => string,
- *   onEvicted: (gallery: any) => void,
+ *   onEvicted: (gallery: { evicted?: Array<{ hadLiveShare?: boolean }> }) => void,
  *   onLabelFailed?: (message: string) => void,
  *   badgeFields?: () => Record<string, unknown>,
  *   fetchImpl?: typeof fetch,

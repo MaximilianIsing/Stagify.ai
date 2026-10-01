@@ -4,12 +4,15 @@
   "use strict";
 
   let ready = false;
+  /** @type {WeakMap<HTMLElement, IntersectionObserver>} */
   const observers = new WeakMap();
+  /** @type {WeakSet<HTMLElement>} */
   let played = new WeakSet();
 
   const SEGMENT_TYPES = new Set(["blur", "rise", "slide", "wave"]);
   const WHOLE_TYPES = new Set(["fade", "clip", "shiny"]);
 
+  /** Split mode per segment effect. @type {Record<string, string>} */
   const SEGMENT_MODE = {
     blur: "letters",
     rise: "words",
@@ -17,11 +20,13 @@
     wave: "letters",
   };
 
+  /** Stagger (ms) per split mode. @type {Record<string, number>} */
   const DEFAULT_STAGGER = {
     letters: 24,
     words: 60,
   };
 
+  /** Pre-animation class per whole-element effect. @type {Record<string, string>} */
   const PRE_CLASS = {
     fade: "tx-pre-fade",
     clip: "tx-pre-clip",
@@ -35,16 +40,18 @@
     );
   }
 
+  /** @param {string} text */
   function splitWords(text) {
     return text.trim().split(/\s+/).filter(Boolean);
   }
 
+  /** @param {HTMLElement} el */
   function unwrap(el) {
     // Children mode animates existing child elements (e.g. the hero <h1>'s
     // per-word data-lang spans). Never collapse those to text — just strip the
     // animation classes so the original markup (and i18n) stays intact.
     if (el.hasAttribute("data-tx-children")) {
-      el.querySelectorAll(":scope > .tx-seg").forEach((s) => {
+      /** @type {NodeListOf<HTMLElement>} */ (el.querySelectorAll(":scope > .tx-seg")).forEach((s) => {
         s.classList.remove(
           "tx-seg",
           "tx-in-blur",
@@ -67,6 +74,7 @@
     delete el.dataset.txWrappedMode;
   }
 
+  /** @param {HTMLElement} el */
   function resetClasses(el) {
     el.classList.remove(
       "tx-in-blur",
@@ -86,11 +94,13 @@
     });
   }
 
+  /** @param {HTMLElement} el */
   function markDone(el) {
     el.classList.add("tx-done");
     played.add(el);
   }
 
+  /** @param {HTMLElement} el @param {string} mode */
   function wrapSegments(el, mode) {
     unwrap(el);
     const text = el.textContent.trim();
@@ -126,6 +136,7 @@
     });
   }
 
+  /** @param {HTMLElement} el @param {string} type @param {string} [_mode] */
   function maxAnimMs(el, type, _mode) {
     const segs = el.querySelectorAll(".tx-seg");
     if (!segs.length) return 800;
@@ -138,6 +149,7 @@
     return base + segs.length * stagger + 100;
   }
 
+  /** @param {HTMLElement} el @param {string} type @param {string} [mode] */
   function scheduleDone(el, type, mode) {
     const ms = SEGMENT_TYPES.has(type)
       ? maxAnimMs(el, type, mode)
@@ -149,6 +161,7 @@
     setTimeout(() => markDone(el), ms);
   }
 
+  /** @param {HTMLElement} el @param {string} type */
   function play(el, type) {
     if (played.has(el)) return;
 
@@ -172,7 +185,7 @@
       if (useChildren) {
         // Animate existing child elements in place (preserves their markup/i18n).
         // Skip structural nodes like <br>.
-        segs = Array.from(el.children).filter((c) => c.tagName !== "BR");
+        segs = /** @type {HTMLElement[]} */ (Array.from(el.children)).filter((c) => c.tagName !== "BR");
         segs.forEach((seg, i) => {
           seg.classList.add("tx-seg");
           seg.style.setProperty("--tx-i", String(i));
@@ -207,6 +220,7 @@
 
   // Decrypted text — characters scramble, then resolve left-to-right into the
   // final string. Used sparingly as a signature moment.
+  /** @param {HTMLElement} el */
   function playDecrypt(el) {
     if (played.has(el)) return;
     const finalText = (el.textContent || "").replace(/\s+/g, " ").trim();
@@ -246,18 +260,21 @@
     }, 45);
   }
 
+  /** @param {HTMLElement} el */
   function showPlain(el) {
     resetClasses(el);
     unwrap(el);
     markDone(el);
   }
 
+  /** @param {HTMLElement} el */
   function inView(el) {
     const r = el.getBoundingClientRect();
     const vh = window.innerHeight || document.documentElement.clientHeight;
     return r.top < vh * 0.92 && r.bottom > vh * 0.08;
   }
 
+  /** @param {HTMLElement} el */
   function bindScroll(el) {
     const type = el.dataset.tx;
     if (!type || played.has(el)) return;
@@ -301,6 +318,7 @@
     observers.set(el, observer);
   }
 
+  /** @returns {NodeListOf<HTMLElement>} */
   function targets() {
     return document.querySelectorAll(
       ".hero-content [data-tx], .home-section [data-tx], .home-info [data-tx]"

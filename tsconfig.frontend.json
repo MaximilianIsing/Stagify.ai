@@ -10,9 +10,9 @@
   // Keeping discovery in one place means the lint scope and the type-check scope
   // can never drift apart.
   //
-  // Like the backend, kept deliberately loose for the rollout (no strict /
-  // noImplicitAny). Every file here is genuinely checked — there are no
-  // @ts-nocheck opt-outs; tighten the flags once that has proven stable.
+  // Full `strict`, same as the backend. Every file here is genuinely checked: no
+  // @ts-nocheck opt-outs, and no blanket `{any}` to get past noImplicitAny. A catch
+  // binding is `unknown`; read it through shared/error-message.js, not `err.message`.
   "compilerOptions": {
     "checkJs": true,
     "allowJs": true,
@@ -31,8 +31,7 @@
     "baseUrl": ".",
     "paths": { "/scripts/*": ["./public/scripts/*"] },
 
-    "strict": false,
-    "noImplicitAny": false,
+    "strict": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   }

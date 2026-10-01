@@ -10,10 +10,11 @@ import { LANG_BCP47 as BCP47, PRIMARY_SUBTAG_TO_LANG } from "./locale-data.js";
   // Map a browser language tag (e.g. "fr-FR", "zh-TW") to a supported UI language,
   // or null if we don't translate that language yet. Only the primary subtag is
   // consulted, so "zh-TW" and "zh-Hans" both resolve to chinese.
+  /** @param {string | null | undefined} tag @returns {string | null} */
   function toSupported(tag) {
     const primary = String(tag || "").toLowerCase().split("-")[0];
     return Object.prototype.hasOwnProperty.call(PRIMARY_SUBTAG_TO_LANG, primary)
-      ? PRIMARY_SUBTAG_TO_LANG[primary]
+      ? (/** @type {Record<string, string>} */ (PRIMARY_SUBTAG_TO_LANG))[primary]
       : null;
   }
 
@@ -55,7 +56,7 @@ import { LANG_BCP47 as BCP47, PRIMARY_SUBTAG_TO_LANG } from "./locale-data.js";
 
   // Set <html lang> before first paint so assistive tech uses the right
   // pronunciation rules from the start. The switcher keeps it in sync on change.
-  document.documentElement.lang = BCP47[lang] || "en";
+  document.documentElement.lang = (/** @type {Record<string, string>} */ (BCP47))[lang] || "en";
 })();
 
 // Loaded as <script type="module">; this empty export marks the file as an ES

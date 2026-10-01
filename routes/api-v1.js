@@ -32,7 +32,7 @@ const MAX_IDEMPOTENCY_KEY = 128;
  *   requireApiKey: import('express').RequestHandler,
  *   concurrencyGate: import('express').RequestHandler,
  *   stagingProcessUpload: import('express').RequestHandler,
- *   runBilledRender: (req: any, res: any, opts: any) => Promise<any>,
+ *   runBilledRender: ReturnType<typeof import('../lib/staging/api-render-billing.js').createApiRenderBilling>['runBilledRender'],
  *   apiRenderLimiter?: import('express').RequestHandler,
  * }} deps - The credit store, the two gates, multer, the billing band, and
  *   a test-only limiter seam (omitted, the shared limiter is used, so the render

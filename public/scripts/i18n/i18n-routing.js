@@ -39,7 +39,7 @@ export function urlLanguage() {
     if (marked && marked !== 'english') return marked;
   } catch (e) { /* no DOM access — fall through to path parsing */ }
   const { prefix } = splitLocale(location.pathname);
-  return prefix ? PREFIX_TO_LANG[prefix] : null;
+  return prefix ? (/** @type {Record<string, string>} */ (PREFIX_TO_LANG))[prefix] : null;
 }
 
 /**
@@ -53,7 +53,7 @@ export function urlLanguage() {
 export function hrefForLanguage(langValue) {
   const { basePath } = splitLocale(location.pathname);
   const prefix = Object.prototype.hasOwnProperty.call(LANG_TO_PREFIX, langValue)
-    ? LANG_TO_PREFIX[langValue]
+    ? (/** @type {Record<string, string>} */ (LANG_TO_PREFIX))[langValue]
     : '';
   if (!prefix) return basePath + location.hash; // English → root path
   if (!LOCALIZED_PATHS.has(basePath)) return `/${prefix}${location.hash}`; // no variant → localized home

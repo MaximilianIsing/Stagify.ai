@@ -55,6 +55,7 @@ export function createReportIssueModal({ onCloseDropdown }) {
     const modal = document.getElementById('report-issue-modal');
     if (!modal) return null;
     if (handles && handles.modal === modal) return handles;
+    /** @param {string} id */
     const byId = (id) => document.getElementById(id);
     handles = {
       modal,
@@ -144,6 +145,7 @@ export function createReportIssueModal({ onCloseDropdown }) {
     };
   }
 
+  /** @param {Event} [ev] */
   async function onSubmit(ev) {
     if (ev && typeof ev.preventDefault === 'function') ev.preventDefault();
     const e = els();

@@ -24,7 +24,9 @@ import { t } from './i18n.js';
  * @returns {{ open: (trigger?: HTMLElement | null) => void, close: () => void }} Controls.
  */
 export function createKeyDialog({ onCreate, onClosed }) {
+  /** @param {string} id */
   const el = (id) => document.getElementById(id);
+  /** @type {HTMLElement | null} */
   let returnFocusTo = null;
   let busy = false;
 

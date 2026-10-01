@@ -52,6 +52,7 @@ import { stagifyApiRowHtml } from './api-keys-row.js';
     dropdownOpen = true;
   }
 
+  /** @param {Event} e */
   function toggleDropdown(e) {
     e.stopPropagation();
     if (dropdownOpen) closeDropdown();
@@ -160,8 +161,9 @@ import { stagifyApiRowHtml } from './api-keys-row.js';
     }
   }
 
+  /** @param {Event} e */
   function onDropdownClick(e) {
-    const t = e.target.closest('[data-profile-action]');
+    const t = /** @type {Element} */ (e.target).closest('[data-profile-action]');
     if (!t) return;
     const action = t.getAttribute('data-profile-action');
     if (action === 'signin') {
@@ -209,9 +211,10 @@ import { stagifyApiRowHtml } from './api-keys-row.js';
     }
   }
 
+  /** @param {Event} e */
   function onDocClick(e) {
     if (!dropdownOpen) return;
-    if (e.target.closest('.profile-menu-wrap')) return;
+    if (/** @type {Element} */ (e.target).closest('.profile-menu-wrap')) return;
     closeDropdown();
   }
 
@@ -223,7 +226,7 @@ import { stagifyApiRowHtml } from './api-keys-row.js';
     if (document.getElementById('auth-modal')) {
       auth.syncAuthFormMode();
     }
-    const btn = document.getElementById('profile-menu-btn');
+    const btn = /** @type {HTMLElement} */ (document.getElementById('profile-menu-btn'));
     const dd = document.getElementById('profile-menu-dropdown');
     btn.addEventListener('click', toggleDropdown);
     if (dd) dd.addEventListener('click', onDropdownClick);
@@ -249,6 +252,7 @@ import { stagifyApiRowHtml } from './api-keys-row.js';
     openReportIssue: reportIssue.open,
     refresh,
     closeDropdown,
+    /** @param {boolean} v */
     setAuthModeRegister(v) {
       auth.selectMode(v);
     },

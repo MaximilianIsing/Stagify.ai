@@ -15,6 +15,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { errorMessage } from './lib/errors.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const envPath = path.join(__dirname, '.env');
@@ -48,5 +49,5 @@ try {
     }
   }
 } catch (e) {
-  console.warn('[env] Could not load .env:', e.message);
+  console.warn('[env] Could not load .env:', errorMessage(e));
 }

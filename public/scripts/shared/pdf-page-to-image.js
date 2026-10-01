@@ -87,6 +87,7 @@ export function scaleForPage(width, height) {
 
   if (typeof window === 'undefined' || typeof document === 'undefined') return;
 
+  /** @type {Promise<any> | null} pdf.js has no bundled types (window.pdfjsLib is `any`). */
   var loaderPromise = null;
   function loadLibrary() {
     if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
@@ -117,6 +118,7 @@ export function scaleForPage(width, height) {
   // A minimal, self-contained toast so every call site gets user feedback for free.
   // Reuses heic-convert.js's keyframe when that module is also on the page (both inject
   // the same id), so the two never fight over one <style>.
+  /** @type {HTMLDivElement | null} */
   var toastEl = null;
   var toastCount = 0;
   function showToast() {
@@ -158,16 +160,18 @@ export function scaleForPage(width, height) {
     }
   }
 
+  /** @param {File} file @returns {Promise<Uint8Array | null>} */
   function readHeader(file) {
     if (file.slice && file.slice(0, 8).arrayBuffer) {
-      return file.slice(0, 8).arrayBuffer().then(function (buf) { return new Uint8Array(buf); });
+      return file.slice(0, 8).arrayBuffer().then(function (/** @type {ArrayBuffer} */ buf) { return new Uint8Array(buf); });
     }
     return Promise.resolve(null);
   }
 
+  /** @param {HTMLCanvasElement} canvas @param {string} baseName @returns {Promise<File>} */
   function canvasToPngFile(canvas, baseName) {
     return new Promise(function (resolve, reject) {
-      canvas.toBlob(function (blob) {
+      canvas.toBlob(function (/** @type {Blob | null} */ blob) {
         if (!blob) {
           reject(new Error('Could not encode the floor plan page'));
           return;
@@ -177,23 +181,24 @@ export function scaleForPage(width, height) {
     });
   }
 
+  /** @param {File} file @returns {Promise<File>} */
   function renderFirstPage(file) {
     showToast();
     return loadLibrary()
-      .then(function (pdfjsLib) {
-        return file.arrayBuffer().then(function (buf) {
+      .then(function (/** @type {any} */ pdfjsLib) {
+        return file.arrayBuffer().then(function (/** @type {ArrayBuffer} */ buf) {
           return pdfjsLib.getDocument({ data: new Uint8Array(buf) }).promise;
         });
       })
-      .then(function (doc) {
+      .then(function (/** @type {any} */ doc) {
         // Page 1 only — a floor plan is one drawing.
-        return doc.getPage(1).then(function (page) {
+        return doc.getPage(1).then(function (/** @type {any} */ page) {
           var base = page.getViewport({ scale: 1 });
           var viewport = page.getViewport({ scale: scaleForPage(base.width, base.height) });
           var canvas = document.createElement('canvas');
           canvas.width = Math.max(1, Math.floor(viewport.width));
           canvas.height = Math.max(1, Math.floor(viewport.height));
-          var ctx = canvas.getContext('2d');
+          var ctx = /** @type {CanvasRenderingContext2D} */ (canvas.getContext('2d'));
           // PDF pages are transparent; a plan rasterized onto transparency reads as a
           // black drawing on black once flattened into a JPEG downstream.
           ctx.fillStyle = '#ffffff';
@@ -219,10 +224,12 @@ export function scaleForPage(width, height) {
    * PDF by type/extension; a genuine PDF becomes a PNG of page 1, while a mislabeled file
    * (a real image with a .pdf name) is passed straight through for the normal image path
    * to sort out — the same posture heic-convert.js takes.
+   * @param {File} file
+   * @returns {Promise<File>}
    */
   function toDisplayableFile(file) {
     if (!isPdf(file)) return Promise.resolve(file);
-    return readHeader(file).then(function (bytes) {
+    return readHeader(file).then(function (/** @type {Uint8Array | null} */ bytes) {
       // A null header (no File.slice, e.g. a synthetic file) is not evidence of anything,
       // so fall through and let pdf.js decide; only a positive non-PDF sniff opts out.
       if (bytes && !sniffPdf(bytes)) return file;

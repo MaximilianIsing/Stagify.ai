@@ -11,8 +11,8 @@ import { roomDownloadSlug } from './helpers.js';
  *   emptyRoomClose: HTMLElement | null,
  *   emptyRoomDownload: HTMLElement | null,
  *   emptyRoomBtn: HTMLElement | null,
- *   roomSelect: { value: string } | null,
- *   getLastEmptyRoomUrl: () => string,
+ *   roomSelect: { value: string | undefined } | null,
+ *   getLastEmptyRoomUrl: () => string | null,
  * }} deps - The modal and its controls, the room-type select handle (read for
  *   the download filename slug), and a getter for the current empty-room URL.
  *   Every element is optional: the island no-ops on pages without the markup.
@@ -25,7 +25,7 @@ export function createEmptyRoomViewer(deps) {
 
   function openEmptyRoomModal() {
     if (!emptyRoomModal || !getLastEmptyRoomUrl()) return;
-    if (emptyRoomImage) emptyRoomImage.src = getLastEmptyRoomUrl();
+    if (emptyRoomImage) emptyRoomImage.src = /** @type {string} */ (getLastEmptyRoomUrl()); // checked just above
     emptyRoomModal.classList.add('active');
     emptyRoomModal.setAttribute('aria-hidden', 'false');
   }
@@ -49,7 +49,7 @@ export function createEmptyRoomViewer(deps) {
     const link = document.createElement('a');
     const roomSlug = roomDownloadSlug(roomSelect?.value);
     link.download = `stagify-${roomSlug}-empty-${Date.now()}.jpg`;
-    link.href = getLastEmptyRoomUrl();
+    link.href = /** @type {string} */ (getLastEmptyRoomUrl()); // checked above
     link.click();
   });
 }

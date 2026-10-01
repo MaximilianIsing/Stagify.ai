@@ -18,23 +18,28 @@ import { chartCard, areaChart, rankedBars, chartEmpty, fmtNum, PALETTE } from '.
 /** The windows the operator can switch between, in days. */
 const WINDOWS = [7, 30, 90];
 
-/** 'YYYY-MM-DD' → 'Jul 1'. Parsed as UTC to match the server's day buckets. */
+/** 'YYYY-MM-DD' → 'Jul 1'. Parsed as UTC to match the server's day buckets. @param {string} date */
 function dayLabel(date) {
   var d = new Date(String(date) + 'T00:00:00Z');
   if (isNaN(d.getTime())) return String(date);
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
 }
 
-/** Epoch ms → readable stamp, or an em dash. */
+/** Epoch ms → readable stamp, or an em dash. @param {number | null | undefined} ts */
 function whenText(ts) {
   return ts ? fmtDateTime(new Date(ts).toISOString()) : '—';
 }
 
+/** @param {string} text @param {string} [tone] */
 function pill(text, tone) {
   return el('span', { className: 'adm-pill' + (tone ? ' adm-pill--' + tone : ''), textContent: text });
 }
 
-/** The daily-reads chart for one post, or for the whole blog. */
+/**
+ * The daily-reads chart for one post, or for the whole blog.
+ * @param {Array<{date: string, value: number}>} series
+ * @param {{title: string, sub?: string, wide?: boolean, height?: number, color?: string, empty?: string, notes?: string[]}} opts
+ */
 function readsChart(series, opts) {
   var points = (series || []).map(function (p) { return { label: dayLabel(p.date), value: p.value }; });
   var any = points.some(function (p) { return p.value > 0; });
@@ -53,14 +58,14 @@ function readsChart(series, opts) {
  * Build the Blog-tab controller.
  *
  * @param {object} deps
- * @param {(url: string, method: string, body?: any, isForm?: boolean) => Promise<any>} deps.apiSend
+ * @param {import('./types.js').ApiSend} deps.apiSend
  *   Request helper from the entry (holds the session key).
  */
 export function createBlogPanel({ apiSend }) {
   var _loaded = false;
   var _loading = false;
   var _days = 30;
-  /** @type {any} */
+  /** @type {import('./types.js').BlogStats | null} */
   var _data = null;
   /** @type {string | null} */
   var _selected = null;
@@ -105,6 +110,7 @@ export function createBlogPanel({ apiSend }) {
 
   // ── list ───────────────────────────────────────────────────────────────────
 
+  /** @param {import('./types.js').BlogPostStats} post */
   function rowFor(post) {
     var tr = el('tr', { className: 'adm-ref-row' + (post.slug === _selected ? ' adm-ref-row--on' : '') });
 
@@ -148,7 +154,7 @@ export function createBlogPanel({ apiSend }) {
     tbl.appendChild(el('thead', null, [el('tr', null, [
       el('th', { textContent: 'Article' }),
       el('th', { textContent: 'Published' }),
-      el('th', { textContent: _data.days + ' days' }),
+      el('th', { textContent: /** @type {import('./types.js').BlogStats} */ (_data).days + ' days' }),
       el('th', { textContent: '7 days' }),
       el('th', { textContent: 'All time' }),
       el('th', { textContent: 'Last read' }),
@@ -159,12 +165,13 @@ export function createBlogPanel({ apiSend }) {
     host.appendChild(tbl);
     host.appendChild(el('p', {
       className: 'adm-more',
-      textContent: 'Ranked by reads in the last ' + _data.days + ' days. Select an article to see its chart and traffic sources.',
+      textContent: 'Ranked by reads in the last ' + /** @type {import('./types.js').BlogStats} */ (_data).days + ' days. Select an article to see its chart and traffic sources.',
     }));
   }
 
   // ── detail ─────────────────────────────────────────────────────────────────
 
+  /** @param {import('./types.js').BlogPostStats} post */
   function detailCard(post) {
     var card = el('div', { className: 'adm-card adm-ref-card' });
     card.appendChild(el('h2', null, [

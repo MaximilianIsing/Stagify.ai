@@ -145,7 +145,7 @@ export function createRenameRow(deps) {
     // Returns the promise so a caller can await the save rather than race it, exactly as
     // the retry button does.
     byId('gal-rename-save')?.addEventListener('click', () => save());
-    byId('gal-rename-input')?.addEventListener('keydown', (event) => {
+    byId('gal-rename-input')?.addEventListener('keydown', (/** @type {KeyboardEvent} */ event) => {
       // Enter commits. The row is not a <form> — it sits inside no form on this page — so
       // without this the key does nothing and the box looks broken.
       if (/** @type {any} */ (event).key !== 'Enter') return;

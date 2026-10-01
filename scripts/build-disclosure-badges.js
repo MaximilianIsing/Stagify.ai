@@ -62,6 +62,7 @@ const FONT_FILES = [
   { family: 'Noto Sans JP', file: 'NotoSansJP.ttf' },
   { family: 'Noto Sans KR', file: 'NotoSansKR.ttf' },
 ];
+/** @type {Record<string, string>} */
 const FAMILY_FOR_LANG = { chinese: 'Noto Sans SC', japanese: 'Noto Sans JP', korean: 'Noto Sans KR' };
 
 /**

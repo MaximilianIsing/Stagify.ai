@@ -7,6 +7,15 @@
 // Downscale a data URL to a small JPEG (keeps the POST body well under the
 // server's 50MB JSON cap and saves tokens), then ask the server whether it is
 // a stageable space. Always resolves to { valid, reason }; never rejects.
+/**
+ * The /api/validate-image verdict. `code` is the stable rejection category
+ * (lib/staging/unstageable.js) the browser localizes.
+ * @typedef {{ valid: boolean, reason: string, code?: string | null }} StageVerdict
+ */
+/**
+ * @param {string} dataUrl
+ * @returns {Promise<StageVerdict>}
+ */
 export function validateStageableUpload(dataUrl) {
       return new Promise((resolve) => {
         const img = new Image();
@@ -20,7 +29,7 @@ export function validateStageableUpload(dataUrl) {
             const c = document.createElement('canvas');
             c.width = Math.max(1, Math.round(img.width * scale));
             c.height = Math.max(1, Math.round(img.height * scale));
-            c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+            /** @type {CanvasRenderingContext2D} */ (c.getContext('2d')).drawImage(img, 0, 0, c.width, c.height);
             payload = c.toDataURL('image/jpeg', 0.9);
           } catch (e) { /* fall back to the original data URL */ }
           try {

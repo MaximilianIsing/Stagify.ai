@@ -57,20 +57,26 @@ export function VAN(){
    x 316, ahead of the entrance, so nothing shines behind the door. */
 export const BEAM=`<defs><radialGradient id="lens" cx=".4" cy=".35" r=".8"><stop offset="0" stop-color="#ffffff"/><stop offset=".45" stop-color="#ffe9b8"/><stop offset="1" stop-color="#d9a24a"/></radialGradient><filter id="smk" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="1.1"/></filter><radialGradient id="hl" cx="0" cy=".5" r="1"><stop offset="0" stop-color="#fff0cf" stop-opacity=".42"/><stop offset=".55" stop-color="#ffe4a8" stop-opacity=".12"/><stop offset="1" stop-color="#ffe4a8" stop-opacity="0"/></radialGradient></defs>
   <g class="beam"><path d="M92 48.5L110 44v22L92 52z" fill="url(#hl)"/><ellipse cx="103" cy="66" rx="11" ry="2" fill="#ffe4a8" opacity=".18"/></g>`;
-export const SKY=(id)=>`<defs><linearGradient id="sky${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1e2c58"/><stop offset=".55" stop-color="#14203f"/><stop offset="1" stop-color="#0a1120"/></linearGradient></defs><rect width="376" height="74" fill="url(#sky${id})"/>`;
+export const SKY=(/** @type {string} */ id)=>`<defs><linearGradient id="sky${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1e2c58"/><stop offset=".55" stop-color="#14203f"/><stop offset="1" stop-color="#0a1120"/></linearGradient></defs><rect width="376" height="74" fill="url(#sky${id})"/>`;
 export const STARS=`<g class="far" fill="#fff"><circle class="twinkle" cx="44" cy="10" r=".9"/><circle class="twinkle" cx="92" cy="18" r=".7"/><circle class="twinkle" cx="140" cy="8" r="1"/><circle class="twinkle" cx="196" cy="14" r=".8"/><circle class="twinkle" cx="262" cy="7" r=".9"/><circle class="twinkle" cx="330" cy="15" r=".8"/><circle class="twinkle" cx="300" cy="5" r=".6"/><circle class="twinkle" cx="232" cy="20" r=".6"/></g>`;
 /* ------------------------------------------------------------------ far-band helpers
    Three navies, farthest first: night haze lifts what is far away, so the most distant
    layer is the LIGHTEST. Lit windows are gold at half opacity; the plate's tint sits on
    top of all of this, so nothing here needs to be subtle to start with. */
 const FAR1='#22305f', FAR2='#1a2650', FAR3='#141c3a';
+/** @param {Array<[number, number]>} pts */
 const WINS=(pts,op=.45,w=2,h=2)=>`<g fill="${GOLD}" opacity="${op}">${pts.map(([x,y])=>`<rect x="${x}" y="${y}" width="${w}" height="${h}"/>`).join('')}</g>`;
 /* a grid of lit windows with every third dark, for towers */
+/** @param {number} x @param {number} y @param {number} cols @param {number} rows @param {number} dx @param {number} dy */
 const GRID=(x,y,cols,rows,dx,dy,s=1.3,op=.5)=>{let o='';for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){if((r*cols+c)%3===1)continue;o+=`<rect x="${x+c*dx}" y="${y+r*dy}" width="${s}" height="${s}"/>`;}return `<g fill="${GOLD}" opacity="${op}">${o}</g>`;};
+/** @param {number} x @param {number} y @param {number} r */
 const MOON=(x,y,r)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="#fff4de" opacity=".85"/><circle cx="${x}" cy="${y}" r="${r*1.7}" fill="#fff4de" opacity=".12"/>`;
+/** @param {number} x @param {number} y @param {number} w */
 const CLOUD=(x,y,w,op=.1)=>`<path d="M${x} ${y}c${w*.08} ${-w*.14} ${w*.24} ${-w*.16} ${w*.34} ${-w*.06}c${w*.08} ${-w*.12} ${w*.26} ${-w*.12} ${w*.34} 0c${w*.12} ${-w*.05} ${w*.26} 0 ${w*.32} ${w*.06}z" fill="#c8d8ff" opacity="${op}"/>`;
+/** @param {number} x @param {number} y */
 const SMOKE=(x,y)=>`<path d="M${x} ${y}c-1.6-2 1.6-3.4 0-5.4s1.6-3.4 0-5.4" stroke="#c8d8ff" stroke-opacity=".2" stroke-width=".8" fill="none" stroke-linecap="round"/>`;
 const HAZE=(y=58)=>`<rect y="${y}" width="376" height="${74-y}" fill="#2b3d72" opacity=".16"/>`;
+/** @param {number} x @param {number} y */
 const RED=(x,y)=>`<circle class="twinkle" cx="${x}" cy="${y}" r="1" fill="#ff6b6b"/>`;
 
 /* Modern: a downtown. Haze-lifted towers behind, a glass tower with lit floors, a tower
@@ -97,8 +103,10 @@ export const ROAD=`<g class="near road"><rect x="-2" y="66" width="380" height="
    light between y 14 and 24, nothing wider than 14 units, so the parked van's rear (210)
    and the tree (118) clear every one. Each carries the ground pool and a head halo so
    the street reads lit at rest; the head is `.lamplit` should the CSS ever want it. */
-const POOL=(x)=>`<ellipse cx="${x}" cy="66" rx="22" ry="4.5" fill="${GOLD}" opacity=".1"/>`;
-export const LAMP=(x)=>`<g class="lamp" data-lamp="plain"><path d="M${x} 22v44" stroke="#33436f" stroke-width="2.4"/><path class="lamplit" d="M${x-5} 22h10l-2-6h-6z" fill="${GOLD}" opacity=".9"/>${POOL(x)}</g>`;
+const POOL=(/** @type {number} */ x)=>`<ellipse cx="${x}" cy="66" rx="22" ry="4.5" fill="${GOLD}" opacity=".1"/>`;
+export const LAMP=(/** @type {number} */ x)=>`<g class="lamp" data-lamp="plain"><path d="M${x} 22v44" stroke="#33436f" stroke-width="2.4"/><path class="lamplit" d="M${x-5} 22h10l-2-6h-6z" fill="${GOLD}" opacity=".9"/>${POOL(x)}</g>`;
+/** Streetlamp per house style: `(x) => svg`. Styles without one fall back to LAMP. */
+/** @type {Record<string, (x: number) => string>} */
 export const LAMPS={};
 /* Modern pivot: a slim steel column with a cantilevered arm and a flat LED bar, cool white. */
 LAMPS.modern=(x)=>`<g class="lamp" data-lamp="modern"><rect x="${x-1.6}" y="64" width="3.2" height="2" fill="#3a4666"/><path d="M${x} 64V18" stroke="#3a4666" stroke-width="2"/><path d="M${x} 18h9" stroke="#3a4666" stroke-width="2" stroke-linecap="round"/><rect x="${x+2}" y="18.4" width="8" height="2.2" rx=".6" fill="#2a3352"/><rect class="lamplit" x="${x+2.4}" y="20.2" width="7.2" height="1" fill="#dfe9ff" opacity=".95"/><circle cx="${x+6}" cy="21" r="5.5" fill="#dfe9ff" opacity=".16"/><ellipse cx="${x+6}" cy="66" rx="20" ry="4" fill="#dfe9ff" opacity=".1"/></g>`;
@@ -116,8 +124,9 @@ LAMPS.georgian=(x)=>`<g class="lamp" data-lamp="georgian"><path d="M${x-4.5} 66h
 LAMPS.craftsman=(x)=>`<g class="lamp" data-lamp="craftsman"><rect x="${x-4}" y="52" width="8" height="14" fill="#4a5568"/><path d="M${x-4} 56h8M${x-4} 60h8M${x} 52v4M${x-2} 56v4M${x+2} 60v6" stroke="#3a4454" stroke-width=".6"/><rect x="${x-4.8}" y="51" width="9.6" height="1.6" fill="#5c6b7a"/><path d="M${x} 51V28" stroke="#3b3128" stroke-width="2.6"/><path d="M${x-5} 28h10" stroke="#3b3128" stroke-width="1.4"/><path d="M${x-4.5} 28V20h9v8z" fill="#0b1224" stroke="#3b3128" stroke-width="1"/><path class="lamplit" d="M${x-3.5} 27v-6h7v6z" fill="#f0b25a" opacity=".95"/><path d="M${x-1.2} 21v6M${x+1.2} 21v6M${x-3.5} 24h7" stroke="#3b3128" stroke-width=".7"/><path d="M${x-6} 20h12l-6-4z" fill="#3b3128"/><circle cx="${x}" cy="24" r="6" fill="#f0b25a" opacity=".22"/><ellipse cx="${x}" cy="66" rx="22" ry="4.5" fill="#f0b25a" opacity=".1"/></g>`;
 /* Brownstone stoop: the bishop's crook, a tall fluted pole that curls over to a hanging acorn globe. */
 LAMPS.brownstone=(x)=>`<g class="lamp" data-lamp="brownstone"><path d="M${x-4} 66h8l-1-2.6h-6z" fill="#28345c"/><rect x="${x-2.4}" y="57" width="4.8" height="6.5" fill="#28345c"/><path d="M${x} 57V18" stroke="#28345c" stroke-width="2.4"/><path d="M${x-.8} 24v30M${x+.8} 24v30" stroke="#2c375c" stroke-width=".45"/><path d="M${x} 18c0-6 4-8 8-6 3 1.5 3.5 5 1.5 6.5" fill="none" stroke="#28345c" stroke-width="1.8" stroke-linecap="round"/><path d="M${x+9.5} 18.5c-1.4-1.2-2.8-.4-2.4 1" fill="none" stroke="#28345c" stroke-width="1"/><path d="M${x+8.5} 19.5v2" stroke="#28345c" stroke-width="1"/><path d="M${x+5} 21.5h7l-.8 1.6h-5.4z" fill="#28345c"/><path class="lamplit" d="M${x+8.5} 23c-2.4 0-3.6 1.8-3.6 3.8 0 2.4 1.6 4.2 3.6 4.2s3.6-1.8 3.6-4.2c0-2-1.2-3.8-3.6-3.8z" fill="#fff1d6" opacity=".95"/><circle cx="${x+8.5}" cy="27" r="6" fill="#fff1d6" opacity=".2"/><ellipse cx="${x+7}" cy="66" rx="22" ry="4.5" fill="#fff1d6" opacity=".1"/></g>`;
-export const TREE=(x)=>`<path d="M${x} 66c-9-13-9-24 0-36 9 12 9 23 0 36z" fill="#1c3550" opacity=".85"/>`;
+export const TREE=(/** @type {number} */ x)=>`<path d="M${x} 66c-9-13-9-24 0-36 9 12 9 23 0 36z" fill="#1c3550" opacity=".85"/>`;
 /* a lit window with a frame, sill and curtains. cls lets it be lit-on-hover or always on */
+/** @param {number} x @param {number} y @param {number} w @param {number} h */
 const WIN=(x,y,w,h,cls='lit',op=.85)=>`<rect x="${x-1}" y="${y-1}" width="${w+2}" height="${h+2}" fill="#3b4a78"/><rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#0b1224"/>
   <g class="${cls}"><rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${GOLD}" opacity="${op}"/><rect x="${x}" y="${y}" width="${w*.28}" height="${h}" fill="#b98a4c" opacity=".55"/><rect x="${x+w*.72}" y="${y}" width="${w*.28}" height="${h}" fill="#b98a4c" opacity=".55"/></g>
   <path d="M${x+w/2} ${y}v${h}M${x} ${y+h/2}h${w}" stroke="#3b4a78" stroke-width=".9"/><rect x="${x-2}" y="${y+h}" width="${w+4}" height="1.4" fill="#4a5a8a"/>`;
@@ -125,6 +134,7 @@ const WIN=(x,y,w,h,cls='lit',op=.85)=>`<rect x="${x-1}" y="${y-1}" width="${w+2}
 /* ---------------- styles: each = {door(affordance svg), house(x, w) } ---------------- */
 
 /** Entrance art per house style. Keys are HOUSE keys (see STYLE_HOUSE), not furniture styles. */
+/** @type {Record<string, string>} */
 export const DOOR = {
 "georgian": "<defs><linearGradient id=\"__CID__g\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#ffe9bf\"/><stop offset=\".55\" stop-color=\"#f0c88a\"/><stop offset=\"1\" stop-color=\"#c9954f\"/></linearGradient></defs><svg viewBox=\"0 0 46 44\">\n  <rect x=\"8\" y=\"1\" width=\"30\" height=\"39\" fill=\"#eef2fb\"/><rect x=\"6.5\" y=\"0\" width=\"33\" height=\"2.2\" fill=\"#eef2fb\"/>\n  <path d=\"M11 14a12 12 0 0 1 24 0z\" fill=\"#0b1224\"/><g class=\"spill\"><path d=\"M11 14a12 12 0 0 1 24 0z\" fill=\"#ffd48a\" opacity=\".75\"/></g>\n  <path d=\"M23 2v12M15 6.5l8 7.5 8-7.5M13 10l10 4 10-4\" stroke=\"#eef2fb\" stroke-width=\"1\" fill=\"none\"/>\n  <rect x=\"9\" y=\"14\" width=\"3\" height=\"24\" fill=\"#dfe6f5\"/><rect x=\"34\" y=\"14\" width=\"3\" height=\"24\" fill=\"#dfe6f5\"/>\n  <rect x=\"12\" y=\"15\" width=\"22\" height=\"23\" fill=\"#0b1224\"/>\n  <g class=\"spill\"><rect x=\"12\" y=\"15\" width=\"22\" height=\"23\" fill=\"url(#__CID__g)\" opacity=\".9\"/><path d=\"M17 29.4v3.2a1.6 1.6 0 0 0 1.6 1.6h8.8a1.6 1.6 0 0 0 1.6-1.6v-3.2\" stroke=\"#fff\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" fill=\"none\" opacity=\".85\"/><path class=\"up\" d=\"M23 29.8V20.4M18.8 24.6l4.2-4.2 4.2 4.2\" stroke=\"#fff\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" fill=\"none\"/><path d=\"M8 38h30l10 6H-2z\" fill=\"#ffd48a\" opacity=\".2\"/></g>\n  <clipPath id=\"__CID__\"><rect x=\"12\" y=\"15\" width=\"22\" height=\"23\" fill=\"#151a26\"/></clipPath><g clip-path=\"url(#__CID__)\"><g class=\"leaf\"><rect x=\"12\" y=\"15\" width=\"22\" height=\"23\" fill=\"#151a26\"/><g fill=\"none\" stroke=\"#2e3546\" stroke-width=\".9\"><rect x=\"14.5\" y=\"17.5\" width=\"7\" height=\"6\"/><rect x=\"24.5\" y=\"17.5\" width=\"7\" height=\"6\"/><rect x=\"14.5\" y=\"26\" width=\"7\" height=\"4\"/><rect x=\"24.5\" y=\"26\" width=\"7\" height=\"4\"/><rect x=\"14.5\" y=\"32\" width=\"7\" height=\"4\"/><rect x=\"24.5\" y=\"32\" width=\"7\" height=\"4\"/></g>\n    <circle cx=\"23\" cy=\"24.5\" r=\"1.6\" fill=\"none\" stroke=\"#d9b45a\" stroke-width=\".9\"/><rect x=\"20\" y=\"31\" width=\"6\" height=\"1.4\" rx=\".7\" fill=\"#d9b45a\"/><circle cx=\"31.5\" cy=\"28.5\" r=\"1\" fill=\"#d9b45a\"/></g></g>\n  <rect x=\"6\" y=\"38\" width=\"34\" height=\"2.5\" fill=\"#c9d0de\"/><rect x=\"4\" y=\"40.5\" width=\"38\" height=\"2.5\" fill=\"#aab3c6\"/>\n  <g stroke=\"#0e162e\" stroke-width=\"1.2\"><path d=\"M4 30v10M6 30v10M40 30v10M42 30v10\"/><path d=\"M3 30h5M39 30h5\"/></g>\n  <g class=\"lantern\"><rect x=\"38\" y=\"6\" width=\"5\" height=\"7\" rx=\"1\" fill=\"#ffd48a\"/><path d=\"M40.5 6V3h2\" stroke=\"#0e162e\" stroke-width=\"1\" fill=\"none\"/><circle cx=\"40.5\" cy=\"9.5\" r=\"6\" fill=\"#ffd48a\" opacity=\".3\"/></g>\n  \n </svg>",
 "victorian": "<defs><linearGradient id=\"__CID__g\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#ffe9bf\"/><stop offset=\".55\" stop-color=\"#f0c88a\"/><stop offset=\"1\" stop-color=\"#c9954f\"/></linearGradient></defs><svg viewBox=\"0 0 46 44\">\n  \n  <path d=\"M6 14a17 11 0 0 1 34 0v26H6z\" fill=\"#e8ecf4\"/>\n  <path d=\"M8 14a15 9 0 0 1 30 0z\" fill=\"#0b1224\"/>\n  <g class=\"spill\"><path d=\"M8 14a15 9 0 0 1 30 0z\" fill=\"#9fc7ff\" opacity=\".75\"/></g>\n  <g fill=\"#d9a441\" opacity=\".7\"><path d=\"M8 14a15 9 0 0 1 30 0h-4a11 6.6 0 0 0-22 0z\"/></g>\n  <g stroke=\"#e8ecf4\" stroke-width=\".8\"><path d=\"M23 5v9M14 8l9 6M32 8l-9 6M8 14h30\"/></g>\n  <rect x=\"8\" y=\"14\" width=\"30\" height=\"25\" fill=\"#0b1224\"/>\n  <g class=\"spill\"><rect x=\"8\" y=\"14\" width=\"30\" height=\"25\" fill=\"url(#__CID__g)\" opacity=\".9\"/><path d=\"M17 29.4v3.2a1.6 1.6 0 0 0 1.6 1.6h8.8a1.6 1.6 0 0 0 1.6-1.6v-3.2\" stroke=\"#fff\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" fill=\"none\" opacity=\".85\"/><path class=\"up\" d=\"M23 29.8V20.4M18.8 24.6l4.2-4.2 4.2 4.2\" stroke=\"#fff\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" fill=\"none\"/><path d=\"M6 40h34l10 4H-2z\" fill=\"#ffd48a\" opacity=\".22\"/></g>\n  <clipPath id=\"__CID__\"><rect x=\"8\" y=\"14\" width=\"30\" height=\"25\" fill=\"#7a2f2a\"/></clipPath><g clip-path=\"url(#__CID__)\"><g class=\"leaf\"><rect x=\"8\" y=\"14\" width=\"30\" height=\"25\" fill=\"#7a2f2a\"/>\n    <g fill=\"#2f5aa8\"><rect x=\"10.5\" y=\"16\" width=\"10\" height=\"9\"/><rect x=\"25.5\" y=\"16\" width=\"10\" height=\"9\"/></g>\n    <g fill=\"#d9a441\" opacity=\".8\"><path d=\"M10.5 16h10v3h-10zM25.5 16h10v3h-10z\"/><circle cx=\"15.5\" cy=\"22\" r=\"1.5\"/><circle cx=\"30.5\" cy=\"22\" r=\"1.5\"/></g>\n    <g fill=\"none\" stroke=\"#5a2420\" stroke-width=\".8\"><rect x=\"10.5\" y=\"28\" width=\"10\" height=\"9\"/><rect x=\"25.5\" y=\"28\" width=\"10\" height=\"9\"/></g>\n    <circle cx=\"23\" cy=\"26.8\" r=\"1.4\" fill=\"none\" stroke=\"#d9b45a\" stroke-width=\".9\"/><circle cx=\"34\" cy=\"32\" r=\"1\" fill=\"#d9b45a\"/></g></g>\n  <rect x=\"6\" y=\"40\" width=\"34\" height=\"2.5\" fill=\"#c9c2b6\"/><g fill=\"#7a4a3a\" opacity=\".9\"><rect x=\"8\" y=\"40.4\" width=\"3\" height=\"1.8\"/><rect x=\"14\" y=\"40.4\" width=\"3\" height=\"1.8\"/><rect x=\"20\" y=\"40.4\" width=\"3\" height=\"1.8\"/><rect x=\"26\" y=\"40.4\" width=\"3\" height=\"1.8\"/><rect x=\"32\" y=\"40.4\" width=\"3\" height=\"1.8\"/></g>\n  <g class=\"lantern\"><path d=\"M-11.5 18v3\" stroke=\"#0e162e\" stroke-width=\"1\"/><path d=\"M-13.5 18h4\" stroke=\"#0e162e\" stroke-width=\"1\"/><path d=\"M-13.5 21h4l-.6 5h-2.8z\" fill=\"#ffd48a\"/><path d=\"M-13.5 21h4\" stroke=\"#0e162e\" stroke-width=\".8\"/><circle cx=\"-11.5\" cy=\"23.5\" r=\"5.5\" fill=\"#ffd48a\" opacity=\".26\"/></g>\n </svg>",
@@ -141,20 +151,26 @@ let entN=0;
 /* Each DOOR string is `<defs>…</defs><svg viewBox="0 0 46 44">…</svg>`: its own <svg> wrapper is
    dropped (wherever it sits, since the defs come first) and its content drawn straight in this
    one, which has the same viewBox. */
-export const ENT=(k)=>`<svg class="ent" data-k="${k}" overflow="visible" x="${EX}" y="${EY}" width="38" height="${44*38/46}" viewBox="0 0 46 44">${DOOR[k].replace(/<svg[^>]*>/,'').replace(/<\/svg>\s*$/,'').replace(/__CID__/g,'clip'+(entN++))}</svg>`;
+export const ENT=(/** @type {string} */ k)=>`<svg class="ent" data-k="${k}" overflow="visible" x="${EX}" y="${EY}" width="38" height="${44*38/46}" viewBox="0 0 46 44">${DOOR[k].replace(/<svg[^>]*>/,'').replace(/<\/svg>\s*$/,'').replace(/__CID__/g,'clip'+(entN++))}</svg>`;
 /* brick / clapboard courses aligned to the entrance art's own courses (local start+6k, scaled) */
+/** @param {number} x @param {number} w @param {number} y0 @param {number} y1 @param {number} localStart @param {string} stroke */
 const COURSES=(x,w,y0,y1,localStart,stroke,op=.7)=>{let d='';for(let l=localStart;l<200;l+=6){const y=EY+l*ES;if(y>y1)break;if(y>=y0)d+=`M${x} ${y.toFixed(1)}h${w}`;}for(let l=localStart-6;l>-200;l-=6){const y=EY+l*ES;if(y<y0)break;if(y<=y1)d+=`M${x} ${y.toFixed(1)}h${w}`;}return `<path d="${d}" stroke="${stroke}" stroke-width=".6" opacity="${op}"/>`;};
+/** @param {number} x @param {number} y */
 const W=(x,y,op=.8)=>WIN(x,y,8,10,'lit',op);
 /* small door for the second house, one storey tall */
+/** @param {number} x @param {string} fill @param {string} frame */
 const SDOOR=(x,fill,frame)=>`<rect x="${x-1}" y="49" width="10" height="17" fill="${frame}"/><rect x="${x}" y="50" width="8" height="16" fill="${fill}"/><g class="lit"><rect x="${x+1}" y="51" width="6" height="4" fill="${GOLD}" opacity=".7"/></g><circle cx="${x+6.5}" cy="59" r=".7" fill="#d9b45a"/>`;
 
+/** @type {Record<string, (x: number, w: number, e: boolean) => string>} */
 export const H = {};
 // H[style](x,w,entrance) → façade. entrance=true leaves the door zone to ENT()
 /* Georgian townhouse (Luxury): a rusticated stone ground floor under the brick, a
    dentilled cornice and a balustraded parapet, chimney pots, keystoned stone lintels,
    window boxes in flower, a fanlight over the door, and railings with urn finials. */
 H.georgian=(x,w,e)=>{
+  /** @param {number} a @param {number} b */
   const surround=(a,b)=>`<rect x="${a-1.8}" y="${b-2.2}" width="11.6" height="1.6" fill="#c9d0de"/><path d="M${a+2.6} ${b-2.2}h2.8l.5-1.6h-3.8z" fill="#c9d0de"/>`;
+  /** @param {number} a @param {number} b */
   const box=(a,b)=>`<rect x="${a-1}" y="${b+10.2}" width="10" height="2" fill="#3a2a27"/><g fill="#c0396b"><circle cx="${a+1}" cy="${b+10}" r=".9"/><circle cx="${a+4}" cy="${b+9.6}" r=".9"/><circle cx="${a+7}" cy="${b+10}" r=".9"/></g><g fill="#3f7a4f"><circle cx="${a+2.5}" cy="${b+10.6}" r=".9"/><circle cx="${a+5.5}" cy="${b+10.6}" r=".9"/></g>`;
   const rw=e?x+88:x+w-14;
   return `<rect x="${x}" y="22" width="${w}" height="44" fill="#5a3a2e"/>${COURSES(x,w,22,44,8,'#6d4536')}
@@ -203,7 +219,7 @@ H.victorian=(x,w,e)=>{
    foundation, and shrubs in a planter bed. */
 H.craftsman=(x,w,e)=>{
   const ax=x+w/2, half=w/2+8;
-  const roofY=(px)=>20+Math.abs(px-ax)/half*24;
+  const roofY=(/** @type {number} */ px)=>20+Math.abs(px-ax)/half*24;
   const cxx=x+w-16;
   const dx=e?x+14:x+w-30;
   return `<path d="M${x-8} 44l${half}-24 ${half} 24z" fill="#2a3448"/>
@@ -226,8 +242,9 @@ H.craftsman=(x,w,e)=>{
    bay on the second house, basement lights behind grilles, urn finials on the areaway
    railing with a planter beside it, and cheek walls, a lantern and a hood on the stoop. */
 H.brownstone=(x,w,e)=>{
+  /** @param {number} a @param {number} b */
   const lintel=(a,b)=>`<rect x="${a-2}" y="${b-2.4}" width="12" height="2" fill="#8a7263"/><path d="M${a+2.8} ${b-2.4}h2.4l.5-1.8h-3.4z" fill="#9a8273"/><rect x="${a-1.5}" y="${b+10}" width="11" height="1.4" fill="#8a7263"/>`;
-  const light=(a)=>`<rect x="${a}" y="62" width="7" height="3" fill="#0b1224"/><g class="lit"><rect x="${a}" y="62" width="7" height="3" fill="${GOLD}" opacity=".4"/></g><g stroke="#3a2a22" stroke-width=".5"><path d="M${a+1.75} 62v3M${a+3.5} 62v3M${a+5.25} 62v3"/></g>`;
+  const light=(/** @type {number} */ a)=>`<rect x="${a}" y="62" width="7" height="3" fill="#0b1224"/><g class="lit"><rect x="${a}" y="62" width="7" height="3" fill="${GOLD}" opacity=".4"/></g><g stroke="#3a2a22" stroke-width=".5"><path d="M${a+1.75} 62v3M${a+3.5} 62v3M${a+5.25} 62v3"/></g>`;
   return `<rect x="${x}" y="22" width="${w}" height="44" fill="#5a3e34"/>${COURSES(x,w,22,44,6,'#6b4a3e')}
   <rect x="${x}" y="44" width="${w}" height="22" fill="#6a4d42"/><g stroke="#55392f" stroke-width=".9"><path d="M${x} 49h${w}M${x} 55h${w}M${x} 61h${w}"/><path d="${Array.from({length:Math.ceil(w/12)+1},(_,i)=>`M${x+i*12} 44v5M${x+6+i*12} 49v6M${x+i*12} 55v6M${x+6+i*12} 61v5`).join('')}"/></g>
   <rect x="${x-1}" y="43" width="${w+2}" height="1.8" fill="#8a7263"/>
@@ -274,6 +291,7 @@ H.modern=(x,w,e)=>{
    milk can. */
 H.farmhouse=(x,w,e)=>{
   const ax=x+w/2, slope=20/(w/2+6);
+  /** @param {number} a @param {number} b @param {number} o */
   const win=(a,b,o)=>`${W(a,b,o)}<rect x="${a-1.6}" y="${b-2}" width="11.2" height="1.4" fill="#f4f2ec"/><path d="M${a-2.4} ${b-2}l6.4-2.6 6.4 2.6z" fill="#3a3f4a"/>`;
   const seams=Array.from({length:Math.floor((w+12)/7)+1},(_,i)=>{const px=x-6+i*7;return `M${px} 30V${(10+Math.abs(px-ax)*slope).toFixed(1)}`;}).join('');
   return `<path d="M${x-6} 30l${w/2+6}-20 ${w/2+6} 20z" fill="#2b2f3a"/>
@@ -297,8 +315,11 @@ H.farmhouse=(x,w,e)=>{
    pedimented dormers with white trim, a weathervane, corner boards, white window heads,
    louvred shutters, a stone foundation, a picket fence, and a lantern by the door. */
 H.colonial=(x,w,e)=>{
+  /** @param {number} a @param {number} b */
   const sh=(a,b)=>`<g fill="#2f5a3a"><rect x="${a-3}" y="${b-1}" width="2.4" height="12"/><rect x="${a+8.6}" y="${b-1}" width="2.4" height="12"/></g><g stroke="#1e3d28" stroke-width=".45"><path d="M${a-2.6} ${b+1.5}h1.6M${a-2.6} ${b+3.5}h1.6M${a-2.6} ${b+5.5}h1.6M${a-2.6} ${b+7.5}h1.6M${a+9} ${b+1.5}h1.6M${a+9} ${b+3.5}h1.6M${a+9} ${b+5.5}h1.6M${a+9} ${b+7.5}h1.6"/></g>`;
+  /** @param {number} a @param {number} b @param {number} o */
   const win=(a,b,o)=>`${W(a,b,o)}<rect x="${a-1.6}" y="${b-2.4}" width="11.2" height="1.4" fill="#eef2fb" opacity=".95"/>${sh(a,b)}`;
+  /** @param {number} a @param {number} o */
   const dormer=(a,o)=>`<path d="M${a} 18l4-5 4 5z" fill="#2b3446"/><path d="M${a-.6} 18.4l4.6-6 4.6 6" stroke="#eef2fb" stroke-width=".9" fill="none"/><rect x="${a+2}" y="15" width="4" height="3" fill="#0b1224"/><g class="lit"><rect x="${a+2}" y="15" width="4" height="3" fill="${GOLD}" opacity="${o}"/></g>`;
   return `<path d="M${x-4} 22l5-9 ${w/2-1}-6 ${w/2-1} 6 5 9z" fill="#2b3446"/>
   <g stroke="#3a4560" stroke-width=".6" opacity=".9"><path d="M${x-1} 19.5h${w+2}M${x+1.5} 16.5h${w-3}"/></g>
@@ -321,6 +342,7 @@ H.colonial=(x,w,e)=>{
    climbing the wall. Same tan/terracotta/teal palette as before, just more surface. */
 H.mediterranean=(x,w,e)=>{
   const wins=[[x+8,26,.75],[x+26,26,.55],[x+8,47,.6]].concat(e?[[x+88,26,.5]]:[[x+w-16,26,.6]]);
+  /** @param {number} y @param {number} dx @param {string} fill */
   const tiles=(y,dx,fill)=>`<g fill="${fill}">${Array.from({length:Math.floor((w+8-dx)/6)},(_,i)=>`<path d="M${x-4+dx+i*6} ${y}h6v1a3 3 0 0 1-6 0z"/>`).join('')}</g>`;
   const cx=e?x+w-30:x+w-14;                         // chimney
   const vx=e?x+30:x+21;                             // bougainvillea
@@ -343,6 +365,7 @@ H.mediterranean=(x,w,e)=>{
 };
 
 /* ------------------------------------------------------------------ far backgrounds */
+/** @type {Record<string, string>} */
 export const FAR = {};
 /* Victorian: the terrace row runs the whole street now, with a clock tower and a church
    spire on the skyline behind it, smoke from the chimney pots and a gasholder frame. */

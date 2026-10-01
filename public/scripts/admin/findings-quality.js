@@ -31,6 +31,8 @@ import { attributionCoverage } from './analytics-users.js';
 import { ratio } from './stats.js';
 import { finding, fmtCount, fmtPct, fmtBytes } from './findings.js';
 
+/** @typedef {import('./types.js').RuleInput} RuleInput */
+
 const AREA = 'Measurement';
 
 /** @param {string[]} row @param {number} idx */
@@ -38,7 +40,7 @@ function cell(row, idx) {
   return String((row && row[idx]) || '').trim();
 }
 
-/** True for the sentinels the writers use when they have no identity. */
+/** True for the sentinels the writers use when they have no identity. @param {unknown} v */
 function isRealId(v) {
   const s = String(v || '').trim().toLowerCase();
   return Boolean(s) && s !== 'unknown';
@@ -62,6 +64,7 @@ function isRealId(v) {
 const inertColumns = {
   id: 'quality.inert-columns',
   area: AREA,
+  /** @param {RuleInput} input */
   run(input) {
     const promptRows = input.promptRows || [];
     const contactRows = input.contactRows || [];
@@ -117,6 +120,7 @@ const inertColumns = {
 const attributionGap = {
   id: 'quality.attribution-gap',
   area: AREA,
+  /** @param {RuleInput} input */
   run(input) {
     const promptRows = input.promptRows || [];
     if (promptRows.length < 20) return null;
@@ -127,7 +131,8 @@ const attributionGap = {
     const metrics = input.metrics;
     const dbTotal = metrics && metrics.renders ? Number(metrics.renders.total) : null;
     const dbUsers = metrics && metrics.renders ? Number(metrics.renders.distinctUsers) : null;
-    const haveGroundTruth = Number.isFinite(dbTotal) && Number.isFinite(dbUsers) && dbTotal > 0;
+    const haveGroundTruth = dbTotal !== null && dbUsers !== null
+      && Number.isFinite(dbTotal) && Number.isFinite(dbUsers) && dbTotal > 0;
 
     const evidence = [
       { label: 'Renders in the log', value: fmtCount(coverage.total) },
@@ -173,6 +178,7 @@ const attributionGap = {
 const outcomeCoverage = {
   id: 'quality.outcome-coverage',
   area: AREA,
+  /** @param {RuleInput} input */
   run(input) {
     const rows = input.promptRows || [];
     if (rows.length < 20) return null;
@@ -218,6 +224,7 @@ const outcomeCoverage = {
 const webhookHealth = {
   id: 'quality.webhook-health',
   area: AREA,
+  /** @param {RuleInput} input */
   run(input) {
     const health = input.metrics && input.metrics.health;
     if (!health) return null;
@@ -257,6 +264,7 @@ const webhookHealth = {
 const reaperBacklog = {
   id: 'quality.reaper-backlog',
   area: AREA,
+  /** @param {RuleInput} input */
   run(input) {
     const health = input.metrics && input.metrics.health;
     if (!health) return null;
@@ -278,7 +286,7 @@ const reaperBacklog = {
         health.lastTombstoneError
           ? { label: 'Most recent error', value: String(health.lastTombstoneError).slice(0, 120) }
           : null,
-      ].filter(Boolean),
+      ].filter((e) => e !== null),
       action: 'The error above usually names the cause — credentials, a bucket policy, or a key that no '
         + 'longer exists. A key already gone from the bucket can be dropped from the queue safely.',
       sample: backlog,
@@ -304,6 +312,7 @@ const reaperBacklog = {
 const logCeilings = {
   id: 'quality.log-ceilings',
   area: AREA,
+  /** @param {RuleInput} input */
   run(input) {
     // Array.isArray, not `|| []`. The pack arrives over the wire, and a truthy
     // non-array (a string, an object) satisfies `||` and then throws on .filter —
@@ -355,6 +364,7 @@ const logCeilings = {
 const metricsUnavailable = {
   id: 'quality.metrics-unavailable',
   area: AREA,
+  /** @param {RuleInput} input */
   run(input) {
     if (input.metrics) return null;
     return finding({

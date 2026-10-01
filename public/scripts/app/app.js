@@ -21,40 +21,40 @@ import { readImageFile } from './image-file.js';
 import { initStagingEntry } from './staging-entry.js';
 import { initPlusRail } from './plus-rail.js';
 
-    const $ = (sel) => document.querySelector(sel);
+    const $ = (/** @type {string} */ sel) => document.querySelector(sel);
 
     initBackgroundVideoSync();
   
-    const canvas1 = $('#canvas1');
-    const downloadBtn = $('#download-btn');
-    const newUploadBtn = $('#new-upload');
-    const imageViewerContainer = $('#image-viewer-container');
-    const processingPlaceholder = $('#processing-placeholder');
-    const toggleBeforeBtn = $('#toggle-before');
-    const toggleAfterBtn = $('#toggle-after');
-    const maskEditBtn = $('#mask-edit-btn');
-    const carouselPrev = $('#carousel-prev');
-    const carouselNext = $('#carousel-next');
-    const carouselDots = $('#carousel-dots');
-    const emptyRoomBtn = $('#empty-room-btn');
-    const emptyRoomModal = $('#empty-room-modal');
-    const emptyRoomImage = $('#empty-room-image');
-    const emptyRoomClose = $('#empty-room-close');
-    const emptyRoomDownload = $('#empty-room-download');
+    const canvas1 = /** @type {HTMLCanvasElement} */ ($('#canvas1'));
+    const downloadBtn = /** @type {HTMLButtonElement} */ ($('#download-btn'));
+    const newUploadBtn = /** @type {HTMLButtonElement} */ ($('#new-upload'));
+    const imageViewerContainer = /** @type {HTMLElement} */ ($('#image-viewer-container'));
+    const processingPlaceholder = /** @type {HTMLElement} */ ($('#processing-placeholder'));
+    const toggleBeforeBtn = /** @type {HTMLButtonElement} */ ($('#toggle-before'));
+    const toggleAfterBtn = /** @type {HTMLButtonElement} */ ($('#toggle-after'));
+    const maskEditBtn = /** @type {HTMLButtonElement} */ ($('#mask-edit-btn'));
+    const carouselPrev = /** @type {HTMLButtonElement} */ ($('#carousel-prev'));
+    const carouselNext = /** @type {HTMLButtonElement} */ ($('#carousel-next'));
+    const carouselDots = /** @type {HTMLElement} */ ($('#carousel-dots'));
+    const emptyRoomBtn = /** @type {HTMLButtonElement} */ ($('#empty-room-btn'));
+    const emptyRoomModal = /** @type {HTMLElement} */ ($('#empty-room-modal'));
+    const emptyRoomImage = /** @type {HTMLImageElement} */ ($('#empty-room-image'));
+    const emptyRoomClose = /** @type {HTMLButtonElement} */ ($('#empty-room-close'));
+    const emptyRoomDownload = /** @type {HTMLButtonElement} */ ($('#empty-room-download'));
     // Set when a staging job used "remove existing furniture" and the server
     // returned the intermediate emptied room. Null otherwise.
-    let lastEmptyRoomUrl = null;
+    let lastEmptyRoomUrl = /** @type {string | null} */ (null);
 
     // "Keep furniture" box only appears while remove-existing-furniture is checked.
-    const removeFurnitureCheckbox = $('#remove-furniture');
-    const keepFurnitureRow = $('#keep-furniture-row');
+    const removeFurnitureCheckbox = /** @type {HTMLInputElement} */ ($('#remove-furniture'));
+    const keepFurnitureRow = /** @type {HTMLElement} */ ($('#keep-furniture-row'));
     function syncRemoveFurnitureUI() {
       const on = !!(removeFurnitureCheckbox && removeFurnitureCheckbox.checked);
       if (keepFurnitureRow) keepFurnitureRow.classList.toggle('hidden', !on);
       // Two-stage removal can't produce variations from a single empty room, so
       // when it's on we hide the Image Generations slider and pin it to 1.
-      const variationRow = $('#variation-row');
-      const variationSlider = $('#stagify-variation-count');
+      const variationRow = /** @type {HTMLElement} */ ($('#variation-row'));
+      const variationSlider = /** @type {HTMLInputElement} */ ($('#stagify-variation-count'));
       if (variationRow) variationRow.classList.toggle('hidden', on);
       if (on && variationSlider && variationSlider.value !== '1') {
         variationSlider.value = '1';
@@ -84,28 +84,29 @@ import { initPlusRail } from './plus-rail.js';
     // `#nav-upload` / `#pricing-upload`. Guard: home-outro.test.js.
 
     // Stage screen elements (only on home page)
-    const modal = $('#stage-modal');
-    const modalBackdrop = $('#modal-backdrop');
-    const modalClose = $('#modal-close');
-    const stageDropzone = $('#stage-dropzone');
-    const stageFileInput = $('#stage-file-input');
-    const stagePreview = $('#stage-preview');
-    const processBtn = $('#process-btn');
-    const additionalPrompt = $('#additional-prompt');
+    const modal = /** @type {HTMLElement} */ ($('#stage-modal'));
+    const modalBackdrop = /** @type {HTMLElement} */ ($('#modal-backdrop'));
+    const modalClose = /** @type {HTMLButtonElement} */ ($('#modal-close'));
+    const stageDropzone = /** @type {HTMLElement} */ ($('#stage-dropzone'));
+    const stageFileInput = /** @type {HTMLInputElement} */ ($('#stage-file-input'));
+    const stagePreview = /** @type {HTMLImageElement} */ ($('#stage-preview'));
+    const processBtn = /** @type {HTMLButtonElement} */ ($('#process-btn'));
+    const additionalPrompt = /** @type {HTMLTextAreaElement} */ ($('#additional-prompt'));
     // Custom selects
     // Picking a room type can withdraw the remove-existing-furniture option (a dorm's
     // issued furniture is fixed), so re-run the shared gate on every change.
     const roomSelect = initCustomSelect('#room-type-select', { onChange: syncRemoveFurnitureRow });
     const styleSelect = initCustomSelect('#furniture-style-select');
-    const progress = $('#progress');
-    const progressBar = $('#progress-bar');
-    const progressText = $('#progress-text');
-    const loadingMessage = $('#loading-message');
-    const stagingLimitViewer = $('#staging-limit-viewer');
-    const stagingLimitViewerText = $('#staging-limit-viewer-text');
-    const stagingErrorViewer = $('#staging-error-viewer');
-    const stagingErrorViewerText = $('#staging-error-viewer-text');
+    const progress = /** @type {HTMLElement} */ ($('#progress'));
+    const progressBar = /** @type {HTMLElement} */ ($('#progress-bar'));
+    const progressText = /** @type {HTMLElement} */ ($('#progress-text'));
+    const loadingMessage = /** @type {HTMLElement} */ ($('#loading-message'));
+    const stagingLimitViewer = /** @type {HTMLElement} */ ($('#staging-limit-viewer'));
+    const stagingLimitViewerText = /** @type {HTMLElement} */ ($('#staging-limit-viewer-text'));
+    const stagingErrorViewer = /** @type {HTMLElement} */ ($('#staging-error-viewer'));
+    const stagingErrorViewerText = /** @type {HTMLElement} */ ($('#staging-error-viewer-text'));
 
+    /** @param {string} message @param {{ code?: string | null } | null} [verdict] */
     function showStagingError(message, verdict) {
       if (stagingErrorViewerText) stagingErrorViewerText.textContent = message || '';
       syncStagingErrorCta(verdict);
@@ -116,7 +117,7 @@ import { initPlusRail } from './plus-rail.js';
       if (stagingErrorViewer) stagingErrorViewer.classList.add('hidden');
     }
 
-    function getStagingAlt(key, replacements = {}) {
+    function getStagingAlt(/** @type {string} */ key, /** @type {Record<string, string | number>} */ replacements = {}) {
       const text = window.LanguageSystem?.getText('modal.staging.' + key) || '';
       return fillTemplate(text, replacements);
     }
@@ -138,7 +139,7 @@ import { initPlusRail } from './plus-rail.js';
       hideStagingError();
     }
 
-    function showStagingLimitInViewer(message) {
+    function showStagingLimitInViewer(/** @type {string} */ message) {
       if (stagingLimitViewerText) stagingLimitViewerText.textContent = message || '';
       if (stagingLimitViewer) stagingLimitViewer.classList.remove('hidden');
       if (window.LanguageSystem && typeof window.LanguageSystem.applyLanguageToElements === 'function') {
@@ -146,7 +147,7 @@ import { initPlusRail } from './plus-rail.js';
       }
     }
 
-    function messageForDailyLimitResponse(errorData) {
+    function messageForDailyLimitResponse(/** @type {Parameters<typeof dailyLimitMessage>[0]} */ errorData) {
       const hasAccount = !!(window.StagifyAuth && window.StagifyAuth.getToken());
       const key = hasAccount ? 'errors.dailyLimitFree' : 'errors.dailyLimitAnonymous';
       const template = window.LanguageSystem?.getText(key);
@@ -205,12 +206,12 @@ import { initPlusRail } from './plus-rail.js';
       stageDropzone.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); stageFileInput.click(); }
       });
-      stageDropzone.addEventListener('drop', (e) => {
-        const file = e.dataTransfer.files?.[0];
+      stageDropzone.addEventListener('drop', (/** @type {DragEvent} */ e) => {
+        const file = /** @type {DataTransfer} */ (e.dataTransfer).files?.[0];
         if (file) handleStageFile(file);
       });
       stageFileInput.addEventListener('change', (e) => {
-        const file = e.target.files?.[0];
+        const file = /** @type {HTMLInputElement} */ (e.target).files?.[0];
         if (file) handleStageFile(file);
       });
 
@@ -227,7 +228,7 @@ import { initPlusRail } from './plus-rail.js';
       }
     }
   
-    let currentImageFile = null;
+    let currentImageFile = /** @type {File | null} */ (null);
     let hasProcessedImage = false;
 
     // Stageability pre-check: the moment a room photo is chosen we ask the server
@@ -235,13 +236,13 @@ import { initPlusRail } from './plus-rail.js';
     // The in-flight promise is stored so stageImage() can hard-block on a
     // rejection, and a rejection is also surfaced immediately over the preview.
     // Fails OPEN so our own hiccup never blocks a legitimate upload.
-    let stageValidation = null;
+    let stageValidation = /** @type {Promise<import('./stage-validation.js').StageVerdict> | null} */ (null);
     // Synchronously-readable result once the pre-check resolves (null while it is
     // still in flight). Lets processWithAI() gate WITHOUT awaiting in the common
     // case — the check starts at upload, so it is almost always done by click.
-    let stageValidationResult = null;
+    let stageValidationResult = /** @type {import('./stage-validation.js').StageVerdict | null} */ (null);
 
-    async function handleStageFile(file) {
+    async function handleStageFile(/** @type {File} */ file) {
       // HEIC conversion, the type allowlist and the 25MB ceiling live in
       // app/image-file.js — the Basic Mask uploader applies the same three.
       const read = await readImageFile(file, { showError: showErrorToast });
@@ -459,7 +460,7 @@ import { initPlusRail } from './plus-rail.js';
         // Display the processed image
         const img = new Image();
         img.onload = () => {
-          const ctx1 = canvas1.getContext('2d');
+          const ctx1 = /** @type {CanvasRenderingContext2D} */ (canvas1.getContext('2d'));
           const w = img.width, h = img.height;
           ctx1.canvas.width = w;
           ctx1.canvas.height = h;
@@ -505,7 +506,7 @@ import { initPlusRail } from './plus-rail.js';
     // src follows the before carousel.
     createDownloadMenu({
       downloadBtn, canvas: canvas1,
-      split: $('#download-split'), toggle: $('#download-size-toggle'), menu: $('#download-size-menu'),
+      split: /** @type {HTMLElement} */ ($('#download-split')), toggle: /** @type {HTMLButtonElement} */ ($('#download-size-toggle')), menu: /** @type {HTMLElement} */ ($('#download-size-menu')),
       getOriginalSrc: () => getBeforeVersions()[0] || stagePreview?.src || '',
       // Whatever after-version is CURRENTLY painted on canvas1 — server-side resize needs
       // the source bytes, not just the pixels canvas.toDataURL() can already read back.
@@ -595,7 +596,7 @@ import { initPlusRail } from './plus-rail.js';
       processingPlaceholder.style.display = 'flex';
       // Reset canvas
       if (canvas1) {
-        const ctx = canvas1.getContext('2d');
+        const ctx = /** @type {CanvasRenderingContext2D} */ (canvas1.getContext('2d'));
         ctx.clearRect(0, 0, canvas1.width, canvas1.height);
         canvas1.width = 0;
         canvas1.height = 0;

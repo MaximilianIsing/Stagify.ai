@@ -37,6 +37,7 @@ const CONFIGS = {
   '3.5-flash-low': { model: 'gemini-3.5-flash', thinking: { thinkingLevel: 'low' } },
 };
 
+/** @param {string[]} argv */
 function parseArgs(argv) {
   /** @type {{ runs: string[], labels: string[], configs: string[], concurrency: number }} */
   const o = { runs: [], labels: [], configs: Object.keys(CONFIGS), concurrency: 5 };
@@ -51,29 +52,39 @@ function parseArgs(argv) {
   return o;
 }
 
-/** Labelled items from an eval-staging run folder. */
+/**
+ * Labelled items from an eval-staging run folder.
+ * @param {string} dir
+ */
 function itemsFromRun(dir) {
+  /** @type {{ photos: string, rows: Array<{ file: string, out?: string, roomType: string }> }} */
   const results = JSON.parse(fs.readFileSync(path.join(dir, 'results.json'), 'utf8'));
+  /** @type {Record<string, { architecture_preserved: boolean, architecture_notes?: string }>} */
   const judge = JSON.parse(fs.readFileSync(path.join(dir, 'judge.json'), 'utf8'));
   return results.rows.filter((r) => r.out && judge[r.file]).map((r) => ({
     source: path.join(results.photos, r.file),
-    output: path.join(dir, r.out),
+    output: path.join(dir, String(r.out)),
     roomType: r.roomType,
     drifted: !judge[r.file].architecture_preserved,
     note: judge[r.file].architecture_notes,
   }));
 }
 
+/** @param {string} file */
 async function toDataUrl(file) {
   const buf = await sharp(file).rotate().jpeg({ quality: 90 }).toBuffer();
   return `data:image/jpeg;base64,${buf.toString('base64')}`;
 }
 
+/**
+ * @template T
+ * @param {T[]} items @param {number} n @param {(x: T, i: number) => Promise<void>} worker
+ */
 async function pool(items, n, worker) {
   const queue = items.map((x, i) => [x, i]);
   await Promise.all(Array.from({ length: Math.min(n, queue.length) }, async () => {
     while (queue.length) {
-      const [x, i] = /** @type {[any, number]} */ (queue.shift());
+      const [x, i] = /** @type {[T, number]} */ (queue.shift());
       await worker(x, i);
     }
   }));
@@ -104,7 +115,7 @@ async function main() {
     // source is attached. The thinking budget it adds on top of maxOutputTokens is kept for
     // 2.5-style budgets; a 3.x thinking LEVEL has no fixed size, so the ceiling is raised.
     const genAI = {
-      getGenerativeModel: (o) => (o.model !== STAGING_GRADER_MODEL ? realAI.getGenerativeModel(o) : realAI.getGenerativeModel({
+      getGenerativeModel: (/** @type {Parameters<typeof realAI.getGenerativeModel>[0]} */ o) => (o.model !== STAGING_GRADER_MODEL ? realAI.getGenerativeModel(o) : realAI.getGenerativeModel({
         ...o,
         model: cfg.model,
         generationConfig: {

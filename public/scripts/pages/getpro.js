@@ -1,10 +1,10 @@
       (function () {
         'use strict';
         var TOKEN_KEY = 'stagifyAuthToken';
-        var statusEl = document.getElementById('gp-status');
-        var form = document.getElementById('gp-form');
+        var statusEl = /** @type {HTMLElement} */ (document.getElementById('gp-status'));
+        var form = /** @type {HTMLElement} */ (document.getElementById('gp-form'));
         var keyInput = /** @type {HTMLInputElement} */ (document.getElementById('gp-key'));
-        var links = document.getElementById('gp-links');
+        var links = /** @type {HTMLElement} */ (document.getElementById('gp-links'));
 
         function getToken() {
           try { return localStorage.getItem(TOKEN_KEY); } catch (e) { return null; }
@@ -23,11 +23,13 @@
           try { history.replaceState(null, '', location.pathname); } catch (e) {}
         }
 
+        /** @param {string} msg @param {string} [cls] */
         function setStatus(msg, cls) {
           statusEl.textContent = msg;
           statusEl.className = cls || '';
         }
 
+        /** @param {string} key */
         function grant(key) {
           var token = getToken();
           if (!token) {

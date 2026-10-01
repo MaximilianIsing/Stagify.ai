@@ -61,6 +61,7 @@ export function createMaskFit({
 }) {
   let naturalW = 0;
   let naturalH = 0;
+  /** @type {(() => void) | null} */
   let resizeHandler = null;
   let rafId = 0;
 
@@ -78,6 +79,12 @@ export function createMaskFit({
   // because a dialog that hugs its content gets narrower with a narrower image,
   // which re-wraps the hint/label rows and changes the chrome height. (A
   // fixed-width dialog is unaffected — the loop below just settles immediately.)
+  /**
+   * @param {HTMLElement} content
+   * @param {HTMLElement} container
+   * @param {number} width
+   * @returns {number}
+   */
   function chromeHeightAt(content, container, width) {
     const prevWidth = container.style.width;
     const prevHeight = container.style.height;
@@ -89,6 +96,10 @@ export function createMaskFit({
     return height;
   }
 
+  /**
+   * @param {number} width
+   * @param {number} height
+   */
   function setImage(width, height) {
     naturalW = width || 0;
     naturalH = height || 0;

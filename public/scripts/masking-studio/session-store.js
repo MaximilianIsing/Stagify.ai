@@ -19,6 +19,7 @@ import {
 /**
  * @typedef {import('./types.js').MsState} MsState
  * @typedef {import('./types.js').MsPaletteEntry} MsPaletteEntry
+ * @typedef {import('./types.js').MsBase} MsBase
  */
 /**
  * @param {{
@@ -34,7 +35,7 @@ import {
  *   addLayer: () => void,
  *   renderLayers: () => void,
  *   updateControls: () => void,
- *   showToast: (message: string, type?: string) => void,
+ *   showToast: (message: string, type?: 'error' | 'success') => void,
  *   tx: (key: string, def: string) => string,
  * }} deps
  */
@@ -56,11 +57,14 @@ export function createSessionStore(deps) {
     tx,
   } = deps;
 
+        /** @type {Promise<IDBDatabase | null> | null} */
         let idbPromise = null;
+        /** @type {ReturnType<typeof setTimeout> | null} */
         let saveTimer = null;
         let restoring = false; // block saves while a restore is rebuilding state
         let saveSeq = 0;       // bumped on clear so in-flight saves abort
 
+        /** @returns {Promise<IDBDatabase | null>} */
         function idb() {
           if (!idbPromise) {
             idbPromise = new Promise((resolve) => {
@@ -75,6 +79,12 @@ export function createSessionStore(deps) {
           return idbPromise;
         }
 
+        /**
+         * Run one request in a transaction; resolves to its result (null on any failure).
+         * @param {IDBTransactionMode} mode
+         * @param {(store: IDBObjectStore) => IDBRequest} fn
+         * @returns {Promise<unknown>}
+         */
         function idbOp(mode, fn) {
           return idb().then((db) => new Promise((resolve) => {
             if (!db) { resolve(null); return; }
@@ -87,10 +97,17 @@ export function createSessionStore(deps) {
           }));
         }
 
-        const sessionSave = (value) => idbOp('readwrite', (s) => s.put(value, 'current'));
-        const sessionLoad = () => idbOp('readonly', (s) => s.get('current'));
+        const sessionSave = (/** @type {import('./types.js').MsStoredSession} */ value) => idbOp('readwrite', (s) => s.put(value, 'current'));
+        /** @type {() => Promise<import('./types.js').MsStoredSession | null>} */
+        const sessionLoad = () => /** @type {Promise<import('./types.js').MsStoredSession | null>} */ (idbOp('readonly', (s) => s.get('current')));
         const sessionClear = () => idbOp('readwrite', (s) => s.delete('current'));
 
+        /**
+         * @param {HTMLCanvasElement} canvas
+         * @param {string} type
+         * @param {number} [q]
+         * @returns {Promise<Blob | null>}
+         */
         function toBlob(canvas, type, q) {
           return new Promise((resolve) => {
             try { canvas.toBlob(resolve, type, q); } catch (e) { resolve(null); }
@@ -115,6 +132,7 @@ export function createSessionStore(deps) {
           try {
             const baseBlob = await toBlob(state.base.canvas, 'image/jpeg', 0.9);
             if (!baseBlob) return;
+            /** @type {import('./types.js').MsStoredLayer[]} */
             const layerData = [];
             for (const l of state.layers) {
               const maskBlob = l.painted ? await toBlob(l.canvasEl, 'image/png') : null;
@@ -135,6 +153,10 @@ export function createSessionStore(deps) {
           sessionClear();
         }
 
+        /**
+         * @param {Blob} blob
+         * @returns {Promise<HTMLImageElement>}
+         */
         function blobToImage(blob) {
           return new Promise((resolve, reject) => {
             const url = URL.createObjectURL(blob);
@@ -145,6 +167,7 @@ export function createSessionStore(deps) {
           });
         }
 
+        /** @param {import('./types.js').MsStoredSession} saved */
         async function restoreSession(saved) {
           // A half-finished restore must never overwrite the stored session
           // (the debounced save could fire while masks are still decoding).
@@ -157,8 +180,9 @@ export function createSessionStore(deps) {
           scheduleSessionSave();
         }
 
+        /** @param {import('./types.js').MsStoredSession} saved */
         async function restoreSessionInner(saved) {
-          const img = await blobToImage(saved.baseBlob);
+          const img = await blobToImage(/** @type {Blob} */ (saved.baseBlob)); // isRestorableSession checked it
           // The origin has to be restored WITH the photo. setBaseImage clears the field by
           // default, so without this a resumed session would forget the filename its
           // gallery entry should be named after.
@@ -170,15 +194,17 @@ export function createSessionStore(deps) {
           for (const ld of saved.layers || []) {
             if (state.layers.length >= MAX_LAYERS) break;
             const c = document.createElement('canvas');
-            c.width = state.base.w;
-            c.height = state.base.h;
+            const base = /** @type {MsBase} */ (state.base); // setBaseImage above just set it
+            c.width = base.w;
+            c.height = base.h;
             c.className = 'ms-layer-canvas';
             stack.insertBefore(c, resultCanvas);
             let painted = false;
             if (ld.mask) {
               try {
                 const maskImg = await blobToImage(ld.mask);
-                c.getContext('2d').drawImage(maskImg, 0, 0, state.base.w, state.base.h);
+                const { w, h } = /** @type {MsBase} */ (state.base);
+                /** @type {CanvasRenderingContext2D} */ (c.getContext('2d')).drawImage(maskImg, 0, 0, w, h);
                 painted = true;
               } catch (e) {}
             }
@@ -197,6 +223,7 @@ export function createSessionStore(deps) {
 
         // Returns true if the resume dialog was shown (suppresses first-visit help).
         async function maybeOfferResume() {
+          /** @type {import('./types.js').MsStoredSession | null} */
           let saved = null;
           try { saved = await sessionLoad(); } catch (e) {}
           if (!isRestorableSession(saved) || state.base) return false;
@@ -205,7 +232,7 @@ export function createSessionStore(deps) {
           resumeYesBtn.addEventListener('click', async () => {
             resumeEl.classList.remove('active');
             try {
-              await restoreSession(saved);
+              await restoreSession(/** @type {import('./types.js').MsStoredSession} */ (saved)); // isRestorableSession checked it
             } catch (e) {
               showToast(tx('errors.processingFailed', 'Something went wrong. Please try again.'), 'error');
               sessionClear();

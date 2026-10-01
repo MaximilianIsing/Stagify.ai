@@ -65,6 +65,7 @@ export function t(key, fallback, vars = {}) {
  */
 export function plural(base, count, fallbacks, vars = {}) {
   const sys = system();
+  /** @param {string} form */
   const get = (form) => {
     const value = sys ? sys.getText(`${base}.${form}`, undefined) : undefined;
     return typeof value === 'string' ? value : undefined;
@@ -99,7 +100,8 @@ export function plural(base, count, fallbacks, vars = {}) {
 export function locale() {
   try {
     const chosen = window.localStorage.getItem('selectedLanguage');
-    return chosen && LANG_BCP47[chosen] ? LANG_BCP47[chosen] : undefined;
+    const tags = /** @type {Record<string, string>} */ (LANG_BCP47);
+    return chosen && tags[chosen] ? tags[chosen] : undefined;
   } catch {
     return undefined;
   }

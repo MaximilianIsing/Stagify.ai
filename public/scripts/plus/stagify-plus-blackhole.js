@@ -19,8 +19,8 @@
       // background video needs u_view + u_origin; a stale u_origin merely shifts the
       // sampled background a few px inside a region that is a distortion of it anyway.
       (function () {
-        var stage = document.getElementById('bh-stage');
-        var btn = document.getElementById('stagify-plus-checkout-link');
+        var stage = /** @type {HTMLElement} */ (document.getElementById('bh-stage'));
+        var btn = /** @type {HTMLElement} */ (document.getElementById('stagify-plus-checkout-link'));
         var canvas = /** @type {HTMLCanvasElement} */ (document.getElementById('bh-canvas'));
         var video = /** @type {HTMLVideoElement} */ (document.getElementById('background-video'));
         // The scrollport the canvas lives in, and the content box used to clamp the
@@ -36,12 +36,28 @@
         var MAX = 420;            // px from button center where the warp begins
         var BASE_RS = 70;         // event-horizon radius in CSS px
         var BAND_H = 1300;        // canvas height in CSS px — keep in sync with stagify-plus.css
-        var target = 0, cur = 0, running = false, lastPointer = null, lastTop = -1;
+        /** @type {{ x: number, y: number } | null} */
+        var lastPointer = null;
+        var target = 0, cur = 0, running = false, lastTop = -1;
         var dpr = Math.min(window.devicePixelRatio || 1, 2);
         var t0 = performance.now();
 
-        var gl = null, prog = null, tex = null;
-        var uRes, uVid, uView, uOrigin, uCenter, uRs, uAmt, uTime, uTex;
+        /** @type {WebGLRenderingContext | null} */
+        var gl = null;
+        /** @type {WebGLProgram | null} */
+        var prog = null;
+        /** @type {WebGLTexture | null} */
+        var tex = null;
+        /** @typedef {WebGLUniformLocation | null} ULoc Assigned by initGL() before any render(). */
+        /** @type {ULoc} */ var uRes;
+        /** @type {ULoc} */ var uVid;
+        /** @type {ULoc} */ var uView;
+        /** @type {ULoc} */ var uOrigin;
+        /** @type {ULoc} */ var uCenter;
+        /** @type {ULoc} */ var uRs;
+        /** @type {ULoc} */ var uAmt;
+        /** @type {ULoc} */ var uTime;
+        /** @type {ULoc} */ var uTex;
 
         var VERT = 'attribute vec2 a_pos; void main(){ gl_Position = vec4(a_pos, 0.0, 1.0); }';
         var FRAG = [
@@ -108,12 +124,15 @@
           '}'
         ].join('\n');
 
+        // Only called from initGL(), after `gl` is set.
+        /** @param {number} type @param {string} src @returns {WebGLShader | null} */
         function compile(type, src) {
-          var s = gl.createShader(type);
-          gl.shaderSource(s, src);
-          gl.compileShader(s);
-          if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
-            console.warn('[bh] shader compile failed:', gl.getShaderInfoLog(s));
+          var g = /** @type {WebGLRenderingContext} */ (gl);
+          var s = /** @type {WebGLShader} */ (g.createShader(type));
+          g.shaderSource(s, src);
+          g.compileShader(s);
+          if (!g.getShaderParameter(s, g.COMPILE_STATUS)) {
+            console.warn('[bh] shader compile failed:', g.getShaderInfoLog(s));
             return null;
           }
           return s;
@@ -193,6 +212,7 @@
         function vidReady() {
           return video && video.readyState >= 2 && video.videoWidth > 0;
         }
+        /** @param {number} amt */
         function render(amt) {
           if (!gl) return;
           placeBand();

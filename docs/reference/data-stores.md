@@ -39,7 +39,9 @@ store factory. It began as the auth store, so the file is still named `auth-stor
     `mobile_ip_usage` *(dormant — see below)*, `password_reset_tokens`, `pending_registrations`.
     The two token tables are owned by
     [`lib/data/session-tokens.js`](../../lib/data/session-tokens.js), which hashes every
-    token on the way in and out — the auth store never writes them directly.
+    token on the way in and out — the auth store never writes them directly. The
+    `users` row ↔ user-object mapping (`userToParams` / `rowToUser`, plus the overflow
+    `extra_json` keys) lives in [`lib/data/user-record.js`](../../lib/data/user-record.js).
   - `enterprise_domains` ([`lib/data/enterprise-store.js`](../../lib/data/enterprise-store.js)) —
     one row per domain: activation + metered-usage state, kept in sync with Stripe.
     A row here is a **blanket `pro` grant to every address under that domain**, so

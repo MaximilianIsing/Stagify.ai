@@ -13,8 +13,12 @@
 
 import { getFileStem, truncateThumbnailStem } from './format.js';
 
+/** @typedef {import('./types.js').AdImage} AdImage */
+/** @typedef {import('./types.js').AdHistoryEntry} AdHistoryEntry */
+
 // Root/base label for an image object, falling back through rootBaseName ->
 // filename stem -> "Upload".
+/** @param {{ rootBaseName?: string | null, filename?: string | null } | null | undefined} img @returns {string} */
 export function getRootBaseNameForImage(img) {
   if (!img) return 'Upload';
   if (img.rootBaseName) return img.rootBaseName;
@@ -24,7 +28,9 @@ export function getRootBaseNameForImage(img) {
 
 // Walk the conversation oldest-first, collecting every user upload and every
 // staged/generated/masked assistant image into a flat chronological list.
+/** @param {AdHistoryEntry[]} conversationHistory @returns {AdImage[]} */
 export function extractRawImagesChronological(conversationHistory) {
+  /** @type {AdImage[]} */
   const images = [];
   for (let i = 0; i < conversationHistory.length; i++) {
     const msg = conversationHistory[i];
@@ -71,8 +77,11 @@ export function extractRawImagesChronological(conversationHistory) {
 
 // Assign display labels + staged/mask counts in place (mutates each entry),
 // carrying the most recent upload's root name forward to derived images.
+/** @param {AdImage[]} chronologicalImages @returns {AdImage[]} */
 export function applyThumbnailLabels(chronologicalImages) {
+  /** @type {Record<string, number>} */
   const stagedCounts = {};
+  /** @type {Record<string, number>} */
   const maskCounts = {};
   let lastUploadRoot = 'Upload';
 
@@ -124,6 +133,7 @@ export function applyThumbnailLabels(chronologicalImages) {
 }
 
 // Newest-first labeled image list for the thumbnail strip.
+/** @param {AdHistoryEntry[]} conversationHistory @returns {AdImage[]} */
 export function collectImagesFromConversationHistory(conversationHistory) {
   const chronological = extractRawImagesChronological(conversationHistory);
   applyThumbnailLabels(chronological);
@@ -131,14 +141,17 @@ export function collectImagesFromConversationHistory(conversationHistory) {
 }
 
 // Display label for a single image, deriving one when none was assigned.
+/** @param {AdImage} img @returns {string} */
 export function getThumbnailLabel(img) {
   return img.displayLabel || truncateThumbnailStem(getRootBaseNameForImage(img));
 }
 
 // When multiple uploads are present, pick which one is the "room" to stage into
 // (vs a furniture reference) by keyword-classifying filename + label.
+/** @param {AdImage[] | null | undefined} images @returns {number} */
 export function pickPreferredRoomImageIndex(images) {
   if (!images || images.length < 2) return 0;
+  /** @param {AdImage} img */
   function roleFor(img) {
     const hay = `${img.filename || ''} ${img.displayLabel || ''}`.toLowerCase();
     const furniture = /\b(chair|sofa|couch|table|desk|lamp|bed|ottoman|dresser|armchair|furniture|stool|bench|nightstand)\b/;
@@ -161,6 +174,10 @@ export function pickPreferredRoomImageIndex(images) {
 
 // Index (into the newest-first list) of the image the next request should use
 // as its base, honoring the user's thumbnail selection.
+/**
+ * @param {AdHistoryEntry[]} conversationHistory @param {number | null} selectedImageIndex
+ * @returns {number | undefined}
+ */
 export function getBaseImageIndexForRequest(conversationHistory, selectedImageIndex) {
   const images = collectImagesFromConversationHistory(conversationHistory);
   if (images.length === 0 || selectedImageIndex === null) return undefined;
@@ -170,6 +187,10 @@ export function getBaseImageIndexForRequest(conversationHistory, selectedImageIn
 
 // Root/base label used to name a staging request's outputs: the selected base
 // image, else the first uploaded image in this request, else the newest image.
+/**
+ * @param {File[] | null | undefined} filesToSend @param {AdHistoryEntry[]} conversationHistory
+ * @param {number | null} selectedImageIndex @returns {string}
+ */
 export function resolveStagingRootBaseName(filesToSend, conversationHistory, selectedImageIndex) {
   const images = collectImagesFromConversationHistory(conversationHistory);
   const baseIdx = getBaseImageIndexForRequest(conversationHistory, selectedImageIndex);

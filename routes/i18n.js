@@ -22,6 +22,7 @@ import { pruneHubForLocale, withCardReadTimes } from '../lib/i18n/blog-hub.js';
 import { markCurrentLang } from '../lib/i18n/blog-langs.js';
 import { injectLiveStats } from '../lib/seo/live-stats.js';
 import { logger } from '../lib/logger.js';
+import { errorMessage } from '../lib/errors.js';
 
 /**
  * English paths that were once in LOCALIZED_PAGES and have since been de-localized.
@@ -111,7 +112,7 @@ export default function createI18nRouter({ __dirname, DEBUG_MODE, blogViews = nu
         userAgent: req.get('user-agent'),
       });
     } catch (err) {
-      logger.error('[i18n] could not count a view of', `${locale.prefix}/${slug}`, '-', err && err.message ? err.message : err);
+      logger.error('[i18n] could not count a view of', `${locale.prefix}/${slug}`, '-', errorMessage(err));
     }
   }
 
@@ -178,7 +179,7 @@ export default function createI18nRouter({ __dirname, DEBUG_MODE, blogViews = nu
         locales: articleLocales(article.slug),
         // The language nav is baked into the English file with English marked current; a
         // localized render is the same nav with the marker moved. See lib/i18n/blog-langs.js.
-        postProcess: (html) => markCurrentLang(html, locale.hreflang),
+        postProcess: (/** @type {string} */ html) => markCurrentLang(html, locale.hreflang),
       };
       router.get(`/${locale.prefix}${article.path}`, (req, res) => {
         countRead(req, article.slug, locale);
@@ -197,7 +198,7 @@ export default function createI18nRouter({ __dirname, DEBUG_MODE, blogViews = nu
       // The grid is one file shared by every locale, so the cards for articles this
       // language has no pack for have to come out — following one would 404, because the
       // route behind it is never registered. See lib/i18n/blog-hub.js.
-      postProcess: (html) => markCurrentLang(pruneHubForLocale(html, available, locale.prefix), locale.hreflang),
+      postProcess: (/** @type {string} */ html) => markCurrentLang(pruneHubForLocale(html, available, locale.prefix), locale.hreflang),
     };
     // Registered without the trailing slash: Express's non-strict routing answers both
     // /es/blog and /es/blog/, and the page's self-referential canonical names the

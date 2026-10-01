@@ -31,6 +31,7 @@ export const MAX_ATTEMPTS = 3;
  * @returns {{ attach: (images: HTMLImageElement[]) => void, attempts: () => number }}
  */
 export function createRefresher({ images, reload, onGiveUp, debounceMs = REFRESH_DEBOUNCE_MS, setTimeoutImpl = setTimeout }) {
+  /** @type {ReturnType<typeof setTimeout> | null} */
   let timer = null;
   let attempts = 0;
   let running = false;
@@ -59,6 +60,7 @@ export function createRefresher({ images, reload, onGiveUp, debounceMs = REFRESH
     timer = setTimeoutImpl(run, debounceMs);
   }
 
+  /** @param {HTMLImageElement[] | null | undefined} list */
   function attach(list) {
     for (const img of list ?? []) {
       // `once` is deliberately NOT used: an image can expire again after a successful

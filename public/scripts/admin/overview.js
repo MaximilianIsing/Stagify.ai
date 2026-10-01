@@ -33,18 +33,20 @@ const RANGES = [
   { key: 'all', label: 'All time', short: 'all time', days: null },
 ];
 const DEFAULT_RANGE = '30';
+/** @typedef {typeof RANGES[number]} Range */
+/** @typedef {{label: string, value: string, tone?: string, icon: string, hint?: string, delta?: HTMLElement | null, spark?: SVGElement | null}} StatSpec */
 
 /**
  * @param {object} deps
- * @param {{data: any, overviewRange?: string}} deps.ctx Shared dashboard state (swapped wholesale on sign-out).
- * @param {(u: any) => string} deps.effectivePlan Plan resolver that folds in enterprise domains.
+ * @param {import('./types.js').AdminCtx & {overviewRange?: string}} deps.ctx Shared dashboard state (swapped wholesale on sign-out).
+ * @param {import('./types.js').EffectivePlan} deps.effectivePlan Plan resolver that folds in enterprise domains.
  */
 export function createOverview({ ctx, effectivePlan }) {
   function currentRange() {
     return RANGES.find((r) => r.key === (ctx.overviewRange || DEFAULT_RANGE)) || RANGES[1];
   }
 
-  /** Rows whose timestamp falls inside the range; the whole table for "all time". */
+  /** Rows whose timestamp falls inside the range; the whole table for "all time". @param {string[][]} rows @param {Range} range */
   function rowsInRange(rows, range) {
     if (!range.days) return rows;
     const since = startOfDaysAgo(range.days - 1).getTime();
@@ -54,7 +56,7 @@ export function createOverview({ ctx, effectivePlan }) {
     });
   }
 
-  /** Count for the range, plus the change vs. the preceding window of equal length. */
+  /** Count for the range, plus the change vs. the preceding window of equal length. @param {Array<string | null | undefined>} stamps @param {Range} range */
   function rangeDelta(stamps, range) {
     if (!range.days) return { current: stamps.length, deltaPct: null };
     return windowDelta(stamps, range.days);
@@ -92,6 +94,7 @@ export function createOverview({ ctx, effectivePlan }) {
 
   // A signed percentage chip. Null (no prior window to compare against) renders
   // nothing at all rather than a misleading "+100%".
+  /** @param {number | null | undefined} deltaPct @param {string} windowLabel */
   function deltaChip(deltaPct, windowLabel) {
     if (deltaPct === null || deltaPct === undefined) return null;
     const up = deltaPct >= 0;
@@ -102,6 +105,7 @@ export function createOverview({ ctx, effectivePlan }) {
     });
   }
 
+  /** @param {StatSpec} spec */
   function statCard(spec) {
     const tone = spec.tone || 'blue';
     const card = el('div', { className: 'adm-stat adm-stat--' + tone });
@@ -116,6 +120,7 @@ export function createOverview({ ctx, effectivePlan }) {
     return card;
   }
 
+  /** @param {string[][]} promptRows @param {string[][]} chatRows @param {string[][]} maskRows */
   function renderStats(promptRows, chatRows, maskRows) {
     const range = currentRange();
     // A stat-card label is one uppercase line ~26 characters wide and the range
@@ -193,6 +198,7 @@ export function createOverview({ ctx, effectivePlan }) {
 
   // ── Charts ────────────────────────────────────────────────────────────────
 
+  /** @param {string[]} promptStamps */
   function renderCharts(promptStamps) {
     const host = qs('#adm-charts');
     if (!host) return;
@@ -238,16 +244,18 @@ export function createOverview({ ctx, effectivePlan }) {
 
   // ── Tables ────────────────────────────────────────────────────────────────
 
+  /** @param {string[][]} promptRows */
   function renderTopUsers(promptRows) {
     const range = currentRange();
     const scoped = rowsInRange(promptRows, range);
     /** @type {Record<string, {scoped: number, total: number}>} */
     const byEmail = {};
+    /** @param {string} email @param {'scoped' | 'total'} field */
     const bump = (email, field) => {
       if (!byEmail[email]) byEmail[email] = { scoped: 0, total: 0 };
       byEmail[email][field]++;
     };
-    const emailOf = (r) => {
+    const emailOf = (/** @type {string[]} */ r) => {
       const email = String(r[7] || '').trim().toLowerCase();
       return !email || email === 'unknown' ? null : email;
     };
@@ -294,8 +302,8 @@ export function createOverview({ ctx, effectivePlan }) {
     const range = currentRange();
     const since = range.days ? startOfDaysAgo(range.days - 1).getTime() : -Infinity;
     const recent = (ctx.data.users || [])
-      .filter((u) => { const t = new Date(u.createdAt).getTime(); return !isNaN(t) && t >= since; })
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      .filter((u) => { const t = new Date(/** @type {string} */ (u.createdAt)).getTime(); return !isNaN(t) && t >= since; })
+      .sort((a, b) => new Date(/** @type {string} */ (b.createdAt)).getTime() - new Date(/** @type {string} */ (a.createdAt)).getTime());
 
     const heading = qs('#adm-recent-signups-range');
     if (heading) heading.textContent = range.label;

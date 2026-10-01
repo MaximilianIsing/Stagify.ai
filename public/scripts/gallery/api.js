@@ -4,7 +4,10 @@
 // is authenticated by the session the browser already holds — `credentials: 'include'`,
 // unlike the share page, which deliberately sends none.
 
-/** Read the bearer token the app stores after sign-in. */
+/**
+ * Read the bearer token the app stores after sign-in.
+ * @returns {Record<string, string>}
+ */
 function authHeaders() {
   try {
     const token = window.localStorage.getItem('stagifyAuthToken');
@@ -16,7 +19,7 @@ function authHeaders() {
 }
 
 /**
- * @param {string} url @param {RequestInit} [init] @param {typeof fetch} [fetchImpl]
+ * @param {string} url @param {Omit<RequestInit, "headers"> & { headers?: Record<string, string> }} [init] @param {typeof fetch} [fetchImpl]
  * @returns {Promise<{ ok: boolean, status: number, body: any }>}
  */
 async function call(url, init = {}, fetchImpl = fetch) {

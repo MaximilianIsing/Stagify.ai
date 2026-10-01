@@ -50,7 +50,7 @@ async function main() {
   }
 
   /** The N in cover-N.png. Only called for names COVER already matched. */
-  const coverNumber = (name) => Number((COVER.exec(name) || [])[1] ?? 0);
+  const coverNumber = (/** @type {string} */ name) => Number((COVER.exec(name) || [])[1] ?? 0);
 
   const masters = fs.readdirSync(MASTERS).filter((f) => COVER.test(f))
     .sort((a, b) => coverNumber(a) - coverNumber(b));

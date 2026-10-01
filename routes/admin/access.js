@@ -35,12 +35,7 @@ const DEFAULT_LIMIT = 200;
  * Build the admin access-log router.
  *
  * @param {{
- *   adminAccess: {
- *     summary: (opts?: object) => object,
- *     record: (ev: object) => unknown,
- *     resolvePendingGeo: (opts?: object) => Promise<number>,
- *     enabled?: boolean,
- *   } | null,
+ *   adminAccess: ReturnType<typeof import('../../lib/data/admin-access.js').createAdminAccess> | null,
  *   protectLogs: import('express').RequestHandler,
  * }} deps - `adminAccess` is OPTIONAL: absent, the log answers `configured: false`
  *   with empty rows rather than 503, so the tab says the recorder is off instead of

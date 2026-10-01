@@ -30,6 +30,10 @@ import { activityIndexFrom } from './analytics-users.js';
 import { stripHeader } from './analytics.js';
 import { areaChart } from './charts.js';
 
+/** @typedef {import('./findings.js').Finding} Finding */
+/** @typedef {import('./findings.js').Evidence} Evidence */
+/** The written brief, per sign-in. @typedef {{state: 'idle' | 'loading'} | {state: 'ready', summary: string} | {state: 'none', reason: string}} BriefState */
+
 /** Cards in this grid give a chart ~340 CSS px, so it must draw into a matching
  *  viewBox — the full-width default would scale its axis labels to ~4px. Same
  *  reason insights.js carries CARD_VB_W. */
@@ -40,11 +44,11 @@ const TEASER_LIMIT = 3;
 
 /**
  * @param {object} deps
- * @param {{data: any, signalsBrief?: any, signalsResult?: ReturnType<typeof runFindings>|null}} deps.ctx
+ * @param {import('./types.js').AdminCtx & {signalsBrief?: BriefState|null, signalsResult?: ReturnType<typeof runFindings>|null}} deps.ctx
  *   Shared dashboard state. `signalsResult` memoizes one run of the engine per
  *   data load; `signalsBrief` caches the written brief for the session.
- * @param {(url: string, method: string, body?: any, isForm?: boolean) => Promise<any>} deps.apiSend Mutating request helper.
- * @param {(u: any) => string} deps.effectivePlan Plan resolver that folds in enterprise domains.
+ * @param {import('./types.js').ApiSend} deps.apiSend Mutating request helper.
+ * @param {import('./types.js').EffectivePlan} deps.effectivePlan Plan resolver that folds in enterprise domains.
  */
 export function createSignals({ ctx, apiSend, effectivePlan }) {
   /** Assemble the bag the rules engine reads. Header stripping happens once, here. */
@@ -78,18 +82,20 @@ export function createSignals({ ctx, apiSend, effectivePlan }) {
    * because the dependency is genuinely circular: the analyst reads this module's
    * findings through `currentResult`, and this module needs the analyst's opener
    * for the per-card button. Construct both, then wire this.
-   * @type {((f: any) => void)|null}
+   * @type {((f: Finding) => void)|null}
    */
   let askAbout = null;
-  /** @param {(f: any) => void} fn */
+  /** @param {(f: Finding) => void} fn */
   function setAskHandler(fn) { askAbout = fn; }
 
   // ── Card pieces ───────────────────────────────────────────────────────────
 
+  /** @param {string} severity */
   function severityPill(severity) {
     return el('span', { className: `adm-sig-pill adm-sig-pill--${severity}`, textContent: severity });
   }
 
+  /** @param {Evidence[]} evidence */
   function evidenceRow(evidence) {
     const wrap = el('div', { className: 'adm-sig-evidence' });
     evidence.forEach((e) => {
@@ -107,6 +113,7 @@ export function createSignals({ ctx, apiSend, effectivePlan }) {
    * Every value here is user-supplied, so it goes in through textContent. This is
    * also the only place on the tab where an email is rendered at all — see the
    * note at the top of the file.
+   * @param {NonNullable<Finding['accounts']>} accounts
    */
   function accountList(accounts) {
     const wrap = el('div', { className: 'adm-sig-accounts' });
@@ -119,6 +126,7 @@ export function createSignals({ ctx, apiSend, effectivePlan }) {
     return wrap;
   }
 
+  /** @param {Finding} f */
   function findingCard(f) {
     const card = el('article', { className: `adm-card adm-sig-card adm-sig-card--${f.severity}` });
 
@@ -167,6 +175,7 @@ export function createSignals({ ctx, apiSend, effectivePlan }) {
    * server projects them down to an allowlist and scrubs anything
    * address-shaped before a model sees them; this side simply must not add
    * anything that is not already on the page.
+   * @param {HTMLElement} host
    */
   async function loadBrief(host) {
     const { findings } = currentResult();
@@ -183,16 +192,17 @@ export function createSignals({ ctx, apiSend, effectivePlan }) {
     renderBrief(host);
   }
 
-  /** Why there is no brief, in words rather than a code. */
+  /** Why there is no brief, in words rather than a code. @param {string} reason */
   function briefReason(reason) {
     if (reason === 'unavailable') return 'No model is configured, so there is no written brief. Every finding below is computed here in the browser and is unaffected.';
     if (reason === 'no-findings') return 'Nothing to summarise yet.';
     return 'The brief could not be written. The findings below are unaffected.';
   }
 
+  /** @param {HTMLElement} host */
   function renderBrief(host) {
     host.innerHTML = '';
-    const state = ctx.signalsBrief || { state: 'idle' };
+    const state = ctx.signalsBrief || /** @type {BriefState} */ ({ state: 'idle' });
 
     const head = el('div', { className: 'adm-sig-brief-head' }, [
       el('h2', { className: 'adm-sig-brief-title', textContent: 'Brief' }),
@@ -225,6 +235,7 @@ export function createSignals({ ctx, apiSend, effectivePlan }) {
 
   // ── The tab ───────────────────────────────────────────────────────────────
 
+  /** @param {ReturnType<typeof runFindings>} result */
   function renderSummary(result) {
     const bar = el('div', { className: 'adm-sig-summary' });
     SEVERITY_SECTIONS.forEach((s) => {

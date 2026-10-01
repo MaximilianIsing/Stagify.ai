@@ -37,7 +37,7 @@ function legacyCopy(text, doc) {
 /**
  * Put `text` on the clipboard.
  * @param {string} text
- * @param {{ doc?: Document, nav?: Navigator }} [deps]
+ * @param {{ doc?: Document, nav?: Navigator | null }} [deps]
  * @returns {Promise<boolean>} Whether the copy actually happened.
  */
 export async function copyText(text, { doc = document, nav = typeof navigator === 'undefined' ? null : navigator } = {}) {

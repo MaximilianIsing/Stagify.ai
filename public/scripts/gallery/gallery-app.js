@@ -48,6 +48,7 @@ export async function start({
 } = {}) {
   /** @param {string} state */
   const setState = (state) => doc.body.setAttribute('data-state', state);
+  /** @param {string} id */
   const byId = (id) => doc.getElementById(id);
 
   const detail = byId('gal-detail');

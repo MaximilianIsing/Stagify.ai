@@ -15,6 +15,7 @@ import { LANGUAGES } from './locale-data.js';
     languagePath: 'languages/',
   };
 
+  /** @type {any} The parsed languages/<lang>.json pack: nested string tables, unschematized. */
   let translations = null;
   let loaded = false;
 
@@ -55,6 +56,7 @@ import { LANGUAGES } from './locale-data.js';
   //
   // Callers that want a specific miss value still pass one; `undefined` only
   // applies when they don't.
+  /** @param {string} key @param {unknown} [fallback] */
   function getText(key, fallback = undefined) {
     if (!translations) return fallback;
     const parts = key.split('.');
@@ -71,7 +73,8 @@ import { LANGUAGES } from './locale-data.js';
 
     // Text content (or placeholder for text inputs / textareas).
     document.querySelectorAll('[data-lang]').forEach((el) => {
-      const value = getText(el.getAttribute('data-lang'));
+      // Selected by [data-lang], so the attribute is present.
+      const value = getText(/** @type {string} */ (el.getAttribute('data-lang')));
       if (value !== undefined) {
         if (el.tagName === 'INPUT' && /** @type {HTMLInputElement} */ (el).type === 'text')
           /** @type {HTMLInputElement} */ (el).placeholder = value;
@@ -82,7 +85,7 @@ import { LANGUAGES } from './locale-data.js';
 
     // Raw HTML content.
     document.querySelectorAll('[data-lang-html]').forEach((el) => {
-      const value = getText(el.getAttribute('data-lang-html'));
+      const value = getText(/** @type {string} */ (el.getAttribute('data-lang-html')));
       if (value !== undefined) el.innerHTML = value;
     });
 
@@ -93,7 +96,7 @@ import { LANGUAGES } from './locale-data.js';
     // applyAttrTranslations in lib/i18n/render-page.js, which parses the same spec
     // server-side for the localized URLs.
     document.querySelectorAll('[data-lang-attr]').forEach((el) => {
-      el.getAttribute('data-lang-attr').split(';').forEach((pair) => {
+      /** @type {string} */ (el.getAttribute('data-lang-attr')).split(';').forEach((pair) => {
         const [key, attr] = pair.trim().split('|');
         if (!key || !attr) return;
         const value = getText(key);
@@ -115,7 +118,7 @@ import { LANGUAGES } from './locale-data.js';
     if (!loaded) return;
     const titleEl = document.querySelector('title[data-lang]');
     if (titleEl) {
-      const value = getText(titleEl.getAttribute('data-lang'));
+      const value = getText(/** @type {string} */ (titleEl.getAttribute('data-lang')));
       if (value !== undefined) document.title = value;
     }
   }
@@ -133,9 +136,9 @@ import { LANGUAGES } from './locale-data.js';
       const data = JSON.parse(ldEl.textContent);
       const titleEl = document.querySelector('title[data-lang]');
       const descEl = document.querySelector('meta[name="description"][data-lang-attr]');
-      const name = getText(titleEl ? titleEl.getAttribute('data-lang') : 'meta.title');
+      const name = getText(titleEl ? /** @type {string} */ (titleEl.getAttribute('data-lang')) : 'meta.title');
       const description = getText(
-        descEl ? descEl.getAttribute('data-lang-attr').split('|')[0] : 'meta.description'
+        descEl ? /** @type {string} */ (descEl.getAttribute('data-lang-attr')).split('|')[0] : 'meta.description'
       );
       // Opt-in per page, and it must be the key this page authored: hardcoding
       // 'meta.keywords' here stamped the HOMEPAGE keyword list onto every studio's
@@ -242,6 +245,7 @@ import { LANGUAGES } from './locale-data.js';
   // languages behind and could not clear a class it did not know about. Languages
   // without a matching CSS rule simply get the default styling, as before.
   const FLAG_CLASSES = LANGUAGES.map((l) => l.lang);
+  /** @param {HTMLSelectElement} select */
   function updateSelectorFlag(select) {
     select.classList.remove(...FLAG_CLASSES);
     if (FLAG_CLASSES.includes(select.value)) select.classList.add(select.value);

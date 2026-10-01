@@ -27,13 +27,13 @@ const STAGING_TIMEOUT_MS = 180000;
  *
  * @param {{
  *   stagePreview: HTMLImageElement,
- *   progress: HTMLElement | null,
- *   progressBar: HTMLElement | null,
- *   progressText: HTMLElement | null,
- *   loadingMessage: HTMLElement | null,
+ *   progress: HTMLElement,
+ *   progressBar: HTMLElement,
+ *   progressText: HTMLElement,
+ *   loadingMessage: HTMLElement,
  *   processingPlaceholder: HTMLElement | null,
- *   roomSelect: { value: string } | null,
- *   styleSelect: { value: string } | null,
+ *   roomSelect: { value: string | undefined } | null,
+ *   styleSelect: { value: string | undefined } | null,
  *   additionalPrompt: HTMLTextAreaElement | null,
  *   furnitureRefs: { getFiles: () => File[], reset: () => void },
  *   FURNITURE_LIMIT: number,
@@ -86,11 +86,12 @@ export function createStagingPipeline(deps) {
   // island's specs hand in a minimal document shim with no window and no real element.
   const syncCancelTooltip = () => {
     const label = cancelBtn?.getAttribute?.('aria-label');
-    if (label) cancelBtn.title = label;
+    if (label && cancelBtn) cancelBtn.title = label;
   };
   syncCancelTooltip();
   globalThis.window?.addEventListener?.('languagechange', syncCancelTooltip);
 
+  /** @param {File} imageFile */
   async function processWithAI(imageFile) {
     hideStagingLimitInViewer();
     hideStagingError();
@@ -159,6 +160,7 @@ export function createStagingPipeline(deps) {
     // can only read headers: req.body does not exist until multer has read the whole body,
     // which is the cost the gate exists to avoid. The form field above stays, because the
     // in-handler check is still the authority and still accepts either transport.
+    /** @type {Record<string, string>} */
     const authHeaders = tok ? { Authorization: `Bearer ${tok}` } : {};
 
     const proPanel = document.getElementById('stagify-pro-panel');
@@ -199,9 +201,13 @@ export function createStagingPipeline(deps) {
     const loadingMessagesRaw = window.LanguageSystem?.getText('modal.staging.progress.loadingMessages');
     const messagesArray = Array.isArray(loadingMessagesRaw) ? loadingMessagesRaw : defaultLoadingLines;
 
+    /** @type {ReturnType<typeof setInterval> | null} */
     let progressInterval = null;
+    /** @type {ReturnType<typeof setInterval> | null} */
     let aiProgressInterval = null;
+    /** @type {ReturnType<typeof setInterval> | null} */
     let messageInterval = null;
+    /** @type {ReturnType<typeof setTimeout> | null} */
     let phaseTimer = null;
     let isProcessingPhase = false;
     let currentProgress = 0;
@@ -258,8 +264,9 @@ export function createStagingPipeline(deps) {
     // at upload), honor a rejection NOW, before spending a generation. If it's
     // still in flight we don't wait: staging runs below while the check finishes
     // concurrently. Net cost of the check on a valid photo: zero added wait.
-    if (getStageValidationResult() && getStageValidationResult().valid === false) {
-      rejectUnstageable(getStageValidationResult());
+    const earlyResult = getStageValidationResult();
+    if (earlyResult && earlyResult.valid === false) {
+      rejectUnstageable(earlyResult);
     }
 
     // If the check is still running, watch it: the moment it rejects the photo,
@@ -269,8 +276,9 @@ export function createStagingPipeline(deps) {
     const genAbort = new AbortController();
     /** @type {{ valid?: boolean, code?: string | null, reason?: string } | null} */
     let validationRejection = null;
-    if (getStageValidation() && !getStageValidationResult()) {
-      getStageValidation().then((r) => {
+    const pendingValidation = getStageValidation();
+    if (pendingValidation && !getStageValidationResult()) {
+      pendingValidation.then((r) => {
         if (r && r.valid === false) {
           validationRejection = r;
           genAbort.abort();
@@ -536,8 +544,9 @@ export function createStagingPipeline(deps) {
     // rejected the photo, discard the freshly-staged image instead of showing
     // it. Normally getStageValidationResult() is already set, so the await is just a
     // safety net for a sub-second click and adds no real time.
-    if (getStageValidation()) {
-      const finalCheck = getStageValidationResult() || (await getStageValidation().catch(() => null));
+    const finalValidation = getStageValidation();
+    if (finalValidation) {
+      const finalCheck = getStageValidationResult() || (await finalValidation.catch(() => null));
       if (finalCheck && finalCheck.valid === false) {
         rejectUnstageable(finalCheck);
       }

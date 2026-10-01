@@ -15,6 +15,7 @@ import {
   PUBLIC_EMAIL_DOMAIN_CODE,
   PUBLIC_EMAIL_DOMAIN_MESSAGE,
 } from '../lib/data/public-email-domains.js';
+import { errorMessage } from '../lib/errors.js';
 
 /**
  * Build the billing & enterprise router (Stripe webhook, customer portal,
@@ -159,7 +160,7 @@ export default function createBillingRouter(deps) {
       });
       return res.json({ url: session.url });
     } catch (e) {
-      logger.error('[stripe] customer portal error:', e.message);
+      logger.error('[stripe] customer portal error:', errorMessage(e));
       return sendError(res, 500, 'Could not open billing portal');
     }
   });
@@ -242,7 +243,7 @@ export default function createBillingRouter(deps) {
 
       return res.json({ url: session.url });
     } catch (e) {
-      logger.error('[enterprise] checkout session error:', e.message);
+      logger.error('[enterprise] checkout session error:', errorMessage(e));
       return sendError(res, 500, 'Could not create checkout session');
     }
   });

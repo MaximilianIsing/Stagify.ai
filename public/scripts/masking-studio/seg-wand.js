@@ -8,9 +8,14 @@
 // contract stays cross-module: the entry's setBaseImage bumps state.segToken
 // and nulls state.segCache; ensureSegCache captures the token before the
 // fetch and refuses to cache on mismatch.
+
+import { errorMessage } from '../shared/error-message.js';
+
 /**
  * @typedef {import('./types.js').MsState} MsState
  * @typedef {import('./types.js').MsLayer} MsLayer
+ * @typedef {import('./types.js').MsBase} MsBase
+ * @typedef {import('./types.js').MsSegItem} MsSegItem
  */
 /**
  * @param {{
@@ -21,7 +26,7 @@
  *   canvasPoint: (e: PointerEvent) => { x: number, y: number } | null,
  *   paintMaskIntoLayer: (layer: MsLayer, maskCanvas: HTMLCanvasElement) => void,
  *   requestError: (status: number, result: any) => string,
- *   showToast: (message: string, type?: string) => void,
+ *   showToast: (message: string, type?: 'error' | 'success') => void,
  *   tx: (key: string, def: string) => string,
  *   loadImage: (src: string) => Promise<HTMLImageElement>,
  * }} deps
@@ -48,19 +53,24 @@ export function createSegWand(deps) {
         // faster brush, and undo/pixel-claiming behave identically.
         // ---------------------------------------------------------------------
         function segPayload() {
+          const base = /** @type {MsBase} */ (state.base); // the wand only runs with a photo loaded
           // ~1024px is what Google's own segmentation samples send; coordinates
           // come back normalized, so full resolution would only cost tokens.
-          const scale = Math.min(1, 1024 / Math.max(state.base.w, state.base.h));
+          const scale = Math.min(1, 1024 / Math.max(base.w, base.h));
           const c = document.createElement('canvas');
-          c.width = Math.max(1, Math.round(state.base.w * scale));
-          c.height = Math.max(1, Math.round(state.base.h * scale));
-          const ctx = c.getContext('2d');
+          c.width = Math.max(1, Math.round(base.w * scale));
+          c.height = Math.max(1, Math.round(base.h * scale));
+          const ctx = /** @type {CanvasRenderingContext2D} */ (c.getContext('2d'));
           ctx.fillStyle = '#fff';
           ctx.fillRect(0, 0, c.width, c.height);
-          ctx.drawImage(state.base.canvas, 0, 0, c.width, c.height);
+          ctx.drawImage(base.canvas, 0, 0, c.width, c.height);
           return c.toDataURL('image/jpeg', 0.9);
         }
 
+        /**
+         * @param {string} query
+         * @returns {Promise<MsSegItem[]>}
+         */
         async function fetchSegmentation(query) {
           const tok = window.StagifyAuth && window.StagifyAuth.getToken();
           const response = await fetch('/api/segment', {
@@ -84,20 +94,26 @@ export function createSegWand(deps) {
         // midpoint (>127 keeps). The API frequently omits usable pixel masks
         // (the server nulls them out) — then the box itself becomes the
         // selection, which the brush/eraser can refine.
+        /**
+         * @param {import('./types.js').MsSegApiItem[]} items
+         * @returns {Promise<MsSegItem[]>}
+         */
         async function decodeSegItems(items) {
+          /** @type {MsSegItem[]} */
           const out = [];
           for (const it of items) {
             try {
+              const base = /** @type {MsBase} */ (state.base); // read before this item's await, as before
               const y0 = it.box_2d[0], x0 = it.box_2d[1], y1 = it.box_2d[2], x1 = it.box_2d[3];
               if (y1 <= y0 || x1 <= x0) continue;
-              const bx = Math.round((x0 / 1000) * state.base.w);
-              const by = Math.round((y0 / 1000) * state.base.h);
-              const bw = Math.max(1, Math.round(((x1 - x0) / 1000) * state.base.w));
-              const bh = Math.max(1, Math.round(((y1 - y0) / 1000) * state.base.h));
+              const bx = Math.round((x0 / 1000) * base.w);
+              const by = Math.round((y0 / 1000) * base.h);
+              const bw = Math.max(1, Math.round(((x1 - x0) / 1000) * base.w));
+              const bh = Math.max(1, Math.round(((y1 - y0) / 1000) * base.h));
               const c = document.createElement('canvas');
-              c.width = state.base.w;
-              c.height = state.base.h;
-              const ctx = c.getContext('2d');
+              c.width = base.w;
+              c.height = base.h;
+              const ctx = /** @type {CanvasRenderingContext2D} */ (c.getContext('2d'));
               let area = 0;
               if (it.mask) {
                 const img = await loadImage(it.mask);
@@ -124,7 +140,9 @@ export function createSegWand(deps) {
           return out;
         }
 
+        /** @type {ReturnType<typeof setInterval> | null} */
         let wandMsgTimer = null;
+        /** @param {boolean} b */
         function setSegBusy(b) {
           wandBusyEl.classList.toggle('hidden', !b);
           stack.classList.toggle('is-analyzing', b);
@@ -143,7 +161,7 @@ export function createSegWand(deps) {
             wandBusyEl.textContent = msgs[0];
             wandMsgTimer = setInterval(() => {
               i++;
-              if (i >= msgs.length) { clearInterval(wandMsgTimer); wandMsgTimer = null; return; }
+              if (i >= msgs.length) { clearInterval(/** @type {ReturnType<typeof setInterval>} */ (wandMsgTimer)); wandMsgTimer = null; return; }
               wandBusyEl.textContent = msgs[i];
             }, 2200);
           }
@@ -152,7 +170,9 @@ export function createSegWand(deps) {
         // One shared in-flight request: clicks made while the analysis runs
         // await the same promise and land as soon as it resolves, instead of
         // being dropped. Prefetch (on tool select) uses the same path.
+        /** @type {Promise<MsSegItem[] | null> | null} */
         let segPromise = null;
+        /** @returns {Promise<MsSegItem[] | null>} */
         function ensureSegCache() {
           if (state.segCache) return Promise.resolve(state.segCache);
           if (segPromise) return segPromise;
@@ -175,6 +195,7 @@ export function createSegWand(deps) {
           return segPromise;
         }
 
+        /** @param {PointerEvent} e */
         async function wandClick(e) {
           const p = canvasPoint(e);
           const layer = activeLayer();
@@ -183,18 +204,21 @@ export function createSegWand(deps) {
           try {
             cache = await ensureSegCache();
           } catch (err) {
-            showToast(err && err.message ? err.message : tx('errors.processingFailed', 'Something went wrong. Please try again.'), 'error');
+            showToast(errorMessage(err) || tx('errors.processingFailed', 'Something went wrong. Please try again.'), 'error');
             return;
           }
           if (!cache || state.phase !== 'draw') return; // superseded while analyzing
-          const px = Math.max(0, Math.min(state.base.w - 1, Math.round(p.x)));
-          const py = Math.max(0, Math.min(state.base.h - 1, Math.round(p.y)));
+          const base = /** @type {MsBase} */ (state.base); // the wand only runs with a photo loaded
+          const px = Math.max(0, Math.min(base.w - 1, Math.round(p.x)));
+          const py = Math.max(0, Math.min(base.h - 1, Math.round(p.y)));
           /** @type {{ canvas: HTMLCanvasElement, area: number } | null} */
           let hit = null;
-          cache.forEach((it) => {
-            const a = it.canvas.getContext('2d').getImageData(px, py, 1, 1).data[3];
+          // for...of, not forEach: TS can't see an assignment inside a callback, so
+          // after a forEach it would still type `hit` as null.
+          for (const it of cache) {
+            const a = /** @type {CanvasRenderingContext2D} */ (it.canvas.getContext('2d')).getImageData(px, py, 1, 1).data[3];
             if (a > 0 && (!hit || it.area < hit.area)) hit = it; // smallest = most specific
-          });
+          }
           if (!hit) {
             showToast(tx('maskingStudio.wandMiss', 'No object found there. Try clicking the middle of the object, or highlight it with the brush.'), 'error');
             return;

@@ -143,6 +143,7 @@ export default function createStagingRouter(deps) {
   // handler sees the header AND the form field. A caller rejected here would have been
   // rejected there too — with the same status, code and message, which is why the
   // literal below is copied from the handler rather than reworded.
+  /** @type {import('express').RequestHandler} */
   const requireSessionBeforeUpload = (req, res, next) => {
     if (!getAuthUserFromRequest(req)) {
       return sendError(res, 401, 'Please sign in to stage images', { code: 'AUTH_REQUIRED' });
@@ -151,6 +152,7 @@ export default function createStagingRouter(deps) {
   };
   // requireProAccount writes its own 401/403 and returns null, so reusing it here makes
   // the pre-gate's reply byte-identical to the handler's by construction.
+  /** @type {import('express').RequestHandler} */
   const requireProBeforeUpload = (req, res, next) => (requireProAccount(req, res) ? next() : undefined);
   const stampLimiter = deps.stampImageLimiter ?? defaultStampImageLimiter;
   const downloadResultLimiter = deps.downloadResultLimiter ?? defaultDownloadResultLimiter;

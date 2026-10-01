@@ -95,8 +95,10 @@ export function createViewer(deps) {
     layerTitle,
   } = deps;
 
+  /** @type {ReturnType<typeof setInterval> | null} */
   let busyMsgTimer = null;
   let comparePos = 0.5;     // compare-view divider, 0..1 of photo width
+  /** @type {HTMLDivElement | null} */
   let busyOverlay = null;
 
   // Zoom & pan. Zoom works by setting an explicit CSS width on the base
@@ -105,6 +107,10 @@ export function createViewer(deps) {
   const ZOOM_MIN = 1;
   const ZOOM_MAX = 4;
 
+  /**
+   * @param {number} nz - Requested zoom, clamped to [ZOOM_MIN, ZOOM_MAX].
+   * @param {{ x: number, y: number } | null} [focal] - Viewport point to keep stationary.
+   */
   function setZoom(nz, focal) {
     if (!state.base) return;
     nz = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, nz));
@@ -212,6 +218,7 @@ export function createViewer(deps) {
 
   // The result canvas sits on top of the original: clipping its left side
   // at the divider shows Before on the left, After on the right.
+  /** @param {number} f */
   function setComparePos(f) {
     comparePos = Math.min(1, Math.max(0, f));
     const pct = (comparePos * 100).toFixed(2) + '%';
@@ -220,6 +227,7 @@ export function createViewer(deps) {
     compareGrip.setAttribute('aria-valuenow', String(Math.round(comparePos * 100)));
   }
 
+  /** @param {{ clientX: number }} e */
   function moveCompare(e) {
     const rect = baseCanvas.getBoundingClientRect();
     if (!rect.width) return;
@@ -252,9 +260,11 @@ export function createViewer(deps) {
 
   // One dot per running area, in its highlight color: pulsing while it
   // stages, a check when done, an exclamation mark if it failed.
+  /** @param {MsLayer[]} participating */
   function renderBusyDots(participating) {
     ensureBusyOverlay();
-    const host = busyOverlay.querySelector('.ms-busy-dots');
+    const overlay = /** @type {HTMLDivElement} */ (busyOverlay);
+    const host = /** @type {HTMLElement} */ (overlay.querySelector('.ms-busy-dots'));
     host.textContent = '';
     participating.forEach((l) => {
       const d = document.createElement('span');
@@ -280,8 +290,9 @@ export function createViewer(deps) {
 
   function startBusyMessages() {
     ensureBusyOverlay();
-    busyOverlay.classList.remove('hidden');
-    const msgEl = busyOverlay.querySelector('.ms-busy-msg');
+    const overlay = /** @type {HTMLDivElement} */ (busyOverlay);
+    overlay.classList.remove('hidden');
+    const msgEl = /** @type {HTMLElement} */ (overlay.querySelector('.ms-busy-msg'));
     const msgs = loadingMessages();
     let i = 0;
     msgEl.textContent = msgs[0];

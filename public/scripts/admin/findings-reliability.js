@@ -30,6 +30,8 @@ import { COL, withOutcome, dayKeyLocal, categoryKey } from './analytics.js';
 import { wilsonInterval, robustZ, foldChange, median } from './stats.js';
 import { finding, suppressed, fmtCount, fmtPct, fmtX, gradeRate, confidenceFor, MIN_AFFECTED } from './findings.js';
 
+/** @typedef {import('./types.js').RuleInput} RuleInput */
+
 const AREA = 'Reliability';
 
 /** Below this many recorded outcomes, nothing here says anything at all. */
@@ -44,7 +46,7 @@ function cell(row, idx) {
   return String((row && row[idx]) || '').trim();
 }
 
-/** Recorded-outcome rows only, once per rule rather than once per branch. */
+/** Recorded-outcome rows only, once per rule rather than once per branch. @param {RuleInput} input */
 function recorded(input) {
   return withOutcome(input.promptRows || []);
 }
@@ -58,16 +60,17 @@ function isFailure(row) {
  * Daily failure counts over the trailing window, as an ordered array.
  * Zero-filled: a quiet day must be a 0 in the baseline, not a gap — otherwise the
  * median is taken over busy days only and every ordinary day looks like a spike.
+ * @param {string[][]} rows @param {number} days @param {number} now
  */
 function dailyFailures(rows, days, now) {
   /** @type {Record<string, number>} */
   const buckets = {};
   for (let i = days - 1; i >= 0; i--) {
-    buckets[dayKeyLocal(new Date(now - i * 24 * 60 * 60 * 1000))] = 0;
+    buckets[String(dayKeyLocal(new Date(now - i * 24 * 60 * 60 * 1000)))] = 0;
   }
   for (const r of rows) {
     if (!isFailure(r)) continue;
-    const key = dayKeyLocal(cell(r, COL.PROMPT.TS));
+    const key = String(dayKeyLocal(cell(r, COL.PROMPT.TS)));
     if (key in buckets) buckets[key] += 1;
   }
   return Object.keys(buckets).sort().map((k) => ({ key: k, value: buckets[k] }));
@@ -85,6 +88,7 @@ function dailyFailures(rows, days, now) {
 const failureSpike = {
   id: 'reliability.failure-spike',
   area: AREA,
+  /** @param {RuleInput} input */
   run(input) {
     const rows = recorded(input);
     if (rows.length < MIN_GLOBAL) {
@@ -163,6 +167,7 @@ function segmentRule(spec) {
   return {
     id: spec.id,
     area: AREA,
+    /** @param {RuleInput} input */
     run(input) {
       const rows = recorded(input);
       if (rows.length < MIN_GLOBAL) return null; // A1 already reports the thin-data case.
@@ -293,12 +298,14 @@ const modelFailure = segmentRule({
 const newErrorCode = {
   id: 'reliability.new-error-code',
   area: AREA,
+  /** @param {RuleInput} input */
   run(input) {
     const rows = recorded(input).filter(isFailure);
     if (rows.length < 5) return null;
 
     const recent = new Set();
     const historic = new Set();
+    /** @type {Record<string, number>} */
     const counts = {};
     const cutoff = input.now - 7 * 24 * 60 * 60 * 1000;
     for (const r of rows) {
@@ -355,6 +362,7 @@ const newErrorCode = {
 const architectureDrift = {
   id: 'reliability.architecture-drift',
   area: AREA,
+  /** @param {RuleInput} input */
   run(input) {
     const rows = (input.promptRows || []).filter((r) => {
       const v = cell(r, COL.PROMPT.DRIFT).toLowerCase();

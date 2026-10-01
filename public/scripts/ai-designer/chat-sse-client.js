@@ -10,8 +10,18 @@
 //
 // handlers: { onStatus, onMessage, onImages, onError } — each optional, called
 // with the parsed JSON payload for events named status/message/images/error.
+/**
+ * @param {Response} response
+ * @param {{
+ *   onStatus?: (payload: any) => void,
+ *   onMessage?: (payload: any) => void,
+ *   onImages?: (payload: any) => void,
+ *   onError?: (payload: any) => void,
+ * }} handlers - Each receives the event's parsed JSON, whose shape is the server's.
+ * @returns {Promise<void>}
+ */
 export async function consumeChatSse(response, handlers) {
-  const reader = response.body.getReader();
+  const reader = /** @type {ReadableStream<Uint8Array>} */ (response.body).getReader();
   const decoder = new TextDecoder();
   let buffer = '';
   while (true) {

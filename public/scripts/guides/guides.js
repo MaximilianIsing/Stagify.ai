@@ -10,6 +10,7 @@
 import { anyImmersiveOpen, createImmersive, isPhone, markRotateButton } from '../shared/immersive-view.js';
 
 /** The demo keys, in the order the tablist presents them. */
+/** @param {string} key */
 const PANEL_ID = (key) => `guide-demo-${key}`;
 
 /** @param {any} win @returns {string} The demo key named by the URL hash, or ''. */
@@ -62,6 +63,7 @@ function initDemoFullscreen(doc, win) {
     buttons.forEach((btn) => { btn.hidden = true; });
     return;
   }
+  /** @param {any} btn A button from the injected (possibly fake) document. */
   const panelOf = (btn) => btn.closest('.guide-demo-panel');
   buttons.forEach((btn) => {
     markRotateButton(btn, win);
@@ -109,6 +111,7 @@ function initDemoFullscreen(doc, win) {
   });
 }
 
+/** @param {any} win @param {string | null} key */
 function demoByKey(win, key) {
   const data = /** @type {any} */ (win).STAGIFY_DEMOS && /** @type {any} */ (win).STAGIFY_DEMOS.demos;
   if (!data) return null;
@@ -118,6 +121,7 @@ function demoByKey(win, key) {
   return null;
 }
 
+/** @param {any} win @param {HTMLElement | null} panel */
 function mountPlayer(win, panel) {
   const player = /** @type {any} */ (win).SupademoPlayer;
   if (!panel || /** @type {any} */ (panel).__player || !player) return;
@@ -130,6 +134,7 @@ function mountPlayer(win, panel) {
   panel.classList.add('is-mounted');
 }
 
+/** @param {any} doc @param {any} win */
 function initDemoPicker(doc, win) {
   const picker = doc.querySelector('.guide-demo-picker');
   if (!picker) return;
@@ -147,6 +152,7 @@ function initDemoPicker(doc, win) {
 
   // Mount on first activation (panel is visible → correct sizing); if already
   // mounted, just recompute the callout position for the current box size.
+  /** @param {string} key */
   function loadPanel(key) {
     const panel = panels[key];
     if (!panel) return;
@@ -199,7 +205,7 @@ function initDemoPicker(doc, win) {
 
   // Arrow/Home/End, per the ARIA tabs pattern. Activation follows focus, which is the
   // right choice here: showing a panel is cheap and has no side effects.
-  picker.addEventListener('keydown', (event) => {
+  picker.addEventListener('keydown', (/** @type {KeyboardEvent} */ event) => {
     const key = /** @type {any} */ (event).key;
     const at = buttons.indexOf(/** @type {any} */ (doc).activeElement);
     if (at === -1) return;
@@ -221,6 +227,7 @@ function initDemoPicker(doc, win) {
    * they point at ships `hidden`, so without this the browser has nothing to scroll to
    * and the visitor gets the Free walkthrough whichever result they clicked.
    */
+  /** @param {{ focus?: boolean }} [opts] */
   function applyHash(opts = {}) {
     const key = demoFromHash(win);
     if (!key || !panels[key]) return false;
@@ -242,7 +249,7 @@ function initDemoPicker(doc, win) {
     });
   }
 
-  win.addEventListener('pageshow', (event) => {
+  win.addEventListener('pageshow', (/** @type {PageTransitionEvent} */ event) => {
     if (!(/** @type {any} */ (event).persisted)) return;
     // On bfcache restore, reposition whichever player is currently visible.
     loadVisible();
@@ -267,6 +274,7 @@ function initDemoPicker(doc, win) {
  * of Back to leave the page.
  */
 /** Bring a just-revealed panel into view, honouring reduced motion. */
+/** @param {any} win @param {HTMLElement | null} panel */
 function scrollTo(win, panel) {
   if (!panel || typeof panel.scrollIntoView !== 'function') return;
   let smooth = false;
@@ -277,6 +285,7 @@ function scrollTo(win, panel) {
   panel.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'center' });
 }
 
+/** @param {any} win @param {string} key */
 function publishHash(win, key) {
   try {
     const history = /** @type {any} */ (win).history;
@@ -295,6 +304,7 @@ function publishHash(win, key) {
  * The rail is that navigation now, so it has to stay correct while you scroll rather
  * than flash once on click.
  */
+/** @param {any} doc @param {any} win */
 function initTopicRail(doc, win) {
   const links = Array.prototype.slice.call(doc.querySelectorAll('.guides-rail__link'));
   if (!links.length) return;
@@ -313,6 +323,7 @@ function initTopicRail(doc, win) {
   if (!topics.length) return;
 
   let current = '';
+  /** @param {string} id */
   function mark(id) {
     if (id === current) return;
     current = id;

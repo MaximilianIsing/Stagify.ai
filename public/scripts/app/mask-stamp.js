@@ -59,14 +59,14 @@ export function initMaskStampPlacement() {
    * @param {MediaQueryList | MediaQueryListEvent} mq - The phone query's current state.
    * @returns {void}
    */
-  function place(mq) {
+  const place = (mq) => {
     const target = mq.matches ? controls : toolrow;
     const before = mq.matches ? refRow : note;
     // Guard the no-op: re-inserting a node that already sits there still moves it in the
     // DOM, which blurs anything focused inside it — and this runs on every resize tick.
     if (stamp.parentElement === target && stamp.nextElementSibling === before) return;
     target.insertBefore(stamp, before);
-  }
+  };
 
   const query = window.matchMedia(PHONE);
   place(query);

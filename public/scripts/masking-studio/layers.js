@@ -22,7 +22,7 @@ export function createPool(size) {
   const next = () => {
     if (!queue.length || active >= size) return;
     active++;
-    const job = queue.shift();
+    const job = /** @type {(typeof queue)[number]} */ (queue.shift()); // length checked above
     job.fn().then(job.resolve, job.reject).then(() => { active--; next(); });
   };
   return (fn) => new Promise((resolve, reject) => {
@@ -43,6 +43,13 @@ export function createPool(size) {
 // pixel a single owning area lets the entry clip each area's halo to its own
 // territory, so neighbouring halos meet at the midline instead of overlapping.
 // Pure (typed arrays only, no DOM) so it runs under node --test.
+/**
+ * @param {Array<ArrayLike<number> | null | undefined>} seeds
+ * @param {number} w
+ * @param {number} h
+ * @param {number} [threshold=10]
+ * @returns {Int16Array}
+ */
 export function nearestAreaLabels(seeds, w, h, threshold = 10) {
   const n = w * h;
   const label = new Int16Array(n).fill(-1);
@@ -56,6 +63,7 @@ export function nearestAreaLabels(seeds, w, h, threshold = 10) {
   }
   const A = 1;             // orthogonal step cost
   const B = Math.SQRT2;    // diagonal step cost (Euclidean-ish chamfer)
+  /** @type {(i: number, j: number, cost: number) => void} */
   const relax = (i, j, cost) => {
     const c = dist[j] + cost;
     if (c < dist[i]) { dist[i] = c; label[i] = label[j]; }
@@ -85,6 +93,11 @@ export function nearestAreaLabels(seeds, w, h, threshold = 10) {
 
 // Lowest palette index not yet claimed by an existing layer, or -1 when the
 // palette is exhausted (all `paletteLength` colors are in use).
+/**
+ * @param {import('./types.js').MsLayer[]} layers
+ * @param {number} paletteLength
+ * @returns {number}
+ */
 export function nextColorIdx(layers, paletteLength) {
   for (let i = 0; i < paletteLength; i++) {
     if (!layers.some((l) => l.colorIdx === i)) return i;
@@ -124,12 +137,23 @@ export function createLayer({ id, colorIdx, canvasEl }) {
 }
 
 // Highlight color for a layer, from its assigned palette slot.
+/**
+ * @param {import('./types.js').MsLayer} layer
+ * @param {import('./types.js').MsPaletteEntry[]} palette
+ * @returns {string}
+ */
 export function layerColor(layer, palette) {
   return palette[layer.colorIdx].hex;
 }
 
 // Display name for a layer: the user-given name, else "Area {n}" where n is the
 // layer's 1-based position in the list.
+/**
+ * @param {import('./types.js').MsLayer} layer
+ * @param {import('./types.js').MsLayer[]} layers
+ * @param {(key: string, fallback: string) => string} translate
+ * @returns {string}
+ */
 export function layerTitle(layer, layers, translate) {
   if (layer.name) return layer.name;
   const template = translate('maskingStudio.areaName', 'Area {n}');
@@ -139,6 +163,11 @@ export function layerTitle(layer, layers, translate) {
 
 // One-line summary shown on a collapsed layer card: the prompt if any, else the
 // mode ("Remove object") or the furniture file name.
+/**
+ * @param {import('./types.js').MsLayer} layer
+ * @param {(key: string, fallback: string) => string} translate
+ * @returns {string}
+ */
 export function previewText(layer, translate) {
   if (layer.prompt.trim()) return layer.prompt.trim();
   if (layer.mode === 'remove') return translate('maskingStudio.modeRemove', 'Remove object');
@@ -147,6 +176,11 @@ export function previewText(layer, translate) {
 
 // Status pill ({ cls, text }) for a layer card. Generating/done/failed reflect
 // the last run; otherwise it nudges the user toward what the area still needs.
+/**
+ * @param {import('./types.js').MsLayer} layer
+ * @param {(key: string, fallback: string) => string} translate
+ * @returns {{ cls: string, text: string }}
+ */
 export function statusChip(layer, translate) {
   if (layer.status === 'generating') return { cls: 'ms-layer-status--generating', text: translate('maskingStudio.statusGenerating', 'Staging…') };
   if (layer.status === 'done') return { cls: 'ms-layer-status--done', text: translate('maskingStudio.statusDone', 'Done') };

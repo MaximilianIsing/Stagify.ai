@@ -82,6 +82,7 @@ export function doorSwing(door, wm, hm) {
   const along = wall === 'n' || wall === 's' ? wm : hm;
   const d = Math.min(DOOR / U, along * 0.7);
   const start = Math.min(t * along, along - d);
+  /** @type {(x0: number, y0: number, x1: number, y1: number) => { x0: number, y0: number, x1: number, y1: number }} */
   const box = (x0, y0, x1, y1) => ({ x0: x0 / wm, y0: y0 / hm, x1: x1 / wm, y1: y1 / hm });
   if (wall === 'n') return box(start, 0, start + d, d);
   if (wall === 's') return box(start, hm - d, start + d, hm);
@@ -152,6 +153,7 @@ export function doorArc(door, w, h) {
   const wall = m[1];
   const t = Math.min(1, Math.max(0, parseFloat(m[2])));
   const d = Math.min(DOOR, (wall === 'n' || wall === 's' ? w : h) * 0.7);
+  /** @type {(x1: number, y1: number, x2: number, y2: number, sweep: 0 | 1) => string} */
   const arc = (x1, y1, x2, y2, sweep) =>
     `M${round(x1)} ${round(y1)}A${round(d)} ${round(d)} 0 0 ${sweep} ${round(x2)} ${round(y2)}`;
 

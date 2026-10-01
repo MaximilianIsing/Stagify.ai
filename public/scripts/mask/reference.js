@@ -23,6 +23,7 @@ const ALLOWED_TYPE = /^image\/(jpeg|jpg|png|webp)$/i;
  *   whenever the thumbnail appears or disappears (the editor re-fits around it).
  */
 export function createMaskReference({ lang, showError, onChange }) {
+  /** @type {string | null} */
   let referenceDataUrl = null;
   /** @type {{ fileInput: any, addBtn: any, removeBtn: any, preview: any, img: any }} */
   let els = { fileInput: null, addBtn: null, removeBtn: null, preview: null, img: null };
@@ -39,6 +40,7 @@ export function createMaskReference({ lang, showError, onChange }) {
     notifyChange();
   }
 
+  /** @param {string} dataUrl */
   function set(dataUrl) {
     referenceDataUrl = dataUrl;
     const { preview, img, addBtn } = els;
@@ -50,6 +52,10 @@ export function createMaskReference({ lang, showError, onChange }) {
 
   // Validate, downscale, and PNG-encode so the payload is always small, clean,
   // and a format the backend accepts. Rejects with 'type' | 'size' | 'read' | 'decode'.
+  /**
+   * @param {File} file
+   * @returns {Promise<string>}
+   */
   function prepareReferenceFile(file) {
     return new Promise((resolve, reject) => {
       if (!file || !ALLOWED_TYPE.test(file.type || '')) { reject(new Error('type')); return; }
@@ -66,7 +72,7 @@ export function createMaskReference({ lang, showError, onChange }) {
           const h = Math.max(1, Math.round((img.height || 1) * scale));
           const c = document.createElement('canvas');
           c.width = w; c.height = h;
-          c.getContext('2d').drawImage(img, 0, 0, w, h);
+          /** @type {CanvasRenderingContext2D} */ (c.getContext('2d')).drawImage(img, 0, 0, w, h);
           try { resolve(c.toDataURL('image/png')); } catch (e) { reject(new Error('decode')); }
         };
         img.src = /** @type {string} */ (reader.result);
@@ -75,8 +81,9 @@ export function createMaskReference({ lang, showError, onChange }) {
     });
   }
 
+  /** @param {unknown} err */
   function errorMessage(err) {
-    const tooBig = err && err.message === 'size';
+    const tooBig = !!err && typeof err === 'object' && 'message' in err && err.message === 'size';
     return lang(
       tooBig ? 'pdf.maskEditor.referenceTooLarge' : 'pdf.maskEditor.referenceInvalid',
       tooBig
@@ -87,9 +94,11 @@ export function createMaskReference({ lang, showError, onChange }) {
 
   // Single entry point for both the picker and a drop, so the two behave
   // identically down to the error copy.
+  /** @param {File | null | undefined} file */
   function accept(file) {
     if (!file) return;
     // Convert HEIC/HEIF to JPEG first so it decodes and passes validation.
+    /** @type {Promise<File>} */
     const prep = (window.StagifyHeic && window.StagifyHeic.isHeic(file))
       ? window.StagifyHeic.toDisplayableFile(file)
       : Promise.resolve(file);
@@ -102,9 +111,11 @@ export function createMaskReference({ lang, showError, onChange }) {
   // Highlight the add button while a file-drag hovers any zone, and accept a drop
   // on it. `dragDepth` counts enter/leave across nested children so moving over an
   // inner element doesn't flicker the highlight off.
+  /** @param {HTMLElement[]} zones */
   function wireDropZones(zones) {
     if (!zones.length) return;
     let dragDepth = 0;
+    /** @type {(e: DragEvent) => e is DragEvent & { dataTransfer: DataTransfer }} */
     const hasFiles = (e) =>
       !!e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], 'Files') !== -1;
     const unhighlight = () => { if (els.addBtn) els.addBtn.classList.remove('is-drag-over'); };

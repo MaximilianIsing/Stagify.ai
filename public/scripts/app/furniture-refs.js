@@ -22,8 +22,11 @@ export function createFurnitureRefs(deps) {
     const furnitureFileInput = /** @type {HTMLInputElement} */ (document.getElementById('stagify-furniture-file'));
     const furnitureList = document.getElementById('stagify-furniture-list');
     const furnitureAddBtn = document.getElementById('stagify-furniture-add-btn');
+    /** @type {File[]} */
     let accumulatedFurnitureFiles = [];
+    /** @type {string[]} */
     let furniturePreviewUrls = [];
+    /** @type {HTMLDivElement | null} */
     let furniturePreviewEl = null;
     const FURNITURE_NAME_MAX = 40;
 
@@ -46,10 +49,11 @@ export function createFurnitureRefs(deps) {
       pop.setAttribute('aria-hidden', 'true');
     }
 
+    /** @param {string} previewUrl @param {HTMLElement} anchorEl @param {string} filename */
     function showFurniturePreview(previewUrl, anchorEl, filename) {
       if (!previewUrl || !anchorEl) return;
       var pop = getFurniturePreviewEl();
-      var img = pop.querySelector('img');
+      var img = /** @type {HTMLImageElement} */ (pop.querySelector('img')); // appended by getFurniturePreviewEl
       img.src = previewUrl;
       img.alt = getStagingAlt('furnitureReferenceAlt', { filename: filename || 'furniture photo' });
       pop.classList.remove('hidden');
@@ -164,6 +168,7 @@ export function createFurnitureRefs(deps) {
     // Add files from either the file picker or a drag-and-drop, keeping the
     // accept filter (the OS picker honors `accept`, but dropped files don't) and
     // the 5-photo cap in one place.
+    /** @param {FileList | null} fileList */
     async function addFurnitureFiles(fileList) {
       // Convert any HEIC/HEIF picks to JPEG up front so they pass the filter and
       // render like any other reference photo.
@@ -208,12 +213,13 @@ export function createFurnitureRefs(deps) {
     // list of already-added photos) to add reference photos, same as picking
     // them. Highlights the button while a valid drag is over it.
     (function wireFurnitureDrop() {
-      var zones = [furnitureAddBtn, furnitureList].filter(Boolean);
+      var zones = /** @type {HTMLElement[]} */ ([furnitureAddBtn, furnitureList].filter(Boolean));
       if (!zones.length) return;
       var dragDepth = 0;
       function atLimit() {
         return accumulatedFurnitureFiles.length >= FURNITURE_LIMIT;
       }
+      /** @param {DragEvent} e */
       function hasFiles(e) {
         var dt = e.dataTransfer;
         return !!dt && Array.prototype.indexOf.call(dt.types || [], 'Files') !== -1;

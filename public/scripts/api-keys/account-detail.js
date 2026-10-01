@@ -24,6 +24,12 @@ import { t, plural } from './i18n.js';
 import { formatCount, formatDuration, formatPercent, noValue, percent } from './format.js';
 
 /**
+ * One key's row in the /api/api-keys/usage summary (lib/data/api-billing.js).
+ * @typedef {{ keyId: string | number, delivered?: number, refunded?: number,
+ *   medianMs?: number | null, creditsSpent?: number }} KeyUsageRow
+ */
+
+/**
  * A stat tile. Same shape as key-detail's, because the two panes sit one click apart
  * and a tile that changed size between them would read as a different kind of number.
  * @param {string} label - What it is.
@@ -93,8 +99,8 @@ export function usageDetailHtml(state = {}) {
   const names = new Map(keys.map((k) => [String(k.id), String(k.name || t('apiKeys.key.fallbackName', 'API key'))]));
   const rows = (usage.keys || [])
     .slice()
-    .sort((a, b) => Number(b.delivered || 0) - Number(a.delivered || 0))
-    .map((k) => {
+    .sort((/** @type {KeyUsageRow} */ a, /** @type {KeyUsageRow} */ b) => Number(b.delivered || 0) - Number(a.delivered || 0))
+    .map((/** @type {KeyUsageRow} */ k) => {
       const keyId = String(k.keyId);
       return (
         '<tr>'

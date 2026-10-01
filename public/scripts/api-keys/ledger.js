@@ -17,6 +17,7 @@ import { noValue } from './format.js';
  * is read out. An unknown code prints itself rather than "undefined" — a reason added
  * server-side before the packs catch up should show something a support ticket can
  * quote, not a blank cell.
+ * @type {Record<string, string>}
  */
 const REASONS = {
   purchase: 'Credits purchased',

@@ -9,6 +9,7 @@ export function updateMaskEditorTranslations() {
     return;
   }
 
+  /** @param {string} key */
   const getText = (key) => {
     return window.LanguageSystem.getText(key) || key;
   };

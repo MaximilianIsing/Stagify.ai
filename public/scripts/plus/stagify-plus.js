@@ -18,12 +18,14 @@ var PAYMENT_LINK = 'https://buy.stripe.com/9B6cN5bC24w8aTG1Jf7EQ03';
 var IS_STAGING = false;
 // Last user state applied, so a mid-session language switch can re-render the
 // JS-managed checkout button + hint in the new language.
+/** @type {any} Same StagifyAuth user object applyStripeCheckout takes (untyped, see globals.d.ts). */
 var currentUser = null;
 // True while the button is standing in for checkout as a "create an account" CTA.
 // The handler is bound once PER ELEMENT (see BOUND_FLAG) and reads this, so re-renders
 // — language switch, auth refresh — cannot stack duplicate listeners, and the handler
 // still no-ops if a later render hands the button back to Stripe.
 var needsAccount = false;
+/** @type {'__stagifyPlusCtaBound'} */
 var BOUND_FLAG = '__stagifyPlusCtaBound';
 
 // Survives the sign-up page reload so we can put the buyer back on the button they
@@ -52,6 +54,7 @@ function writeIntent(key, value) {
 
 // Resolve a translation key via the shared language runtime, falling back to
 // the built-in English string until languages/<lang>.json has loaded.
+/** @param {string} key @param {string} fallback @returns {string} */
 function t(key, fallback) {
   var ls = window.LanguageSystem;
   return (ls && typeof ls.getText === 'function') ? ls.getText(key, fallback) : fallback;
@@ -104,7 +107,7 @@ function onCheckoutKeydown(e) {
 export function applyStripeCheckout(user) {
   currentUser = user;
   var hint = document.getElementById('plus-checkout-hint');
-  var link = /** @type {HTMLAnchorElement} */ (document.getElementById('stagify-plus-checkout-link'));
+  var link = /** @type {HTMLAnchorElement & { __stagifyPlusCtaBound?: boolean }} */ (document.getElementById('stagify-plus-checkout-link'));
   var manageWrap = document.getElementById('sp-manage-subscription-wrap');
   var manageBtn = /** @type {HTMLButtonElement} */ (document.getElementById('sp-manage-subscription-btn'));
 

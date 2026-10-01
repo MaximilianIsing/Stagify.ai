@@ -36,6 +36,7 @@ const PAGE = 24;
  * ones, because "which of our five surfaces produced this" is the question being asked.
  * An unrecognised id falls through to the raw value rather than going blank.
  */
+/** @type {Record<string, string>} */
 const SOURCE_LABELS = {
   interior: 'Staging studio',
   exterior: 'Exterior Studio',
@@ -44,7 +45,7 @@ const SOURCE_LABELS = {
   api: 'API',
 };
 
-/** Label and modifier class for each state a row can be in. */
+/** Label and modifier class for each state a row can be in. @param {import('./types.js').AdminRenderEntry} entry */
 function stateOf(entry) {
   if (entry.evicted) return { label: 'Reaped', cls: 'evicted', note: 'Row kept, bytes deleted by the gallery cap.' };
   if (entry.status === 'failed') return { label: 'Failed', cls: 'failed', note: 'This render never produced an image.' };
@@ -56,7 +57,7 @@ function stateOf(entry) {
  * Build the section renderer.
  *
  * @param {object} deps
- * @param {(url: string, method: string, body?: any, isForm?: boolean) => Promise<any>} deps.apiSend Authenticated request helper.
+ * @param {import('./types.js').ApiSend} deps.apiSend Authenticated request helper.
  * @returns {(u: any) => HTMLElement} Renderer for one user's render strip.
  */
 export function createRendersPanel({ apiSend }) {
@@ -87,6 +88,7 @@ export function createRendersPanel({ apiSend }) {
           return;
         }
 
+        /** @type {import('./types.js').AdminRenderEntry[]} */
         const entries = (j && j.entries) || [];
         const total = Number(j && j.total) || 0;
         if (!entries.length) {
@@ -118,7 +120,7 @@ export function createRendersPanel({ apiSend }) {
     return sec;
   };
 
-  /** One render: its picture (or why there isn't one) and the parameters behind it. */
+  /** One render: its picture (or why there isn't one) and the parameters behind it. @param {import('./types.js').AdminRenderEntry} entry */
   function card(entry) {
     const state = stateOf(entry);
     const item = el('div', { className: 'adm-render-item adm-render-item--' + state.cls });
@@ -164,7 +166,7 @@ export function createRendersPanel({ apiSend }) {
       entry.removeFurniture ? ['Removed furniture', 'yes'] : null,
       entry.variation ? ['Variation', String(entry.variation)] : null,
       state.note ? ['State', state.note] : null,
-    ].filter(Boolean);
+    ].filter((f) => f !== null);
     if (facts.length) {
       const dl = el('div', { className: 'adm-render-facts' });
       facts.forEach((f) => {

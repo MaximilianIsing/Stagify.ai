@@ -45,7 +45,7 @@ export function snapshotCanvas(src, w, h) {
   const c = document.createElement('canvas');
   c.width = w;
   c.height = h;
-  c.getContext('2d').drawImage(src, 0, 0);
+  /** @type {CanvasRenderingContext2D} */ (c.getContext('2d')).drawImage(src, 0, 0);
   return c;
 }
 
@@ -61,7 +61,7 @@ export function snapshotCanvas(src, w, h) {
  * @param {{
  *   baseCanvas: HTMLCanvasElement,
  *   drawCanvas: HTMLCanvasElement,
- *   state: { origCanvas: CanvasImageSource, w: number, h: number, coreGrow: number, featherPx: number, editedImg: CanvasImageSource },
+ *   state: { origCanvas: CanvasImageSource, w: number, h: number, coreGrow: number, featherPx: number, editedImg: CanvasImageSource } | null,
  * }} args
  * @returns {void}
  */
@@ -79,7 +79,7 @@ export function renderRefinePreview({ baseCanvas, drawCanvas, state }) {
   }
   const keep = buildBlendMask(drawCanvas, w, h, coreGrow, featherPx);
   const composed = compositeMaskedEditCanvas(origCanvas, keep, editedImg, w, h);
-  const bctx = baseCanvas.getContext('2d');
+  const bctx = /** @type {CanvasRenderingContext2D} */ (baseCanvas.getContext('2d'));
   bctx.clearRect(0, 0, w, h);
   bctx.drawImage(composed, 0, 0);
   bctx.save();

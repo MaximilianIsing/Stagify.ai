@@ -17,6 +17,7 @@ import {
  * @typedef {import('./types.js').MsState} MsState
  * @typedef {import('./types.js').MsLayer} MsLayer
  * @typedef {import('./types.js').MsPaletteEntry} MsPaletteEntry
+ * @typedef {import('./types.js').MsBase} MsBase
  */
 /**
  * @param {{
@@ -29,7 +30,7 @@ import {
  *   resultCanvas: HTMLCanvasElement,
  *   addLayerBtn: HTMLButtonElement,
  *   tx: (key: string, def: string) => string,
- *   showToast: (message: string, type?: string) => void,
+ *   showToast: (message: string, type?: 'error' | 'success') => void,
  *   updateControls: () => void,
  *   scheduleSessionSave: () => void,
  *   updateStageBackdrop: () => void,
@@ -86,6 +87,7 @@ export function createLayersUi(deps) {
     scheduleSessionSave();
   }
 
+  /** @param {string} id */
   function removeLayer(id) {
     const idx = state.layers.findIndex((l) => l.id === id);
     if (idx === -1) return;
@@ -102,6 +104,10 @@ export function createLayersUi(deps) {
     scheduleSessionSave();
   }
 
+  /**
+   * @param {string | null} id
+   * @returns {MsLayer | null}
+   */
   function getLayer(id) {
     return state.layers.find((l) => l.id === id) || null;
   }
@@ -113,8 +119,11 @@ export function createLayersUi(deps) {
   // Thin binding wrappers over the pure area-model helpers (scripts/
   // masking-studio/layers.js): bind the live PALETTE / layers array / tx so
   // every call site below stays unchanged. Logic + tests live in the module.
+  /** @param {MsLayer} layer */
   function layerColor(layer) { return _layerColor(layer, PALETTE); }
+  /** @param {MsLayer} layer */
   function layerTitle(layer) { return _layerTitle(layer, state.layers, tx); }
+  /** @param {MsLayer} layer */
   function statusChip(layer) { return _statusChip(layer, tx); }
 
   // Rebuild the layer cards. Prompt edits mutate state directly (no
@@ -314,6 +323,7 @@ export function createLayersUi(deps) {
           });
           body.appendChild(toggle);
         } else {
+          /** @type {Record<string, string>} */
           const PRESET_DEFAULTS = {
             presetSofa: "Sofa|Add a comfortable modern sofa that fits the room’s style.",
             presetArmchair: 'Armchair|Add a cozy armchair that matches the room.',
@@ -406,7 +416,8 @@ export function createLayersUi(deps) {
           if (state.phase !== 'draw') return;
           snapshotForUndo();
           state.redoStack = []; // committed clear forks history
-          layer.canvasEl.getContext('2d').clearRect(0, 0, state.base.w, state.base.h);
+          const base = /** @type {MsBase} */ (state.base); // a painted area implies a photo
+          /** @type {CanvasRenderingContext2D} */ (layer.canvasEl.getContext('2d')).clearRect(0, 0, base.w, base.h);
           layer.painted = false;
           // All masks, not just this one: neighbors' halos are clipped
           // against this area's (now vacated) pixels.

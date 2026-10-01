@@ -17,8 +17,10 @@
 export function createMaskViewport({ getModal }) {
   // Without this, the fixed top:0 dialog sits behind the URL bar on iOS Safari
   // and its header/buttons get clipped. Desktop is left untouched.
+  /** @type {(() => void) | null} */
   let syncHandler = null;
 
+  /** @param {HTMLElement | null} modal */
   function clearPin(modal) {
     if (!modal) return;
     modal.style.top = '';

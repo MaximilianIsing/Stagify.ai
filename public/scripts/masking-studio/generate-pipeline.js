@@ -12,10 +12,13 @@ import {
   regionNameFromBounds,
   buildAreaContext as _buildAreaContext,
 } from './generation.js';
+import { errorMessage } from '../shared/error-message.js';
 
 /**
  * @typedef {import('./types.js').MsState} MsState
  * @typedef {import('./types.js').MsLayer} MsLayer
+ * @typedef {import('./types.js').MsGenMeta} MsGenMeta
+ * @typedef {import('./types.js').MsBase} MsBase
  */
 /**
  * @param {{
@@ -30,11 +33,11 @@ import {
  *   setView: (v: MsState['view']) => void,
  *   renderLayers: () => void,
  *   updateControls: () => void,
- *   renderBusyDots: (participating?: MsLayer[]) => void,
+ *   renderBusyDots: (participating: MsLayer[]) => void,
  *   hasAnyResults: () => boolean,
  *   getLayer: (id: string) => MsLayer | null,
  *   requestError: (status: number, result: any) => string,
- *   showToast: (message: string, type?: string) => void,
+ *   showToast: (message: string, type?: 'error' | 'success') => void,
  *   tx: (key: string, def: string) => string,
  *   loadImage: (src: string) => Promise<HTMLImageElement>,
  *   computeSpillForDone: (participating?: MsLayer[]) => number,
@@ -66,7 +69,13 @@ export function createGeneratePipeline(deps) {
         // Shared mask math (buildModelMask/buildBlendMask/
         // compositeMaskedEditCanvas) — same module the main tool and the AI
         // Designer use, so the pixel-preservation guarantee is identical.
-        let buildModelMask, buildBlendMask, compositeMaskedEditCanvas;
+        /** @type {typeof import('../mask/mask-core.js').buildModelMask} */
+        let buildModelMask;
+        // Undefined until mask-core loads; compositeAll checks it, the rest await maskCoreReady.
+        /** @type {typeof import('../mask/mask-core.js').buildBlendMask | undefined} */
+        let buildBlendMask;
+        /** @type {typeof import('../mask/mask-core.js').compositeMaskedEditCanvas} */
+        let compositeMaskedEditCanvas;
         const maskCoreReady = import('/scripts/mask/mask-core.js').then((m) => {
           buildModelMask = m.buildModelMask;
           buildBlendMask = m.buildBlendMask;
@@ -76,11 +85,12 @@ export function createGeneratePipeline(deps) {
         // Rough position of a mask inside the photo ("lower left", "center"…)
         // from its bounding box on a small alpha scan — feeds the cross-area
         // context so parallel generations know what lands where.
+        /** @param {HTMLCanvasElement} canvasEl */
         function maskRegionName(canvasEl) {
           const s = 48;
           const c = document.createElement('canvas');
           c.width = s; c.height = s;
-          const sctx = c.getContext('2d');
+          const sctx = /** @type {CanvasRenderingContext2D} */ (c.getContext('2d'));
           sctx.drawImage(canvasEl, 0, 0, s, s);
           const d = sctx.getImageData(0, 0, s, s).data;
           let minX = s, minY = s, maxX = -1, maxY = -1;
@@ -100,6 +110,10 @@ export function createGeneratePipeline(deps) {
         // Areas generate in parallel and never see each other's output, so each
         // prompt carries a sketch of the neighbors' plans — enough for the model
         // to keep lighting, perspective, and style coherent across areas.
+        /**
+         * @param {MsLayer} layer
+         * @param {MsLayer[]} participants
+         */
         function buildAreaContext(layer, participants) {
           return _buildAreaContext(layer, participants, (l) => maskRegionName(l.canvasEl));
         }
@@ -124,16 +138,17 @@ export function createGeneratePipeline(deps) {
         // pw, ph } or null when fewer than two areas are painted (one area owns
         // the whole photo → nothing to split).
         function computePartition() {
+          const base = /** @type {MsBase} */ (state.base); // only reached once a photo is loaded
           const painted = state.layers.filter((l) => l.painted);
           if (painted.length < 2) return null;
-          const scale = Math.min(1, PARTITION_MAX / Math.max(state.base.w, state.base.h));
-          const pw = Math.max(1, Math.round(state.base.w * scale));
-          const ph = Math.max(1, Math.round(state.base.h * scale));
+          const scale = Math.min(1, PARTITION_MAX / Math.max(base.w, base.h));
+          const pw = Math.max(1, Math.round(base.w * scale));
+          const ph = Math.max(1, Math.round(base.h * scale));
           const seeds = painted.map((l) => {
             const c = document.createElement('canvas');
             c.width = pw;
             c.height = ph;
-            const cx = c.getContext('2d', { willReadFrequently: true });
+            const cx = /** @type {CanvasRenderingContext2D} */ (c.getContext('2d', { willReadFrequently: true }));
             cx.drawImage(l.canvasEl, 0, 0, pw, ph);
             const rgba = cx.getImageData(0, 0, pw, ph).data;
             const alpha = new Uint8Array(pw * ph);
@@ -149,7 +164,13 @@ export function createGeneratePipeline(deps) {
         // unpainted photo stays (that's the point), but where two areas compete
         // their halos meet at the midline instead of both editing the same band.
         // null when there is nothing to clip against (only this area is painted).
+        /**
+         * @param {MsLayer} layer
+         * @param {string} [fillColor]
+         * @returns {HTMLCanvasElement | null}
+         */
         function othersStamp(layer, fillColor) {
+          const base = /** @type {MsBase} */ (state.base); // only reached once a photo is loaded
           const part = computePartition();
           if (!part) return null;
           const myIdx = part.painted.indexOf(layer);
@@ -158,7 +179,7 @@ export function createGeneratePipeline(deps) {
           const small = document.createElement('canvas');
           small.width = pw;
           small.height = ph;
-          const sctx = small.getContext('2d');
+          const sctx = /** @type {CanvasRenderingContext2D} */ (small.getContext('2d'));
           const id = sctx.createImageData(pw, ph);
           const d = id.data;
           for (let i = 0; i < labels.length; i++) {
@@ -169,15 +190,15 @@ export function createGeneratePipeline(deps) {
           }
           sctx.putImageData(id, 0, 0);
           const stamp = document.createElement('canvas');
-          stamp.width = state.base.w;
-          stamp.height = state.base.h;
-          const stx = stamp.getContext('2d');
+          stamp.width = base.w;
+          stamp.height = base.h;
+          const stx = /** @type {CanvasRenderingContext2D} */ (stamp.getContext('2d'));
           stx.imageSmoothingEnabled = false; // crisp cell boundary, no gray edge
-          stx.drawImage(small, 0, 0, state.base.w, state.base.h);
+          stx.drawImage(small, 0, 0, base.w, base.h);
           if (fillColor) {
             stx.globalCompositeOperation = 'source-in';
             stx.fillStyle = fillColor;
-            stx.fillRect(0, 0, state.base.w, state.base.h);
+            stx.fillRect(0, 0, base.w, base.h);
           }
           return stamp;
         }
@@ -185,18 +206,29 @@ export function createGeneratePipeline(deps) {
         // buildModelMask / buildBlendMask with the halo clipped to this area's
         // territory: black out (editable-region mask) or erase (compositing
         // mask) every pixel that belongs to another area's cell.
+        /**
+         * @param {MsLayer} layer
+         * @param {number} coreGrow
+         */
         function layerModelMask(layer, coreGrow) {
-          const mask = buildModelMask(layer.canvasEl, state.base.w, state.base.h, coreGrow);
+          const base = /** @type {MsBase} */ (state.base); // only reached once a photo is loaded
+          const mask = buildModelMask(layer.canvasEl, base.w, base.h, coreGrow);
           const stamp = othersStamp(layer, '#000');
-          if (stamp) mask.getContext('2d').drawImage(stamp, 0, 0);
+          if (stamp) /** @type {CanvasRenderingContext2D} */ (mask.getContext('2d')).drawImage(stamp, 0, 0);
           return mask;
         }
 
+        /**
+         * @param {MsLayer} layer
+         * @param {number} coreGrow
+         * @param {number} featherPx
+         */
         function layerBlendMask(layer, coreGrow, featherPx) {
-          const mask = buildBlendMask(layer.canvasEl, state.base.w, state.base.h, coreGrow, featherPx);
+          const base = /** @type {MsBase} */ (state.base); // only reached once a photo is loaded
+          const mask = /** @type {typeof import('../mask/mask-core.js').buildBlendMask} */ (buildBlendMask)(layer.canvasEl, base.w, base.h, coreGrow, featherPx);
           const stamp = othersStamp(layer);
           if (stamp) {
-            const mctx = mask.getContext('2d');
+            const mctx = /** @type {CanvasRenderingContext2D} */ (mask.getContext('2d'));
             mctx.globalCompositeOperation = 'destination-out';
             mctx.drawImage(stamp, 0, 0);
             mctx.globalCompositeOperation = 'source-over';
@@ -204,6 +236,13 @@ export function createGeneratePipeline(deps) {
           return mask;
         }
 
+        /**
+         * @param {MsLayer} layer
+         * @param {string} imageDataUrl - The room photo payload.
+         * @param {number} coreGrow
+         * @param {number} run - state.genRun at dispatch; stale runs are ignored.
+         * @param {string} context - Cross-area prompt context from buildAreaContext.
+         */
         async function runLayer(layer, imageDataUrl, coreGrow, run, context) {
           await maskCoreReady;
           const maskDataUrl = layerModelMask(layer, coreGrow).toDataURL('image/png');
@@ -274,16 +313,21 @@ export function createGeneratePipeline(deps) {
         // so the upload encoding only affects what the model sees inside the
         // masked areas. Flattened onto white in case the source had alpha.
         function roomPayload() {
+          const base = /** @type {MsBase} */ (state.base); // only reached once a photo is loaded
           const c = document.createElement('canvas');
-          c.width = state.base.w;
-          c.height = state.base.h;
-          const ctx = c.getContext('2d');
+          c.width = base.w;
+          c.height = base.h;
+          const ctx = /** @type {CanvasRenderingContext2D} */ (c.getContext('2d'));
           ctx.fillStyle = '#fff';
-          ctx.fillRect(0, 0, state.base.w, state.base.h);
-          ctx.drawImage(state.base.canvas, 0, 0);
+          ctx.fillRect(0, 0, base.w, base.h);
+          ctx.drawImage(base.canvas, 0, 0);
           return c.toDataURL('image/jpeg', 0.92);
         }
 
+        /**
+         * @param {number} doneCount
+         * @param {number} total
+         */
         function updateRunProgress(doneCount, total) {
           progressBar.style.width = Math.round((doneCount / total) * 100) + '%';
           const template = tx('maskingStudio.progressCount', '{done} of {total} areas staged');
@@ -339,7 +383,7 @@ export function createGeneratePipeline(deps) {
               .catch((err) => {
                 if (run !== state.genRun) return;
                 layer.status = 'failed';
-                layer.errorMsg = err && err.message ? err.message : '';
+                layer.errorMsg = errorMessage(err);
               })
               .then(() => {
                 if (run !== state.genRun) return;
@@ -387,6 +431,10 @@ export function createGeneratePipeline(deps) {
         generateBtn.addEventListener('click', generate);
 
         // Pick a different generated version of an area and recomposite.
+        /**
+         * @param {MsLayer} layer
+         * @param {number} idx
+         */
         function selectCandidate(layer, idx) {
           if (!layer.candidates.length || state.phase === 'generating') return;
           layer.candIdx = ((idx % layer.candidates.length) + layer.candidates.length) % layer.candidates.length;
@@ -397,6 +445,7 @@ export function createGeneratePipeline(deps) {
         }
 
         // Re-run a single failed/done area, then rebuild the composite.
+        /** @param {string} id */
         async function retryLayer(id) {
           const layer = getLayer(id);
           if (!layer || !state.base || state.phase === 'generating' || !state.genMeta) return;
@@ -411,7 +460,7 @@ export function createGeneratePipeline(deps) {
           renderLayers();
           updateControls();
           try {
-            await enqueueRun(() => runLayer(layer, roomPayload(), state.genMeta.coreGrow, run, buildAreaContext(layer, state.layers.filter((l) => l.painted))));
+            await enqueueRun(() => runLayer(layer, roomPayload(), /** @type {MsGenMeta} */ (state.genMeta).coreGrow, run, buildAreaContext(layer, state.layers.filter((l) => l.painted))));
             if (run !== state.genRun) return;
             layer.status = 'done';
           } catch (err) {
@@ -420,10 +469,10 @@ export function createGeneratePipeline(deps) {
               // "Try another version" failed but earlier versions survive.
               layer.status = 'done';
               layer.editedImg = layer.candidates[layer.candIdx];
-              showToast(err && err.message ? err.message : tx('errors.processingFailed', 'Something went wrong. Please try again.'), 'error');
+              showToast(errorMessage(err) || tx('errors.processingFailed', 'Something went wrong. Please try again.'), 'error');
             } else {
               layer.status = 'failed';
-              layer.errorMsg = err && err.message ? err.message : '';
+              layer.errorMsg = errorMessage(err);
             }
           }
           compositeAll();
@@ -439,11 +488,12 @@ export function createGeneratePipeline(deps) {
         // each area's feathered mask, so anything never highlighted is the
         // original image, pixel for pixel.
         function compositeAll() {
-          if (!state.base) return;
+          const base = state.base;
+          if (!base) return;
           let acc = document.createElement('canvas');
-          acc.width = state.base.w;
-          acc.height = state.base.h;
-          acc.getContext('2d').drawImage(state.base.canvas, 0, 0);
+          acc.width = base.w;
+          acc.height = base.h;
+          /** @type {CanvasRenderingContext2D} */ (acc.getContext('2d')).drawImage(base.canvas, 0, 0);
           state.layers.forEach((layer) => {
             if (layer.status !== 'done' || !layer.editedImg) return;
             // Strokes edited since the run invalidate the cached mask; rebuild
@@ -453,11 +503,11 @@ export function createGeneratePipeline(deps) {
               layer.blendMask = layerBlendMask(layer, state.genMeta.coreGrow, state.genMeta.featherPx);
             }
             if (layer.blendMask) {
-              acc = compositeMaskedEditCanvas(acc, layer.blendMask, layer.editedImg, state.base.w, state.base.h);
+              acc = compositeMaskedEditCanvas(acc, layer.blendMask, layer.editedImg, base.w, base.h);
             }
           });
-          const ctx = resultCanvas.getContext('2d');
-          ctx.clearRect(0, 0, state.base.w, state.base.h);
+          const ctx = /** @type {CanvasRenderingContext2D} */ (resultCanvas.getContext('2d'));
+          ctx.clearRect(0, 0, base.w, base.h);
           ctx.drawImage(acc, 0, 0);
         }
 
@@ -467,9 +517,10 @@ export function createGeneratePipeline(deps) {
         // After, and each area's raw AI output is ghosted on top so content the
         // model painted just past the strokes stays visible and brushable-in.
         function updateStageBackdrop() {
-          if (!state.base) return;
-          const ctx = baseCanvas.getContext('2d');
-          ctx.clearRect(0, 0, state.base.w, state.base.h);
+          const base = state.base;
+          if (!base) return;
+          const ctx = /** @type {CanvasRenderingContext2D} */ (baseCanvas.getContext('2d'));
+          ctx.clearRect(0, 0, base.w, base.h);
           if (state.phase === 'generating' && hasAnyResults()) {
             // Progressive composite: each finished area lands in the backdrop
             // while the rest of the run is still generating.
@@ -486,10 +537,10 @@ export function createGeneratePipeline(deps) {
             state.layers.forEach((layer) => {
               if (layer.status !== 'done' || !layer.editedImg) return;
               const g = document.createElement('canvas');
-              g.width = state.base.w;
-              g.height = state.base.h;
-              const gctx = g.getContext('2d');
-              gctx.drawImage(layer.editedImg, 0, 0, state.base.w, state.base.h);
+              g.width = base.w;
+              g.height = base.h;
+              const gctx = /** @type {CanvasRenderingContext2D} */ (g.getContext('2d'));
+              gctx.drawImage(layer.editedImg, 0, 0, base.w, base.h);
               const stamp = othersStamp(layer);
               if (stamp) {
                 gctx.globalCompositeOperation = 'destination-out';
@@ -500,7 +551,7 @@ export function createGeneratePipeline(deps) {
             });
             ctx.globalAlpha = 1;
           } else {
-            ctx.drawImage(state.base.canvas, 0, 0);
+            ctx.drawImage(base.canvas, 0, 0);
           }
         }
   return { compositeAll, updateStageBackdrop, selectCandidate, retryLayer };

@@ -114,6 +114,7 @@ export function fillCount(template, n) {
 /** Memoised formatter. Rebuilt only when the tag changes, so a 60-frame count-up does
  *  not construct 60 Intl.NumberFormat instances. Keyed on the resolved tag, so
  *  formatCurrency stays a pure function of its arguments. */
+/** @type {string | undefined} */
 let fmtTag;
 /** @type {((n: number) => string) | null} */
 let fmtFn = null;
@@ -404,7 +405,7 @@ function wireNarLegend(card) {
     if (lit.length) card.setAttribute("data-nar-focus", lit.join(" "));
     else card.removeAttribute("data-nar-focus");
     buttons.forEach((btn) => {
-      btn.classList.toggle("is-lit", lit.includes(btn.getAttribute("data-nar-key")));
+      btn.classList.toggle("is-lit", lit.includes(/** @type {string} */ (btn.getAttribute("data-nar-key"))));
     });
     segments.forEach((seg, segKey) => {
       seg.classList.toggle("is-lit", lit.includes(segKey));
@@ -526,7 +527,7 @@ function initCalculator() {
   let userTouched = false;
 
   /** @param {number} costValue @param {number} weeksValue */
-  function paint(costValue, weeksValue) {
+  const paint = (costValue, weeksValue) => {
     const locale = activeLocale();
     costEl.textContent = formatCurrency(costValue, locale);
     weeksEl.textContent = fillCount(
@@ -540,7 +541,7 @@ function initCalculator() {
     const span = CALC.max - CALC.min;
     const pct = span > 0 ? ((listings - CALC.min) / span) * 100 : 0;
     range.style.setProperty("--calc-pct", pct.toFixed(2) + "%");
-  }
+  };
 
   function paintFinal() {
     paint(costFor(listings), weeksFor(listings));

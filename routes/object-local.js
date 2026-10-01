@@ -60,7 +60,7 @@ export default function createObjectLocalRouter({ objectStore }) {
     if (!fs.existsSync(abs)) return res.status(404).end();
 
     const ext = path.extname(abs).slice(1).toLowerCase();
-    res.setHeader('Content-Type', CONTENT_TYPES[ext] ?? 'application/octet-stream');
+    res.setHeader('Content-Type', /** @type {Record<string, string>} */ (CONTENT_TYPES)[ext] ?? 'application/octet-stream');
     // The URL is already time-limited by its signature, so a cache would only ever
     // serve bytes the signature still covers. `no-store` keeps dev honest anyway —
     // a stale local cache masking a revocation bug is exactly what this route exists

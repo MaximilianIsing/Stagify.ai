@@ -31,7 +31,7 @@ export function initFaqMore(root = document) {
   const btn = /** @type {HTMLElement | null} */ (root.querySelector('.faq-more'));
   if (!plan || !btn) return;
 
-  const setExpanded = (on) => {
+  const setExpanded = (/** @type {boolean} */ on) => {
     plan.classList.toggle(EXPANDED, on);
     btn.setAttribute('aria-expanded', String(on));
   };

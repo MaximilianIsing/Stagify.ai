@@ -39,13 +39,14 @@ import {
 import { rejectionMix, topReasons, rejectionsByDay } from './analytics-rejections.js';
 import { wilsonInterval, foldChange, linearTrend, median } from './stats.js';
 import { MIN_AFFECTED } from './findings.js';
+import { errorMessage } from '../shared/error-message.js';
 
 /** Default window when the model does not name one. Matches the Overview default. */
 const DEFAULT_DAYS = 30;
 /** Default row cap. Enough to reason over, small enough to keep a turn cheap. */
 const DEFAULT_LIMIT = 10;
 
-/** The prompt_logs column behind each segment field the schema offers. */
+/** The prompt_logs column behind each segment field the schema offers. @type {Record<string, number>} */
 const SEGMENT_COL = {
   roomType: COL.PROMPT.ROOM,
   furnitureStyle: COL.PROMPT.STYLE,
@@ -54,24 +55,26 @@ const SEGMENT_COL = {
   removeFurniture: COL.PROMPT.REMOVE,
 };
 
+/** Arguments as the model sent them: untrusted JSON, so every read is clamped or coerced. @typedef {Record<string, unknown> | null | undefined} ToolArgs */
+
 /** Caveats reused across tools, written once so they cannot drift apart. */
 const CAVEAT = {
   attribution: 'Render rows carry an email from the REQUEST BODY, which is "unknown" whenever the client did not '
     + 'send one. Anything counted per-account off the render log is a floor, not a count.',
-  unrecorded: (n) => `${n} render(s) in this window predate outcome logging and have no status. They are excluded `
+  unrecorded: (/** @type {number} */ n) => `${n} render(s) in this window predate outcome logging and have no status. They are excluded `
     + 'rather than counted as successes — do not treat them as either.',
   smallSegment: `Segments with fewer than ${MIN_AFFECTED} failures are shown for completeness but their rates are `
     + 'noise; the 95% interval on each one says how much.',
   cohortBlank: 'Cohort months that have not elapsed yet are null, not 0% — a young cohort has not failed to retain.',
 };
 
-/** Clamp a model-supplied day count into the range the schema promises. */
+/** Clamp a model-supplied day count into the range the schema promises. @param {ToolArgs} args */
 function windowDays(args) {
   const n = Number(args && args.days);
   return Number.isFinite(n) ? Math.min(365, Math.max(1, Math.round(n))) : DEFAULT_DAYS;
 }
 
-/** Clamp a model-supplied row cap. */
+/** Clamp a model-supplied row cap. @param {ToolArgs} args */
 function rowLimit(args, max = 25) {
   const n = Number(args && args.limit);
   return Number.isFinite(n) ? Math.min(max, Math.max(1, Math.round(n))) : DEFAULT_LIMIT;
@@ -82,7 +85,7 @@ function cell(row, idx) {
   return String((row && row[idx]) || '').trim();
 }
 
-/** Rows whose timestamp falls inside the window. */
+/** Rows whose timestamp falls inside the window. @param {string[][]} rows @param {number} idx @param {number} days */
 function withinDays(rows, idx, days) {
   const cutoff = startOfDaysAgo(days).getTime();
   return (rows || []).filter((r) => {
@@ -91,7 +94,7 @@ function withinDays(rows, idx, days) {
   });
 }
 
-/** A rate to one decimal, or null when the denominator is empty. */
+/** A rate to one decimal, or null when the denominator is empty. @param {number} n @param {number} d */
 function pct(n, d) {
   return d > 0 ? Number(((n / d) * 100).toFixed(2)) : null;
 }
@@ -100,15 +103,15 @@ function pct(n, d) {
  * Build the executors.
  *
  * @param {object} deps
- * @param {{data: any}} deps.ctx Shared dashboard state — read through, never captured.
+ * @param {import('./types.js').AdminCtx} deps.ctx Shared dashboard state — read through, never captured.
  * @param {ReturnType<import('./analyst-identity.js').createIdentityMap>} deps.identity
- * @param {() => {findings: any[], failed: string[]}} deps.currentFindings The memoized rules-engine run.
- * @param {(u: any) => string} deps.effectivePlan Plan resolver that folds in enterprise domains.
+ * @param {() => {findings: import('./findings.js').Finding[], failed: string[]}} deps.currentFindings The memoized rules-engine run.
+ * @param {import('./types.js').EffectivePlan} deps.effectivePlan Plan resolver that folds in enterprise domains.
  */
 export function createAnalystTools({ ctx, identity, currentFindings, effectivePlan }) {
   /** Header-stripped tables, once per call rather than once per branch. */
   function tables() {
-    const d = ctx.data || {};
+    const d = ctx.data || /** @type {Partial<import('./types.js').AdminData>} */ ({});
     return {
       prompt: stripHeader(d.promptRows || []),
       chat: stripHeader(d.chatRows || []),
@@ -119,8 +122,9 @@ export function createAnalystTools({ ctx, identity, currentFindings, effectivePl
       metrics: d.metrics || null,
     };
   }
+  /** @typedef {ReturnType<typeof tables>} Tables */
 
-  /** The timestamp stream behind each countable metric the schema offers. */
+  /** The timestamp stream behind each countable metric the schema offers. @param {string} metric @param {Tables} t @returns {string[]} */
   function timestampsFor(metric, t) {
     if (metric === 'renders') return t.prompt.map((r) => cell(r, COL.PROMPT.TS));
     if (metric === 'failures') {
@@ -128,7 +132,7 @@ export function createAnalystTools({ ctx, identity, currentFindings, effectivePl
         .filter((r) => cell(r, COL.PROMPT.STATUS).toLowerCase() === 'failed')
         .map((r) => cell(r, COL.PROMPT.TS));
     }
-    if (metric === 'signups') return t.users.map((u) => u && u.createdAt).filter(Boolean);
+    if (metric === 'signups') return /** @type {string[]} */ (t.users.map((u) => u && u.createdAt).filter(Boolean));
     if (metric === 'chats') return t.chat.map((r) => cell(r, COL.CHAT.TS));
     if (metric === 'maskEdits') return t.mask.map((r) => cell(r, COL.MASK.TS));
     if (metric === 'rejections') return t.rejection.map((r) => cell(r, COL.REJECTION.TS));
@@ -137,6 +141,7 @@ export function createAnalystTools({ ctx, identity, currentFindings, effectivePl
 
   // ── The executors ─────────────────────────────────────────────────────────
 
+  /** @param {ToolArgs} args */
   function segmentBreakdown(args) {
     const t = tables();
     const field = String((args && args.field) || 'roomType');
@@ -193,6 +198,7 @@ export function createAnalystTools({ ctx, identity, currentFindings, effectivePl
     };
   }
 
+  /** @param {ToolArgs} args */
   function timeSeries(args) {
     const t = tables();
     const metric = String((args && args.metric) || 'renders');
@@ -214,6 +220,7 @@ export function createAnalystTools({ ctx, identity, currentFindings, effectivePl
     };
   }
 
+  /** @param {ToolArgs} args */
   function compareWindows(args) {
     const t = tables();
     const metric = String((args && args.metric) || 'renders');
@@ -251,6 +258,7 @@ export function createAnalystTools({ ctx, identity, currentFindings, effectivePl
     };
   }
 
+  /** @param {ToolArgs} args */
   function renderOutcomes(args) {
     const t = tables();
     const days = windowDays(args);
@@ -285,6 +293,7 @@ export function createAnalystTools({ ctx, identity, currentFindings, effectivePl
     };
   }
 
+  /** @param {ToolArgs} args */
   function rejectionBreakdown(args) {
     const t = tables();
     const days = windowDays(args);
@@ -336,6 +345,7 @@ export function createAnalystTools({ ctx, identity, currentFindings, effectivePl
     };
   }
 
+  /** @param {ToolArgs} args */
   function accountLookup(args) {
     const t = tables();
     const index = activityIndex();
@@ -345,6 +355,7 @@ export function createAnalystTools({ ctx, identity, currentFindings, effectivePl
     const days = windowDays(args);
 
     /** Every row goes through here, so an email cannot reach a payload by accident. */
+    /** @param {import('./types.js').AdminUser} u @param {Record<string, unknown>} extra */
     const row = (u, extra) => ({
       account: identity.handleFor(u),
       plan: effectivePlan(u),
@@ -395,10 +406,10 @@ export function createAnalystTools({ ctx, identity, currentFindings, effectivePl
     if (filter === 'recent_signups') {
       const cutoff = startOfDaysAgo(days).getTime();
       const recent = t.users
-        .filter((u) => Date.parse(u && u.createdAt) >= cutoff)
-        .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+        .filter((u) => Date.parse(/** @type {string} */ (u && u.createdAt)) >= cutoff)
+        .sort((a, b) => Date.parse(/** @type {string} */ (b.createdAt)) - Date.parse(/** @type {string} */ (a.createdAt)));
       return {
-        rows: recent.slice(0, limit).map((u) => row(u, { signedUpDaysAgo: Math.floor((now - Date.parse(u.createdAt)) / 86400000) })),
+        rows: recent.slice(0, limit).map((u) => row(u, { signedUpDaysAgo: Math.floor((now - Date.parse(/** @type {string} */ (u.createdAt))) / 86400000) })),
         unit: 'accounts',
         totals: { signups: recent.length, window: `${days} days` },
         caveats: [],
@@ -428,6 +439,7 @@ export function createAnalystTools({ ctx, identity, currentFindings, effectivePl
     const m = t.metrics;
     // Top-account lists are stripped of user ids and re-keyed to handles: the raw
     // ids are stable across deployments and are not ours to hand out.
+    /** @param {Array<{userId: string, renders?: number, bytes?: number, blobs?: number}> | undefined} list */
     const top = (list) => (list || []).map((r) => ({
       account: identity.handleFor({ id: r.userId }),
       ...(r.renders !== undefined ? { renders: r.renders } : {}),
@@ -520,7 +532,7 @@ export function createAnalystTools({ ctx, identity, currentFindings, effectivePl
     try {
       return JSON.stringify(fn(args));
     } catch (error) {
-      return JSON.stringify({ error: `The ${call.name} tool failed: ${(error && error.message) || 'unknown error'}` });
+      return JSON.stringify({ error: `The ${call.name} tool failed: ${errorMessage(error, 'unknown error')}` });
     }
   }
 

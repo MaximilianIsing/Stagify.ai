@@ -39,8 +39,8 @@ export function buildCompare({
   container, beforeUrl, afterUrl, beforeAlt, afterAlt, beforeImg, afterImg,
   rangeLabel, valueText, doc, onImage,
 }) {
-  const before = beforeImg ?? el('img', { doc, attrs: { src: beforeUrl, alt: beforeAlt ?? '' } });
-  const after = afterImg ?? el('img', { doc, attrs: { src: afterUrl, alt: afterAlt ?? '' } });
+  const before = beforeImg ?? el('img', { doc, attrs: { src: /** @type {string} */ (beforeUrl), alt: beforeAlt ?? '' } });
+  const after = afterImg ?? el('img', { doc, attrs: { src: /** @type {string} */ (afterUrl), alt: afterAlt ?? '' } });
   // Applied rather than assumed, so a caller's own image lands in the clipped layer without
   // having to know the class name.
   after.className = 'compare__after';

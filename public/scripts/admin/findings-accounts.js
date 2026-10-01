@@ -37,6 +37,8 @@ import { ratio } from './stats.js';
 import { finding, suppressed, fmtCount, fmtPct, fmtBytes, MIN_AFFECTED } from './findings.js';
 import { capHitDaysByPerson, capHitCoverage } from './analytics-rejections.js';
 
+/** @typedef {import('./types.js').RuleInput} RuleInput */
+
 const AREA = 'Revenue';
 
 /** Days of silence after which a paying account is worth chasing. */
@@ -53,9 +55,10 @@ const QUIET_DAYS = 14;
 const atRiskPaying = {
   id: 'revenue.at-risk-paying',
   area: AREA,
+  /** @param {RuleInput} input */
   run(input) {
     const users = input.users || [];
-    const index = input.index || { byEmail: {}, byUserId: {}, rendersByEmail: {} };
+    const index = input.index || { byEmail: {}, byUserId: {}, rendersByEmail: {}, firstRenderByEmail: {} };
     const result = atRiskPayingAccounts(users, index, { now: input.now, quietDays: QUIET_DAYS });
 
     if (!result.paying) return null; // Nothing is being paid for; not a finding.
@@ -124,6 +127,7 @@ const atRiskPaying = {
 const compGrantsLapsing = {
   id: 'revenue.comp-grants',
   area: AREA,
+  /** @param {RuleInput} input */
   run(input) {
     const expiring = expiringCompGrants(input.users || [], { now: input.now, withinDays: 7 });
     if (!expiring.length) return null;
@@ -169,6 +173,7 @@ const compGrantsLapsing = {
 const trialEndingUnsent = {
   id: 'revenue.trial-ending-unsent',
   area: AREA,
+  /** @param {RuleInput} input */
   run(input) {
     const users = input.users || [];
     const mails = trialEmailsSent(users);
@@ -218,6 +223,7 @@ const trialEndingUnsent = {
 const shareVirality = {
   id: 'revenue.share-virality',
   area: AREA,
+  /** @param {RuleInput} input */
   run(input) {
     const shares = input.metrics && input.metrics.shares;
     if (!shares || typeof shares !== 'object') return null;
@@ -234,7 +240,7 @@ const shareVirality = {
       { label: 'Ever opened', value: `${fmtCount(shares.viewed)} (${fmtPct((openRate || 0) * 100)})` },
       { label: 'Total views', value: fmtCount(shares.views) },
       perShare ? { label: 'Views per opened link', value: perShare.toFixed(1) } : null,
-    ].filter(Boolean);
+    ].filter((e) => e !== null);
 
     if (openRate !== null && openRate < 0.2) {
       return finding({
@@ -280,11 +286,13 @@ const shareVirality = {
 const storageOutliers = {
   id: 'revenue.storage-outliers',
   area: AREA,
+  /** @param {RuleInput} input */
   run(input) {
     const storage = input.metrics && input.metrics.storage;
     if (!storage || !storage.bytes) return null;
     // Array.isArray rather than `|| []` — the pack arrives over the wire, and a
     // truthy non-array satisfies `||` and then throws on .map.
+    /** @type {Array<{userId: string, bytes: number}>} */
     const topAccounts = Array.isArray(storage.topAccounts) ? storage.topAccounts : [];
 
     const users = input.users || [];
@@ -307,7 +315,7 @@ const storageOutliers = {
       { label: 'Blobs', value: fmtCount(storage.blobs) },
       { label: 'Reference images', value: `${fmtCount(storage.refCount)} (${fmtBytes(storage.refBytes)})` },
       top[0] ? { label: 'Largest account', value: `${fmtBytes(top[0].bytes)} (${fmtPct((top[0].share || 0) * 100)})` } : null,
-    ].filter(Boolean);
+    ].filter((e) => e !== null);
 
     if (!freeHeavy.length) return null;
     return finding({
@@ -343,6 +351,7 @@ const storageOutliers = {
 const enterpriseUnderuse = {
   id: 'revenue.enterprise-underuse',
   area: AREA,
+  /** @param {RuleInput} input */
   run(input) {
     const spread = enterpriseUsageSpread(input.enterprise || []);
     if (!spread.active) return null;
@@ -412,10 +421,11 @@ const enterpriseUnderuse = {
 const upgradeCandidates = {
   id: 'revenue.upgrade-candidates',
   area: AREA,
+  /** @param {RuleInput} input */
   run(input) {
     const users = input.users || [];
     const planOf = input.effectivePlan || ((u) => (u && u.plan) || 'free');
-    const index = input.index || { byEmail: {}, byUserId: {}, rendersByEmail: {} };
+    const index = input.index || { byEmail: {}, byUserId: {}, rendersByEmail: {}, firstRenderByEmail: {} };
 
     const free = users.filter((u) => planOf(u) === 'free');
     if (free.length < 5) return null;
@@ -478,7 +488,7 @@ const upgradeCandidates = {
         measured && cov.ratio !== null && cov.ratio < 1
           ? { label: 'Unattributed refusals', value: `${fmtCount(cov.total - cov.attributed)} of ${fmtCount(cov.total)}` }
           : null,
-      ].filter(Boolean),
+      ].filter((e) => e !== null),
       accounts: candidates.slice(0, 10).map((c) => ({
         email: String(c.user.email || ''),
         id: String(c.user.id || ''),
@@ -510,6 +520,7 @@ const upgradeCandidates = {
 const paidMix = {
   id: 'revenue.paid-mix',
   area: AREA,
+  /** @param {RuleInput} input */
   run(input) {
     const users = input.users || [];
     if (users.length < 15) return null;

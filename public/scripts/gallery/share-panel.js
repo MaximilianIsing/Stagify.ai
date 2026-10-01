@@ -22,7 +22,7 @@
  * @param {{
  *   byId: (id: string) => any,
  *   t: (key: string, fallback: string, vars?: Record<string, any>) => string,
- *   plural: (base: string, count: number, fallbacks: Record<string, string>, vars?: any) => string,
+ *   plural: (base: string, count: number, fallbacks: { one: string, other: string }, vars?: Record<string, string | number>) => string,
  *   copyText: (text: string, opts?: any) => Promise<boolean>,
  *   updateShareSettings: (id: string, settings: Record<string, any>, fetchImpl?: typeof fetch)
  *     => Promise<{ ok: boolean }>,

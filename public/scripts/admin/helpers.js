@@ -4,8 +4,18 @@
 
 import { copyText } from '../shared/clipboard.js';
 
-export function qs(s){return document.querySelector(s)}
+// qs is for nodes the admin.html markup always has, so it is typed non-null.
+/** @param {string} s @returns {HTMLElement} */
+export function qs(s){return /** @type {HTMLElement} */ (document.querySelector(s))}
+/** @param {string} s @returns {NodeListOf<HTMLElement>} */
 export function qsa(s){return document.querySelectorAll(s)}
+/**
+ * @template {keyof HTMLElementTagNameMap} K
+ * @param {K} tag
+ * @param {Record<string, string> | null} [a] - className / textContent / attributes.
+ * @param {Array<Node | string | null | undefined | false>} [ch]
+ * @returns {HTMLElementTagNameMap[K]}
+ */
 export function el(tag,a,ch){
   var e=document.createElement(tag);
   if(a)Object.keys(a).forEach(function(k){if(k==='className')e.className=a[k];else if(k==='textContent')e.textContent=a[k];else e.setAttribute(k,a[k])});
@@ -20,6 +30,7 @@ export { escapeHtml as esc } from '../shared/escape-html.js';
 
 // ── CSV parser (RFC 4180 compliant) ──
 
+/** @param {string} text @returns {string[][]} */
 export function parseCSV(text){
   if(!text||!text.trim())return[];
   var rows=[],row=[],field='',inQ=false;
@@ -32,16 +43,23 @@ export function parseCSV(text){
   return rows;
 }
 
+/** @param {string | null | undefined} iso @returns {string} */
 export function fmtDate(iso){if(!iso)return'\u2014';try{return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}catch(e){return iso}}
-export function fmtDateTime(iso){if(!iso)return'\u2014';try{return new Date(iso).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}catch(e){return iso}}
+/** ISO string or epoch ms (render rows carry the latter). @param {string | number | null | undefined} iso @returns {string} */
+export function fmtDateTime(iso){if(!iso)return'\u2014';try{return new Date(iso).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}catch(e){return String(iso)}}
+/** @param {number} n @returns {Date} */
 export function daysAgo(n){var d=new Date();d.setDate(d.getDate()-n);d.setHours(0,0,0,0);return d}
 
+/** @param {string} plan */
 export function badge(plan){var cls=plan==='pro'?'pro':plan==='enterprise'?'enterprise':'free';return el('span',{className:'adm-badge adm-badge-'+cls,textContent:plan})}
+/** @param {string | null | undefined} s */
 export function statusBadge(s){var c=s==='active'?'active':s==='trialing'?'trialing':'cancelled';return el('span',{className:'adm-badge adm-badge-'+c,textContent:s||'unknown'})}
+/** @param {{ googleSub?: string | null }} u */
 export function authBadge(u){return el('span',{className:'adm-badge '+(u.googleSub?'adm-badge-google':'adm-badge-email'),textContent:u.googleSub?'Google':'Email'})}
 
 // ── SVG icons ──
 
+/** @type {Record<string, string>} */
 export var ICONS={
   users:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>',
   pro:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
@@ -54,12 +72,14 @@ export var ICONS={
   mask:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><line x1="2" y1="2" x2="9.586" y2="9.586"/><circle cx="11" cy="11" r="2"/></svg>'
 };
 
+/** @param {string} name @param {string} colorClass */
 export function iconDiv(name,colorClass){
   var d=el('div',{className:'adm-stat-icon '+colorClass});
   d.innerHTML=ICONS[name]||'';
   return d;
 }
 
+/** @param {string | null | undefined} ua */
 export function isStrictEmailClientProxyUa(ua){
   var s=String(ua||'').toLowerCase().trim();
   if(!s||s==='unknown')return false;
@@ -71,6 +91,7 @@ export function isStrictEmailClientProxyUa(ua){
   return false;
 }
 
+/** @param {number | string | null | undefined} n @returns {string} */
 export function fmtBytes(n){
   n=Number(n)||0;
   if(n<1024)return n+' B';
@@ -80,9 +101,11 @@ export function fmtBytes(n){
 
 // The two-path copy itself now lives in scripts/shared/clipboard.js, shared with the gallery's
 // share-link button. This keeps the (text, btn) call shape the four admin call sites use.
+/** @param {string} text @param {HTMLElement | null} [btn] */
 export function copyToClipboard(text,btn){
   var done=function(){if(!btn)return;var o=btn.textContent;btn.textContent='Copied!';setTimeout(function(){btn.textContent=o},1200)};
   copyText(text).then(done,done);
 }
 
+/** @param {{ path?: string, id: string }} img */
 export function fullHostUrl(img){return location.origin+(img.path||('/i/'+img.id))}

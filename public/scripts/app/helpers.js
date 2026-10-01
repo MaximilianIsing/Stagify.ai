@@ -6,6 +6,7 @@
 // modern Node (>=20).
 
 // Clamp a display filename to `maxLen` chars, adding an ellipsis when clipped.
+/** @param {string | null | undefined} name @param {number} maxLen */
 export function abbreviateFileName(name, maxLen) {
   var s = String(name || '');
   if (s.length <= maxLen) return s;
@@ -14,6 +15,7 @@ export function abbreviateFileName(name, maxLen) {
 
 // Decode a `data:<mime>;base64,<data>` URL into a File (for re-uploading a
 // committed canvas result). Falls back to image/png + "photo.png".
+/** @param {string} dataUrl @param {string} [filename] */
 export function dataURLToFile(dataUrl, filename) {
   const arr = dataUrl.split(',');
   const mimeMatch = arr[0].match(/:(.*?);/);

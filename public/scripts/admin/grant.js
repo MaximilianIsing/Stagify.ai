@@ -22,7 +22,7 @@ export function grantActive(u) {
  * Build the section renderer.
  *
  * @param {object} deps
- * @param {(url: string, method: string, body?: any, isForm?: boolean) => Promise<any>} deps.apiSend Mutating request helper (holds the session key).
+ * @param {import('./types.js').ApiSend} deps.apiSend Mutating request helper (holds the session key).
  * @param {() => void} deps.onChanged Called after a successful grant/revoke so the caller can re-render.
  */
 export function createGrantSection({ apiSend, onChanged }) {

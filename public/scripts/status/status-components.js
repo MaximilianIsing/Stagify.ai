@@ -15,6 +15,7 @@
  * English component names, used when the pack has not loaded (or lacks the key).
  * Kept here rather than in the markup because the rows are built by JS, so there is no
  * `data-lang` element for the language runtime to fill in.
+ * @type {Record<string, string>}
  */
 export const FALLBACK_NAMES = {
   app: 'Website & API',
@@ -28,6 +29,7 @@ export const FALLBACK_NAMES = {
 };
 
 /** Identity fallback, so every helper works with no language runtime at all. */
+/** @type {(key: string, fallback: string) => string} */
 const identity = (key, fallback) => fallback;
 
 /**
@@ -61,12 +63,16 @@ export function componentReason(component, t) {
  */
 export function stateLabel(state, t) {
   const lookup = typeof t === 'function' ? t : identity;
+  /** @type {Record<string, string>} */
   const known = { operational: 'Operational', degraded: 'Degraded', down: 'Down', unknown: 'Unknown' };
   const key = Object.prototype.hasOwnProperty.call(known, state) ? state : 'unknown';
   return lookup('status.components.state.' + key, known[key]);
 }
 
-/** The modifier class for a component pill. An unrecognized state reads as unknown. */
+/**
+ * The modifier class for a component pill. An unrecognized state reads as unknown.
+ * @param {string} state
+ */
 export function stateClass(state) {
   return 'is-' + (['operational', 'degraded', 'down'].indexOf(state) === -1 ? 'unknown' : state);
 }
@@ -112,6 +118,7 @@ export function bannerText(data, t) {
  *
  * Every shape is a 24x24 stroked outline, so one CSS rule sizes and colours the lot.
  * test/frontend/status-components.test.js fails if a component id has no entry.
+ * @type {Record<string, Array<[string, Record<string, string>]>>}
  */
 export const COMPONENT_ICONS = {
   // globe

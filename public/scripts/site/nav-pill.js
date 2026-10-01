@@ -6,12 +6,13 @@
   "use strict";
 
   function init() {
-    const nav = document.querySelector(".site-header .nav-center");
+    // Non-null cast: the guard below still runs, but the hoisted helpers lose its narrowing.
+    const nav = /** @type {HTMLElement} */ (document.querySelector(".site-header .nav-center"));
     if (!nav) return;
 
     // Include every link, even ones currently hidden (the pro-only AI Designer
     // link starts hidden and is revealed later for Pro users).
-    const links = Array.from(nav.querySelectorAll(".nav-link"));
+    const links = /** @type {HTMLElement[]} */ (Array.from(nav.querySelectorAll(".nav-link")));
     if (!links.length) return;
 
     nav.classList.add("nav--pill");
@@ -29,26 +30,30 @@
     // them. Without this a hrefless element read as `""`, which matchesPage()
     // treated as an in-page anchor and therefore as the CURRENT page — the pill
     // would have claimed Staging was active on every page of the site.
+    /** @param {Element} a @returns {string[]} */
     function targetsOf(a) {
       const group = a.closest("[data-nav-group]");
       if (group) {
-        return Array.from(group.querySelectorAll("a[href]")).map((x) => x.getAttribute("href"));
+        // Selected by a[href], so every one has the attribute.
+        return Array.from(group.querySelectorAll("a[href]")).map((x) => /** @type {string} */ (x.getAttribute("href")));
       }
       const own = a.getAttribute("href");
       return own === null ? [] : [own];
     }
 
+    /** @param {Element} a */
     function matchesPage(a) {
       return targetsOf(a).some((raw) => {
         const path = raw.split("#")[0];
         // A pure in-page anchor (e.g. href="#contact") points at the current page.
         if (path === "") return true;
-        const href = path.split("/").pop().toLowerCase();
+        const href = /** @type {string} */ (path.split("/").pop()).toLowerCase();
         return href === here || (here === "" && href === "index.html");
       });
     }
     // A link counts as usable only if it's actually laid out (not display:none
     // via .hidden or the .desktop-only mobile rule).
+    /** @param {HTMLElement | null} el */
     function isVisible(el) {
       return !!el && !el.classList.contains("hidden") && el.offsetParent !== null;
     }
@@ -64,16 +69,22 @@
     // a position:relative container (the dropdown panel anchors to it). Reading
     // offsetLeft raw then measured from inside that wrapper, i.e. ~0, and parked
     // the pill at the far left of the nav instead of on the trigger.
+    /** @param {HTMLElement} el */
     function offsetIn(el) {
       let x = 0;
       let y = 0;
-      for (let node = el; node && node !== nav; node = node.offsetParent) {
+      for (
+        let node = /** @type {HTMLElement | null} */ (el);
+        node && node !== nav;
+        node = /** @type {HTMLElement | null} */ (node.offsetParent)
+      ) {
         x += node.offsetLeft;
         y += node.offsetTop;
       }
       return { x, y };
     }
 
+    /** @param {HTMLElement} el @param {HTMLElement} lit */
     function moveTo(el, lit) {
       // Unaffected by scroll/transforms, so it stays correct across clicks and
       // navigation.
@@ -90,7 +101,7 @@
     // belongs to a hovered link — a held state, not a new resting place.
     function openTrigger() {
       const group = nav.querySelector("[data-nav-group][data-open]");
-      return group ? group.querySelector(".nav-link") : null;
+      return group ? /** @type {HTMLElement | null} */ (group.querySelector(".nav-link")) : null;
     }
 
     function rest() {
@@ -130,6 +141,7 @@
 
     // Re-settle when widths change (fonts, language switch, resize).
     if ("ResizeObserver" in window) {
+      /** @type {number} */
       let raf;
       const ro = new ResizeObserver(() => {
         cancelAnimationFrame(raf);

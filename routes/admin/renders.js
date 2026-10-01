@@ -67,7 +67,7 @@ export function shapeAdminRender({ render, blobs, presign }) {
   // An evicted row still exists and still answers "what did they ask for" — only
   // its bytes are gone. Minting URLs for keys that were tombstoned would produce
   // links that 404, which reads as a broken viewer rather than as a reaped render.
-  const url = (role) => (!evicted && byRole[role] ? presign(byRole[role]) : '');
+  const url = (/** @type {string} */ role) => (!evicted && byRole[role] ? presign(byRole[role]) : '');
   return {
     id: render.id,
     createdAt: render.created_at,
@@ -95,7 +95,7 @@ export function shapeAdminRender({ render, blobs, presign }) {
  * Build the admin render-inspector router.
  *
  * @param {{
- *   stagedRenders: any,
+ *   stagedRenders: ReturnType<typeof import('../../lib/data/staged-renders.js').createStagedRenders>,
  *   objectStore: import('../../lib/data/object-store.js').ObjectStore,
  *   protectLogs: import('express').RequestHandler,
  *   setSensitiveHeaders: (res: import('express').Response) => void,
@@ -135,7 +135,7 @@ export function createAdminRendersRouter(deps) {
       ? stagedRenders.blobsForRenders(rows.map((r) => r.id))
       : new Map();
 
-    const presign = (key) => objectStore.presignGet(key, { ttlMs: ADMIN_URL_TTL_MS });
+    const presign = (/** @type {string} */ key) => objectStore.presignGet(key, { ttlMs: ADMIN_URL_TTL_MS });
     const entries = rows.map((render) => shapeAdminRender({
       render,
       // A row can legitimately have no blobs — tombstoned out from under a status

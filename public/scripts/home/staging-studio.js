@@ -34,6 +34,7 @@
 
     /* ---- before/after wipe ---- */
     let pos = 50;
+    /** @param {number} p */
     function setPos(p) {
       pos = Math.max(0, Math.min(100, p));
       ba.style.setProperty("--pos", pos + "%");
@@ -83,6 +84,7 @@
       return document.documentElement.dataset.imvRotate === "90";
     }
 
+    /** @param {PointerEvent} e */
     function pct(e) {
       const r = ba.getBoundingClientRect();
       if (rotated()) return ((e.clientY - r.top) / r.height) * 100;
@@ -154,6 +156,7 @@
        by the pattern and are what a screen-reader user reaches for first; Home/End
        jump to the pure "before" and pure "after" frames, which is the single most
        useful thing this control can do and was previously 25 keypresses away. */
+    /** @type {Record<string, number>} */
     const KEY_STEPS = {
       ArrowLeft: -4,
       ArrowDown: -4,
@@ -184,9 +187,11 @@
       const startPos = 50;
       const peak = 74;
       const t0 = performance.now();
+      /** @param {number} t */
       function ease(t) {
         return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
       }
+      /** @param {number} now */
       function frame(now) {
         // Any live pointer on the widget wins over the hint — including a touch
         // that has not locked to an axis yet, so the sweep never fights a thumb.

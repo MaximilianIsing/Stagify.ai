@@ -20,9 +20,14 @@ import { renderList, selectionFromHash, hashFor, defaultSelection } from './insp
 import { keyDetailHtml, renameFormHtml } from './key-detail.js';
 import { usageDetailHtml, billingDetailHtml } from './account-detail.js';
 
+/** @param {string} id */
 const el = (id) => document.getElementById(id);
 
-/** Everything the page draws itself from. Mutated in place; never read from the DOM. */
+/**
+ * Everything the page draws itself from. Mutated in place; never read from the DOM.
+ * The records are the API's JSON as-is, which the islands also take untyped.
+ * @type {{ keys: any[], credits: any, usage: any, packs: any[], selected: string | null, filter: string, renaming: string | null }}
+ */
 const state = {
   keys: [],
   credits: null,
@@ -80,7 +85,7 @@ function showApp() {
  * @returns {any} The row, or undefined.
  */
 function usageForKey(keyId) {
-  return (state.usage?.keys || []).find((k) => String(k.keyId) === String(keyId));
+  return (state.usage?.keys || []).find((/** @type {import('./account-detail.js').KeyUsageRow} */ k) => String(k.keyId) === String(keyId));
 }
 
 /**
@@ -95,7 +100,7 @@ function usageForKey(keyId) {
  */
 function bucketsForKey(keyId) {
   const rows = state.usage?.keys || [];
-  const active = rows.filter((k) => Number(k.delivered || 0) + Number(k.refunded || 0) > 0);
+  const active = rows.filter((/** @type {import('./account-detail.js').KeyUsageRow} */ k) => Number(k.delivered || 0) + Number(k.refunded || 0) > 0);
   const soleOwner = active.length === 1 && String(active[0].keyId) === String(keyId);
   return soleOwner ? (state.usage.buckets || []) : [];
 }
@@ -335,6 +340,7 @@ async function rename(id, name) {
 // The id of the last key minted in this page's lifetime. Held here rather than passed
 // through the dialog because onCreate is already this file's own callback — the dialog
 // has no reason to learn about records to hand one back.
+/** @type {string | number | null} */
 let lastCreatedId = null;
 
 const dialog = createKeyDialog({

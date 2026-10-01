@@ -14,7 +14,7 @@ import { qs, el } from './helpers.js';
  * Build the Emails-tab controller.
  *
  * @param {object} deps
- * @param {(url: string, method: string, body?: any, isForm?: boolean) => Promise<any>} deps.apiSend
+ * @param {import('./types.js').ApiSend} deps.apiSend
  *   Mutating/JSON request helper from the entry (holds the session key). Used for
  *   both the GET preview fetch and the POST test-send.
  */
@@ -24,7 +24,9 @@ export function createEmailsPanel({ apiSend }) {
   var _recipient = '';
   /** @type {HTMLButtonElement[]} */
   var _sendButtons = [];
+  /** One catalog email as GET /api/admin/email-previews lists it. @typedef {{id: string, label?: string, category?: string, subject?: string, description?: string, html: string}} EmailPreview */
 
+  /** @param {string | null | undefined} v */
   function validEmail(v) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v || '').trim());
   }
@@ -44,6 +46,7 @@ export function createEmailsPanel({ apiSend }) {
   // Wrap the raw email HTML in a minimal white-background document so bare-markup
   // emails (the account emails) don't show the dark dashboard through the iframe,
   // and so emoji render with an explicit charset. Preview-only chrome.
+  /** @param {string} html */
   function frameDoc(html) {
     return '<!doctype html><html><head><meta charset="utf-8">' +
       '<meta name="viewport" content="width=device-width, initial-scale=1"></head>' +
@@ -52,6 +55,7 @@ export function createEmailsPanel({ apiSend }) {
       '<body style="margin:0;background:#ffffff;display:flow-root">' + html + '</body></html>';
   }
 
+  /** @param {EmailPreview} email */
   function card(email) {
     var c = el('div', { className: 'adm-email-card' });
 
@@ -80,13 +84,14 @@ export function createEmailsPanel({ apiSend }) {
       try {
         var doc = frame.contentDocument;
         if (!doc || !doc.body) return;
+        var body = doc.body;
         var fit = function () {
           // body, not documentElement: documentElement.scrollHeight is floored at
           // the iframe's own height, so measuring it lets the frame grow and never
           // shrink — every preview then sits at the CSS default with dead space
           // under a two-line email. frameDoc's `display:flow-root` is what makes
           // the body measurement trustworthy.
-          var h = Math.min(900, Math.max(120, doc.body.scrollHeight + 8));
+          var h = Math.min(900, Math.max(120, body.scrollHeight + 8));
           frame.style.height = h + 'px';
         };
         fit();
@@ -132,6 +137,7 @@ export function createEmailsPanel({ apiSend }) {
     return c;
   }
 
+  /** @param {EmailPreview[] | null | undefined} emails */
   function render(emails) {
     var gallery = qs('#adm-email-gallery');
     if (!gallery) return;

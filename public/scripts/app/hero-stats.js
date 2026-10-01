@@ -36,6 +36,7 @@ export function updateHeroFreeGensLine() {
 // if the markup and this selector ever drift: no error, no request, two blank spaces where
 // the numbers should be. The class is the contract — it is also read in count-up.js and
 // asserted in e2e/index.spec.js.
+/** @param {{ refresh?: boolean }} [options] */
 export function loadHeroStats(options) {
     if (!document.querySelector('.hp-stat__num[data-stat]')) return;
 

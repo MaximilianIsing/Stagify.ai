@@ -70,7 +70,9 @@ export function formatStagedAt(ms) {
  * @param {{ manifest: any, doc?: Document }} arg @returns {Element | null}
  */
 function renderFacts({ manifest, doc }) {
+  /** @type {HTMLElement[]} */
   const items = [];
+  /** @param {string | null | undefined} value */
   const add = (value) => {
     if (!value) return;
     items.push(el('span', { doc, className: 'sh-facts__item', text: value }));
@@ -124,6 +126,7 @@ export function renderGallery({ gallery, manifest, onOpen, doc }) {
       // wrong. `sizes` mirrors the layout in share.css — 852px inside the 900px column,
       // full width below that breakpoint — because a wrong `sizes` makes the choice wrong
       // in exactly the way this is fixing.
+      /** @type {Record<string, string>} */
       const attrs = {
         src: frame.url,
         alt: label ? `${label}, virtually staged` : 'Virtually staged room',
@@ -228,6 +231,7 @@ export function renderAgent({ container, agent, doc }) {
     return;
   }
 
+  /** @param {'mailto' | 'tel'} scheme @param {string} value */
   const link = (scheme, value) => {
     const href = contactHref(scheme, value);
     return el('li', {
@@ -271,6 +275,7 @@ export function createLightbox({ root, img, close, doc }) {
     opener = null;
   }
 
+  /** @param {string} url @param {string} [label] */
   function show(url, label) {
     if (!root || !img) return;
     opener = ownerDoc?.activeElement ?? null;
@@ -281,12 +286,12 @@ export function createLightbox({ root, img, close, doc }) {
   }
 
   close?.addEventListener('click', hide);
-  root?.addEventListener('click', (event) => {
+  root?.addEventListener('click', (/** @type {MouseEvent} */ event) => {
     // Only the backdrop — clicking the image itself must not dismiss it, which is the
     // most common accidental close on a touchscreen.
     if (event.target === root) hide();
   });
-  ownerDoc?.addEventListener('keydown', (event) => {
+  ownerDoc?.addEventListener('keydown', (/** @type {KeyboardEvent} */ event) => {
     if (event.key === 'Escape' && root && !root.hidden) hide();
   });
 

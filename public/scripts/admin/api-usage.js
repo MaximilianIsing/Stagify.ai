@@ -90,7 +90,7 @@ export function refundRate(delivered, refunded) {
  * Build the API-usage tab controller.
  *
  * @param {object} deps
- * @param {(url: string, method: string, body?: any, isForm?: boolean) => Promise<any>} deps.apiSend
+ * @param {import('./types.js').ApiSend} deps.apiSend
  *   Request helper from the entry (holds the admin session credential).
  * @returns {{ init: () => void, ensureLoaded: () => void, reset: () => void }} The panel.
  */
@@ -140,6 +140,7 @@ export function createApiUsagePanel({ apiSend }) {
 
   // ── Stat cards ────────────────────────────────────────────────────────────
 
+  /** @param {{icon: string, tone?: string, label: string, value: string, hint?: string}} spec */
   function statCard(spec) {
     var tone = spec.tone || 'blue';
     var card = el('div', { className: 'adm-stat adm-stat--' + tone });
@@ -204,6 +205,7 @@ export function createApiUsagePanel({ apiSend }) {
     host.innerHTML = '';
     if (!_usage) return;
 
+    /** @type {import('./types.js').ApiUsageBucket[]} */
     var buckets = _usage.buckets || [];
     var delivered = _usage.traffic.delivered;
     var refunded = _usage.traffic.refunded;
@@ -255,6 +257,7 @@ export function createApiUsagePanel({ apiSend }) {
 
     // Who the traffic belongs to. Ranked bars rather than a second time series:
     // the question here is concentration — whether the API is one customer or ten.
+    /** @type {import('./types.js').ApiUsageAccount[]} */
     var accounts = _usage.accounts || [];
     var top = accounts.slice(0, RANKED_TOP).filter(function (a) { return a.delivered > 0; });
     host.appendChild(chartCard({
@@ -277,6 +280,7 @@ export function createApiUsagePanel({ apiSend }) {
     host.innerHTML = '';
     if (!_usage) return;
 
+    /** @type {import('./types.js').ApiUsageAccount[]} */
     var accounts = _usage.accounts || [];
     var count = qs('#adm-api-account-count');
     if (count) count.textContent = String(_usage.accountsTotal || 0);

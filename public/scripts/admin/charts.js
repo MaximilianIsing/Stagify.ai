@@ -47,7 +47,7 @@ export const PALETTE = ['#3b62d9', '#8557d9', '#0e9b8e', '#cf8a25', '#d1467a', '
 
 /**
  * @param {string} tag
- * @param {Record<string, string|number>} [attrs]
+ * @param {Record<string, string|number> | null} [attrs]
  * @param {Array<Node|string|null>} [children]
  * @returns {SVGElement}
  */
@@ -61,6 +61,7 @@ function svg(tag, attrs, children) {
   return node;
 }
 
+/** @param {string | number} text */
 function tip(text) { return svg('title', null, [String(text)]); }
 
 /** Thousands separators for tooltips/captions. @param {number} n @returns {string} */
@@ -171,6 +172,7 @@ export function legend(items) {
 }
 
 // Horizontal gridlines + their value labels, drawn behind every cartesian chart.
+/** @param {number} top @param {number} plotH @param {number} plotW @param {number} left @param {number} max @param {number} ticks */
 function gridLines(top, plotH, plotW, left, max, ticks) {
   const g = svg('g', { class: 'adm-grid' });
   for (let i = 0; i <= ticks; i++) {
@@ -187,6 +189,7 @@ function gridLines(top, plotH, plotW, left, max, ticks) {
 // forced last label is off the stride, so it can land almost on top of the
 // preceding one — hence the clearance check, which drops the strided label
 // instead of letting the two collide.
+/** @param {Array<{label: string, short?: string}>} points @param {number} top @param {number} plotH @param {number} plotW @param {number} left @param {number} maxLabels */
 function xLabels(points, top, plotH, plotW, left, maxLabels) {
   const g = svg('g');
   const last = points.length - 1;
@@ -225,8 +228,8 @@ export function areaChart(points, opts = {}) {
   const plotH = height - top - bottom;
   const max = niceMax(Math.max.apply(null, points.map((p) => p.value)));
   const slot = plotW / points.length;
-  const xAt = (i) => left + slot * i + slot / 2;
-  const yAt = (v) => top + plotH - (plotH * (v / max));
+  const xAt = (/** @type {number} */ i) => left + slot * i + slot / 2;
+  const yAt = (/** @type {number} */ v) => top + plotH - (plotH * (v / max));
 
   const root = svg('svg', {
     viewBox: '0 0 ' + vbW + ' ' + height,
@@ -335,7 +338,7 @@ export function stackedBarChart(points, opts = {}) {
   const bottom = 30;
   const plotW = vbW - left - 16;
   const plotH = height - top - bottom;
-  const sum = (p) => p.values.reduce((a, b) => a + (Number(b) || 0), 0);
+  const sum = (/** @type {{values: number[]}} */ p) => p.values.reduce((a, b) => a + (Number(b) || 0), 0);
   const max = niceMax(Math.max.apply(null, points.map(sum)));
   const slot = plotW / points.length;
   const barW = Math.max(2, Math.min(slot * 0.68, 46));

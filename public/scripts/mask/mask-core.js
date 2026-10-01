@@ -13,10 +13,17 @@
 // Turn the user's brush strokes into a solid white-on-transparent mask grown
 // outward by `grow` px (the "secret brush size increase" — covers slightly more
 // than the user actually painted so small under-brushing is forgiven).
+/**
+ * @param {CanvasImageSource} drawSrc - The brush strokes (canvas or image).
+ * @param {number} w
+ * @param {number} h
+ * @param {number} grow
+ * @returns {HTMLCanvasElement}
+ */
 export function growBinaryMask(drawSrc, w, h, grow) {
   const bin = document.createElement('canvas');
   bin.width = w; bin.height = h;
-  const bctx = bin.getContext('2d');
+  const bctx = /** @type {CanvasRenderingContext2D} */ (bin.getContext('2d'));
   bctx.drawImage(drawSrc, 0, 0, w, h);
   const id = bctx.getImageData(0, 0, w, h);
   const d = id.data;
@@ -27,7 +34,7 @@ export function growBinaryMask(drawSrc, w, h, grow) {
   bctx.putImageData(id, 0, 0);
   const grown = document.createElement('canvas');
   grown.width = w; grown.height = h;
-  const gctx = grown.getContext('2d');
+  const gctx = /** @type {CanvasRenderingContext2D} */ (grown.getContext('2d'));
   const steps = 28;
   const ringStep = Math.max(2, grow / 5);
   for (let r = grow; r > 0; r -= ringStep) {
@@ -43,11 +50,18 @@ export function growBinaryMask(drawSrc, w, h, grow) {
 // White-on-black opaque mask for the model: the grown brushed region the AI is
 // allowed to edit. Sending the grown mask (not the raw brush) is what makes the
 // secret brush increase actually enlarge the edit.
+/**
+ * @param {CanvasImageSource} drawSrc - The brush strokes (canvas or image).
+ * @param {number} w
+ * @param {number} h
+ * @param {number} grow
+ * @returns {HTMLCanvasElement}
+ */
 export function buildModelMask(drawSrc, w, h, grow) {
   const grown = growBinaryMask(drawSrc, w, h, grow);
   const out = document.createElement('canvas');
   out.width = w; out.height = h;
-  const octx = out.getContext('2d');
+  const octx = /** @type {CanvasRenderingContext2D} */ (out.getContext('2d'));
   octx.fillStyle = '#000';
   octx.fillRect(0, 0, w, h);
   octx.drawImage(grown, 0, 0);
@@ -58,11 +72,19 @@ export function buildModelMask(drawSrc, w, h, grow) {
 // gradual alpha falloff over featherPx so the edited region fades into the
 // original with no visible seam. The alpha channel is the blend weight
 // (1 = fully edited, 0 = fully original).
+/**
+ * @param {CanvasImageSource} drawSrc
+ * @param {number} w
+ * @param {number} h
+ * @param {number} coreGrow
+ * @param {number} featherPx
+ * @returns {HTMLCanvasElement}
+ */
 export function buildBlendMask(drawSrc, w, h, coreGrow, featherPx) {
   const grown = growBinaryMask(drawSrc, w, h, coreGrow + featherPx);
   const out = document.createElement('canvas');
   out.width = w; out.height = h;
-  const octx = out.getContext('2d');
+  const octx = /** @type {CanvasRenderingContext2D} */ (out.getContext('2d'));
   let blurred = false;
   try {
     if (typeof octx.filter !== 'undefined') {
@@ -94,22 +116,38 @@ export function buildBlendMask(drawSrc, w, h, coreGrow, featherPx) {
 // Hard-composite the AI output onto the original: keep the original everywhere,
 // paste the edited pixels only inside the (expanded) mask. This makes it
 // physically impossible for unbrushed areas to change.
+/**
+ * @param {CanvasImageSource} origCanvas
+ * @param {CanvasImageSource} keepMask
+ * @param {CanvasImageSource} editedImg
+ * @param {number} w
+ * @param {number} h
+ * @returns {HTMLCanvasElement}
+ */
 export function compositeMaskedEditCanvas(origCanvas, keepMask, editedImg, w, h) {
   const me = document.createElement('canvas');
   me.width = w; me.height = h;
-  const mctx = me.getContext('2d');
+  const mctx = /** @type {CanvasRenderingContext2D} */ (me.getContext('2d'));
   mctx.drawImage(editedImg, 0, 0, w, h);
   mctx.globalCompositeOperation = 'destination-in';
   mctx.drawImage(keepMask, 0, 0, w, h);
   const out = document.createElement('canvas');
   out.width = w; out.height = h;
-  const octx = out.getContext('2d');
+  const octx = /** @type {CanvasRenderingContext2D} */ (out.getContext('2d'));
   octx.drawImage(origCanvas, 0, 0);
   octx.drawImage(me, 0, 0);
   return out;
 }
 
 // Same composite, returned as a PNG data URL (used when committing a version).
+/**
+ * @param {CanvasImageSource} origCanvas
+ * @param {CanvasImageSource} keepMask
+ * @param {CanvasImageSource} editedImg
+ * @param {number} w
+ * @param {number} h
+ * @returns {string}
+ */
 export function compositeMaskedEdit(origCanvas, keepMask, editedImg, w, h) {
   return compositeMaskedEditCanvas(origCanvas, keepMask, editedImg, w, h).toDataURL('image/png');
 }

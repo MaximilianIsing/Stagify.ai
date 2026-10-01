@@ -34,15 +34,18 @@ export function init3DTiltEffect() {
     if (!tiltSupported(window)) return;
 
     // Tilt is only for the contact cards.
-    const contactCards = document.querySelectorAll('.contact-card');
+    const contactCards = /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('.contact-card'));
     contactCards.forEach((card) => {
       applyTiltEffectToElement(card);
     });
 }
 
+/** @param {HTMLElement} element */
 function applyTiltEffectToElement(element) {
     let isHovering = false;
+    /** @type {DOMRect | null} */
     let rect = null;        // cached on enter so we don't force a layout read per move
+    /** @type {number | null} */
     let rafId = null;
     let lastX = 0, lastY = 0;
 
@@ -58,7 +61,7 @@ function applyTiltEffectToElement(element) {
       element.style.transform = 'rotateX(0deg) rotateY(0deg)';
     });
 
-    element.addEventListener('mousemove', function(e) {
+    element.addEventListener('mousemove', function(/** @type {MouseEvent} */ e) {
       if (!isHovering || !rect) return;
       lastX = e.clientX;
       lastY = e.clientY;
@@ -67,8 +70,9 @@ function applyTiltEffectToElement(element) {
       rafId = requestAnimationFrame(function() {
         rafId = null;
         // Calculate rotation values (max 8 degrees) from the cached rect.
-        const rotateY = ((lastX - (rect.left + rect.width / 2)) / (rect.width / 2)) * 8;
-        const rotateX = -((lastY - (rect.top + rect.height / 2)) / (rect.height / 2)) * 8;
+        const r = /** @type {DOMRect} */ (rect); // set on enter; mousemove bails without it
+        const rotateY = ((lastX - (r.left + r.width / 2)) / (r.width / 2)) * 8;
+        const rotateX = -((lastY - (r.top + r.height / 2)) / (r.height / 2)) * 8;
         element.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
       });
     });

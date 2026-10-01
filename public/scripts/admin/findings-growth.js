@@ -24,6 +24,8 @@ import { linearTrend, changePoint, projectToPeriodEnd, mean, foldChange } from '
 import { activationLagDays } from './analytics-users.js';
 import { finding, suppressed, fmtCount, fmtPct } from './findings.js';
 
+/** @typedef {import('./types.js').RuleInput} RuleInput */
+
 const AREA = 'Growth';
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -49,20 +51,22 @@ function cell(row, idx) {
  * by a person in one timezone and "today" has to mean their today.
  *
  * @param {string[]} stamps ISO timestamps.
+ * @param {number} days
+ * @param {number} now
  * @returns {number[]}
  */
 function dailySeries(stamps, days, now) {
   /** @type {Record<string, number>} */
   const buckets = {};
-  for (let i = days - 1; i >= 0; i--) buckets[dayKeyLocal(new Date(now - i * DAY_MS))] = 0;
+  for (let i = days - 1; i >= 0; i--) buckets[String(dayKeyLocal(new Date(now - i * DAY_MS)))] = 0;
   for (const s of stamps) {
-    const key = dayKeyLocal(s);
+    const key = String(dayKeyLocal(s));
     if (key in buckets) buckets[key] += 1;
   }
   return Object.keys(buckets).sort().map((k) => buckets[k]);
 }
 
-/** Render timestamps, header already stripped by the caller. */
+/** Render timestamps, header already stripped by the caller. @param {RuleInput} input @returns {string[]} */
 function renderStamps(input) {
   return (input.promptRows || []).map((r) => cell(r, COL.PROMPT.TS)).filter(Boolean);
 }
@@ -78,6 +82,7 @@ function renderStamps(input) {
 const volumeTrend = {
   id: 'growth.volume-trend',
   area: AREA,
+  /** @param {RuleInput} input */
   run(input) {
     const stamps = renderStamps(input);
     if (stamps.length < MIN_RENDERS) {
@@ -98,7 +103,7 @@ const volumeTrend = {
       { label: 'Renders per day, the 21 before', value: priorMean.toFixed(1) },
       { label: 'Renders in the window', value: fmtCount(series.reduce((a, b) => a + b, 0)) },
       fit ? { label: 'Trend', value: `${fit.slope >= 0 ? '+' : ''}${fit.slope.toFixed(2)}/day` } : null,
-    ].filter(Boolean);
+    ].filter((e) => e !== null);
 
     // A zero prior mean means the product only started being used this week.
     // "Infinitely more than nothing" is not a growth rate, so say the plain thing.
@@ -160,6 +165,7 @@ const volumeTrend = {
 const monthProjection = {
   id: 'growth.month-projection',
   area: AREA,
+  /** @param {RuleInput} input */
   run(input) {
     const stamps = renderStamps(input);
     if (stamps.length < MIN_RENDERS) return null; // volumeTrend already reported the thin case.
@@ -189,7 +195,7 @@ const monthProjection = {
       { label: 'Projected month end', value: fmtCount(Math.round(projection.projected)) },
       { label: 'Pace used', value: `${projection.rate.toFixed(1)}/day (last 7 days)` },
       lastMonth > 0 ? { label: 'Last month', value: fmtCount(lastMonth) } : null,
-    ].filter(Boolean);
+    ].filter((e) => e !== null);
 
     const direction = vsLast === null ? null : vsLast >= 1 ? 'ahead of' : 'behind';
     return finding({
@@ -226,6 +232,7 @@ const monthProjection = {
 const trendChangePoint = {
   id: 'growth.change-point',
   area: AREA,
+  /** @param {RuleInput} input */
   run(input) {
     const stamps = renderStamps(input);
     if (stamps.length < MIN_RENDERS * 2) return null;
@@ -254,9 +261,9 @@ const trendChangePoint = {
       evidence: [
         { label: 'Before', value: `${step.before.toFixed(1)} renders/day` },
         { label: 'After', value: `${step.after.toFixed(1)} renders/day` },
-        { label: 'Changed around', value: dayKeyLocal(when) },
+        { label: 'Changed around', value: /** @type {string} */ (dayKeyLocal(when)) },
         magnitude ? { label: 'Change', value: `${rose ? '+' : ''}${fmtPct((magnitude - 1) * 100)}` } : null,
-      ].filter(Boolean),
+      ].filter((e) => e !== null),
       action: `Check what shipped or launched around ${dayKeyLocal(when)} — a deploy, a campaign link, or an `
         + 'outage. The Referrals tab dates campaign traffic, and the Server status tab dates incidents.',
       sample: stamps.length,
@@ -277,8 +284,9 @@ const trendChangePoint = {
 const activationLag = {
   id: 'growth.activation-lag',
   area: AREA,
+  /** @param {RuleInput} input */
   run(input) {
-    const lag = activationLagDays(input.users || [], input.index || { firstRenderByEmail: {} });
+    const lag = activationLagDays(input.users || [], input.index || { byEmail: {}, byUserId: {}, rendersByEmail: {}, firstRenderByEmail: {} });
     const MIN = 10;
     if (lag.sample < MIN) {
       return suppressed(`Time-to-first-render needs ${MIN} activated accounts with a signup date; there are ${lag.sample}.`);
@@ -336,6 +344,7 @@ const activationLag = {
 const neverActivated = {
   id: 'growth.never-activated',
   area: AREA,
+  /** @param {RuleInput} input */
   run(input) {
     const users = input.users || [];
     const MIN = 15;
@@ -346,8 +355,8 @@ const neverActivated = {
     const metrics = input.metrics;
     const groundTruth = Boolean(metrics && metrics.renders && Number.isFinite(metrics.renders.distinctUsers));
     const activated = groundTruth
-      ? metrics.renders.distinctUsers
-      : users.filter((u) => (input.index && input.index.rendersByEmail[String(u.email || '').toLowerCase()]) > 0).length;
+      ? /** @type {Record<string, any>} */ (metrics).renders.distinctUsers
+      : users.filter((u) => ((input.index && input.index.rendersByEmail[String(u.email || '').toLowerCase()]) || 0) > 0).length;
 
     const never = Math.max(0, users.length - activated);
     const pct = (never / users.length) * 100;

@@ -8,7 +8,8 @@
 // below still register in time. No-ops on pages without #background-video.
 
 export function initBackgroundVideoSync() {
-  const $ = (sel) => document.querySelector(sel);
+  // Only ever asked for #background-video.
+  const $ = (/** @type {string} */ sel) => /** @type {HTMLVideoElement | null} */ (document.querySelector(sel));
 
     // Background video synchronization across page navigation
     const BACKGROUND_VIDEO_KEY = 'stagify_background_video_time';
@@ -38,12 +39,13 @@ export function initBackgroundVideoSync() {
      *
      * @param {() => void} fn
      */
-    const onReady = (fn) => {
+    const onReady = (/** @type {() => void} */ fn) => {
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn);
         else fn();
     };
 
     // Also store time periodically while video is playing
+    /** @type {ReturnType<typeof setInterval> | undefined} */
     let timeStoreInterval;
     onReady(() => {
         const video = $('#background-video');

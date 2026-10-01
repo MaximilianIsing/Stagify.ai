@@ -87,6 +87,7 @@ export default function createChatRouter(deps) {
   // before req.body exists, so it sees only `Authorization: Bearer`, while the handler
   // sees the header AND the form field. Reusing requireProAccount itself makes the two
   // replies byte-identical — a caller refused here would have been refused there.
+  /** @type {import('express').RequestHandler} */
   const requireProBeforeUpload = (req, res, next) => (requireProAccount(req, res) ? next() : undefined);
 
   /**

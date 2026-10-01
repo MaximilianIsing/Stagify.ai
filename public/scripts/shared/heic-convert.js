@@ -23,6 +23,8 @@ const HEIC_TYPES = ['image/heic', 'image/heif', 'image/heic-sequence', 'image/he
 /**
  * True if `file` looks like HEIC/HEIF by MIME type, or by a .heic/.heif extension
  * when the browser reports an empty/generic type. Pure over { type, name }.
+ * @param {{ type?: string, name?: string } | null | undefined} file
+ * @returns {boolean}
  */
 export function isHeic(file) {
   if (!file) return false;
@@ -38,10 +40,12 @@ export function isHeic(file) {
  * Identify an image by its real leading bytes, not its name/extension. Returns
  * 'heic' | 'jpeg' | 'png' | 'webp' | 'gif' | 'avif' | null. Content wins because
  * files often lie about their extension (e.g. a JPEG saved as ".heic").
+ * @param {ArrayLike<number> | null | undefined} bytes
+ * @returns {'heic' | 'jpeg' | 'png' | 'webp' | 'gif' | 'avif' | null}
  */
 export function sniff(bytes) {
   if (!bytes || bytes.length < 12) return null;
-  var ascii = function (i, n) {
+  var ascii = function (/** @type {number} */ i, /** @type {number} */ n) {
     var s = '';
     for (var j = i; j < i + n && j < bytes.length; j++) s += String.fromCharCode(bytes[j]);
     return s;
@@ -63,6 +67,7 @@ export function sniff(bytes) {
 (function () {
   'use strict';
 
+  /** @type {Promise<NonNullable<Window['heic2any']>> | null} */
   var loaderPromise = null;
   function loadLibrary() {
     if (window.heic2any) return Promise.resolve(window.heic2any);
@@ -86,6 +91,7 @@ export function sniff(bytes) {
 
   // A minimal, self-contained "converting" toast so every call site gets user
   // feedback for free (HEIC decode can take a second or two on large photos).
+  /** @type {HTMLDivElement | null} */
   var toastEl = null;
   var toastCount = 0;
   function showToast() {
@@ -127,23 +133,27 @@ export function sniff(bytes) {
     }
   }
 
+  /** @type {Record<string, string>} */
   var MIME_BY_KIND = { jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', gif: 'image/gif', avif: 'image/avif' };
+  /** @type {Record<string, string>} */
   var EXT_BY_KIND = { jpeg: '.jpg', png: '.png', webp: '.webp', gif: '.gif', avif: '.avif' };
 
+  /** @param {File} file @returns {Promise<Uint8Array | null>} */
   function readHeader(file) {
     if (file.slice && file.slice(0, 32).arrayBuffer) {
-      return file.slice(0, 32).arrayBuffer().then(function (buf) { return new Uint8Array(buf); });
+      return file.slice(0, 32).arrayBuffer().then(function (/** @type {ArrayBuffer} */ buf) { return new Uint8Array(buf); });
     }
     return Promise.resolve(null);
   }
 
+  /** @param {File} file @param {number} quality @returns {Promise<File>} */
   function convertHeic(file, quality) {
     showToast();
     return loadLibrary()
-      .then(function (convert) {
+      .then(function (/** @type {NonNullable<Window['heic2any']>} */ convert) {
         return convert({ blob: file, toType: 'image/jpeg', quality: quality });
       })
-      .then(function (result) {
+      .then(function (/** @type {Blob | Blob[]} */ result) {
         var blob = Array.isArray(result) ? result[0] : result;
         var baseName = (file.name || 'photo').replace(HEIC_EXT, '');
         return new File([blob], baseName + '.jpg', {
@@ -158,10 +168,11 @@ export function sniff(bytes) {
   // HEIC by type/extension; genuine HEIC is converted, while a mislabeled file
   // (real JPEG/PNG/etc. with a .heic name) is simply re-tagged so it passes
   // validation and preview without a pointless conversion.
+  /** @param {File} file @param {{ quality?: number }} [opts] @returns {Promise<File>} */
   function toDisplayableFile(file, opts) {
     if (!isHeic(file)) return Promise.resolve(file);
     var quality = (opts && typeof opts.quality === 'number') ? opts.quality : 0.92;
-    return readHeader(file).then(function (bytes) {
+    return readHeader(file).then(function (/** @type {Uint8Array | null} */ bytes) {
       var kind = sniff(bytes);
       if (kind && kind !== 'heic') {
         // Already a decodable image — just correct the MIME/extension.

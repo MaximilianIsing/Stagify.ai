@@ -9,6 +9,14 @@
 // bounding box of its painted pixels on a `size`×`size` scan. `maxX < 0` means
 // nothing was painted, so there is no region. The entry computes the bounds by
 // scanning the layer canvas; the classification is pure and lives here.
+/**
+ * @param {number} minX
+ * @param {number} minY
+ * @param {number} maxX
+ * @param {number} maxY
+ * @param {number} size
+ * @returns {string}
+ */
 export function regionNameFromBounds(minX, minY, maxX, maxY, size) {
   if (maxX < 0) return '';
   const cx = (minX + maxX) / 2 / size;
@@ -26,6 +34,12 @@ export function regionNameFromBounds(minX, minY, maxX, maxY, size) {
 // lighting, perspective, and style coherent across areas. `resolveRegion(layer)`
 // yields the region phrase (the entry wires it to a canvas scan); returns '' when
 // no other painted area exists.
+/**
+ * @param {import('./types.js').MsLayer} layer
+ * @param {import('./types.js').MsLayer[]} participants
+ * @param {(layer: import('./types.js').MsLayer) => string} resolveRegion
+ * @returns {string}
+ */
 export function buildAreaContext(layer, participants, resolveRegion) {
   const others = participants.filter((l) => l !== layer && l.painted);
   if (!others.length) return '';
@@ -56,6 +70,13 @@ export function buildAreaContext(layer, participants, resolveRegion) {
 // with the dialog, and inventing a fourth string to say the same thing as the button now
 // sitting on screen behind the toast is how eleven packs grow copy nobody reads.
 // `translate(key, fallback)` localizes each message.
+/**
+ * @param {number} status
+ * @param {{ error?: string } | null | undefined} result - The parsed JSON body, if any.
+ * @param {(key: string, fallback: string) => string} translate
+ * @param {(() => void) | null} [onGate]
+ * @returns {string}
+ */
 export function requestError(status, result, translate, onGate) {
   if (status === 401 || status === 403) {
     if (onGate) onGate();

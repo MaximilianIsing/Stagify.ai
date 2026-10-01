@@ -2,24 +2,26 @@
         // ---- i18n helpers ------------------------------------------------------
         // Resolve a translation key via the shared language runtime, falling back
         // to the built-in English string until languages/<lang>.json has loaded.
+        /** @param {string} key @param {string} fallback @returns {string} */
         function t(key, fallback) {
           var ls = window.LanguageSystem;
           return (ls && typeof ls.getText === 'function') ? ls.getText(key, fallback) : fallback;
         }
         // Fill {name} placeholders in a template with values from `vars`.
+        /** @param {string} str @param {Record<string, string | number>} vars @returns {string} */
         function interpolate(str, vars) {
           return String(str).replace(/\{(\w+)\}/g, function (m, k) {
-            return Object.prototype.hasOwnProperty.call(vars, k) ? vars[k] : m;
+            return Object.prototype.hasOwnProperty.call(vars, k) ? String(vars[k]) : m;
           });
         }
 
         var domainInput = /** @type {HTMLInputElement} */ (document.getElementById('ent-domain'));
         var hintEl = document.getElementById('ent-domain-hint');
-        var form = document.getElementById('ent-form');
-        var formCard = document.getElementById('ent-form-card');
-        var successCard = document.getElementById('ent-success');
+        var form = /** @type {HTMLElement} */ (document.getElementById('ent-form'));
+        var formCard = /** @type {HTMLElement} */ (document.getElementById('ent-form-card'));
+        var successCard = /** @type {HTMLElement} */ (document.getElementById('ent-success'));
         var successLine = document.getElementById('ent-success-line');
-        var errorEl = document.getElementById('ent-error');
+        var errorEl = /** @type {HTMLElement} */ (document.getElementById('ent-error'));
         var submitBtn = /** @type {HTMLButtonElement} */ (document.getElementById('ent-submit-btn'));
 
         // Domain shown in the field hint — an example until the visitor types.
@@ -84,6 +86,7 @@
         domainInput.addEventListener('input', renderHint);
         renderHint();
 
+        /** @param {string} msg */
         function showError(msg) {
           errorEl.textContent = msg;
           errorEl.classList.remove('hidden');

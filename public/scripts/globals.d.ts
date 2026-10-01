@@ -47,7 +47,7 @@ declare global {
     getConversationHistory?: () => any[];
     /** Toast notifier (scripts/shared/toast.js), bridged onto window for the classic
      *  (non-module) scripts the AI Designer loads, which cannot import it. */
-    showToast?: (message: string, type?: string) => void;
+    showToast?: (message: string, type?: 'error' | 'success') => void;
     /** Mounts one walkthrough player into a `.designer-demo[data-demo]` host.
      *  Published by designer-demo.js so studio-showcase.js can mount just the
      *  carousel panel that is in front, instead of every player on the page. */

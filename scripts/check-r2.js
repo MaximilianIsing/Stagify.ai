@@ -18,6 +18,7 @@
 import '../load-env.js';
 import { createObjectStore } from '../lib/data/object-store.js';
 import { keyForRender, newRenderId } from '../lib/data/object-keys.js';
+import { errorMessage } from '../lib/errors.js';
 
 const REQUIRED = ['R2_ACCOUNT_ENDPOINT', 'R2_RENDERS_BUCKET', 'R2_ACCESS_KEY_ID', 'R2_SECRET_ACCESS_KEY'];
 
@@ -60,7 +61,7 @@ try {
   console.log(`  put       ok (${put.bytes} bytes)`);
 } catch (e) {
   fail(
-    `PUT was refused: ${e?.message}\n`
+    `PUT was refused: ${errorMessage(e)}\n`
     + '          A 403 here usually means the API token is not scoped to this bucket,\n'
     + '          or it is Read-only rather than Object Read & Write.\n'
     + '          A 404 usually means the bucket name is wrong or it does not exist yet.',
@@ -72,7 +73,7 @@ try {
   if (!head) fail('HEAD found nothing straight after a successful PUT — wrong bucket?');
   console.log(`  head      ok (${head.bytes} bytes)`);
 } catch (e) {
-  fail(`HEAD was refused: ${e?.message}`);
+  fail(`HEAD was refused: ${errorMessage(e)}`);
 }
 
 // The half that actually matters for the share page: a URL fetched with NO credentials.
@@ -91,8 +92,8 @@ try {
   if (text !== body.toString()) fail('the presigned URL returned different bytes than were uploaded.');
   console.log('  presign   ok (fetched with no headers, bytes match)');
 } catch (e) {
-  if (e?.message?.includes('presigned')) throw e;
-  fail(`the presigned GET failed: ${e?.message}`);
+  if (errorMessage(e).includes('presigned')) throw e;
+  fail(`the presigned GET failed: ${errorMessage(e)}`);
 }
 
 try {
@@ -102,7 +103,7 @@ try {
   console.log('  delete    ok');
 } catch (e) {
   fail(
-    `DELETE was refused: ${e?.message}\n`
+    `DELETE was refused: ${errorMessage(e)}\n`
     + '          The tombstone reaper needs this, or erased accounts leave bytes behind.',
   );
 }

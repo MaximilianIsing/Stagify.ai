@@ -28,6 +28,7 @@
 import { readStampOptions } from '../app/stamp-style-row.js';
 
 /** Mime → file extension, for naming a download after whatever we actually got back. */
+/** @type {Record<string, string>} */
 const EXT = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp' };
 
 /**
@@ -41,7 +42,7 @@ const EXT = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp' };
  */
 function extensionFor(dataUrl) {
   const mime = /^data:([^;]+)/.exec(String(dataUrl || ''))?.[1];
-  return EXT[mime] || 'png';
+  return EXT[mime ?? ''] || 'png';
 }
 
 /**

@@ -30,12 +30,19 @@ function launch() {
   resize();
   window.addEventListener('resize', resize);
 
+  /** @param {number} a @param {number} b */
   const rand = (a, b) => a + Math.random() * (b - a);
+  /**
+   * @type {Array<{ x: number, y: number, vx: number, vy: number, size: number, ribbon: boolean,
+   *   shape: number, color: string, rot: number, vrot: number, sway: number, vsway: number,
+   *   swayAmp: number, tumble: number, vtumble: number, delay: number, life: number, maxLife: number }>}
+   */
   const pieces = [];
 
   // Push one piece launched from (x,y) at `angle` (radians) with `speed`, plus a
   // small random start delay so a burst fans out over a few frames rather than
   // popping all at once.
+  /** @param {number} x @param {number} y @param {number} angle @param {number} speed @param {number} delaySpread */
   const spawn = (x, y, angle, speed, delaySpread) => {
     pieces.push({
       x,

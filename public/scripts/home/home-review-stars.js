@@ -110,7 +110,7 @@ export function initReviewStars() {
    *
    * @param {number} from
    */
-  function release(from) {
+  const release = (from) => {
     // Flush the held state into a style recalc first. Without it the browser coalesces
     // hold() and release() into a single change, sees a scale it can reach in one step,
     // and the delays never get to stagger anything.
@@ -123,7 +123,7 @@ export function initReviewStars() {
       star.style.removeProperty('scale');
     }
     origin = from;
-  }
+  };
 
   /** Run the wave from wherever the cursor is now. */
   function fire() {

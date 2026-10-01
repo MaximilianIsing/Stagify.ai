@@ -24,10 +24,13 @@ var FILTERS = [
   { key: 'denied', label: 'Refused' },
 ];
 
+/** @type {Record<string, string>} */
 var OUTCOME_LABEL = { open: 'Opened', signin: 'Signed in', denied: 'Refused' };
 // Reuses the existing badge palette rather than inventing colours: green for a
 // normal open, brand for the sign-in that created the session, red for a refusal.
+/** @type {Record<string, string>} */
 var OUTCOME_BADGE = { open: 'adm-badge-active', signin: 'adm-badge-pro', denied: 'adm-badge-cancelled' };
+/** @type {Record<string, string>} */
 var REASON_LABEL = {
   'bad-key': 'wrong access key',
   'bad-session': 'expired or revoked session',
@@ -36,26 +39,29 @@ var REASON_LABEL = {
 
 /**
  * @param {object} deps
- * @param {(url: string, method: string, body?: any, isForm?: boolean) => Promise<any>} deps.apiSend
+ * @param {import('./types.js').ApiSend} deps.apiSend
  */
 export function createAccessPanel({ apiSend }) {
   var _loaded = false;
   var _loading = false;
+  /** @type {import('./types.js').AccessLog | null} */
   var _data = null;
   var _filter = 'all';
 
-  /** Location as one line, or an em dash. Unresolved is not "nowhere". */
+  /** Location as one line, or an em dash. Unresolved is not "nowhere". @param {import('./types.js').AccessGeo} geo */
   function placeOf(geo) {
     if (!geo) return '—';
     var parts = [geo.city, geo.country].filter(Boolean);
     return parts.length ? parts.join(', ') : '—';
   }
 
+  /** @param {{browser: string, os: string}} row */
   function deviceOf(row) {
     if (row.browser && row.os) return row.browser + ' on ' + row.os;
     return row.browser || row.os || 'Unknown device';
   }
 
+  /** @param {number | null | undefined} ts */
   function when(ts) {
     return ts ? fmtDateTime(new Date(ts).toISOString()) : '—';
   }
@@ -115,6 +121,7 @@ export function createAccessPanel({ apiSend }) {
 
   // ── who has been here ──────────────────────────────────────────────────────
 
+  /** @param {import('./types.js').AccessVisitor} v */
   function visitorRow(v) {
     var tr = el('tr');
 
@@ -182,6 +189,7 @@ export function createAccessPanel({ apiSend }) {
 
   // ── what just happened ─────────────────────────────────────────────────────
 
+  /** @param {import('./types.js').AccessEvent} r */
   function eventRow(r) {
     var tr = el('tr');
 

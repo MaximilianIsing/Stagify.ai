@@ -3,6 +3,23 @@ import { lang, getPdfAlt } from './i18n.js';
 import { imageCountSuffix } from './format.js';
 
 /**
+ * The assistant's reply: the JSON body, or the merged `message` + `images` SSE payloads.
+ * `response` is the reply text, which every full reply carries.
+ * @typedef {{
+ *   response: string,
+ *   error?: string,
+ *   contextLimitReached?: boolean,
+ *   imageAnnotations?: Record<string, string>,
+ *   stagedImages?: string[], stagedImage?: string, stagedImageAnnotations?: Record<string, string>,
+ *   generatedImages?: string[], generatedImage?: string, generatedImageAnnotations?: Record<string, string>,
+ *   cadImages?: string[], cadImage?: string, cadViews?: string[],
+ *   cadImageAnnotation?: string | null, cadImageAnnotations?: Record<string, string>,
+ *   recalledImage?: string,
+ *   requestedImage?: string,
+ * }} ChatReplyData
+ */
+
+/**
  * Turns the server's chat reply — streamed SSE or a plain JSON body — into chat
  * messages, conversation-history entries and image cards (staged / generated /
  * CAD / recalled / requested). Extracted from ai-designer-app.js. The live
@@ -38,6 +55,7 @@ export function createChatResponse(deps) {
     getConversationHistory, getPendingStagingRootBaseName, setPendingStagingRootBaseName,
   } = deps;
 
+  /** @param {Response} response @param {string} typingId @param {string} messageType @param {() => void} onRetry */
   async function handleChatFetchResponse(response, typingId, messageType, onRetry) {
     const contentType = response.headers.get('content-type') || '';
     if (contentType.includes('text/event-stream')) {
@@ -76,6 +94,7 @@ export function createChatResponse(deps) {
     processAssistantChatData(data, typingId);
   }
 
+  /** @param {ChatReplyData} data @param {string} typingId @param {{ imagesOnly?: boolean }} [options] */
   function processAssistantChatData(data, typingId, options) {
     const imagesOnly = options && options.imagesOnly === true;
     let addedAssistantImages = false;
@@ -97,21 +116,22 @@ export function createChatResponse(deps) {
       updateLastAssistantText(data.response);
     }
 
-    if (data.imageAnnotations && Object.keys(data.imageAnnotations).length > 0) {
+    const imageAnnotations = data.imageAnnotations;
+    if (imageAnnotations && Object.keys(imageAnnotations).length > 0) {
       for (let i = getConversationHistory().length - 1; i >= 0; i--) {
         const msg = getConversationHistory()[i];
         if (msg.role === 'user' && Array.isArray(msg.content)) {
           msg.content.forEach(item => {
             if (item.type === 'image_url') {
               const filename = item.filename;
-              if (filename && data.imageAnnotations[filename]) {
-                item.annotation = data.imageAnnotations[filename];
+              if (filename && imageAnnotations[filename]) {
+                item.annotation = imageAnnotations[filename];
               } else {
-                const matchingKey = Object.keys(data.imageAnnotations).find(key =>
+                const matchingKey = Object.keys(imageAnnotations).find(key =>
                   filename && (filename.includes(key) || key.includes(filename))
                 );
                 if (matchingKey) {
-                  item.annotation = data.imageAnnotations[matchingKey];
+                  item.annotation = imageAnnotations[matchingKey];
                 }
               }
             }
@@ -149,6 +169,7 @@ export function createChatResponse(deps) {
       // Appended in the order the pipeline produced them.
       const lastMessage = getLastAssistantContentEl();
       if (lastMessage) {
+        /** @param {string} url @param {string} alt @param {string} downloadName @param {string} [baseName] */
         const appendImage = (url, alt, downloadName, baseName) => {
           const wrapper = document.createElement('div');
           wrapper.style.cssText = 'margin-top: 12px; text-align: left;';

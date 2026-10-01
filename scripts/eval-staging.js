@@ -39,12 +39,28 @@ import { createStagingGeneration } from '../lib/staging/staging-generation.js';
 import { generateWithQualityRetry as runQualityRetry } from '../lib/staging/staging-pipeline.js';
 import { IMAGE_MODEL_FAST, IMAGE_MODEL_PLUS } from '../lib/config/model-config.js';
 import { promptMatrix } from '../lib/staging/promptMatrix.js';
+import { errorMessage } from '../lib/errors.js';
 
 // Same attempt budget the server runs with (server.js).
 const QUALITY_MAX_ATTEMPTS = 3;
 const IMAGE_EXT = /\.(jpe?g|png|webp)$/i;
 const JUDGE_MODEL = process.env.EVAL_JUDGE_MODEL || 'gemini-2.5-pro';
 
+/**
+ * One photo's result row, as written to results.json.
+ * @typedef {{ file: string, roomType: string, out: string, error: string, attempts: number | null,
+ *   selfDrift: boolean | null, seconds: number,
+ *   selfVerdicts: Array<{ perfect: boolean, score: number, drift?: boolean, why: string }> }} EvalRow
+ */
+/**
+ * The judge's verdict on one photo (model JSON, so every field is as-returned), plus the
+ * head-to-head result when --compare ran.
+ * @typedef {{ architecture_preserved?: boolean, camera_preserved?: boolean, defects?: number,
+ *   staging_quality?: number, architecture_notes?: string,
+ *   pair: { fidelity: string, overall: string, reason: string } | null }} JudgeEntry
+ */
+
+/** @param {string[]} argv */
 function parseArgs(argv) {
   /** @type {{ dir: string, model: string, room: string, style: string, temperature: number | null, limit: number, concurrency: number, out: string, judge: boolean, compare: string }} */
   const opts = {
@@ -68,26 +84,40 @@ function parseArgs(argv) {
   return opts;
 }
 
-/** The promptMatrix room type named in a filename, longest match first ("dining room" before "room"). */
+/**
+ * The promptMatrix room type named in a filename, longest match first ("dining room" before "room").
+ * @param {string} name
+ * @param {string} fallback
+ */
 function roomTypeFromName(name, fallback) {
   const flat = name.toLowerCase().replace(/[-_]+/g, ' ');
   const types = Object.keys(promptMatrix).sort((a, b) => b.length - a.length);
   return types.find((t) => flat.includes(t.toLowerCase())) || fallback;
 }
 
-/** Run `worker` over `items` with at most `n` in flight. */
+/**
+ * Run `worker` over `items` with at most `n` in flight.
+ * @template T
+ * @param {T[]} items
+ * @param {number} n
+ * @param {(item: T) => Promise<void>} worker
+ */
 async function pool(items, n, worker) {
   const queue = [...items];
   await Promise.all(Array.from({ length: Math.min(n, queue.length) }, async () => {
-    while (queue.length) await worker(/** @type {any} */ (queue.shift()));
+    while (queue.length) await worker(/** @type {T} */ (queue.shift()));
   }));
 }
 
+/** @param {unknown} v */
 const csvCell = (v) => {
   const s = v === null || v === undefined ? '' : String(v);
   return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 };
-const html = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+/** @type {Record<string, string>} */
+const HTML_ESCAPES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' };
+/** @param {unknown} s */
+const html = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => HTML_ESCAPES[c]);
 
 // ── The blind judge ─────────────────────────────────────────────────────────────────
 const JUDGE_ABS_PROMPT = `You are a strict evaluator for AI virtual staging of real-estate photos. Image 1 is the ORIGINAL photo of a real room. Image 2 is the AI-STAGED version, which is supposed to add furniture/decor while keeping the room itself exactly the same (walls, windows, doors, openings, built-ins, fixtures, floor, ceiling, camera position and framing). Furniture already present may be kept.
@@ -120,11 +150,18 @@ const JUDGE_PAIR_SCHEMA = {
   required: ['fidelity_winner', 'overall_winner', 'reason'],
 };
 
+/** @param {string} file */
 async function judgePart(file) {
   const buf = await sharp(file).rotate().resize(1536, 1536, { fit: 'inside' }).jpeg({ quality: 88 }).toBuffer();
   return { inlineData: { mimeType: 'image/jpeg', data: buf.toString('base64') } };
 }
 
+/**
+ * @param {Pick<ReturnType<typeof createGeminiClient>, 'getGenerativeModel'>} genAI
+ * @param {Array<{ text: string } | { inlineData: { mimeType: string, data: string } }>} parts
+ * @param {object} schema - JSON schema the judge's reply must follow.
+ * @returns {Promise<any>} The judge's parsed JSON reply (shape set by `schema`).
+ */
 async function askJudge(genAI, parts, schema) {
   const model = genAI.getGenerativeModel({
     model: JUDGE_MODEL,
@@ -157,7 +194,7 @@ async function main() {
   // The temperature experiment is injected here, on the image model only, so production code
   // carries no eval-only parameter.
   const genAI = opts.temperature === null ? realAI : {
-    getGenerativeModel: (o) => realAI.getGenerativeModel(o.model === model
+    getGenerativeModel: (/** @type {Parameters<typeof realAI.getGenerativeModel>[0]} */ o) => realAI.getGenerativeModel(o.model === model
       ? { ...o, generationConfig: { ...o.generationConfig, temperature: opts.temperature } }
       : o),
   };
@@ -169,7 +206,7 @@ async function main() {
   const settings = `model=${model} style=${opts.style} temperature=${opts.temperature ?? 'default'}`;
   console.log(`Staging ${files.length} photo(s) → ${outDir}\n${settings}\n`);
 
-  /** @type {any[]} */
+  /** @type {EvalRow[]} */
   const rows = [];
   await pool(files, opts.concurrency, async (file) => {
     // Each photo gets its own generation instance so the logger/verdict captures do not
@@ -189,7 +226,7 @@ async function main() {
     const roomType = roomTypeFromName(file, opts.room);
     const stem = file.replace(IMAGE_EXT, '');
     const started = Date.now();
-    /** @type {any} */
+    /** @type {EvalRow} */
     const r = { file, roomType, out: '', error: '', attempts: null, selfDrift: null, seconds: 0, selfVerdicts: [] };
     try {
       const dataUrl = await processStaging(
@@ -204,7 +241,7 @@ async function main() {
       r.out = `${stem}.${m ? m[1] : 'bin'}`;
       fs.writeFileSync(path.join(outDir, r.out), Buffer.from(m ? m[2] : '', 'base64'));
     } catch (e) {
-      r.error = e?.message || String(e);
+      r.error = errorMessage(e);
     }
     r.seconds = (Date.now() - started) / 1000;
     r.attempts = logged[0]?.attempts ?? null;
@@ -217,14 +254,14 @@ async function main() {
   fs.writeFileSync(path.join(outDir, 'results.json'), JSON.stringify({ settings, photos: path.resolve(opts.dir), rows }, null, 2));
 
   // ── judge ──
-  /** @type {Record<string, any>} */
+  /** @type {Record<string, JudgeEntry>} */
   const judged = {};
   if (opts.judge) {
     /** @type {Record<string, any>} */
     let prev = {};
     if (opts.compare) {
       const raw = JSON.parse(fs.readFileSync(path.join(opts.compare, 'results.json'), 'utf8'));
-      prev = Object.fromEntries((Array.isArray(raw) ? raw : raw.rows).map((x) => [x.file, x]));
+      prev = Object.fromEntries((Array.isArray(raw) ? raw : raw.rows).map((/** @type {EvalRow} */ x) => [x.file, x]));
     }
     console.log(`\nJudging with ${JUDGE_MODEL}${opts.compare ? ` (head-to-head vs ${opts.compare})` : ''}…`);
     await pool(rows.filter((r) => r.out), 4, async (r) => {
@@ -238,7 +275,7 @@ async function main() {
         // Deterministic per-file order so reruns are comparable, but not always "this run first".
         const mineIsA = [...r.file].reduce((s, c) => s + c.charCodeAt(0), 0) % 2 === 0;
         const p = await askJudge(genAI, [{ text: JUDGE_PAIR_PROMPT }, src, mineIsA ? mine : theirs, mineIsA ? theirs : mine], JUDGE_PAIR_SCHEMA);
-        const who = (w) => (w === 'tie' ? 'tie' : ((w === 'A') === mineIsA ? 'this' : 'compare'));
+        const who = (/** @type {string} */ w) => (w === 'tie' ? 'tie' : ((w === 'A') === mineIsA ? 'this' : 'compare'));
         pair = { fidelity: who(p.fidelity_winner), overall: who(p.overall_winner), reason: p.reason };
       }
       judged[r.file] = { ...abs, pair };
@@ -249,25 +286,30 @@ async function main() {
 
   // ── summary + report ──
   const n = rows.length || 1;
-  const mean = (fn, arr = rows) => (arr.reduce((s, x) => s + (Number(fn(x)) || 0), 0) / (arr.length || 1)).toFixed(2);
+  /**
+   * @template X
+   * @param {(x: X) => unknown} fn
+   * @param {X[]} arr
+   */
+  const mean = (fn, arr) => (arr.reduce((s, x) => s + (Number(fn(x)) || 0), 0) / (arr.length || 1)).toFixed(2);
   const lines = [
     settings,
-    `${rows.filter((r) => r.out).length}/${rows.length} rendered · self-flagged drift ${rows.filter((r) => r.selfDrift === true).length}/${n} · mean attempts ${mean((r) => r.attempts)} · mean ${mean((r) => r.seconds)}s`,
+    `${rows.filter((r) => r.out).length}/${rows.length} rendered · self-flagged drift ${rows.filter((r) => r.selfDrift === true).length}/${n} · mean attempts ${mean((r) => r.attempts, rows)} · mean ${mean((r) => r.seconds, rows)}s`,
   ];
   const J = Object.values(judged);
   if (J.length) {
-    const count = (fn) => `${J.filter(fn).length}/${J.length}`;
+    const count = (/** @type {(j: JudgeEntry) => unknown} */ fn) => `${J.filter(fn).length}/${J.length}`;
     lines.push(`judge (${JUDGE_MODEL}): architecture preserved ${count((j) => j.architecture_preserved)} · camera preserved ${count((j) => j.camera_preserved)} · defects ${mean((j) => j.defects, J)} · staging ${mean((j) => j.staging_quality, J)}`);
     const P = J.filter((j) => j.pair);
     if (P.length) {
-      const tally = (k) => `this ${P.filter((j) => j.pair[k] === 'this').length} / compare ${P.filter((j) => j.pair[k] === 'compare').length} / tie ${P.filter((j) => j.pair[k] === 'tie').length}`;
+      const tally = (/** @type {'fidelity' | 'overall'} */ k) => `this ${P.filter((j) => j.pair?.[k] === 'this').length} / compare ${P.filter((j) => j.pair?.[k] === 'compare').length} / tie ${P.filter((j) => j.pair?.[k] === 'tie').length}`;
       lines.push(`head-to-head fidelity: ${tally('fidelity')}`, `head-to-head overall:  ${tally('overall')}`);
     }
   }
 
   const cols = ['file', 'roomType', 'attempts', 'selfDrift', 'seconds', 'error', 'judgeArchitecture', 'judgeCamera', 'judgeDefects', 'judgeStaging', 'judgeNotes'];
   fs.writeFileSync(path.join(outDir, 'results.csv'), [cols.join(','), ...rows.map((r) => {
-    const j = judged[r.file] || {};
+    const j = /** @type {Partial<JudgeEntry>} */ (judged[r.file] || {});
     return [r.file, r.roomType, r.attempts, r.selfDrift, r.seconds.toFixed(1), r.error, j.architecture_preserved, j.camera_preserved, j.defects, j.staging_quality, j.architecture_notes].map(csvCell).join(',');
   })].join('\n') + '\n');
 

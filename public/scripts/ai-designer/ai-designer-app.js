@@ -21,17 +21,18 @@ import { createFileIntake } from './file-intake.js';
 import { createChatResponse } from './chat-response.js';
 import { fetchWelcomeMessage } from './welcome.js';
 
-      const chatMessages = document.getElementById('chat-messages');
+      const chatMessages = /** @type {HTMLElement} */ (document.getElementById('chat-messages'));
       const chatInput = /** @type {HTMLTextAreaElement} */ (document.getElementById('chat-input'));
       const sendBtn = /** @type {HTMLButtonElement} */ (document.getElementById('send-btn'));
       const fileInput = /** @type {HTMLInputElement} */ (document.getElementById('file-input'));
       const chatContainer = /** @type {HTMLElement} */ (document.querySelector('.chat-container'));
       
-      let conversationHistory = [];
+      let conversationHistory = /** @type {import('./types.js').AdHistoryEntry[]} */ ([]);
+      /** @type {File[]} */
       const selectedFiles = []; // File-intake island mutates this in place
       let isProcessing = false; // Track if we're currently processing a message
-      let currentAbortController = null; // Lets the user stop an in-flight generation
-      let pendingStagingRootBaseName = null;
+      let currentAbortController = /** @type {AbortController | null} */ (null); // Lets the user stop an in-flight generation
+      let pendingStagingRootBaseName = /** @type {string | null} */ (null);
 
       // Thin wrappers over the pure image-history module (scripts/ai-designer/
       // image-history.js): bind the live conversationHistory (and the thumbnail
@@ -42,6 +43,7 @@ import { fetchWelcomeMessage } from './welcome.js';
         _collectImagesFromConversationHistory(conversationHistory);
       const getBaseImageIndexForRequest = () =>
         _getBaseImageIndexForRequest(conversationHistory, getSelectedImageIndex());
+      /** @param {File[]} filesToSend */
       const resolveStagingRootBaseName = (filesToSend) =>
         _resolveStagingRootBaseName(filesToSend, conversationHistory, getSelectedImageIndex());
 
@@ -197,7 +199,7 @@ import { fetchWelcomeMessage } from './welcome.js';
       ensureDesignerProAccess();
       
       // Reload button functionality
-      const reloadBtn = document.getElementById('reload-btn');
+      const reloadBtn = /** @type {HTMLElement} */ (document.getElementById('reload-btn'));
       reloadBtn.addEventListener('click', function() {
         // Abort FIRST. Stop and Ctrl+Q abort; this path did not, so the request stayed
         // in flight — and the history is read through a LIVE getter, so the stale reply
@@ -243,6 +245,7 @@ import { fetchWelcomeMessage } from './welcome.js';
       decorateReloadTitle();
 
       // Classify a failed chat request into a helpful, actionable message.
+      /** @param {{ name?: string } | null | undefined} error @param {Response | null | undefined} response */
       function describeSendError(error, response) {
         if (response && (response.status === 401 || response.status === 403)) {
           return lang('pdf.error.proRequired', 'The AI Designer is available to Stagify+ members. Please sign in with a Stagify+ account.');
@@ -414,20 +417,20 @@ import { fetchWelcomeMessage } from './welcome.js';
         let messageType = messageTypeFromTag(messageTagValue);
 
         // Store images in conversation history and send
-        const userMessageContent = [];
+        const userMessageContent = /** @type {Array<Record<string, any>>} */ ([]);
         if (message && message.trim()) {
           userMessageContent.push({ type: 'text', text: message });
         }
         
         // Convert files to base64 and store in conversation history
         const filePromises = filesToSend.map(file => {
-          return new Promise((resolve) => {
+          return /** @type {Promise<void>} */ (new Promise((resolve) => {
             if (file.type.startsWith('image/')) {
               const reader = new FileReader();
               reader.onload = (e) => {
                 userMessageContent.push({
                   type: 'image_url',
-                  image_url: { url: e.target.result },
+                  image_url: { url: /** @type {FileReader} */ (e.target).result },
                   filename: file.name,
                   rootBaseName: getFileStem(file.name) || 'Upload',
                 });
@@ -442,7 +445,7 @@ import { fetchWelcomeMessage } from './welcome.js';
               });
               resolve();
             }
-          });
+          }));
         });
         
         // Wait for all files to be read, then send
@@ -604,6 +607,7 @@ import { fetchWelcomeMessage } from './welcome.js';
       }
 
       // Toggle the processing state and swap the send button between Send/Stop.
+      /** @param {boolean} state */
       function setProcessing(state) {
         isProcessing = state;
         if (state) {

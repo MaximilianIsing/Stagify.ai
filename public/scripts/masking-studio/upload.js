@@ -20,14 +20,14 @@ import { MAX_IMAGE_BYTES } from '../app/image-file.js';
  *   furnitureInput: HTMLInputElement,
  *   stack: HTMLElement,
  *   replaceBtn: HTMLButtonElement,
- *   showToast: (message: string, type?: string) => void,
+ *   showToast: (message: string, type?: 'error' | 'success') => void,
  *   tx: (key: string, def: string) => string,
  *   loadImage: (src: string) => Promise<HTMLImageElement>,
  *   setBaseImage: (img: HTMLImageElement, opts?: import('./types.js').MsBaseImageOpts) => void,
  *   clearBaseImage: () => void,
  *   requestDiscard: (action: () => void, strict?: boolean) => void,
  *   activeLayer: () => MsLayer | null,
- *   getLayer: (id: string) => MsLayer | null,
+ *   getLayer: (id: string | null) => MsLayer | null,
  *   renderLayers: () => void,
  *   updateControls: () => void,
  *   layerTitle: (layer: MsLayer) => string,
@@ -56,6 +56,7 @@ export function createUpload(deps) {
     scheduleSessionSave,
   } = deps;
 
+  /** @type {string | null} */
   let pendingFurnitureLayerId = null;
 
   const ROOM_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
@@ -65,6 +66,10 @@ export function createUpload(deps) {
   // already-decoded image to a small JPEG first (keeps the POST tiny), then
   // asks the server. Always resolves to { valid, reason }; fails OPEN so our
   // own hiccup never blocks a legitimate upload.
+  /**
+   * @param {HTMLImageElement} img
+   * @returns {Promise<{ valid: boolean, reason?: string, code?: string | null }>}
+   */
   async function validateStageableRoom(img) {
     try {
       const max = 1024;
@@ -72,7 +77,7 @@ export function createUpload(deps) {
       const c = document.createElement('canvas');
       c.width = Math.max(1, Math.round(img.width * scale));
       c.height = Math.max(1, Math.round(img.height * scale));
-      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      /** @type {CanvasRenderingContext2D} */ (c.getContext('2d')).drawImage(img, 0, 0, c.width, c.height);
       const payload = c.toDataURL('image/jpeg', 0.9);
       const tok = window.StagifyAuth && window.StagifyAuth.getToken();
       const resp = await fetch('/api/validate-image', {
@@ -100,6 +105,10 @@ export function createUpload(deps) {
   // redirects anonymous visitors and gates free accounts behind #ms-pro-gate before any
   // upload happens, so `action.upgrade` is always false. That is asserted in the unit test
   // rather than branched on here, so the test is what speaks up if that gating changes.
+  /**
+   * @param {string} message
+   * @param {NonNullable<ReturnType<typeof unstageableCta>>} action
+   */
   function openExteriorGate(message, action) {
     const gate = document.getElementById('ms-exterior-gate');
     const body = document.getElementById('ms-exterior-body');
@@ -120,11 +129,12 @@ export function createUpload(deps) {
     go.focus();
   }
 
+  /** @param {File | null | undefined} file */
   async function handleRoomFile(file) {
     if (!file) return;
     try {
       if (window.StagifyHeic && window.StagifyHeic.isHeic(file)) {
-        file = await window.StagifyHeic.toDisplayableFile(file);
+        file = /** @type {File} */ (await window.StagifyHeic.toDisplayableFile(file));
       }
     } catch (e) {
       showToast(tx('errors.heicConvert', "We couldn’t read that HEIC photo. Please try a JPG or PNG."), 'error');
@@ -140,12 +150,12 @@ export function createUpload(deps) {
       showToast(tx('errors.fileTooLarge', 'File is too large. Please upload an image smaller than 25 MB.'), 'error');
       return;
     }
-    const dataUrl = await new Promise((resolve, reject) => {
+    const dataUrl = /** @type {string | null} */ (await new Promise((resolve, reject) => {
       const r = new FileReader();
       r.onerror = () => reject(new Error('read'));
       r.onload = () => resolve(r.result);
       r.readAsDataURL(file);
-    }).catch(() => null);
+    }).catch(() => null));
     if (!dataUrl) {
       showToast(tx('errors.processingFailed', 'Something went wrong. Please try again.'), 'error');
       return;
@@ -184,6 +194,10 @@ export function createUpload(deps) {
   // ---------------------------------------------------------------------
   // Validate, downscale (max 1536px) and PNG-encode — identical rules to
   // the single-mask editor so the backend sees the same payloads.
+  /**
+   * @param {File} file
+   * @returns {Promise<string>}
+   */
   function prepareReferenceFile(file) {
     return new Promise((resolve, reject) => {
       if (!file || !/^image\/(jpeg|jpg|png|webp)$/i.test(file.type || '')) { reject(new Error('type')); return; }
@@ -200,7 +214,7 @@ export function createUpload(deps) {
           const h = Math.max(1, Math.round((img.height || 1) * scale));
           const c = document.createElement('canvas');
           c.width = w; c.height = h;
-          c.getContext('2d').drawImage(img, 0, 0, w, h);
+          /** @type {CanvasRenderingContext2D} */ (c.getContext('2d')).drawImage(img, 0, 0, w, h);
           try { resolve(c.toDataURL('image/png')); } catch (e) { reject(new Error('decode')); }
         };
         img.src = /** @type {string} */ (reader.result);
@@ -209,15 +223,22 @@ export function createUpload(deps) {
     });
   }
 
+  /** @param {unknown} err */
   function refErrorMessage(err) {
-    return err && err.message === 'size'
+    return !!err && typeof err === 'object' && 'message' in err && err.message === 'size'
       ? tx('pdf.maskEditor.referenceTooLarge', 'That image is too large. Please choose one under 25 MB.')
       : tx('pdf.maskEditor.referenceInvalid', 'Please choose a valid JPG, PNG, or WebP image.');
   }
 
+  /**
+   * @param {MsLayer | null} layer
+   * @param {File | null | undefined} file
+   * @param {boolean} [announce] - Toast which area received it (paste path).
+   */
   function acceptFurnitureFile(layer, file, announce) {
     if (!layer || !file) return;
     const fileName = file.name || '';
+    /** @type {Promise<File>} */
     const prep = (window.StagifyHeic && window.StagifyHeic.isHeic(file))
       ? window.StagifyHeic.toDisplayableFile(file)
       : Promise.resolve(file);
@@ -237,7 +258,12 @@ export function createUpload(deps) {
       .catch((err) => showToast(refErrorMessage(err), 'error'));
   }
 
+  /**
+   * @param {HTMLElement} zone
+   * @param {MsLayer} layer
+   */
   function wireFurnitureDrop(zone, layer) {
+    /** @param {DragEvent} e @returns {e is DragEvent & { dataTransfer: DataTransfer }} */
     const hasFiles = (e) =>
       !!e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], 'Files') !== -1;
     zone.addEventListener('dragenter', (e) => { if (hasFiles(e)) { e.preventDefault(); zone.classList.add('is-drag-over'); } });
@@ -253,6 +279,7 @@ export function createUpload(deps) {
 
   // Arm the shared furniture file picker for a specific area, then open it.
   // Keeps the pendingFurnitureLayerId cursor private to this island.
+  /** @param {string} layerId */
   function beginFurniturePick(layerId) {
     pendingFurnitureLayerId = layerId;
     furnitureInput.click();
@@ -300,6 +327,7 @@ export function createUpload(deps) {
     handleRoomFile(file);
   });
   (function wireRoomDrop() {
+    /** @param {DragEvent} e @returns {e is DragEvent & { dataTransfer: DataTransfer }} */
     const hasFiles = (e) =>
       !!e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], 'Files') !== -1;
     [dropzone, stack].forEach((zone) => {

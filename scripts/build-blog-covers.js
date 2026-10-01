@@ -44,6 +44,7 @@ const FONT_FILES = [
   { family: 'Noto Sans JP', file: 'NotoSansJP.ttf' },
   { family: 'Noto Sans KR', file: 'NotoSansKR.ttf' },
 ];
+/** @type {Record<string, string>} */
 const FAMILY_FOR_LANG = { chinese: 'Noto Sans SC', japanese: 'Noto Sans JP', korean: 'Noto Sans KR' };
 
 /** Derivative sizes, matching what the existing English covers ship. */
@@ -95,6 +96,7 @@ function drawBlock(ctx, item, family) {
   const text = item.upper ? String(item.text).toUpperCase() : String(item.text);
   const minSize = item.minSize ?? Math.round(item.size * 0.6);
   let size = item.size;
+  /** @type {string[]} */
   let lines = [];
 
   for (; size >= minSize; size -= 1) {
@@ -143,7 +145,7 @@ function drawRuns(ctx, item, strings, family) {
   if (parts.some((p) => p.text == null)) throw new Error(`missing run text in ${JSON.stringify(item.runs.map((r) => r.key))}`);
 
   let scale = 1;
-  const widthAt = (k) => parts.reduce((sum, p) => {
+  const widthAt = (/** @type {number} */ k) => parts.reduce((sum, p) => {
     ctx.font = `${p.weight ?? 400} ${Math.round(p.size * k)}px "${family}"`;
     ctx.letterSpacing = `${(p.tracking ?? 0) * k}px`;
     return sum + ctx.measureText(p.text).width + (p.gapBefore ?? 0) * k;
@@ -234,7 +236,11 @@ async function renderCover(recipe, strings, family) {
   return sharp(basePath).composite([{ input: overlay, top: 0, left: 0 }]).png().toBuffer();
 }
 
-/** Rounded-rect path. @param {any} ctx */
+/**
+ * Rounded-rect path.
+ * @param {import('@napi-rs/canvas').SKRSContext2D} ctx
+ * @param {number} x @param {number} y @param {number} w @param {number} h @param {number} r
+ */
 function roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
@@ -249,17 +255,25 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-/** Dotted-path lookup. */
+/**
+ * Dotted-path lookup.
+ * @param {unknown} obj
+ * @param {string} key
+ * @returns {string | null}
+ */
 function resolve(obj, key) {
   let cur = obj;
   for (const part of String(key).split('.')) {
     if (cur === null || typeof cur !== 'object') return null;
-    cur = cur[part];
+    cur = /** @type {Record<string, unknown>} */ (cur)[part];
   }
   return typeof cur === 'string' ? cur : null;
 }
 
-/** Write the served trio for one rendered cover. */
+/**
+ * Write the served trio for one rendered cover.
+ * @param {Buffer} png @param {string} coverId @param {string} lang
+ */
 async function writeDerivatives(png, coverId, lang) {
   const stem = path.join(MEDIA, `${coverId}.${lang}`);
   await sharp(png).webp({ quality: 82 }).toFile(`${stem}.webp`);
@@ -270,7 +284,7 @@ async function writeDerivatives(png, coverId, lang) {
 
 async function main() {
   const args = process.argv.slice(2);
-  const only = (flag) => (args.find((a) => a.startsWith(`--${flag}=`)) || '').split('=')[1] || null;
+  const only = (/** @type {string} */ flag) => (args.find((a) => a.startsWith(`--${flag}=`)) || '').split('=')[1] || null;
   const onlyCover = only('cover');
   const onlyLang = only('lang');
 

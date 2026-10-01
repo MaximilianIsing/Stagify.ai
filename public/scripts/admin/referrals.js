@@ -19,18 +19,19 @@
 import { qs, el, fmtDateTime, copyToClipboard } from './helpers.js';
 import { chartCard, areaChart, rankedBars, chartEmpty, fmtNum, PALETTE } from './charts.js';
 
-/** 'YYYY-MM-DD' → 'Jul 1'. Parsed as UTC to match the server's day buckets. */
+/** 'YYYY-MM-DD' → 'Jul 1'. Parsed as UTC to match the server's day buckets. @param {string} date */
 function dayLabel(date) {
   var d = new Date(String(date) + 'T00:00:00Z');
   if (isNaN(d.getTime())) return String(date);
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
 }
 
-/** Epoch ms → readable stamp, or an em dash. */
+/** Epoch ms → readable stamp, or an em dash. @param {number | null | undefined} ts */
 function whenText(ts) {
   return ts ? fmtDateTime(new Date(ts).toISOString()) : '—';
 }
 
+/** @param {string} text @param {string} [tone] */
 function pill(text, tone) {
   return el('span', { className: 'adm-pill' + (tone ? ' adm-pill--' + tone : ''), textContent: text });
 }
@@ -39,19 +40,20 @@ function pill(text, tone) {
  * Build the Referrals-tab controller.
  *
  * @param {object} deps
- * @param {(url: string, method: string, body?: any, isForm?: boolean) => Promise<any>} deps.apiSend
+ * @param {import('./types.js').ApiSend} deps.apiSend
  *   Request helper from the entry (holds the session key).
  */
 export function createReferralsPanel({ apiSend }) {
   var _loaded = false;
   var _loading = false;
-  /** @type {any[]} */
+  /** @type {import('./types.js').ReferralLinkStats[]} */
   var _links = [];
   /** @type {string | null} */
   var _selected = null;
 
   // ── messages ───────────────────────────────────────────────────────────────
 
+  /** @param {string} text @param {string | null} kind */
   function setFormMsg(text, kind) {
     var box = qs('#adm-ref-form-msg');
     if (!box) return;
@@ -61,6 +63,7 @@ export function createReferralsPanel({ apiSend }) {
 
   // ── list ───────────────────────────────────────────────────────────────────
 
+  /** @param {string} label @param {string} cls @param {(btn: HTMLButtonElement) => void} onClick */
   function actionButton(label, cls, onClick) {
     var b = el('button', { className: 'adm-ref-action ' + cls, type: 'button', textContent: label });
     b.addEventListener('click', function (ev) {
@@ -71,6 +74,7 @@ export function createReferralsPanel({ apiSend }) {
     return b;
   }
 
+  /** @param {import('./types.js').ReferralLinkStats} link */
   function rowFor(link) {
     var url = location.origin + link.path;
     var tr = el('tr', { className: 'adm-ref-row' + (link.slug === _selected ? ' adm-ref-row--on' : '') });
@@ -148,6 +152,7 @@ export function createReferralsPanel({ apiSend }) {
 
   // ── detail ─────────────────────────────────────────────────────────────────
 
+  /** @param {import('./types.js').ReferralLinkStats} link */
   function detailCard(link) {
     var card = el('div', { className: 'adm-card adm-ref-card' });
     card.appendChild(el('h2', null, [
@@ -226,7 +231,7 @@ export function createReferralsPanel({ apiSend }) {
 
   // ── server actions ─────────────────────────────────────────────────────────
 
-  /** Run a mutating call, then reload the list so every number is server-truth. */
+  /** Run a mutating call, then reload the list so every number is server-truth. @param {string} url @param {string} method @param {string} okMessage */
   function act(url, method, okMessage) {
     setFormMsg('', null);
     return apiSend(url, method).then(function () {

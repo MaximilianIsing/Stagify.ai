@@ -76,7 +76,8 @@ export function syncStagingMenu() {
 
 /** @param {Element} root */
 function wireMenu(root) {
-  const trigger = root.querySelector('.staging-menu__trigger');
+  // Non-null cast: the guard below still runs, but the hoisted handlers lose its narrowing.
+  const trigger = /** @type {HTMLElement} */ (root.querySelector('.staging-menu__trigger'));
   const panel = root.querySelector('.staging-menu__panel');
   if (!trigger || !panel) return;
   /** @type {HTMLAnchorElement[]} */
@@ -222,7 +223,7 @@ function wireMenu(root) {
   });
 
   panel.addEventListener('click', (e) => {
-    const item = /** @type {HTMLElement | null} */ (e.target).closest?.('.staging-menu__item');
+    const item = /** @type {HTMLElement} */ (e.target).closest?.('.staging-menu__item');
     if (!item) return;
 
     // Locked: send them to the Stagify+ page instead of the tool. Both studios

@@ -91,6 +91,7 @@ import createApiV1Router from './routes/api-v1.js';
 import createApiKeysRouter from './routes/api-keys.js';
 import { createCreditPacks } from './lib/data/credit-packs.js';
 import { createStripeCreditTopup } from './lib/services/stripe-credit-topup.js';
+import { errorMessage } from './lib/errors.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -237,7 +238,7 @@ async function sendTestEmail({ id, toEmail }) {
     }
     return { ok: true };
   } catch (err) {
-    logger.error('[admin] test email send threw:', err && err.message ? err.message : err);
+    logger.error('[admin] test email send threw:', errorMessage(err));
     return { ok: false, status: 502, error: 'Could not send the test email.' };
   }
 }
@@ -603,11 +604,11 @@ Sentry.setupExpressErrorHandler(app);
 // This returns a clean JSON 500 instead. The res.headersSent guard hands off to
 // Express so an error mid-stream (e.g. the chat SSE route) still aborts correctly
 // rather than trying to write a second set of headers.
-app.use((err, req, res, next) => {
+app.use(/** @type {import('express').ErrorRequestHandler} */ ((err, req, res, next) => {
   if (res.headersSent) return next(err);
   logger.error('Unhandled route error:', err);
   sendError(res, err.status || err.statusCode || 500, 'Internal server error');
-});
+}));
 
 app.listen(PORT, () => {
   logger.info(`Server running on port ${PORT}`);
@@ -620,7 +621,7 @@ app.listen(PORT, () => {
     try {
       uptimeMonitor.start();
     } catch (err) {
-      logger.error('Uptime monitor failed to start:', err.message);
+      logger.error('Uptime monitor failed to start:', errorMessage(err));
     }
 
     // Prime the per-subsystem checks and keep them warm, so the first visitor to
@@ -628,7 +629,7 @@ app.listen(PORT, () => {
     try {
       serviceHealth.start();
     } catch (err) {
-      logger.error('Service health checks failed to start:', err.message);
+      logger.error('Service health checks failed to start:', errorMessage(err));
     }
 
     // Behaviour-based trial emails (activation nudge + mid-trial value). The
@@ -637,7 +638,7 @@ app.listen(PORT, () => {
     try {
       trialLifecycle.start();
     } catch (err) {
-      logger.error('Trial-lifecycle sweep failed to start:', err.message);
+      logger.error('Trial-lifecycle sweep failed to start:', errorMessage(err));
     }
   }
 

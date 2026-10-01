@@ -49,6 +49,11 @@ export function styleLabel(style) {
  *
  * English, like `styleLabel` above and for the same reason: this joins onto server data
  * that is never translated, and half a name in each language reads like a bug.
+ *
+ * @typedef {{ qualifier?: unknown, roomType?: unknown }} QualifierEntry
+ * @typedef {{ label: string, namesRender: true, qualifier: (entry: QualifierEntry) => string }
+ *   | { label: string, namesRender: false }} SourceRule
+ * @type {Record<string, SourceRule>}
  */
 const SOURCE_RULES = {
   exterior: { label: 'Exterior', namesRender: true, qualifier: (entry) => String(entry?.qualifier ?? '').trim() },

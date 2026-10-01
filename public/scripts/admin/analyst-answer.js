@@ -124,14 +124,14 @@ function appendInline(parent, text, segment) {
   });
 }
 
-/** One paragraph. Single newlines inside it are soft wraps, as in markdown. */
+/** One paragraph. Single newlines inside it are soft wraps, as in markdown. @param {string[]} lines @param {(s: string) => Array<{text: string, account: any}>} segment */
 function paragraph(lines, segment) {
   const p = el('p', { className: 'adm-an-para' });
   appendInline(p, lines.map((l) => l.replace(HEADING_RE, '')).join(' ').trim(), segment);
   return p;
 }
 
-/** A bulleted or numbered list. */
+/** A bulleted or numbered list. @param {{lines: string[], ordered?: boolean}} block @param {(s: string) => Array<{text: string, account: any}>} segment */
 function list(block, segment) {
   const node = el(block.ordered ? 'ol' : 'ul', { className: 'adm-an-list' });
   block.lines.forEach((line) => {
@@ -148,6 +148,9 @@ function list(block, segment) {
  * The header is whichever row precedes the divider; a table with no divider is
  * still rendered, with its first row as the header, because a table missing one
  * mark is closer to a table than to a paragraph of pipes.
+ *
+ * @param {string[]} lines
+ * @param {(s: string) => Array<{text: string, account: any}>} segment
  */
 function table(lines, segment) {
   const rows = lines.map(cells);

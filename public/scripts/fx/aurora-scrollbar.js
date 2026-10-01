@@ -55,7 +55,8 @@ export function auroraBarGeometry(m) {
   if (typeof window === 'undefined') return;
   if (!window.matchMedia || !window.matchMedia('(pointer: fine)').matches) return;
 
-  var sc = document.querySelector('main');
+  // Cast: `var` loses the narrowing inside the closures below; the guard still runs.
+  var sc = /** @type {HTMLElement} */ (document.querySelector('main'));
   if (!sc) return;
 
   document.documentElement.classList.add('aurora-on');
@@ -105,6 +106,7 @@ export function auroraBarGeometry(m) {
   // Drive position + glow timeout from a single rAF loop so the thumb stays in
   // sync even when content height changes (e.g. language switch, lazy images).
   var rafId = 0;
+  /** @param {number} now */
   function tick(now) {
     update();
     if (flareUntil && now > flareUntil) { bar.classList.remove('flare'); flareUntil = 0; }
@@ -136,6 +138,7 @@ export function auroraBarGeometry(m) {
     var dy = e.clientY - dragStartY;
     sc.scrollTop = dragStartScroll + (maxThumb > 0 ? (dy / maxThumb) * maxScroll : 0);
   });
+  /** @param {PointerEvent} e */
   function endDrag(e) {
     if (!dragging) return;
     dragging = false;

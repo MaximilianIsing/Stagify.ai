@@ -1,5 +1,17 @@
       import { componentLabel, componentReason, stateLabel, stateClass, bannerClass, bannerText, componentIcon } from './status-components.js';
 
+      /**
+       * @typedef {{ start: number, end: number, state?: string, uptimePct?: number | null }} StatusBucket
+       * @typedef {{ cause?: string, start: number | string, end?: number | string | null,
+       *   ongoing?: boolean, durationMs: number }} StatusIncident
+       * @typedef {{ id: string, state: string, reason?: string, reasonCode?: string }} StatusComponent
+       * @typedef {{ overall?: string, currentState?: string,
+       *   windows?: Record<string, { uptimePct: number | null }>,
+       *   buckets?: Record<string, StatusBucket[]>, components?: StatusComponent[],
+       *   componentsCheckedAt?: number, incidents?: StatusIncident[], monitoringSince?: number | string,
+       *   lastCheckedMsAgo?: number | null, bootCount?: number }} StatusPayload
+       */
+
       (function () {
         'use strict';
         var ENDPOINT = '/api/status';
@@ -31,6 +43,7 @@
         var lastFetchAt = 0;
         var lastManualAt = 0;
         var inFlight = false;
+        /** @type {number | null} */
         var cooldownTimer = null;
 
         // The icon spins for at least one full turn, even when the response beats it.
@@ -40,28 +53,35 @@
         // animation so the icon lands back at 0deg instead of snapping.
         var SPIN_MIN_MS = 600;
         var spinStartedAt = 0;
+        /** @type {number | null} */
         var spinTimer = null;
         var manualPending = false;
 
-        function $(sel, root) { return (root || document).querySelector(sel); }
+        // Typed as non-null: every selector here targets markup status.html always ships.
+        /** @param {string} sel @param {ParentNode} [root] @returns {HTMLElement} */
+        function $(sel, root) { return /** @type {HTMLElement} */ ((root || document).querySelector(sel)); }
+        /** @param {string} sel @param {ParentNode} [root] @returns {HTMLElement[]} */
         function $all(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
 
         // ---- i18n helpers ------------------------------------------------------
         // Resolve a translation key via the shared language runtime, falling back
         // to the built-in English string until languages/<lang>.json has loaded.
+        /** @param {string} key @param {string} fallback @returns {string} */
         function t(key, fallback) {
           var ls = window.LanguageSystem;
           return (ls && typeof ls.getText === 'function') ? ls.getText(key, fallback) : fallback;
         }
         // Fill {name} placeholders in a template with values from `vars`.
+        /** @param {string} str @param {Record<string, string | number>} vars @returns {string} */
         function interpolate(str, vars) {
           return String(str).replace(/\{(\w+)\}/g, function (m, k) {
-            return Object.prototype.hasOwnProperty.call(vars, k) ? vars[k] : m;
+            return Object.prototype.hasOwnProperty.call(vars, k) ? String(vars[k]) : m;
           });
         }
         // Incident causes are recorded server-side as fixed English strings.
         // Map the known ones to translation keys so they localize; anything
         // unrecognized falls back to the raw cause (or a generic default).
+        /** @param {string | undefined} cause @returns {string} */
         function translateCause(cause) {
           if (cause === 'downtime detected on restart (missed heartbeats)') {
             return t('status.incidents.causeMissedHeartbeats', cause);
@@ -70,20 +90,24 @@
         }
         // Last successful payload / last-load-failed flag, so a mid-session
         // language switch can re-render the JS-injected parts in the new language.
+        /** @type {StatusPayload | null} */
         var lastData = null;
         var loadFailed = false;
 
+        /** @param {number | null | undefined} v @returns {string} */
         function fmtPct(v) {
           if (v === null || v === undefined) return '—';
           // One decimal place, truncated so uptime is never rounded up (99.375 -> 99.3%).
           return (Math.floor(v * 10 + 1e-6) / 10).toFixed(1) + '%';
         }
+        /** @param {number | null | undefined} v @returns {string} */
         function pctColor(v) {
           if (v === null || v === undefined) return 'var(--muted)';
           if (v >= 99.9) return '#047857';
           if (v >= 99) return '#b45309';
           return '#b91c1c';
         }
+        /** @param {number} ms @returns {string} */
         function fmtDuration(ms) {
           if (ms < 1000) return '<1s';
           var s = Math.round(ms / 1000);
@@ -95,6 +119,7 @@
           var d = Math.floor(h / 24);
           return d + 'd ' + (h % 24) + 'h';
         }
+        /** @param {number | null | undefined} ms @returns {string} */
         function fmtAgo(ms) {
           if (ms === null || ms === undefined) return t('status.ago.never', 'never');
           var v;
@@ -104,9 +129,11 @@
           else v = Math.round(ms / 86400000) + 'd';
           return interpolate(t('status.ago.template', '{v} ago'), { v: v });
         }
+        /** @param {number | string | null | undefined} ts @returns {string} */
         function fmtDate(ts) {
-          try { return new Date(ts).toLocaleString(); } catch (e) { return String(ts); }
+          try { return new Date(/** @type {number | string} */ (ts)).toLocaleString(); } catch (e) { return String(ts); }
         }
+        /** @param {number} start @param {number} end @returns {string} */
         function fmtTimeRange(start, end) {
           try {
             var opts = /** @type {Intl.DateTimeFormatOptions} */ ({ month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -116,6 +143,7 @@
 
         // ---- Bar hover tooltip -------------------------------------------------
         var tip = $('.st-tip');
+        /** @param {Element} bar */
         function showTip(bar) {
           tip.textContent = '';
           var val = document.createElement('div'); val.className = 'st-tip__val';
@@ -125,6 +153,7 @@
           tip.appendChild(val); tip.appendChild(time);
           tip.style.display = 'block';
         }
+        /** @param {MouseEvent} e */
         function moveTip(e) {
           if (tip.style.display !== 'block') return;
           var r = tip.getBoundingClientRect();
@@ -138,13 +167,15 @@
         function hideTip() { tip.style.display = 'none'; }
         $all('.st-bars').forEach(function (c) {
           c.addEventListener('mouseover', function (e) {
-            var bar = e.target.closest ? e.target.closest('.st-bar') : null;
+            var target = /** @type {Element} */ (e.target);
+            var bar = target.closest ? target.closest('.st-bar') : null;
             if (bar && c.contains(bar)) { showTip(bar); moveTip(e); }
           });
           c.addEventListener('mousemove', moveTip);
           c.addEventListener('mouseleave', hideTip);
         });
 
+        /** @param {HTMLElement} container @param {StatusBucket[] | undefined} buckets */
         function renderBars(container, buckets) {
           container.textContent = '';
           if (!buckets || !buckets.length) return;
@@ -177,6 +208,7 @@
         // viewport around a single row reads as a cropped one.
         var INCIDENT_SCROLL_FROM = 3;
 
+        /** @param {HTMLElement} root @param {StatusIncident[] | undefined} incidents */
         function renderIncidents(root, incidents) {
           root.textContent = '';
           var many = !!incidents && incidents.length >= INCIDENT_SCROLL_FROM;
@@ -236,6 +268,7 @@
         // Built with createElement/textContent rather than innerHTML because `reason`
         // is server copy — and a hand-rolled client could put anything in it, so it is
         // never given a chance to be markup.
+        /** @param {HTMLElement | null} root @param {StatusComponent[] | undefined} components */
         function renderComponents(root, components) {
           if (!root) return;
           root.textContent = '';
@@ -316,6 +349,7 @@
           });
         }
 
+        /** @param {StatusPayload} data */
         function setStatus(data) {
           var pill = $('[data-status]');
           var text = $('.up-status-text', pill);
@@ -326,6 +360,7 @@
           text.textContent = bannerText(data, t);
         }
 
+        /** @param {StatusPayload} data */
         function render(data) {
           lastData = data;
           loadFailed = false;
@@ -333,7 +368,7 @@
 
           // Summary + per-graph percentages.
           $all('[data-pct]').forEach(function (el) {
-            var key = el.getAttribute('data-pct');
+            var key = /** @type {string} */ (el.getAttribute('data-pct'));
             var w = data.windows && data.windows[key];
             var v = w ? w.uptimePct : null;
             el.textContent = fmtPct(v);
@@ -447,6 +482,7 @@
         }
 
         // ---- manual refresh ----------------------------------------------------
+        /** @param {boolean} on */
         function setRefreshSpinning(on) {
           var btn = $('[data-refresh]');
           if (btn) btn.classList.toggle('is-spinning', !!on);
@@ -469,7 +505,7 @@
         // Count the cooldown down in the button, then hand it back. The numeral goes in
         // its own aria-hidden span so it never collides with the data-lang label.
         function startCooldown() {
-          var btn = $('[data-refresh]');
+          var btn = /** @type {HTMLButtonElement} */ ($('[data-refresh]'));
           var count = $('[data-refresh-count]');
           if (!btn || !count) return;
           if (cooldownTimer) clearInterval(cooldownTimer);
@@ -492,7 +528,7 @@
               count.textContent = ' ' + (left < 10 ? ' ' : '') + '(' + left + 's)';
               return;
             }
-            clearInterval(cooldownTimer);
+            clearInterval(cooldownTimer ?? undefined);
             cooldownTimer = null;
             count.textContent = '';
             btn.disabled = false;

@@ -107,7 +107,7 @@ function rowHtml(item) {
  * search for "prod" silently removes the way back to the balance, and a list that can
  * be emptied by typing is a list people stop typing in.
  * @param {HTMLElement | null} host - The container.
- * @param {{ keys?: any[], credits?: any, usage?: any, selected?: string, filter?: string, now?: number }} state - What to draw.
+ * @param {{ keys?: any[], credits?: any, usage?: any, selected?: string | null, filter?: string, now?: number }} state - What to draw.
  * @returns {void}
  */
 export function renderList(host, state = {}) {
@@ -115,7 +115,7 @@ export function renderList(host, state = {}) {
   const keys = Array.isArray(state.keys) ? state.keys : [];
   const nowMs = state.now || Date.now();
   const filter = String(state.filter || '').trim().toLowerCase();
-  const usageByKey = new Map((state.usage?.keys || []).map((k) => [String(k.keyId), k]));
+  const usageByKey = new Map((state.usage?.keys || []).map((/** @type {import('./account-detail.js').KeyUsageRow} */ k) => [String(k.keyId), k]));
 
   const live = keys.filter((k) => !k.revokedAt);
   const balance = Number(state.credits?.balance ?? 0);
@@ -163,7 +163,7 @@ export function renderList(host, state = {}) {
   const keysBody = keyRows
     || (filter
       ? '<p class="ak-list__none">'
-        + escapeHtml(t('apiKeys.list.noMatch', 'No key matches “{query}”.', { query: state.filter }))
+        + escapeHtml(t('apiKeys.list.noMatch', 'No key matches “{query}”.', { query: state.filter || '' }))
         + '</p>'
       : '<p class="ak-list__none">' + escapeHtml(t('apiKeys.list.none', 'No keys yet.')) + '</p>');
 

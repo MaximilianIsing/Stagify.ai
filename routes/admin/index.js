@@ -79,7 +79,7 @@ router.post('/api/host-image', protectLogs, (req, res) => {
         size: req.file.size || req.file.buffer.length,
         uploadedAt: new Date().toISOString(),
       };
-      const manifest = hostedImages.readHostedImagesManifest();
+      const manifest = /** @type {import('../../lib/types/image.js').HostedImageEntry[]} */ (hostedImages.readHostedImagesManifest());
       manifest.push(entry);
       hostedImages.writeHostedImagesManifest(manifest);
       // Was hand-parsing x-forwarded-proto. `trust proxy` (server.js:132) already
@@ -96,7 +96,7 @@ router.post('/api/host-image', protectLogs, (req, res) => {
 });
 
 router.get('/api/hosted-images', protectLogs, (req, res) => {
-  const images = hostedImages.readHostedImagesManifest()
+  const images = /** @type {import('../../lib/types/image.js').HostedImageEntry[]} */ (hostedImages.readHostedImagesManifest())
     .slice()
     .sort((a, b) => new Date(b.uploadedAt || 0).getTime() - new Date(a.uploadedAt || 0).getTime())
     .map((e) => Object.assign({}, e, { path: '/i/' + e.id }));
@@ -108,7 +108,7 @@ router.delete('/api/hosted-images/:id', protectLogs, (req, res) => {
   if (!/^[a-f0-9]{16,64}$/.test(id)) {
     return sendError(res, 400, 'Invalid id');
   }
-  const manifest = hostedImages.readHostedImagesManifest();
+  const manifest = /** @type {import('../../lib/types/image.js').HostedImageEntry[]} */ (hostedImages.readHostedImagesManifest());
   const idx = manifest.findIndex((e) => e && e.id === id);
   if (idx === -1) {
     return sendError(res, 404, 'Not found');
@@ -561,7 +561,10 @@ router.post('/api/admin/email-test-send', protectLogs, express.json(), async (re
 // rollup. Retiring a link DEACTIVATES it (the URL stops resolving, the history
 // stays); DELETE is the separate, explicit wipe.
 
-/** Guard shared by every referral endpoint: a missing store is a 500, not an empty list. */
+/**
+ * Guard shared by every referral endpoint: a missing store is a 500, not an empty list.
+ * @param {import('express').Response} res
+ */
 function referralStoreOr500(res) {
   if (!referralLinks || typeof referralLinks.summary !== 'function') {
     sendError(res, 500, 'Referral tracking is not configured');

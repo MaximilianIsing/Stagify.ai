@@ -19,6 +19,8 @@ import { COL, withOutcome, categoryKey, topValues } from './analytics.js';
 import { foldChange, median, mean } from './stats.js';
 import { finding, suppressed, fmtCount, fmtPct, fmtX, fmtSeconds } from './findings.js';
 
+/** @typedef {import('./types.js').RuleInput} RuleInput */
+
 const AREA = 'Performance';
 
 /** Below this many recorded outcomes, nothing here says anything at all. */
@@ -31,7 +33,7 @@ function cell(row, idx) {
   return String((row && row[idx]) || '').trim();
 }
 
-/** Recorded-outcome rows only, once per rule rather than once per branch. */
+/** Recorded-outcome rows only, once per rule rather than once per branch. @param {RuleInput} input */
 function recorded(input) {
   return withOutcome(input.promptRows || []);
 }
@@ -41,7 +43,7 @@ function isFailure(row) {
   return cell(row, COL.PROMPT.STATUS).toLowerCase() === 'failed';
 }
 
-/** Rows inside the trailing `days` window. @param {string[][]} rows */
+/** Rows inside the trailing `days` window. @param {string[][]} rows @param {number} days @param {number} now */
 function since(rows, days, now) {
   const cutoff = now - days * 24 * 60 * 60 * 1000;
   return rows.filter((r) => {
@@ -60,9 +62,10 @@ function since(rows, days, now) {
 const latencyShift = {
   id: 'reliability.latency-shift',
   area: AREA,
+  /** @param {RuleInput} input */
   run(input) {
     const ok = recorded(input).filter((r) => !isFailure(r));
-    const durations = (rows) => rows
+    const durations = (/** @type {string[][]} */ rows) => rows
       .map((r) => Number(cell(r, COL.PROMPT.DURATION)))
       .filter((v) => Number.isFinite(v) && v > 0);
 
@@ -81,7 +84,7 @@ const latencyShift = {
         + `before; there are ${recentD.length} and ${priorD.length}.`);
     }
 
-    const p95 = (values) => {
+    const p95 = (/** @type {number[]} */ values) => {
       const sorted = [...values].sort((a, b) => a - b);
       return sorted[Math.min(sorted.length - 1, Math.ceil(0.95 * sorted.length) - 1)];
     };
@@ -139,9 +142,10 @@ const latencyShift = {
 const retryOverhead = {
   id: 'reliability.retry-overhead',
   area: AREA,
+  /** @param {RuleInput} input */
   run(input) {
     const rows = recorded(input).filter((r) => !isFailure(r));
-    const attemptsOf = (r) => {
+    const attemptsOf = (/** @type {string[]} */ r) => {
       const v = Number(cell(r, COL.PROMPT.ATTEMPTS));
       return Number.isFinite(v) && v > 0 ? v : null;
     };
@@ -225,13 +229,14 @@ const retryOverhead = {
 const failureHourConcentration = {
   id: 'reliability.failure-hour',
   area: AREA,
+  /** @param {RuleInput} input */
   run(input) {
     const rows = recorded(input);
     const failures = rows.filter(isFailure);
     const MIN_FAILURES = 20;
     if (failures.length < MIN_FAILURES) return null;
 
-    const hourOf = (r) => {
+    const hourOf = (/** @type {string[]} */ r) => {
       const d = new Date(cell(r, COL.PROMPT.TS));
       return Number.isNaN(d.getTime()) ? null : d.getHours();
     };
@@ -289,6 +294,7 @@ const failureHourConcentration = {
 const modelMix = {
   id: 'reliability.model-mix',
   area: AREA,
+  /** @param {RuleInput} input */
   run(input) {
     const rows = recorded(input);
     if (rows.length < MIN_GLOBAL) return null;

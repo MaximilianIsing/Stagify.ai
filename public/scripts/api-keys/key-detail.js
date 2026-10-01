@@ -81,7 +81,7 @@ export function keyDetailHtml(key, opts = {}) {
 
   const delivered = row ? Number(row.delivered || 0) : null;
   const refunded = row ? Number(row.refunded || 0) : null;
-  const rate = row ? percent(delivered, delivered + refunded) : null;
+  const rate = row ? percent(Number(delivered), Number(delivered) + Number(refunded)) : null;
 
   /** @returns {string} The note under the delivery rate. */
   function deliveredNote() {

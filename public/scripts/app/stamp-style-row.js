@@ -107,12 +107,12 @@ export function initStampStyleRow(ids = {}) {
    * see — including on page load, before the option is even switched on.
    * @returns {void}
    */
-  function refreshPreview() {
+  const refreshPreview = () => {
     if (!image || row.hidden) return;
     const next = previewUrl(row);
     // Re-setting the same src re-decodes the image and flashes the popup for no reason.
     if (image.getAttribute('src') !== next) image.setAttribute('src', next);
-  }
+  };
 
   /**
    * Refresh after the controls stop moving. Dragging the slider fires `input` per pixel;
@@ -130,7 +130,7 @@ export function initStampStyleRow(ids = {}) {
    * controls configure an option that is off, which is nothing to configure.
    * @returns {void}
    */
-  function syncVisibility() {
+  const syncVisibility = () => {
     row.hidden = !checkbox.checked;
     // Only where the checkbox declares itself the panel's trigger — the staging strip is a
     // plain revealed row, and claiming it is expandable would announce a widget that isn't.
@@ -138,7 +138,7 @@ export function initStampStyleRow(ids = {}) {
       checkbox.setAttribute('aria-expanded', checkbox.checked ? 'true' : 'false');
     }
     if (checkbox.checked) refreshPreview();
-  }
+  };
 
   checkbox.addEventListener('change', syncVisibility);
 

@@ -10,13 +10,15 @@
   // the ink at its base #1e3a8a loses nothing visually and keeps the text readable.
   // The halo is a touch stronger to compensate for the colour that is no longer
   // doing any of the work.
+  /** @param {Event} e */
   function over(e) {
-    var s = e.currentTarget.style;
+    var s = /** @type {HTMLElement} */ (e.currentTarget).style;
     s.transform = 'scale(1.1)';
     s.textShadow = '0 0 22px rgba(59, 130, 246, 0.65)';
   }
+  /** @param {Event} e */
   function out(e) {
-    var s = e.currentTarget.style;
+    var s = /** @type {HTMLElement} */ (e.currentTarget).style;
     s.transform = 'scale(1)';
     s.textShadow = 'none';
   }

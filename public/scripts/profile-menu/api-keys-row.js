@@ -115,6 +115,7 @@ export function stagifyApiRowHtml(lang, esc) {
  */
 export function createApiSummary(auth, fetchImpl) {
   const doFetch = fetchImpl || ((...a) => fetch(...a));
+  /** @type {any} The /api/keys/summary payload, as read() and load() already declare. */
   let summary = null;
   let started = false;
 

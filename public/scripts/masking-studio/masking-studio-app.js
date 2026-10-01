@@ -14,6 +14,7 @@ import { settlePreview } from '../gates/preview-access.js';
 import { showToast } from '../shared/toast.js';
 import { createStampOption } from '../mask/stamp-option.js';
 import { initStampStyleRow } from '../app/stamp-style-row.js';
+import { errorMessage } from '../shared/error-message.js';
 
         // ---------------------------------------------------------------------
         // Access: this page is a PUBLIC PREVIEW. It shows one of three views on a
@@ -33,6 +34,7 @@ import { initStampStyleRow } from '../app/stamp-style-row.js';
         // ---------------------------------------------------------------------
         // "How it works" dialog
         // ---------------------------------------------------------------------
+        /** @param {boolean} open @param {{ hideShortcuts?: boolean }} [opts] */
         function setHelpOpen(open, opts) {
           helpEl.classList.toggle('active', open);
           if (open) {
@@ -46,13 +48,15 @@ import { initStampStyleRow } from '../app/stamp-style-row.js';
         // ---------------------------------------------------------------------
         // Small helpers
         // ---------------------------------------------------------------------
-        const $ = (sel) => document.querySelector(sel);
+        const $ = (/** @type {string} */ sel) => document.querySelector(sel);
 
+        /** @param {string} key @param {string} def @returns {string} */
         function tx(key, def) {
           const v = window.LanguageSystem && window.LanguageSystem.getText(key);
           return v || def;
         }
 
+        /** @param {string} src @returns {Promise<HTMLImageElement>} */
         function loadImage(src) {
           return new Promise((resolve, reject) => {
             const im = new Image();
@@ -108,58 +112,58 @@ import { initStampStyleRow } from '../app/stamp-style-row.js';
         // ---------------------------------------------------------------------
         // DOM refs
         // ---------------------------------------------------------------------
-        const dropzone = $('#ms-dropzone');
-        const fileInput = $('#ms-file-input');
-        const furnitureInput = $('#ms-furniture-input');
-        const stack = $('#ms-stack');
-        const baseCanvas = $('#ms-base-canvas');
-        const resultCanvas = $('#ms-result-canvas');
-        const photoEmptyHint = $('#ms-photo-empty-hint');
-        const photoThumb = $('#ms-photo-thumb');
-        const replaceBtn = $('#ms-replace-btn');
-        const helpBtn = $('#ms-help-btn');
-        const helpEl = $('#ms-help');
-        const helpCloseBtn = $('#ms-help-close');
-        const helpDoneBtn = $('#ms-help-done');
-        const helpShortcutsEl = $('#ms-help-shortcuts');
-        const confirmEl = $('#ms-confirm');
-        const confirmDiscardBtn = $('#ms-confirm-discard');
-        const confirmKeepBtn = $('#ms-confirm-keep');
-        const resumeEl = $('#ms-resume');
-        const resumeYesBtn = $('#ms-resume-yes');
-        const resumeNoBtn = $('#ms-resume-no');
-        const ctaHint = $('#ms-cta-hint');
-        const viewerEl = $('#ms-viewer');
-        const layerList = $('#ms-layer-list');
-        const addLayerBtn = $('#ms-add-layer');
-        const brushBtn = $('#ms-brush-btn');
-        const eraseBtn = $('#ms-erase-btn');
-        const rectBtn = $('#ms-rect-btn');
-        const wandBtn = $('#ms-wand-btn');
-        const wandRow = $('#ms-wand-row');
-        const wandBusyEl = $('#ms-wand-busy');
-        const brushRow = $('#ms-brush-row');
-        const undoBtn = $('#ms-undo-btn');
-        const redoBtn = $('#ms-redo-btn');
-        const brushSlider = $('#ms-brush-slider');
-        const generateBtn = $('#ms-generate');
-        const progressEl = $('#ms-progress');
-        const progressBar = $('#ms-progress-bar');
-        const progressText = $('#ms-progress-text');
-        const chipbar = $('#ms-chipbar');
-        const viewerHeader = $('#ms-viewer-header');
-        const viewToggle = $('#ms-view-toggle');
-        const toggleBeforeBtn = $('#ms-toggle-before');
-        const toggleCompareBtn = $('#ms-toggle-compare');
-        const toggleAfterBtn = $('#ms-toggle-after');
-        const compareEl = $('#ms-compare');
-        const compareGrip = $('#ms-compare-grip');
-        const compareLabelBefore = $('#ms-compare-label-before');
-        const compareLabelAfter = $('#ms-compare-label-after');
-        const viewerActions = $('#ms-viewer-actions');
-        const editHighlightsBtn = $('#ms-edit-highlights');
-        const viewResultBtn = $('#ms-view-result');
-        const downloadBtn = $('#ms-download');
+        const dropzone = /** @type {HTMLElement} */ ($('#ms-dropzone'));
+        const fileInput = /** @type {HTMLInputElement} */ ($('#ms-file-input'));
+        const furnitureInput = /** @type {HTMLInputElement} */ ($('#ms-furniture-input'));
+        const stack = /** @type {HTMLElement} */ ($('#ms-stack'));
+        const baseCanvas = /** @type {HTMLCanvasElement} */ ($('#ms-base-canvas'));
+        const resultCanvas = /** @type {HTMLCanvasElement} */ ($('#ms-result-canvas'));
+        const photoEmptyHint = /** @type {HTMLElement} */ ($('#ms-photo-empty-hint'));
+        const photoThumb = /** @type {HTMLImageElement} */ ($('#ms-photo-thumb'));
+        const replaceBtn = /** @type {HTMLButtonElement} */ ($('#ms-replace-btn'));
+        const helpBtn = /** @type {HTMLButtonElement} */ ($('#ms-help-btn'));
+        const helpEl = /** @type {HTMLElement} */ ($('#ms-help'));
+        const helpCloseBtn = /** @type {HTMLButtonElement} */ ($('#ms-help-close'));
+        const helpDoneBtn = /** @type {HTMLButtonElement} */ ($('#ms-help-done'));
+        const helpShortcutsEl = /** @type {HTMLElement} */ ($('#ms-help-shortcuts'));
+        const confirmEl = /** @type {HTMLElement} */ ($('#ms-confirm'));
+        const confirmDiscardBtn = /** @type {HTMLButtonElement} */ ($('#ms-confirm-discard'));
+        const confirmKeepBtn = /** @type {HTMLButtonElement} */ ($('#ms-confirm-keep'));
+        const resumeEl = /** @type {HTMLElement} */ ($('#ms-resume'));
+        const resumeYesBtn = /** @type {HTMLButtonElement} */ ($('#ms-resume-yes'));
+        const resumeNoBtn = /** @type {HTMLButtonElement} */ ($('#ms-resume-no'));
+        const ctaHint = /** @type {HTMLElement} */ ($('#ms-cta-hint'));
+        const viewerEl = /** @type {HTMLElement} */ ($('#ms-viewer'));
+        const layerList = /** @type {HTMLElement} */ ($('#ms-layer-list'));
+        const addLayerBtn = /** @type {HTMLButtonElement} */ ($('#ms-add-layer'));
+        const brushBtn = /** @type {HTMLButtonElement} */ ($('#ms-brush-btn'));
+        const eraseBtn = /** @type {HTMLButtonElement} */ ($('#ms-erase-btn'));
+        const rectBtn = /** @type {HTMLButtonElement} */ ($('#ms-rect-btn'));
+        const wandBtn = /** @type {HTMLButtonElement} */ ($('#ms-wand-btn'));
+        const wandRow = /** @type {HTMLElement} */ ($('#ms-wand-row'));
+        const wandBusyEl = /** @type {HTMLElement} */ ($('#ms-wand-busy'));
+        const brushRow = /** @type {HTMLElement} */ ($('#ms-brush-row'));
+        const undoBtn = /** @type {HTMLButtonElement} */ ($('#ms-undo-btn'));
+        const redoBtn = /** @type {HTMLButtonElement} */ ($('#ms-redo-btn'));
+        const brushSlider = /** @type {HTMLInputElement} */ ($('#ms-brush-slider'));
+        const generateBtn = /** @type {HTMLButtonElement} */ ($('#ms-generate'));
+        const progressEl = /** @type {HTMLElement} */ ($('#ms-progress'));
+        const progressBar = /** @type {HTMLElement} */ ($('#ms-progress-bar'));
+        const progressText = /** @type {HTMLElement} */ ($('#ms-progress-text'));
+        const chipbar = /** @type {HTMLElement} */ ($('#ms-chipbar'));
+        const viewerHeader = /** @type {HTMLElement} */ ($('#ms-viewer-header'));
+        const viewToggle = /** @type {HTMLElement} */ ($('#ms-view-toggle'));
+        const toggleBeforeBtn = /** @type {HTMLButtonElement} */ ($('#ms-toggle-before'));
+        const toggleCompareBtn = /** @type {HTMLButtonElement} */ ($('#ms-toggle-compare'));
+        const toggleAfterBtn = /** @type {HTMLButtonElement} */ ($('#ms-toggle-after'));
+        const compareEl = /** @type {HTMLElement} */ ($('#ms-compare'));
+        const compareGrip = /** @type {HTMLButtonElement} */ ($('#ms-compare-grip'));
+        const compareLabelBefore = /** @type {HTMLElement} */ ($('#ms-compare-label-before'));
+        const compareLabelAfter = /** @type {HTMLElement} */ ($('#ms-compare-label-after'));
+        const viewerActions = /** @type {HTMLElement} */ ($('#ms-viewer-actions'));
+        const editHighlightsBtn = /** @type {HTMLButtonElement} */ ($('#ms-edit-highlights'));
+        const viewResultBtn = /** @type {HTMLButtonElement} */ ($('#ms-view-result'));
+        const downloadBtn = /** @type {HTMLButtonElement} */ ($('#ms-download'));
 
         // "Label as virtually staged", applied at BOTH exits — see scripts/mask/stamp-option.js.
         const stampIds = { checkboxId: 'ms-label-virtually-staged', optsId: 'ms-stamp-opts' };
@@ -173,13 +177,14 @@ import { initStampStyleRow } from '../app/stamp-style-row.js';
         // 1920×1080, mirroring its downscale step) so every returned edit maps
         // 1:1 onto our canvases and huge photos don't exhaust canvas memory
         // across up to 6 stacked area layers.
+        /** @param {HTMLImageElement} img @param {import('./types.js').MsBaseImageOpts} [opts] */
         function setBaseImage(img, opts) {
           const scale = Math.min(1, 1920 / img.width, 1080 / img.height);
           const w = Math.max(1, Math.round(img.width * scale));
           const h = Math.max(1, Math.round(img.height * scale));
           const c = document.createElement('canvas');
           c.width = w; c.height = h;
-          c.getContext('2d').drawImage(img, 0, 0, w, h);
+          /** @type {CanvasRenderingContext2D} */ (c.getContext('2d')).drawImage(img, 0, 0, w, h);
           state.base = { w: w, h: h, canvas: c };
 
           // WHERE THIS PHOTO CAME FROM, and note it DEFAULTS TO CLEARED: `sourceName` is
@@ -191,7 +196,7 @@ import { initStampStyleRow } from '../app/stamp-style-row.js';
 
           baseCanvas.width = w;
           baseCanvas.height = h;
-          baseCanvas.getContext('2d').drawImage(c, 0, 0);
+          /** @type {CanvasRenderingContext2D} */ (baseCanvas.getContext('2d')).drawImage(c, 0, 0);
           resultCanvas.width = w;
           resultCanvas.height = h;
 
@@ -238,8 +243,8 @@ import { initStampStyleRow } from '../app/stamp-style-row.js';
           state.savedDigest = '';
           resetZoom();
 
-          baseCanvas.getContext('2d').clearRect(0, 0, baseCanvas.width, baseCanvas.height);
-          resultCanvas.getContext('2d').clearRect(0, 0, resultCanvas.width, resultCanvas.height);
+          /** @type {CanvasRenderingContext2D} */ (baseCanvas.getContext('2d')).clearRect(0, 0, baseCanvas.width, baseCanvas.height);
+          /** @type {CanvasRenderingContext2D} */ (resultCanvas.getContext('2d')).clearRect(0, 0, resultCanvas.width, resultCanvas.height);
 
           photoThumb.removeAttribute('src');
           photoEmptyHint.classList.remove('hidden');
@@ -284,6 +289,7 @@ import { initStampStyleRow } from '../app/stamp-style-row.js';
         // Discard confirmation: replacing the photo (or starting over) wipes
         // highlights and staged results, so ask first when results exist.
         // ---------------------------------------------------------------------
+        /** @type {(() => void) | null} */
         let pendingConfirmAction = null;
 
         function hasAnyResults() {
@@ -292,6 +298,7 @@ import { initStampStyleRow } from '../app/stamp-style-row.js';
 
         // strict also protects unstaged work (strokes/prompts/furniture) — used
         // for accident-prone paths like dropping a file onto the photo itself.
+        /** @param {() => void} action @param {boolean} [strict] */
         function requestDiscard(action, strict) {
           const hasWork = strict && state.layers.some((l) => l.painted || l.prompt.trim() || l.furniture);
           if (!hasAnyResults() && !hasWork) { action(); return; }
@@ -406,6 +413,7 @@ import { initStampStyleRow } from '../app/stamp-style-row.js';
         // ---------------------------------------------------------------------
         // Generation: every painted area runs as its own parallel mask edit.
         // ---------------------------------------------------------------------
+        /** @param {number} status @param {{ error?: string } | null | undefined} result */
         function requestError(status, result) {
           // A 401/403 mid-session means the plan lapsed. The response is to re-shape the
           // page — the writer hides the tool and puts the pitch back, because the visitor
@@ -446,7 +454,7 @@ import { initStampStyleRow } from '../app/stamp-style-row.js';
             const name = 'stagify-masking-studio-' + Date.now();
             await stampOption.downloadWithLabel(resultCanvas.toDataURL('image/jpeg', 0.92), name);
           } catch (err) {
-            showToast(err.message || tx('errors.disclosureStampFailed',
+            showToast(errorMessage(err) || tx('errors.disclosureStampFailed',
               'We couldn\'t add the "virtually staged" label.'), 'error');
           } finally {
             downloadBtn.disabled = false;

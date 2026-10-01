@@ -27,6 +27,7 @@ import { maskGrowths, snapshotCanvas, renderRefinePreview } from '../mask/refine
 import { requestMaskEdit } from '../mask/generate.js';
 import { readImageFile } from './image-file.js';
 import { downloadWithLabel } from './mask-stamp.js';
+import { errorMessage } from '../shared/error-message.js';
 
 /**
  * @param {{
@@ -60,37 +61,37 @@ export function createStageMaskEditor(deps) {
     onMaskCommit,
     updateMaskButtonVisibility,
   } = deps;
-  const $ = (sel) => document.querySelector(sel);
+  const $ = (/** @type {string} */ sel) => document.querySelector(sel);
 
-      const maskModal = $('#stage-mask-modal');
+      const maskModal = /** @type {HTMLElement} */ ($('#stage-mask-modal'));
       // The FAB is optional now: Basic Mask opens this editor from the nav, with
       // no staging job and therefore no FAB in play. Only the modal is required.
       if (!maskModal) return { openStandalone() {} };
 
-      const baseCanvas = $('#stage-mask-base-canvas');
-      const drawCanvas = $('#stage-mask-draw-canvas');
-      const brushSlider = $('#stage-mask-brush-slider');
-      const promptInput = $('#stage-mask-prompt');
-      const cancelBtn = $('#stage-mask-cancel');
-      const closeBtn = $('#stage-mask-close');
-      const clearBtn = $('#stage-mask-clear');
-      const submitBtn = $('#stage-mask-submit');
-      const brushToolBtn = $('#stage-mask-brush-btn');
-      const eraseToolBtn = $('#stage-mask-erase-btn');
-      const canvasContainer = maskModal.querySelector('.stage-mask-canvas-container');
-      const refFileInput = $('#stage-mask-ref-file');
-      const refAddBtn = $('#stage-mask-ref-add');
-      const refPreview = $('#stage-mask-ref-preview');
-      const refImg = $('#stage-mask-ref-img');
-      const refRemoveBtn = $('#stage-mask-ref-remove');
-      const noteEl = maskModal.querySelector('.stage-mask-note');
-      const actionsRow = maskModal.querySelector('.stage-mask-actions');
-      const content = maskModal.querySelector('.stage-mask-content');
+      const baseCanvas = /** @type {HTMLCanvasElement} */ ($('#stage-mask-base-canvas'));
+      const drawCanvas = /** @type {HTMLCanvasElement} */ ($('#stage-mask-draw-canvas'));
+      const brushSlider = /** @type {HTMLInputElement} */ ($('#stage-mask-brush-slider'));
+      const promptInput = /** @type {HTMLInputElement} */ ($('#stage-mask-prompt'));
+      const cancelBtn = /** @type {HTMLButtonElement} */ ($('#stage-mask-cancel'));
+      const closeBtn = /** @type {HTMLButtonElement} */ ($('#stage-mask-close'));
+      const clearBtn = /** @type {HTMLButtonElement} */ ($('#stage-mask-clear'));
+      const submitBtn = /** @type {HTMLButtonElement} */ ($('#stage-mask-submit'));
+      const brushToolBtn = /** @type {HTMLButtonElement} */ ($('#stage-mask-brush-btn'));
+      const eraseToolBtn = /** @type {HTMLButtonElement} */ ($('#stage-mask-erase-btn'));
+      const canvasContainer = /** @type {HTMLElement} */ (maskModal.querySelector('.stage-mask-canvas-container'));
+      const refFileInput = /** @type {HTMLInputElement} */ ($('#stage-mask-ref-file'));
+      const refAddBtn = /** @type {HTMLButtonElement} */ ($('#stage-mask-ref-add'));
+      const refPreview = /** @type {HTMLElement} */ ($('#stage-mask-ref-preview'));
+      const refImg = /** @type {HTMLImageElement} */ ($('#stage-mask-ref-img'));
+      const refRemoveBtn = /** @type {HTMLButtonElement} */ ($('#stage-mask-ref-remove'));
+      const noteEl = /** @type {HTMLElement | null} */ (maskModal.querySelector('.stage-mask-note'));
+      const actionsRow = /** @type {HTMLElement | null} */ (maskModal.querySelector('.stage-mask-actions'));
+      const content = /** @type {HTMLElement | null} */ (maskModal.querySelector('.stage-mask-content'));
       // Basic Mask's "Label as virtually staged" wrapper. Optional: it only exists in
       // index.html, and this editor is also built on pages that carry the dialog markup
       // without it.
-      const stampRow = $('#mask-stamp');
-      const uploadZone = $('#stage-mask-upload');
+      const stampRow = /** @type {HTMLElement | null} */ ($('#mask-stamp'));
+      const uploadZone = /** @type {HTMLElement | null} */ ($('#stage-mask-upload'));
       const uploadInput = /** @type {HTMLInputElement} */ ($('#stage-mask-upload-input'));
 
       // 'after' = refine an already-staged image; 'before' = edit the original
@@ -101,7 +102,7 @@ export function createStageMaskEditor(deps) {
 
       // Standalone only: the most recently committed composite, offered as a
       // download and used as the base for the next mask.
-      let standaloneUrl = null;
+      let standaloneUrl = /** @type {string | null} */ (null);
 
       // ---- In-modal generate → refine flow ---------------------------------
       // "Apply Edit" no longer closes the modal. We blur the canvas while the AI
@@ -109,7 +110,7 @@ export function createStageMaskEditor(deps) {
       // Repainting only re-crops the already-generated image (instant, free) — it
       // never re-calls the API unless they press "Regenerate".
       let phase = 'draw';        // 'draw' | 'loading' | 'refine'
-      let refineState = null;    // { origCanvas, w, h, coreGrow, featherPx, editedImg, isBefore }
+      let refineState = /** @type {{ origCanvas: HTMLCanvasElement, w: number, h: number, coreGrow: number, featherPx: number, editedImg: HTMLImageElement, isBefore: boolean } | null} */ (null);
       /** @type {HTMLElement|null} */
       let maskDialogOpener = null; // whatever had focus when the dialog opened
 
@@ -207,7 +208,7 @@ export function createStageMaskEditor(deps) {
       });
       brush.attach();
 
-      function setControlsDisabled(dis) {
+      function setControlsDisabled(/** @type {boolean} */ dis) {
         [cancelBtn, clearBtn, submitBtn, rerunBtn, doneBtn, anotherBtn, downloadBtn, brushToolBtn, eraseToolBtn, brushSlider, promptInput, refAddBtn, refRemoveBtn]
           .forEach((el) => { if (el) el.disabled = dis; });
       }
@@ -236,7 +237,7 @@ export function createStageMaskEditor(deps) {
       }
 
       // Switch the editor between drawing, loading and refine phases.
-      function setPhase(p) {
+      function setPhase(/** @type {'draw' | 'loading' | 'refine'} */ p) {
         phase = p;
         const titleEl = maskModal.querySelector('.stage-mask-title');
         const copy = maskCopy(tx);
@@ -293,7 +294,7 @@ export function createStageMaskEditor(deps) {
         return canvasContainer && canvasContainer.classList.contains('processing');
       }
 
-      function tx(key, def) {
+      function tx(/** @type {string} */ key, /** @type {string} */ def) {
         const v = window.LanguageSystem && window.LanguageSystem.getText(key);
         return v || def;
       }
@@ -323,7 +324,7 @@ export function createStageMaskEditor(deps) {
       }
 
       // Tell the user they've hit the per-image mask cap.
-      function atVersionLimit(kind) {
+      function atVersionLimit(/** @type {'before' | 'after'} */ kind) {
         const list = kind === 'before' ? getBeforeVersions() : getAfterVersions();
         if (list.length < maxVersions) return false;
         showErrorToast(tx('modal.staging.maskLimitReached',
@@ -332,7 +333,7 @@ export function createStageMaskEditor(deps) {
       }
 
       // Shared: load a source image into the base/draw canvases and open the modal.
-      function showInEditor(src) {
+      function showInEditor(/** @type {string} */ src) {
         const img = new Image();
         img.onload = () => {
           // Display size is measured against the live dialog once it is visible
@@ -340,7 +341,7 @@ export function createStageMaskEditor(deps) {
           // which pushed the prompt and Apply button off-screen on short windows.
           baseCanvas.width = img.width;
           baseCanvas.height = img.height;
-          baseCanvas.getContext('2d').drawImage(img, 0, 0, img.width, img.height);
+          /** @type {CanvasRenderingContext2D} */ (baseCanvas.getContext('2d')).drawImage(img, 0, 0, img.width, img.height);
 
           drawCanvas.width = img.width;
           drawCanvas.height = img.height;
@@ -395,7 +396,7 @@ export function createStageMaskEditor(deps) {
       // brings its own uploader and keeps its own result. Everything below the
       // image — brush, prompt, reference photo, generate, refine — is unchanged.
 
-      function setUploadState(on) {
+      function setUploadState(/** @type {boolean} */ on) {
         if (content) content.classList.toggle('is-uploading', on);
         if (on && uploadInput) uploadInput.value = '';
       }
@@ -423,7 +424,7 @@ export function createStageMaskEditor(deps) {
       }
 
       /** A file from the uploader's picker or a drop. */
-      async function acceptStandaloneFile(file) {
+      async function acceptStandaloneFile(/** @type {File} */ file) {
         const read = await readImageFile(file, { showError: showErrorToast });
         if (!read) return;
         // No /api/validate-image here on purpose: Basic Mask edits any photo,
@@ -488,7 +489,7 @@ export function createStageMaskEditor(deps) {
       }
 
       // The brush owns the tool; this only mirrors it onto the two buttons.
-      function setTool(t) {
+      function setTool(/** @type {'brush' | 'erase'} */ t) {
         brush.setTool(t);
         const isBrush = brush.getTool() === 'brush';
         if (brushToolBtn) {
@@ -508,7 +509,7 @@ export function createStageMaskEditor(deps) {
         brushSlider.max = String(BRUSH_STEP_MAX);
         brushSlider.value = String(BRUSH_STEP_DEFAULT);
         brushSlider.addEventListener('input', (e) => {
-          brush.setSizeStep(parseInt(e.target.value, 10));
+          brush.setSizeStep(parseInt(/** @type {HTMLInputElement} */ (e.target).value, 10));
         });
       }
       if (promptInput) promptInput.addEventListener('input', updateSubmitState);
@@ -539,7 +540,7 @@ export function createStageMaskEditor(deps) {
 
       // POST the current strokes + prompt (+ optional reference) to the model.
       // Model choice is this page's own control; everything else is shared.
-      function runGenerate(origCanvas, w, h, prompt, coreGrow) {
+      function runGenerate(/** @type {HTMLCanvasElement} */ origCanvas, /** @type {number} */ w, /** @type {number} */ h, /** @type {string} */ prompt, /** @type {number} */ coreGrow) {
         const modelSel = /** @type {HTMLSelectElement} */ (document.getElementById('stagify-model-select'));
         return requestMaskEdit({
           image: origCanvas.toDataURL('image/png'),
@@ -573,7 +574,7 @@ export function createStageMaskEditor(deps) {
           console.error('Mask edit failed:', err);
           setPhase('draw');
           if (processBtn) processBtn.disabled = false;
-          showErrorToast(err.message || 'Mask edit failed. Please try again.');
+          showErrorToast(errorMessage(err) || 'Mask edit failed. Please try again.');
         }
       }
 
@@ -595,7 +596,7 @@ export function createStageMaskEditor(deps) {
           console.error('Mask re-run failed:', err);
           setPhase('refine'); // keep the previous result intact
           renderPreview();
-          showErrorToast(err.message || 'Mask edit failed. Please try again.');
+          showErrorToast(errorMessage(err) || 'Mask edit failed. Please try again.');
         }
       }
 
@@ -648,7 +649,7 @@ export function createStageMaskEditor(deps) {
         try {
           await downloadWithLabel(standaloneUrl, `stagify-basic-mask-${Date.now()}`);
         } catch (err) {
-          showErrorToast(err.message || tx('errors.disclosureStampFailed',
+          showErrorToast(errorMessage(err) || tx('errors.disclosureStampFailed',
             'We couldn\'t add the "virtually staged" label. Untick that option to download without it.'));
         } finally {
           downloadBtn.disabled = false;

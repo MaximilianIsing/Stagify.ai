@@ -14,6 +14,11 @@ import { createLayer } from './layers.js';
 // results (candidates/editedImg/status) are deliberately NOT persisted: a restore
 // returns to the draw phase ready to re-run, so only the inputs are kept. The
 // `painted` guard mirrors the encode: an unpainted layer stores no mask.
+/**
+ * @param {import('./types.js').MsLayer} layer
+ * @param {Blob | null} maskBlob
+ * @returns {import('./types.js').MsStoredLayer}
+ */
 export function serializeLayer(layer, maskBlob) {
   return {
     colorIdx: layer.colorIdx,
@@ -34,6 +39,13 @@ export function serializeLayer(layer, maskBlob) {
 // `origin` carries where the photo came from — its filename. That has to survive a restore
 // or a resumed session would save to the gallery under a default name instead of the one
 // the user's photo would have given it.
+/**
+ * @param {Blob} baseBlob
+ * @param {import('./types.js').MsStoredLayer[]} layerData
+ * @param {number} savedAt
+ * @param {{ sourceName?: string } | null} [origin]
+ * @returns {import('./types.js').MsStoredSession}
+ */
 export function serializeSession(baseBlob, layerData, savedAt, origin) {
   return {
     savedAt: savedAt,
@@ -45,6 +57,10 @@ export function serializeSession(baseBlob, layerData, savedAt, origin) {
 
 // The origin fields out of a stored session, defaulted for records written before they
 // existed. Kept beside serializeSession so the two halves of the envelope stay together.
+/**
+ * @param {import('./types.js').MsStoredSession | null | undefined} saved
+ * @returns {{ sourceName: string }}
+ */
 export function deserializeOrigin(saved) {
   return {
     sourceName: (saved && saved.sourceName) || '',
@@ -58,6 +74,11 @@ export function deserializeOrigin(saved) {
 // reordered palette must never index out of range), normalizing the mode, and
 // filling defaults for missing/legacy fields — reusing createLayer so the layer
 // default shape stays single-sourced with the live add-layer path.
+/**
+ * @param {import('./types.js').MsStoredLayer} stored
+ * @param {{ id: string, canvasEl: HTMLCanvasElement, painted: boolean, paletteLength: number }} live
+ * @returns {import('./types.js').MsLayer}
+ */
 export function deserializeLayer(stored, { id, canvasEl, painted, paletteLength }) {
   const colorIdx = Math.min(paletteLength - 1, Math.max(0, stored.colorIdx || 0));
   const layer = createLayer({ id: id, colorIdx: colorIdx, canvasEl: canvasEl });
@@ -72,6 +93,10 @@ export function deserializeLayer(stored, { id, canvasEl, painted, paletteLength 
 
 // A stored session is worth offering to restore only if it actually carries a
 // base photo — an empty or malformed record is dropped silently.
+/**
+ * @param {import('./types.js').MsStoredSession | null | undefined} saved
+ * @returns {boolean}
+ */
 export function isRestorableSession(saved) {
   return !!(saved && saved.baseBlob);
 }

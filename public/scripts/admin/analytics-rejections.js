@@ -40,7 +40,7 @@ export const CREDENTIAL_GUARD_CODES = Object.freeze(['endpoint_key', 'api_key_re
 
 const GUARD_SET = new Set(CREDENTIAL_GUARD_CODES);
 
-/** True for a row that is a failed-credential bounce rather than a refused customer. */
+/** True for a row that is a failed-credential bounce rather than a refused customer. @param {string[]} r */
 function isCredentialGuard(r) {
   return categoryKey(r && r[COL.REJECTION.KIND]) === 'rate_limit'
     && GUARD_SET.has(categoryKey(r && r[COL.REJECTION.CODE]));
@@ -66,7 +66,7 @@ export function credentialGuardHits(rows) {
   return (rows || []).filter(isCredentialGuard);
 }
 
-/** The coarse buckets `logRejectionToFile` writes, with the label each gets. */
+/** The coarse buckets `logRejectionToFile` writes, with the label each gets. @type {Record<string, string>} */
 const KIND_LABELS = {
   unstageable: 'Photo refused',
   daily_limit: 'Daily cap reached',
@@ -75,21 +75,22 @@ const KIND_LABELS = {
   file_too_large: 'File too large',
 };
 
-/** Human label for a `kind`, falling back to the raw value for a future writer. */
+/** Human label for a `kind`, falling back to the raw value for a future writer. @param {unknown} raw */
 function kindLabel(raw) {
   const key = categoryKey(raw);
   return KIND_LABELS[key] || String(raw || '').trim() || 'Unknown';
 }
 
+/** @param {unknown} v */
 function lc(v) { return String(v === null || v === undefined ? '' : v).trim().toLowerCase(); }
 
-/** True unless the writer had no identity for the row. */
+/** True unless the writer had no identity for the row. @param {unknown} v */
 function isRealId(v) {
   const s = lc(v);
   return Boolean(s) && s !== 'unknown';
 }
 
-/** Rows whose `kind` matches, compared through categoryKey. */
+/** Rows whose `kind` matches, compared through categoryKey. @param {string[][]} rows @param {string} kind @returns {string[][]} */
 export function ofKind(rows, kind) {
   const want = categoryKey(kind);
   return (rows || []).filter((r) => categoryKey(r && r[COL.REJECTION.KIND]) === want);

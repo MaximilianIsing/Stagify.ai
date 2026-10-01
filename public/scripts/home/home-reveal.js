@@ -5,6 +5,7 @@
    Also warms image decoding so photos don't hitch when they animate in.
    Falls back to showing everything if IntersectionObserver is unavailable
    or the user prefers reduced motion. */
+/** A `.reveal` row, carrying its pending debounced hide. @typedef {HTMLElement & { _revTimer?: ReturnType<typeof setTimeout> }} RevealEl */
 (() => {
   "use strict";
 
@@ -113,6 +114,12 @@
 
     // Apply the show/exit decision from a given geometry. `root` is the
     // margin-adjusted viewport box (top/bottom). Mutates classes only.
+    /**
+     * @param {RevealEl} el
+     * @param {number} ratio
+     * @param {DOMRectReadOnly} r
+     * @param {{ top: number, bottom: number } | null} root
+     */
     function decide(el, ratio, r, root) {
       // A row taller than the viewport can never reach SHOW_AT by ratio alone;
       // if it spans the whole root, treat it as fully visible.
@@ -156,6 +163,7 @@
     const DEBOUNCE_MS = 90;
 
     // Instant path — show now, cancel any pending hide.
+    /** @param {RevealEl} el */
     function revealNow(el) {
       clearTimeout(el._revTimer);
       el.classList.add("is-visible");
@@ -164,6 +172,7 @@
     }
 
     // Debounced path — re-read live geometry, then decide (handles the exit).
+    /** @param {RevealEl} el */
     function evaluate(el) {
       const vh =
         window.innerHeight || document.documentElement.clientHeight || 0;
@@ -176,6 +185,7 @@
       decide(el, ratio, r, root);
     }
 
+    /** @param {RevealEl} el */
     function schedule(el) {
       clearTimeout(el._revTimer);
       el._revTimer = setTimeout(() => evaluate(el), DEBOUNCE_MS);
@@ -184,7 +194,7 @@
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          const el = entry.target;
+          const el = /** @type {RevealEl} */ (entry.target); // observed below: the `.reveal` rows
           const r = entry.boundingClientRect;
           const root = entry.rootBounds;
           // A row taller than the viewport never reaches SHOW_AT by ratio alone;

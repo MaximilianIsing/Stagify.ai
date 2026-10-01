@@ -19,6 +19,9 @@
 import { qs, el, fmtDateTime } from './helpers.js';
 import { showErrorToast } from '../shared/toast.js';
 
+/** @typedef {import('./types.js').AdminStatusSnapshot} AdminStatusSnapshot */
+/** @typedef {import('./types.js').AdminIncident} AdminIncident */
+
 const POLL_MS = 30 * 1000;
 
 /** Windows the admin view reports, widest last. */
@@ -29,7 +32,7 @@ const WINDOWS = [
   { key: 'all', label: 'All time' },
 ];
 
-/** Compact duration: the same shape the public page uses, so the two agree. */
+/** Compact duration: the same shape the public page uses, so the two agree. @param {number | null | undefined} ms */
 export function fmtDuration(ms) {
   const v = Math.max(0, Number(ms) || 0);
   if (v < 1000) return '0s';
@@ -43,7 +46,7 @@ export function fmtDuration(ms) {
   return d + 'd ' + (h % 24) + 'h';
 }
 
-/** "12s ago" / "4m ago". Null is never, not zero. */
+/** "12s ago" / "4m ago". Null is never, not zero. @param {number | null | undefined} ms */
 export function fmtAgo(ms) {
   if (ms === null || ms === undefined) return 'never';
   const v = Math.max(0, Number(ms) || 0);
@@ -53,7 +56,7 @@ export function fmtAgo(ms) {
   return Math.round(v / 86400000) + 'd ago';
 }
 
-/** Truncated, never rounded up: 99.97% must not read as 100%. */
+/** Truncated, never rounded up: 99.97% must not read as 100%. @param {number | null | undefined} v */
 export function fmtPct(v) {
   if (v === null || v === undefined) return '—';
   return (Math.floor(v * 100 + 1e-6) / 100).toFixed(2) + '%';
@@ -65,6 +68,7 @@ export function fmtPct(v) {
  * `toISOString` is UTC, so feeding it straight to the input offsets the value by the
  * viewer's timezone — an operator in New York would post an incident five hours off
  * without a single thing looking wrong.
+ * @param {number} ms
  */
 export function toLocalInputValue(ms) {
   const d = new Date(ms);
@@ -72,7 +76,7 @@ export function toLocalInputValue(ms) {
   return local.toISOString().slice(0, 16);
 }
 
-/** The inverse. `new Date(value)` reads a datetime-local string as local time. */
+/** The inverse. `new Date(value)` reads a datetime-local string as local time. @param {string | null | undefined} value */
 export function fromLocalInputValue(value) {
   if (!value) return null;
   const ms = new Date(value).getTime();
@@ -81,16 +85,18 @@ export function fromLocalInputValue(value) {
 
 /**
  * @param {object} deps
- * @param {(url: string, method: string, body?: any, isForm?: boolean) => Promise<any>} deps.apiSend
+ * @param {import('./types.js').ApiSend} deps.apiSend
  */
 export function createStatusPanel({ apiSend }) {
   let loaded = false;
-  let timer = null;
   /** @type {any} */
+  let timer = null;
+  /** @type {AdminStatusSnapshot | null} */
   let snapshot = null;
 
   // ── Rendering ────────────────────────────────────────────────────────────
 
+  /** @param {AdminStatusSnapshot} data */
   function statePill(data) {
     const up = data.currentState === 'up';
     return el('span', {
@@ -99,7 +105,7 @@ export function createStatusPanel({ apiSend }) {
     });
   }
 
-  /** The live header: what is true right now, and how well we can even tell. */
+  /** The live header: what is true right now, and how well we can even tell. @param {AdminStatusSnapshot} data */
   function liveCard(data) {
     const card = el('div', { className: 'adm-card adm-live' });
     const head = el('div', { className: 'adm-live-head' }, [
@@ -145,7 +151,7 @@ export function createStatusPanel({ apiSend }) {
     return card;
   }
 
-  /** One window: the percentage, and the two numbers that qualify it. */
+  /** One window: the percentage, and the two numbers that qualify it. @param {AdminStatusSnapshot} data */
   function windowCards(data) {
     const wrap = el('div', { className: 'adm-stats adm-status-stats' });
     for (const w of WINDOWS) {
@@ -173,6 +179,7 @@ export function createStatusPanel({ apiSend }) {
     return wrap;
   }
 
+  /** @param {AdminStatusSnapshot} data @param {string} key @param {string} label */
   function barsCard(data, key, label) {
     const buckets = (data.buckets && data.buckets[key]) || [];
     const card = el('div', { className: 'adm-card adm-chart-card' });
@@ -216,6 +223,7 @@ export function createStatusPanel({ apiSend }) {
    * sentence, the probe `detail` (an R2 error body, a SQLite message), the latency, and
    * whether the section is stale. This is the half of the tab that answers "what do I
    * go and fix", so it sits directly under the live header.
+   * @param {AdminStatusSnapshot} data
    */
   function componentsCard(data) {
     const components = data.components || [];
@@ -288,6 +296,7 @@ export function createStatusPanel({ apiSend }) {
 
   // ── Incident log ─────────────────────────────────────────────────────────
 
+  /** @param {AdminIncident} inc */
   function actionButtons(inc) {
     const cell = el('div', { className: 'adm-ref-actions' });
     if (inc.source !== 'manual') return cell;
@@ -316,6 +325,7 @@ export function createStatusPanel({ apiSend }) {
     return cell;
   }
 
+  /** @param {AdminIncident} inc */
   function incidentRow(inc) {
     const tr = el('tr', {});
 
@@ -438,23 +448,24 @@ export function createStatusPanel({ apiSend }) {
 
   // ── Wiring ───────────────────────────────────────────────────────────────
 
+  /** @param {Event} e */
   function postIncident(e) {
     e.preventDefault();
-    const btn = qs('#adm-inc-post');
+    const btn = /** @type {HTMLButtonElement} */ (qs('#adm-inc-post'));
     const msg = qs('#adm-inc-msg');
-    const title = qs('#adm-inc-title');
+    const title = /** @type {HTMLInputElement} */ (qs('#adm-inc-title'));
     const body = {
       title: title ? title.value : '',
-      start: fromLocalInputValue(qs('#adm-inc-start') && qs('#adm-inc-start').value),
-      end: fromLocalInputValue(qs('#adm-inc-end') && qs('#adm-inc-end').value),
-      affectsUptime: !!(qs('#adm-inc-affects') && qs('#adm-inc-affects').checked),
+      start: fromLocalInputValue(qs('#adm-inc-start') && /** @type {HTMLInputElement} */ (qs('#adm-inc-start')).value),
+      end: fromLocalInputValue(qs('#adm-inc-end') && /** @type {HTMLInputElement} */ (qs('#adm-inc-end')).value),
+      affectsUptime: !!(qs('#adm-inc-affects') && /** @type {HTMLInputElement} */ (qs('#adm-inc-affects')).checked),
     };
     if (msg) { msg.textContent = ''; msg.className = 'adm-inline-msg'; }
     if (btn) { btn.disabled = true; btn.textContent = 'Posting…'; }
 
     apiSend('/api/admin/incidents', 'POST', body).then(() => {
       if (title) title.value = '';
-      const end = qs('#adm-inc-end');
+      const end = /** @type {HTMLInputElement} */ (qs('#adm-inc-end'));
       if (end) end.value = '';
       resetStartField();
       if (msg) { msg.className = 'adm-inline-msg adm-inline-msg--ok'; msg.textContent = '✓ Posted. It is on the public status page now.'; }
@@ -470,7 +481,7 @@ export function createStatusPanel({ apiSend }) {
 
   /** Default the start to now, in the operator's own timezone. */
   function resetStartField() {
-    const start = qs('#adm-inc-start');
+    const start = /** @type {HTMLInputElement} */ (qs('#adm-inc-start'));
     if (start) start.value = toLocalInputValue(Date.now());
   }
 

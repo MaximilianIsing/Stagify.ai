@@ -8,6 +8,7 @@ import { rejectEndpointKey } from '../lib/http/http-guards.js';
 import path from 'path';
 import { logger } from '../lib/logger.js';
 import { renderPasswordResetEmail, renderPasswordChangedEmail } from '../lib/services/email.js';
+import { errorMessage } from '../lib/errors.js';
 
 /**
  * Build the auth router (sign-up, email verification, login, Google sign-in,
@@ -208,7 +209,7 @@ router.post('/api/auth/google', authLimiter, express.json(), async (req, res) =>
     const fullUser = authStore.findUserByEmail(payload.email);
     res.json({ success: true, token: result.token, user: toPublicAuthUser(fullUser) });
   } catch (e) {
-    logger.error('google auth error', e.message || e);
+    logger.error('google auth error', errorMessage(e));
     sendError(res, 401, 'Google sign-in failed');
   }
 });

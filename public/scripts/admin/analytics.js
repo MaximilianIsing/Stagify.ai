@@ -23,6 +23,7 @@
  * @typedef {{key: string, label: string, short?: string, value: number}} SeriesPoint
  */
 /** @typedef {{label: string, value: number}} Slice */
+/** @typedef {Record<string, {label: string, value: number, spellings: Record<string, number>}>} Tally */
 
 /**
  * CSV column indices, in one place because every consumer addresses these files
@@ -99,6 +100,7 @@ export function toDate(value) {
   return isNaN(d.getTime()) ? null : d;
 }
 
+/** @param {number} n */
 function pad2(n) { return n < 10 ? '0' + n : String(n); }
 
 /**
@@ -146,10 +148,12 @@ export function startOfDaysAgo(n) {
   return d;
 }
 
+/** @param {string} key */
 function labelDay(key) {
   const parts = String(key).split('-');
   return MONTH_LABELS[Number(parts[1]) - 1] + ' ' + Number(parts[2]);
 }
+/** @param {string} key */
 function labelMonth(key) {
   const parts = String(key).split('-');
   return MONTH_LABELS[Number(parts[1]) - 1] + ' ' + String(parts[0]).slice(2);
@@ -204,7 +208,7 @@ export function pickGranularity(spanDays) {
  * @returns {{granularity: 'day'|'week'|'month', points: SeriesPoint[]}}
  */
 export function allTimeCounts(timestamps, force) {
-  const dates = (timestamps || []).map(toDate).filter(Boolean);
+  const dates = (timestamps || []).map(toDate).filter((d) => d !== null);
   if (!dates.length) return { granularity: 'day', points: [] };
 
   let min = dates[0];
@@ -219,7 +223,7 @@ export function allTimeCounts(timestamps, force) {
   const buckets = {};
   /** @type {string[]} */
   const order = [];
-  const push = (key) => { if (buckets[key] === undefined) { buckets[key] = 0; order.push(key); } };
+  const push = (/** @type {string} */ key) => { if (buckets[key] === undefined) { buckets[key] = 0; order.push(key); } };
 
   if (granularity === 'month') {
     const cursor = new Date(min.getFullYear(), min.getMonth(), 1);
@@ -315,6 +319,7 @@ export function categoryKey(value) {
 // bare "Other": several of these columns contain a genuine category called
 // "Other", and a fixed label collided with it — the chart then showed two rows
 // both labelled Other, one real and one synthetic.
+/** @param {Tally} tally @param {number} top @returns {Slice[]} */
 function rankTally(tally, top) {
   const all = Object.keys(tally)
     .map((k) => ({ label: tally[k].label, value: tally[k].value }))
@@ -330,6 +335,7 @@ function rankTally(tally, top) {
 // Track the spellings seen for one grouping key and surface the most common one,
 // so the chart shows the label people actually see rather than an arbitrary
 // first-wins or a machine-lowercased version.
+/** @param {Tally} tally @param {string} key @param {string} raw @param {number} weight */
 function addSpelling(tally, key, raw, weight) {
   const entry = tally[key] || (tally[key] = { label: raw, value: 0, spellings: {} });
   entry.value += weight;
@@ -503,6 +509,7 @@ export function booleanMix(rows, index, trueLabel, falseLabel) {
  * @returns {SeriesPoint|null}
  */
 export function peakPoint(points) {
+  /** @type {SeriesPoint|null} */
   let best = null;
   (points || []).forEach((p) => { if (p.value > 0 && (!best || p.value > best.value)) best = p; });
   return best;

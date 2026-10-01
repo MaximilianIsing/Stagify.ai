@@ -19,13 +19,14 @@ import {
   apiKeyManageLimiter as defaultApiKeyManageLimiter,
   creditCheckoutLimiter as defaultCreditCheckoutLimiter,
 } from '../lib/http/rate-limiters.js';
+import { errorMessage } from '../lib/errors.js';
 
 /**
  * Build the API key + credits management router.
  * @param {{
- *   apiKeys: any,
- *   apiBilling: any,
- *   creditPacks: any,
+ *   apiKeys: ReturnType<typeof import('../lib/data/api-keys.js').createApiKeys>,
+ *   apiBilling: ReturnType<typeof import('../lib/data/api-billing.js').createApiBilling>,
+ *   creditPacks: ReturnType<typeof import('../lib/data/credit-packs.js').createCreditPacks>,
  *   stripe: any,
  *   getAuthUserFromRequest: (req: any) => any,
  *   apiKeyManageLimiter?: import('express').RequestHandler,
@@ -199,7 +200,7 @@ export default function createApiKeysRouter(deps) {
       });
       return res.json({ url: session.url });
     } catch (e) {
-      logger.error('[api-credits] checkout session error:', e.message);
+      logger.error('[api-credits] checkout session error:', errorMessage(e));
       return sendError(res, 500, 'Could not create checkout session');
     }
   });

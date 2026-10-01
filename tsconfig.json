@@ -6,9 +6,8 @@
   //
   // The @ts-nocheck ratchet is fully paid off: every backend file below is
   // genuinely checked — there are no opt-out pragmas left, and a new file is
-  // checked from day one. Keep it that way (don't reintroduce @ts-nocheck);
-  // tighten the loose flags below (strict, noImplicitAny) before adding surface,
-  // not after.
+  // checked from day one, under full `strict`. Keep it that way: no @ts-nocheck,
+  // and no blanket `{any}` to get past noImplicitAny.
   "compilerOptions": {
     "checkJs": true,
     "allowJs": true,
@@ -20,17 +19,9 @@
     "lib": ["ES2022"],
     "types": ["node"],
 
-    // strictNullChecks is ON: null/undefined must be handled, not silently
-    // dereferenced — this is the flag that actually catches "possibly undefined"
-    // bugs, so it leads the strict rollout. The rest of `strict` and
-    // `noImplicitAny` stay off for now (noImplicitAny is a large, mostly
-    // mechanical @param sweep); tighten those next, not before.
-    // NOTE: useUnknownInCatchVariables defaults to false while strict is off, so
-    // catch bindings stay `any` — don't set `strict: true` without also handling
-    // the ~60 catch-clause narrowings that flips on.
-    "strict": false,
-    "strictNullChecks": true,
-    "noImplicitAny": false,
+    // Full `strict`, noImplicitAny included. A catch binding is `unknown`: read it
+    // through lib/errors.js (errorMessage / errorCode / errorStack), not `err.message`.
+    "strict": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },

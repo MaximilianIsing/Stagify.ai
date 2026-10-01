@@ -34,24 +34,28 @@ import {
 // the SVG down by half and take the axis labels with it — see the note on VB_W
 // in charts.js. These two wrappers are the only way this file builds a chart.
 const CARD_VB_W = 380;
-const areaChart = (points, opts) => wideArea(points, { width: CARD_VB_W, ...opts });
-const barChart = (points, opts) => wideBar(points, { width: CARD_VB_W, ...opts });
+const areaChart = /** @type {typeof wideArea} */ ((points, opts) => wideArea(points, { width: CARD_VB_W, ...opts }));
+const barChart = /** @type {typeof wideBar} */ ((points, opts) => wideBar(points, { width: CARD_VB_W, ...opts }));
+
+/** Raw timestamp column values; junk is skipped downstream. @typedef {Array<string | null | undefined>} Stamps */
 
 const GRANULARITY_NOUN = { day: 'day', week: 'week', month: 'month' };
 
 /**
  * @param {object} deps
- * @param {{data: any}} deps.ctx Shared dashboard state.
- * @param {(u: any) => string} deps.effectivePlan Plan resolver that folds in enterprise domains.
+ * @param {import('./types.js').AdminCtx} deps.ctx Shared dashboard state.
+ * @param {import('./types.js').EffectivePlan} deps.effectivePlan Plan resolver that folds in enterprise domains.
  */
 export function createInsights({ ctx, effectivePlan }) {
   // An all-time series plus the noun for its bucket, so captions can say
   // "per week" without the caller re-deriving the granularity.
+  /** @param {Stamps} stamps */
   function allTime(stamps) {
     const series = allTimeCounts(stamps);
     return { ...series, noun: GRANULARITY_NOUN[series.granularity] };
   }
 
+  /** @param {HTMLElement} host @param {Stamps} promptStamps @param {Stamps} signupStamps */
   function growthCards(host, promptStamps, signupStamps) {
     const gen = allTime(promptStamps);
     host.appendChild(chartCard({
@@ -77,6 +81,7 @@ export function createInsights({ ctx, effectivePlan }) {
     }));
   }
 
+  /** @param {HTMLElement} host @param {string[][]} promptRows @param {Stamps} chatStamps @param {Stamps} maskStamps @param {Stamps} promptStamps */
   function compositionCards(host, promptRows, chatStamps, maskStamps, promptStamps) {
     const users = ctx.data.users || [];
     host.appendChild(chartCard({
@@ -113,6 +118,7 @@ export function createInsights({ ctx, effectivePlan }) {
     }));
   }
 
+  /** @param {HTMLElement} host @param {string[][]} promptRows @param {string[][]} maskRows @param {string[][]} contactRows */
   function contentCards(host, promptRows, maskRows, contactRows) {
     host.appendChild(chartCard({
       title: 'Room types',
@@ -169,6 +175,7 @@ export function createInsights({ ctx, effectivePlan }) {
     }));
   }
 
+  /** @param {HTMLElement} host @param {Stamps} promptStamps @param {Stamps} chatStamps @param {Stamps} maskStamps */
   function rhythmCards(host, promptStamps, chatStamps, maskStamps) {
     host.appendChild(chartCard({
       title: 'Activity by hour',
@@ -202,6 +209,7 @@ export function createInsights({ ctx, effectivePlan }) {
   // charting a partial sample as if it were the whole history is exactly the kind
   // of quiet wrongness these charts exist to remove.
 
+  /** @param {HTMLElement} host @param {string[][]} promptRows */
   function reliabilityCards(host, promptRows) {
     const rate = successRate(promptRows);
     const unrecordedNote = rate.unrecorded
@@ -243,9 +251,9 @@ export function createInsights({ ctx, effectivePlan }) {
         ? barChart(durationHistogram(promptRows), { height: 210, color: PALETTE[5], unit: 'renders', maxLabels: 6 })
         : chartEmpty('No durations recorded yet.'),
       notes: d.count ? [
-        'p50 ' + (d.p50 / 1000).toFixed(1) + 's',
-        'p90 ' + (d.p90 / 1000).toFixed(1) + 's',
-        'p95 ' + (d.p95 / 1000).toFixed(1) + 's',
+        'p50 ' + (Number(d.p50) / 1000).toFixed(1) + 's',
+        'p90 ' + (Number(d.p90) / 1000).toFixed(1) + 's',
+        'p95 ' + (Number(d.p95) / 1000).toFixed(1) + 's',
         fmtNum(d.count) + ' timed renders',
       ] : [],
     }));
@@ -264,6 +272,7 @@ export function createInsights({ ctx, effectivePlan }) {
   // attribution gap: a render logged without an email cannot be tied to anyone.
   // Each card states the coverage rather than presenting a floor as a count.
 
+  /** @param {HTMLElement} host @param {string[][]} promptRows */
   function lifecycleCards(host, promptRows) {
     const index = activityIndexFrom(ctx.data);
     const coverage = attributionCoverage(promptRows);
@@ -354,6 +363,7 @@ export function createInsights({ ctx, effectivePlan }) {
   // dashboard whose denominator is NOT the render log: a refusal is deliberately
   // not a row in prompt_logs.csv (see lib/services/logging.js), so nothing here
   // may be divided by a generation count without saying so.
+  /** @param {HTMLElement} host @param {string[][]} rejectionRows */
   function turnedAwayCards(host, rejectionRows) {
     // The credential-guard bounces are stripped out FIRST and charted separately.
     // On the first live dataset this saw they were 1,682 of 1,699 rows, which in
@@ -435,6 +445,7 @@ export function createInsights({ ctx, effectivePlan }) {
   // very tall card stranded the whole band beside it. Cards within a group are
   // the same KIND of thing and so roughly the same height, which makes the rows
   // even; the headings also give 24 cards some navigable structure.
+  /** @param {HTMLElement} host @param {string} title @param {(grid: HTMLElement) => void} build */
   function section(host, title, build) {
     const grid = el('div', { className: 'adm-chart-grid' });
     build(grid);

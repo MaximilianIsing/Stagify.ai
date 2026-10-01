@@ -5,6 +5,7 @@
   // Mounting is deferred until the section nears the viewport so the frames stay
   // off the critical path and never compete with first paint.
 
+  /** @param {string | null} key */
   function demoByKey(key) {
     var data = window.STAGIFY_DEMOS && window.STAGIFY_DEMOS.demos;
     if (!data) return null;
@@ -14,6 +15,10 @@
     return null;
   }
 
+  /**
+   * The player's mount state rides on the host element itself.
+   * @param {HTMLElement & { __demoMounted?: boolean, __demoWait?: number, __player?: unknown }} host
+   */
   function mount(host) {
     if (host.__demoMounted) return;
     // demo-player.js / demo-data.js may not have executed yet. index-deferred.js
@@ -66,7 +71,7 @@
     // this file ran, and it retries on this event.
     document.dispatchEvent(new CustomEvent('stagify:demo-mount-ready'));
 
-    var hosts = [].slice.call(document.querySelectorAll('.designer-demo[data-demo]'))
+    var hosts = /** @type {HTMLElement[]} */ ([].slice.call(document.querySelectorAll('.designer-demo[data-demo]')))
       .filter(function (host) { return !host.closest('[data-showcase]'); });
     if (!hosts.length) return;
     // Mount once the browser is idle (or after load) so the frames never compete

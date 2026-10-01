@@ -24,8 +24,10 @@ export function createThumbnailStrip(deps) {
     collectImagesFromConversationHistory,
   } = deps;
 
+      /** @type {number | null} */
       let selectedImageIndex = null;
 
+      /** @param {{ preferNewest?: boolean }} [options] */
       function syncImageThumbnailStrip(options) {
         const preferNewest = options && options.preferNewest === true;
         const strip = document.getElementById('image-thumbnail-strip');

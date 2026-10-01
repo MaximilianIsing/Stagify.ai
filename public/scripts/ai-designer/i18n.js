@@ -10,6 +10,9 @@
       // It used to return the string 'Loading...' and this checked for that, plus for
       // the key itself — neither of which getText can produce any more, and both of
       // which would have discarded a real translation that happened to equal them.
+      // `fallback` is optional only to match the `lang` signature the shared mask islands
+      // and window.lang declare; every caller passes one, so the result is a string.
+      /** @param {string} key @param {string} [fallback] @returns {string} */
       export function lang(key, fallback) {
         try {
           if (window.LanguageSystem && window.LanguageSystem.isLoaded && window.LanguageSystem.isLoaded()) {
@@ -17,7 +20,7 @@
             if (v) return v;
           }
         } catch (e) {}
-        return fallback;
+        return /** @type {string} */ (fallback);
       }
 
       /**
@@ -37,11 +40,17 @@
         return localStorage.getItem('selectedLanguage') || 'english';
       }
 
+      /**
+       * @param {string} key
+       * @param {Record<string, string | number | null | undefined>} [replacements]
+       * @returns {string}
+       */
       export function getPdfAlt(key, replacements = {}) {
         let text = (window.LanguageSystem && window.LanguageSystem.isLoaded())
           ? window.LanguageSystem.getText('pdf.alt.' + key)
           : '';
         if (!text) {
+          /** @type {Record<string, string>} */
           const fallbacks = {
             uploadFile: 'Attach a file to your message',
             reloadChat: 'Start a new chat conversation',

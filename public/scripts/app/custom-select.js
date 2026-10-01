@@ -15,18 +15,22 @@ export function initCustomSelect(rootSelector, options = {}) {
       // HTMLElement, not Element: the whole component reads and writes `.dataset`.
       const root = /** @type {HTMLElement | null} */ (document.querySelector(rootSelector));
       if (!root) return { get value() { return ''; }, set() {} };
-      const trigger = root.querySelector('.select-trigger');
-      const menu = root.querySelector('.select-menu');
-      const valueEl = root.querySelector('.select-value');
+      // Every .custom-select in the markup carries all three parts, and a missing one
+      // already threw on first use, so these casts assert rather than guess.
+      const trigger = /** @type {HTMLElement} */ (root.querySelector('.select-trigger'));
+      const menu = /** @type {HTMLElement} */ (root.querySelector('.select-menu'));
+      const valueEl = /** @type {HTMLElement} */ (root.querySelector('.select-value'));
       const optionEls = /** @type {HTMLElement[]} */ (Array.from(root.querySelectorAll('.option')));
+      const rootEl = root; // a const the hoisted setValue below sees as non-null
+      /** @param {string | undefined} val */
       function setValue(val) {
-        root.dataset.value = val;
+        rootEl.dataset.value = val;
         const opt = optionEls.find(o => o.dataset.value === val);
         // An option may carry trailing chrome (a badge, say). When it does, the label
         // lives in its own .option-label span — read that, or the badge's text would
         // land in the trigger glued to the label.
         const labelEl = opt?.querySelector('.option-label') || opt;
-        valueEl.textContent = labelEl?.textContent?.trim() || val;
+        valueEl.textContent = labelEl?.textContent?.trim() || val || null;
         // Carry the label's i18n key onto the trigger too. Without this the trigger keeps
         // whichever key it was authored with, so switching language after choosing a room
         // would re-render the trigger as the default room instead of the selected one.
@@ -41,7 +45,8 @@ export function initCustomSelect(rootSelector, options = {}) {
       optionEls.forEach(o => {
         o.addEventListener('click', () => {
           setValue(o.dataset.value);
-          options.onChange?.(root.dataset.value);
+          // Every .option in the markup carries data-value, so setValue just wrote a string.
+          options.onChange?.(/** @type {string} */ (root.dataset.value));
         });
       });
       document.addEventListener('click', (e) => {
@@ -49,6 +54,7 @@ export function initCustomSelect(rootSelector, options = {}) {
       });
       return {
         get value() { return root.dataset.value; },
+        /** @param {string | undefined} value */
         set(value) { setValue(value); }
       };
 }

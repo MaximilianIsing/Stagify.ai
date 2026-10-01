@@ -265,7 +265,7 @@ export default function createSharePublicRouter(deps) {
   router.get('/s/:token', limiter, guard('share.page', async (req, res) => {
     publicHeaders(res);
     await new Promise((resolve) => {
-      res.sendFile(pagePath, (err) => {
+      res.sendFile(pagePath, (/** @type {Error | undefined} */ err) => {
         if (err && !res.headersSent) {
           // A missing shell is a broken deploy, not a token problem — logged for the
           // operator, and still the uniform 404 so this route never grows a second shape.

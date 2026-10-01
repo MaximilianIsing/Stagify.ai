@@ -36,6 +36,10 @@ const LOAD_MESSAGES = [
 
 const ROTATE_MS = 2000;
 
+/**
+ * @param {string} id
+ * @param {string} css
+ */
 function injectCss(id, css) {
   if (document.getElementById(id)) return;
   const st = document.createElement('style');
@@ -54,7 +58,9 @@ function injectCss(id, css) {
  * @returns {{ start: () => void, stop: () => void, ensure: () => void }}
  */
 export function createMaskOverlay({ lang, getContainer, busyClass = 'processing' }) {
+  /** @type {ReturnType<typeof setInterval> | null} */
   let msgTimer = null;
+  /** @type {HTMLDivElement | null} */
   let overlayEl = null;
 
   function ensure() {

@@ -29,7 +29,7 @@
   var cards = document.querySelectorAll(SELECTOR);
   if (!cards.length) return;
 
-  Array.prototype.forEach.call(cards, function (card) {
+  Array.prototype.forEach.call(cards, function (/** @type {HTMLElement} */ card) {
     if (card.querySelector(':scope > .card-spotlight')) return; // idempotent
 
     if (getComputedStyle(card).position === 'static') card.style.position = 'relative';

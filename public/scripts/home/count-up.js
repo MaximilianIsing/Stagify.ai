@@ -10,6 +10,7 @@
 // directly (test/frontend/count-up.test.js). The IIFE below drives the DOM animation with
 // these; the browser API is unchanged (window.StagifyHeroStats).
 
+/** @param {number} n */
 export function format(n) {
   return Math.round(n).toLocaleString("en-US");
 }
@@ -21,11 +22,13 @@ export function format(n) {
  * (lib/seo/live-stats.js), so a blank one is no longer the only possible pre-JS state.
  * revealWithoutCounts below uses this to avoid replacing a correct, server-rendered
  * number with an em dash just because a fetch failed.
+ * @param {string | null | undefined} text
  */
 export function hasServerCount(text) {
   return /\d/.test(String(text == null ? "" : text));
 }
 
+/** @param {string} text */
 export function widthForText(text) {
   return Math.max(String(text).length, 1) + "ch";
 }
@@ -33,6 +36,7 @@ export function widthForText(text) {
 // Characters in 10^exp when grouped (exp 5 -> "100,000" -> 7). Commas count as a
 // full char to match widthForText, so the reserved width is always a hair
 // generous (commas render narrower than a digit) and never clips.
+/** @param {number} exp */
 export function lenAtDecade(exp) {
   return Math.pow(10, exp).toLocaleString("en-US").length;
 }
@@ -42,6 +46,7 @@ export function lenAtDecade(exp) {
 // always stays wide enough for the number (no clipping), and is clamped so it
 // lands exactly on the final width with no end-of-count overshoot. We round the
 // value first so the width tracks the *displayed* digits (e.g. 9.8 shows "10").
+/** @param {number} value @param {number} finalLen */
 export function smoothWidthCh(value, finalLen) {
   const v = Math.max(Math.round(value), 1);
   const lg = Math.log10(v);
@@ -56,6 +61,7 @@ export function smoothWidthCh(value, finalLen) {
 // (^4). The pill widens alongside it (width is tied to the digit count), but
 // smoothWidthCh keeps that widening continuous so there are no janky per-digit
 // steps like the original had.
+/** @param {number} target @param {number} t */
 export function rampValue(target, t) {
   return target * (1 - Math.pow(1 - t, 3));
 }
@@ -65,6 +71,7 @@ export function rampValue(target, t) {
 
   const running = new WeakSet();
 
+  /** @param {HTMLElement} el @param {number} target @param {number} duration */
   function animate(el, target, duration) {
     if (running.has(el)) return;
     running.add(el);
@@ -79,6 +86,7 @@ export function rampValue(target, t) {
     const prevTransition = el.style.transition;
     el.style.transition = "none";
 
+    /** @param {number} now */
     function frame(now) {
       const t = Math.min(Math.max((now - start) / duration, 0), 1);
       const value = rampValue(target, t);
@@ -98,6 +106,7 @@ export function rampValue(target, t) {
     requestAnimationFrame(frame);
   }
 
+  /** @param {Element | null} wrap */
   function revealWrap(wrap) {
     if (!wrap || wrap.classList.contains("is-ready")) return;
     requestAnimationFrame(() => {
@@ -107,6 +116,10 @@ export function rampValue(target, t) {
     });
   }
 
+  /**
+   * @param {Record<string, number | null | undefined>} counts - Figure per `data-stat` key.
+   * @param {{ refresh?: boolean }} [options]
+   */
   function setCounts(counts, options) {
     const opts = options || {};
     const isRefresh = opts.refresh === true;
@@ -121,7 +134,7 @@ export function rampValue(target, t) {
     let updated = 0;
 
     els.forEach((el) => {
-      const key = el.dataset.stat;
+      const key = /** @type {string} */ (el.dataset.stat); // the selector requires data-stat
       const target = counts[key];
       if (target == null || Number.isNaN(target)) return;
 

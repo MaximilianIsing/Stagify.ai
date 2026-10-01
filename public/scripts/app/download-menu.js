@@ -22,6 +22,7 @@
 export const MULTIPLIERS = [2, 1, 0.5];
 const JPEG_QUALITY = 0.92; // matches the plain Download Result path, and the server route's quality: 92
 
+/** @type {(key: string, fallback: string) => string} */
 const t = (key, fallback) =>
   window.LanguageSystem?.getText?.(key) || fallback;
 
@@ -107,7 +108,7 @@ export function probeDimensions(src, timeoutMs = PROBE_TIMEOUT_MS) {
   return new Promise((resolve) => {
     if (!src) { resolve(null); return; }
     let settled = false;
-    const finish = (value) => {
+    const finish = (/** @type {{ width: number, height: number } | null} */ value) => {
       if (settled) return;
       settled = true;
       clearTimeout(timer);
@@ -141,7 +142,8 @@ function resizeOnClient(canvas, width, height) {
   const out = document.createElement('canvas');
   out.width = width;
   out.height = height;
-  const ctx = out.getContext('2d');
+  // A canvas created a line above has no other context yet, so 2D always succeeds.
+  const ctx = /** @type {CanvasRenderingContext2D} */ (out.getContext('2d'));
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
   ctx.drawImage(canvas, 0, 0, width, height);
@@ -211,13 +213,13 @@ export function createDownloadMenu(deps) {
    * @param {number} height
    * @returns {Promise<string>}
    */
-  async function resolveHref(width, height) {
+  const resolveHref = async (width, height) => {
     try {
       return await resizeOnServer(getAfterSrc, width, height);
     } catch {
       return resizeOnClient(canvas, width, height);
     }
-  }
+  };
 
   /**
    * @param {string} href
@@ -251,32 +253,32 @@ export function createDownloadMenu(deps) {
 
   if (!split || !toggle || !menu) return { close() {} };
 
-  function close() {
+  const close = () => {
     menu.classList.add('hidden');
     split.classList.remove('open');
     toggle.setAttribute('aria-expanded', 'false');
-  }
+  };
 
   /**
    * Rows for the current canvas + upload. The row maths lives in the pure
    * buildSizeRows above (unit-tested); this only supplies the live measurements.
    * @returns {Promise<Array<{ label: string, note: string, width: number, height: number }>>}
    */
-  async function buildRows() {
+  const buildRows = async () => {
     if (!isReady()) return [];
     const original = await probeDimensions(getOriginalSrc());
     return buildSizeRows(canvas.width, canvas.height, original, {
       original: t('modal.staging.downloadOriginal', 'Original'),
       native: t('modal.staging.downloadNative', 'native'),
     });
-  }
+  };
 
   /**
    * Resize the staged result to the given pixels and download it as JPEG.
    * @param {number} width - Target width in px.
    * @param {number} height - Target height in px.
    */
-  async function downloadAt(width, height) {
+  const downloadAt = async (width, height) => {
     if (!canvas.width) return;
     for (const btn of [downloadBtn, toggle]) { if (btn) /** @type {HTMLButtonElement} */ (btn).disabled = true; }
     try {
@@ -284,9 +286,9 @@ export function createDownloadMenu(deps) {
     } finally {
       syncEnabled();
     }
-  }
+  };
 
-  async function open() {
+  const open = async () => {
     const rows = await buildRows();
     if (!rows.length) return;
     menu.textContent = '';
@@ -313,7 +315,7 @@ export function createDownloadMenu(deps) {
     menu.classList.remove('hidden');
     split.classList.add('open');
     toggle.setAttribute('aria-expanded', 'true');
-  }
+  };
 
   toggle.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -325,14 +327,14 @@ export function createDownloadMenu(deps) {
   // the canvas's `width` attribute (it reflects `canvas.width = n`) keeps the
   // enable/disable rule in one place instead of threading a callback through every
   // site in app.js that stages, resets, or switches carousel version.
-  function syncEnabled() {
+  const syncEnabled = () => {
     const ready = isReady();
     for (const btn of [downloadBtn, toggle]) {
       if (btn) /** @type {HTMLButtonElement} */ (btn).disabled = !ready;
     }
     split.classList.toggle('is-disabled', !ready);
     if (!ready) close();
-  }
+  };
   syncEnabled();
   new MutationObserver(syncEnabled).observe(canvas, {
     attributes: true,

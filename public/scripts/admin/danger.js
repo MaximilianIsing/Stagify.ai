@@ -28,7 +28,7 @@ import { el } from './helpers.js';
  * Build the section renderer.
  *
  * @param {object} deps
- * @param {(url: string, method: string, body?: any, isForm?: boolean) => Promise<any>} deps.apiSend Mutating request helper (holds the session token).
+ * @param {import('./types.js').ApiSend} deps.apiSend Mutating request helper (holds the session token).
  * @param {(u: any) => void} deps.onDeleted Called after a successful erasure so the caller can drop the row.
  * @returns {(u: any) => HTMLElement} Renderer for one user's danger section.
  */

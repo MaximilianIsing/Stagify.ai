@@ -54,7 +54,7 @@ const MAX_POSTED_MESSAGES = 40;
  * At module scope, not inside the closure below, because it is pure and it is the
  * part of this file a test can actually pin.
  *
- * @param {string|undefined} reason
+ * @param {string|null|undefined} reason
  * @returns {string}
  */
 export function reasonText(reason) {
@@ -81,10 +81,10 @@ const SUGGESTIONS = [
 
 /**
  * @param {object} deps
- * @param {{data: any, analyst?: any}} deps.ctx Shared dashboard state.
- * @param {(url: string, method: string, body?: any, isForm?: boolean) => Promise<any>} deps.apiSend
- * @param {() => {findings: any[], failed: string[]}} deps.currentFindings The memoized rules-engine run.
- * @param {(u: any) => string} deps.effectivePlan
+ * @param {import('./types.js').AdminCtx & {analyst?: import('./types.js').AnalystState | null}} deps.ctx Shared dashboard state.
+ * @param {import('./types.js').ApiSend} deps.apiSend
+ * @param {() => {findings: import('./findings.js').Finding[], failed: string[]}} deps.currentFindings The memoized rules-engine run.
+ * @param {import('./types.js').EffectivePlan} deps.effectivePlan
  */
 export function createAnalyst({ ctx, apiSend, currentFindings, effectivePlan }) {
   const identity = createIdentityMap();
@@ -99,6 +99,7 @@ export function createAnalyst({ ctx, apiSend, currentFindings, effectivePlan }) 
    * the shared `apiSend`. The in-flight request still finishes at the server; what
    * stops is this conversation listening to it.
    */
+  /** @returns {import('./types.js').AnalystState} */
   function state() {
     if (!ctx.analyst) {
       ctx.analyst = { open: false, busy: false, turns: [], messages: [], error: null, run: 0, lastQuestion: '' };
@@ -114,6 +115,7 @@ export function createAnalyst({ ctx, apiSend, currentFindings, effectivePlan }) 
    * The grammar lives in analyst-answer.js; what matters here is that it is given
    * `identity.segment`, so a handle becomes a `<span>` carrying the real address
    * while the model's text never touches innerHTML.
+   * @param {string} text
    */
   function prose(text) {
     return renderAnswer(text, identity.segment);
@@ -125,6 +127,7 @@ export function createAnalyst({ ctx, apiSend, currentFindings, effectivePlan }) 
    * Names the tools, never their output, and names each one once however often the
    * model called it — a trace reading `segment_breakdown segment_breakdown
    * segment_breakdown` says less than the count beside it already did.
+   * @param {string[]} names
    */
   function toolTrace(names) {
     if (!names.length) return null;
@@ -140,6 +143,7 @@ export function createAnalyst({ ctx, apiSend, currentFindings, effectivePlan }) 
    * The raw text, not the rendered DOM: the operator pasting this into a ticket
    * wants the table markup back, and the handles are already resolved in `turn.text`
    * — this is the same address they are looking at, not a new disclosure.
+   * @param {string} text
    */
   function copyButton(text) {
     const btn = el('button', { type: 'button', className: 'adm-an-copy', textContent: 'Copy' });
@@ -150,6 +154,7 @@ export function createAnalyst({ ctx, apiSend, currentFindings, effectivePlan }) 
     return btn;
   }
 
+  /** @param {import('./types.js').AnalystTurn} turn */
   function turnNode(turn) {
     if (turn.role === 'user') {
       return el('div', { className: 'adm-an-turn adm-an-turn--user' }, [
@@ -229,6 +234,7 @@ export function createAnalyst({ ctx, apiSend, currentFindings, effectivePlan }) 
    * Each iteration is one server turn. Tool calls are executed locally and pushed
    * back as `tool` messages; the loop ends on a prose answer, an error, or the
    * round cap — never on an unbounded model decision.
+   * @param {string} text
    */
   async function submit(text) {
     const question = String(text || '').trim();
@@ -248,11 +254,12 @@ export function createAnalyst({ ctx, apiSend, currentFindings, effectivePlan }) 
     setInputBusy(true);
     renderTranscript();
 
-    /** Tool names used across this question, for the trace line under the answer. */
+    /** Tool names used across this question, for the trace line under the answer. @type {string[]} */
     const used = [];
 
     try {
       for (let round = 0; round < MAX_ROUNDS; round++) {
+        /** @type {import('./types.js').AnalystResponse | null} */
         const res = await apiSend('/api/admin/analyst', 'POST', { messages: s.messages.slice(-MAX_POSTED_MESSAGES) });
         // Checked after every await: a stopped question must not append its answer
         // to a transcript the operator has since moved on from.
@@ -296,7 +303,7 @@ export function createAnalyst({ ctx, apiSend, currentFindings, effectivePlan }) 
       }
     } catch (error) {
       if (abandoned()) return;
-      s.error = (error && error.status === 401)
+      s.error = (error && typeof error === 'object' && 'status' in error && error.status === 401)
         ? 'Your admin session expired. Sign in again.'
         : reasonText('error');
     } finally {
@@ -353,10 +360,11 @@ export function createAnalyst({ ctx, apiSend, currentFindings, effectivePlan }) 
    *
    * Enter already did nothing while a question was in flight; what it did not do
    * was say so, which reads as a dropped keystroke rather than as a queue.
+   * @param {boolean} busy
    */
   function setInputBusy(busy) {
     const input = /** @type {HTMLTextAreaElement|null} */ (qs('#adm-an-input'));
-    const send = qs('#adm-an-form .adm-an-send');
+    const send = /** @type {HTMLButtonElement|null} */ (qs('#adm-an-form .adm-an-send'));
     if (input) {
       input.disabled = busy;
       input.setAttribute('placeholder', busy ? 'Answering…' : 'Ask about renders, accounts, failures, growth…');
@@ -376,6 +384,7 @@ export function createAnalyst({ ctx, apiSend, currentFindings, effectivePlan }) 
     renderTranscript();
   }
 
+  /** @param {boolean} open */
   function setOpen(open) {
     const s = state();
     s.open = open;
@@ -398,6 +407,7 @@ export function createAnalyst({ ctx, apiSend, currentFindings, effectivePlan }) 
    * The finding is passed as text rather than as an id because the model has
    * `list_findings` and can look the rest up — and because a question the operator
    * can read and edit before sending beats one assembled invisibly.
+   * @param {import('./findings.js').Finding} finding
    */
   function askAbout(finding) {
     setOpen(true);

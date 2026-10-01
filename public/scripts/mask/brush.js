@@ -39,7 +39,9 @@ export function createMaskBrush({ getCanvas, getPhase, isBusy, onReadyChange, on
   let tool = 'brush'; // 'brush' adds to the selection, 'erase' removes from it
   let painted = false; // hot-path flag; the expensive scan runs only on stroke end
   let drawing = false;
+  /** @type {number | null} */
   let lastX = null;
+  /** @type {number | null} */
   let lastY = null;
   let attached = false;
 
@@ -50,6 +52,10 @@ export function createMaskBrush({ getCanvas, getPhase, isBusy, onReadyChange, on
   // display size was computed at load — a tall image gets width-clamped by its
   // container, say. Reading getBoundingClientRect every stroke keeps the brush
   // under the cursor no matter how the layout sized things.
+  /**
+   * @param {HTMLCanvasElement} canvas
+   * @param {{ clientX: number, clientY: number }} e
+   */
   function pointFrom(canvas, e) {
     const rect = canvas.getBoundingClientRect();
     if (!rect.width || !rect.height) return null;
@@ -63,16 +69,18 @@ export function createMaskBrush({ getCanvas, getPhase, isBusy, onReadyChange, on
   // on the photo. Resolved per stroke rather than cached when the slider moves,
   // because the dialog reopens on a different photo — and re-sizes the canvas to
   // it — without the slider ever moving.
+  /** @param {HTMLCanvasElement} canvas */
   function brushWidth(canvas) {
     return brushPx(sizeStep, canvas.width, canvas.height);
   }
 
+  /** @param {{ clientX: number, clientY: number }} e */
   function draw(e) {
     const canvas = getCanvas();
     if (!drawing || !canvas || isBusy()) return;
     const pt = pointFrom(canvas, e);
     if (!pt) return;
-    const ctx = canvas.getContext('2d');
+    const ctx = /** @type {CanvasRenderingContext2D} */ (canvas.getContext('2d'));
     // One continuous, fully-opaque stroke with round caps/joins. Erase mode uses
     // destination-out so the stroke removes from the selection instead of adding
     // to it. Solid pixels keep the shape clean; the translucent look comes from
@@ -104,6 +112,7 @@ export function createMaskBrush({ getCanvas, getPhase, isBusy, onReadyChange, on
     }
   }
 
+  /** @param {{ clientX: number, clientY: number }} e */
   function start(e) {
     if (isBusy()) return;
     drawing = true;
@@ -128,7 +137,7 @@ export function createMaskBrush({ getCanvas, getPhase, isBusy, onReadyChange, on
   function rescan() {
     const canvas = getCanvas();
     if (!canvas || !canvas.width || !canvas.height) return false;
-    const d = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
+    const d = /** @type {CanvasRenderingContext2D} */ (canvas.getContext('2d')).getImageData(0, 0, canvas.width, canvas.height).data;
     for (let i = 3; i < d.length; i += 4) {
       if (d[i] > ALPHA_THRESHOLD) return true;
     }
@@ -138,17 +147,18 @@ export function createMaskBrush({ getCanvas, getPhase, isBusy, onReadyChange, on
   function clear() {
     const canvas = getCanvas();
     if (!canvas) return;
-    canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+    /** @type {CanvasRenderingContext2D} */ (canvas.getContext('2d')).clearRect(0, 0, canvas.width, canvas.height);
     painted = false;
     notifyReady();
   }
 
   // Recolour every painted stroke, keeping alpha. Mask logic reads only alpha, so
   // this is purely cosmetic — it marks the switch into the refine phase.
+  /** @param {string} color */
   function recolor(color) {
     const canvas = getCanvas();
     if (!canvas || !canvas.width || !canvas.height) return;
-    const ctx = canvas.getContext('2d');
+    const ctx = /** @type {CanvasRenderingContext2D} */ (canvas.getContext('2d'));
     ctx.save();
     ctx.globalCompositeOperation = 'source-in';
     ctx.fillStyle = color;
@@ -156,6 +166,7 @@ export function createMaskBrush({ getCanvas, getPhase, isBusy, onReadyChange, on
     ctx.restore();
   }
 
+  /** @param {string} t */
   function setTool(t) {
     tool = t === 'erase' ? 'erase' : 'brush';
   }
@@ -172,6 +183,7 @@ export function createMaskBrush({ getCanvas, getPhase, isBusy, onReadyChange, on
     if (cursorEl) cursorEl.style.display = 'none';
   }
 
+  /** @param {{ clientX: number, clientY: number }} e */
   function updateCursor(e) {
     const host = getCursorHost ? getCursorHost() : null;
     const canvas = getCanvas();
@@ -231,7 +243,7 @@ export function createMaskBrush({ getCanvas, getPhase, isBusy, onReadyChange, on
     attach,
     setTool,
     getTool: () => tool,
-    setSizeStep: (n) => { sizeStep = n; },
+    setSizeStep: (/** @type {number} */ n) => { sizeStep = n; },
     getSizeStep: () => sizeStep,
     clear,
     recolor,

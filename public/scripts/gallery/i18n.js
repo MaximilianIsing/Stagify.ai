@@ -60,6 +60,7 @@ export function t(key, fallback, vars = {}) {
  */
 export function plural(base, count, fallbacks, vars = {}) {
   const sys = system();
+  /** @param {string} form */
   const get = (form) => {
     const value = sys ? sys.getText(`${base}.${form}`, undefined) : undefined;
     return typeof value === 'string' ? value : undefined;

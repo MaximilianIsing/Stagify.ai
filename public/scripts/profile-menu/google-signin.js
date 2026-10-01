@@ -40,6 +40,7 @@ export function createGoogleSignIn({ getAuthFlow, closeAuthModal, onRefresh }) {
     }
   }
 
+  /** @param {{ credential?: string } | null | undefined} response Google Identity Services' callback payload. */
   function handleGoogleCredential(response) {
     var errEl = document.getElementById('auth-error');
     if (!response || !response.credential) {
@@ -147,7 +148,7 @@ export function createGoogleSignIn({ getAuthFlow, closeAuthModal, onRefresh }) {
             return r.json();
           });
     cfgPromise
-      .then(function (cfg) {
+      .then(function (/** @type {{ isStaging?: boolean, googleClientId?: string } | null} */ cfg) {
         googleOAuthConfig.loaded = true;
         // Staging: hide the "Stripe help center" button by re-rendering the menu.
         isStagingMode = !!(cfg && cfg.isStaging);

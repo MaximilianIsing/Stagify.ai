@@ -1,7 +1,7 @@
       (function () {
         var params = new URLSearchParams(window.location.search);
         var token = params.get('token') || '';
-        var form = document.getElementById('reset-form');
+        var form = /** @type {HTMLElement} */ (document.getElementById('reset-form'));
         var errEl = document.getElementById('reset-error');
         var okEl = document.getElementById('reset-success');
         var submitBtn = /** @type {HTMLButtonElement} */ (document.getElementById('reset-submit'));

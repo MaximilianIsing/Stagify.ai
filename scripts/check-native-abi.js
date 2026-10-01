@@ -20,6 +20,7 @@ import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { errorCode, errorMessage } from '../lib/errors.js';
 
 const thisFile = fileURLToPath(import.meta.url);
 const rootDir = path.resolve(path.dirname(thisFile), '..');
@@ -31,11 +32,11 @@ export const NATIVE_MODULE = 'better-sqlite3';
  * True only for the ABI-mismatch flavour of a failed native load. Anything else — a missing
  * module, a corrupt binary, a throwing side effect — is NOT something a rebuild should paper
  * over, so it is rethrown untouched.
+ * @param {unknown} err
  */
 export function isAbiMismatch(err) {
-  return Boolean(err)
-    && err.code === 'ERR_DLOPEN_FAILED'
-    && /NODE_MODULE_VERSION/.test(String(err.message ?? ''));
+  return errorCode(err) === 'ERR_DLOPEN_FAILED'
+    && /NODE_MODULE_VERSION/.test(errorMessage(err));
 }
 
 /**
@@ -45,6 +46,7 @@ export function isAbiMismatch(err) {
  * so the first occurrence is what the binary was built for and the second is what we are running.
  * Returns nulls rather than throwing if the wording ever changes — the numbers are for the
  * diagnostic line only, never for control flow.
+ * @param {unknown} message
  */
 export function parseAbiVersions(message) {
   const found = String(message ?? '').match(/NODE_MODULE_VERSION (\d+)/g) ?? [];
@@ -61,7 +63,11 @@ export function readPinnedNodeVersion(dir = rootDir) {
   }
 }
 
-/** Normalises "v22.23.1" / "22.23.1" so the two can be compared. */
+/**
+ * Normalises "v22.23.1" / "22.23.1" so the two can be compared.
+ * @param {string | null | undefined} running
+ * @param {string | null | undefined} pinned
+ */
 export function sameNodeVersion(running, pinned) {
   if (!running || !pinned) return true; // nothing to compare — don't cry wolf
   return running.replace(/^v/, '') === pinned.replace(/^v/, '');
@@ -148,7 +154,7 @@ function main() {
   } catch (err) {
     if (!isAbiMismatch(err)) throw err;
 
-    const { compiled, required } = parseAbiVersions(err.message);
+    const { compiled, required } = parseAbiVersions(errorMessage(err));
     console.warn(
       `[abi-check] ${NATIVE_MODULE} was built for Node ABI ${compiled}, but Node ${process.version} ` +
       `requires ABI ${required}${pinned ? ` (.node-version pins ${pinned})` : ''}. Rebuilding…`,

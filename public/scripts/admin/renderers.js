@@ -14,6 +14,11 @@ import { createSignals } from './signals.js';
 import { createAnalyst } from './analyst.js';
 import { showErrorToast } from '../shared/toast.js';
 
+/** @typedef {import('./types.js').AdminUser} AdminUser */
+/** @typedef {import('./types.js').AdminHostedImage} AdminHostedImage */
+/** @typedef {ReturnType<typeof activityIndexFrom>} ActivityIndex */
+/** email → that account's header-stripped prompt-log rows. @typedef {Record<string, string[][]>} PromptIndex */
+
 /**
  * All admin tab rendering plus the data-derived helpers, over a single shared
  * mutable context. `ctx.data` is swapped wholesale on sign-out, so everything
@@ -24,12 +29,13 @@ import { showErrorToast } from '../shared/toast.js';
  * need and which depends on the enterprise-domain list in `ctx`.
  *
  * @param {object} deps
- * @param {{data: any, userFilter: string, userSortCol: string, userSortDir: string}} deps.ctx Shared app state.
- * @param {(url: string, method: string, body?: any, isForm?: boolean) => Promise<any>} deps.apiSend Mutating request helper (holds the session key).
+ * @param {import('./types.js').AdminCtx} deps.ctx Shared app state.
+ * @param {import('./types.js').ApiSend} deps.apiSend Mutating request helper (holds the session key).
  * @param {(url: string, filename: string) => Promise<void>} deps.secureBlobDownload Key-in-header blob download.
  */
 export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
   // True if the user gets Stagify+ via an active enterprise domain (not their own sub).
+  /** @param {AdminUser | null | undefined} u */
   function userEnterpriseActive(u){
     var dom=(u&&u.email||'').split('@')[1];
     if(!dom)return false;
@@ -39,6 +45,7 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
     });
   }
   // Plan shown in the admin UI: own Pro subscription wins; otherwise enterprise; else stored plan.
+  /** @type {import('./types.js').EffectivePlan} */
   function effectivePlan(u){
     if(!u)return'free';
     if(u.plan==='pro')return'pro';
@@ -75,9 +82,10 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
   // A zero still shows — it means "checked, nothing there", which is not the same
   // as a missing chip — but it is de-emphasised so six zeroes in the rail don't
   // read with the same weight as a real backlog.
+  /** @param {string} id @param {number} n */
   function setTabCount(id,n){
     var e=qs(id);if(!e)return;
-    e.textContent=n;
+    e.textContent=String(n);
     e.classList.toggle('adm-tab-count--zero',!n);
   }
 
@@ -99,6 +107,7 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
   // email → that account's render rows. Header-stripped, because the CSV's own
   // `…,email,…` header line would otherwise index itself as a user named "email".
   function buildPromptIndex(){
+    /** @type {PromptIndex} */
     var idx={};
     stripHeader(ctx.data.promptRows).forEach(function(r){
       var email=(r[7]||'').trim().toLowerCase();
@@ -119,15 +128,18 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
 
   // ── Users ──
 
+  /** @param {AdminUser} u @param {PromptIndex} pIdx @param {Date} d30 */
   function userGens30(u, pIdx, d30){
     var allR=pIdx[(u.email||'').toLowerCase()]||[];
     return allR.filter(function(r){try{return new Date(r[0])>=d30}catch(e){return false}}).length;
   }
 
+  /** @param {AdminUser} u @param {PromptIndex} pIdx */
   function userGensAll(u, pIdx){
     return (pIdx[(u.email||'').toLowerCase()]||[]).length;
   }
 
+  /** @param {AdminUser[]} list @param {PromptIndex} pIdx @param {Date} d30 @param {ActivityIndex} actIdx */
   function sortUserList(list, pIdx, d30, actIdx){
     var dir=ctx.userSortDir==='asc'?1:-1;
     return list.sort(function(a,b){
@@ -161,6 +173,7 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
     });
   }
 
+  /** @param {string} label @param {string} colKey */
   function userSortTh(label,colKey){
     var th=el('th',{className:'adm-sortable'+(ctx.userSortCol===colKey?' adm-sorted':'')});
     th.appendChild(document.createTextNode(label));
@@ -179,19 +192,21 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
   // analytics-users.js. A never-active account is a real, common state here:
   // renders logged without an email can't be attributed to anyone, so "never"
   // means "never seen", not "never used the product".
+  /** @param {AdminUser} u @param {ActivityIndex} actIdx */
   function lastActiveCell(u,actIdx){
     var days=daysSinceActive(u,actIdx);
     if(days===null)return el('td',null,[el('span',{className:'adm-stale adm-stale--never',textContent:'Never'})]);
     var cls=days>=90?'adm-stale--cold':days>=30?'adm-stale--warm':'adm-stale--fresh';
     var text=days===0?'Today':days===1?'Yesterday':days+'d ago';
-    return el('td',null,[el('span',{className:'adm-stale '+cls,title:fmtDateTime(new Date(lastActiveMs(u,actIdx)).toISOString()),textContent:text})]);
+    return el('td',null,[el('span',{className:'adm-stale '+cls,title:fmtDateTime(new Date(/** @type {number} */ (lastActiveMs(u,actIdx))).toISOString()),textContent:text})]);
   }
 
+  /** @param {string} [filter] */
   function renderUsers(filter){
     var pIdx=buildPromptIndex();
     var actIdx=activityIndexFrom(ctx.data);
     var d30=daysAgo(30);
-    var q=(filter||qs('#adm-user-search').value||'').toLowerCase();
+    var q=(filter||/** @type {HTMLInputElement} */ (qs('#adm-user-search')).value||'').toLowerCase();
 
     var list=ctx.data.users.slice();
     if(q)list=list.filter(function(u){return(u.email||'').toLowerCase().indexOf(q)!==-1});
@@ -246,7 +261,7 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
           u.stripeSubscriptionId?['Stripe Subscription',u.stripeSubscriptionId]:null,
           u.proPassGrantedAt?['Pro Pass Granted',fmtDateTime(u.proPassGrantedAt)]:null,
           grantActive(u)?['Free Month Ends',fmtDateTime(u.proGrantExpiresAt)]:null,
-        ].filter(Boolean);
+        ].filter(function(f){return f!==null});
         fields.forEach(function(f){
           var kv=el('div',{className:'adm-detail-kv'});
           kv.appendChild(el('strong',{textContent:f[0]+': '}));
@@ -374,6 +389,7 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
 
   // ── Contacts ──
 
+  /** @param {string} [filter] */
   function renderContacts(filter){
     var q=(filter||'').toLowerCase();
     var rows=stripHeader(ctx.data.contactRows).slice();
@@ -402,6 +418,7 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
   }
 
   function getOpenedEmails(){
+    /** @type {Record<string, {email: string, openedAt: string, ua: string}>} */
     var byEmail={};
     ctx.data.emailOpenRows.forEach(function(r){
       if(!r[0]||r[0]==='timestamp')return;
@@ -417,12 +434,13 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
 
   // ── Email Opens ──
 
+  /** @param {string} [filter] */
   function renderEmailOpens(filter){
     var q=(filter||'').toLowerCase();
     var rows=getOpenedEmails();
     if(q)rows=rows.filter(function(r){return r.email.indexOf(q)!==-1});
 
-    qs('#adm-email-open-count').textContent=rows.length;
+    qs('#adm-email-open-count').textContent=String(rows.length);
 
     var summaryWrap=qs('#adm-email-open-summary');
     summaryWrap.innerHTML='';
@@ -451,6 +469,7 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
 
   // ── Bug Reports ──
 
+  /** @param {string} [filter] */
   function renderBugs(filter){
     var q=(filter||'').toLowerCase();
     var rows=stripHeader(ctx.data.bugRows).slice();
@@ -482,7 +501,7 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
   function renderHosting(){
     var wrap=qs('#adm-hosting-list');if(!wrap)return;
     var list=ctx.data.hostedImages||[];
-    qs('#adm-host-count').textContent=list.length;
+    qs('#adm-host-count').textContent=String(list.length);
     if(!list.length){wrap.innerHTML='<p class="adm-empty">No hosted images yet. Upload one above to get a public link.</p>';return}
     wrap.innerHTML='';
     var grid=el('div',{className:'adm-host-grid'});
@@ -518,6 +537,7 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
     wrap.appendChild(grid);
   }
 
+  /** @param {AdminHostedImage} img @param {HTMLButtonElement | null} [btn] */
   function deleteHosted(img,btn){
     if(!confirm('Delete and unhost this image?\n\n'+(img.originalName||img.id)+'\n\nThe public link will stop working immediately.'))return;
     if(btn){btn.disabled=true;btn.textContent='Deleting…'}

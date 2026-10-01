@@ -109,8 +109,13 @@ test.describe('Masking Studio — magic wand', () => {
 
   test('a failing /api/segment surfaces an error toast on click and is not cached as a result', async ({ page }) => {
     let segmentCalls = 0;
-    await page.route('**/api/segment', (route) => {
+    // The prefetch's 500 is held until the busy strip has been seen: answered
+    // instantly, the strip can show and clear before toBeVisible's first poll.
+    let release;
+    const held = new Promise((r) => { release = r; });
+    await page.route('**/api/segment', async (route) => {
       segmentCalls += 1;
+      if (segmentCalls === 1) await held;
       return route.fulfill({
         status: 500,
         contentType: 'application/json',
@@ -124,6 +129,7 @@ test.describe('Masking Studio — magic wand', () => {
     // picking the tool never toasts) — the busy strip still cycles.
     await page.locator('#ms-wand-btn').click();
     await expect(page.locator('#ms-wand-busy')).toBeVisible();
+    release();
     await expect(page.locator('#ms-wand-busy')).toBeHidden();
     expect(segmentCalls).toBe(1);
 

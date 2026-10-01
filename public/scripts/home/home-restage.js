@@ -234,10 +234,12 @@ function splitLabel(label) {
  * @returns {void}
  */
 function mountRestage(root) {
-  const stack = root.querySelector('.rs__stack');
-  const button = /** @type {HTMLButtonElement | null} */ (root.querySelector('[data-restage-btn]'));
+  // Typed non-null: the guard below still runs, but the helpers after it are hoisted
+  // function declarations, which a null check up here cannot narrow for the checker.
+  const stack = /** @type {HTMLElement} */ (root.querySelector('.rs__stack'));
+  const button = /** @type {HTMLButtonElement} */ (root.querySelector('[data-restage-btn]'));
   const revertBtn = root.querySelector('[data-restage-revert]');
-  const emptyImg = /** @type {HTMLImageElement | null} */ (root.querySelector('.rs__empty'));
+  const emptyImg = /** @type {HTMLImageElement} */ (root.querySelector('.rs__empty'));
   if (!stack || !button || !emptyImg || !RESTAGE_POOL.length) return;
 
   const bag = makeBag(RESTAGE_POOL);

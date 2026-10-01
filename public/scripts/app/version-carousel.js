@@ -9,10 +9,10 @@
 /**
  * @param {{
  *   canvas1: HTMLCanvasElement,
- *   stagePreview: HTMLImageElement | null,
- *   toggleBeforeBtn: HTMLElement | null,
- *   toggleAfterBtn: HTMLElement | null,
- *   processingPlaceholder: HTMLElement | null,
+ *   stagePreview: HTMLImageElement,
+ *   toggleBeforeBtn: HTMLElement,
+ *   toggleAfterBtn: HTMLElement,
+ *   processingPlaceholder: HTMLElement,
  *   imageViewerContainer: HTMLElement | null,
  *   carouselPrev: HTMLButtonElement | null,
  *   carouselNext: HTMLButtonElement | null,
@@ -46,8 +46,10 @@ export function createVersionCarousel(deps) {
     getStagingAlt,
   } = deps;
 
+    /** @type {string[]} */
     let beforeVersions = [];
     let beforeIndex = 0;
+    /** @type {string[]} */
     let afterVersions = [];
     let afterIndex = 0;
 
@@ -55,11 +57,13 @@ export function createVersionCarousel(deps) {
       return toggleAfterBtn && toggleAfterBtn.classList.contains('active');
     }
 
+    /** @param {string} url @param {string} [ariaSuffix] */
     function drawAfter(url, ariaSuffix) {
-      return new Promise((resolve) => {
+      return /** @type {Promise<void>} */ (new Promise((resolve) => {
         const im = new Image();
         im.onload = () => {
-          const ctx1 = canvas1.getContext('2d');
+          // canvas1 is only ever drawn in 2D, so its 2D context always exists.
+          const ctx1 = /** @type {CanvasRenderingContext2D} */ (canvas1.getContext('2d'));
           ctx1.canvas.width = im.width;
           ctx1.canvas.height = im.height;
           ctx1.drawImage(im, 0, 0, im.width, im.height);
@@ -67,9 +71,10 @@ export function createVersionCarousel(deps) {
           resolve();
         };
         im.src = url;
-      });
+      }));
     }
 
+    /** @param {number} i */
     function showAfterVersion(i) {
       if (!afterVersions.length) return;
       afterIndex = Math.max(0, Math.min(i, afterVersions.length - 1));
@@ -77,6 +82,7 @@ export function createVersionCarousel(deps) {
       updateCarouselUI();
     }
 
+    /** @param {number} i */
     function showBeforeVersion(i) {
       if (!beforeVersions.length) return;
       beforeIndex = Math.max(0, Math.min(i, beforeVersions.length - 1));
@@ -84,6 +90,7 @@ export function createVersionCarousel(deps) {
       updateCarouselUI();
     }
 
+    /** @param {number} delta */
     function carouselStep(delta) {
       if (activeViewIsAfter()) showAfterVersion(afterIndex + delta);
       else showBeforeVersion(beforeIndex + delta);
@@ -198,7 +205,9 @@ export function createVersionCarousel(deps) {
       showAfterView,
       updateCarouselUI,
       getBeforeVersions: () => beforeVersions,
+      /** @param {string[]} list */
       setBeforeVersions(list) { beforeVersions = list; beforeIndex = 0; },
+      /** @param {string} url */
       pushBeforeVersion(url) {
         beforeVersions.push(url);
         if (beforeVersions.length > maxVersions) beforeVersions = beforeVersions.slice(-maxVersions);
@@ -207,12 +216,15 @@ export function createVersionCarousel(deps) {
       getBeforeIndex: () => beforeIndex,
       getAfterVersions: () => afterVersions,
       getAfterIndex: () => afterIndex,
+      /** @param {string[]} list */
       setAfterVersions(list) { afterVersions = list; afterIndex = 0; },
+      /** @param {string} url */
       pushAfterVersion(url) {
         afterVersions.push(url);
         if (afterVersions.length > maxVersions) afterVersions = afterVersions.slice(-maxVersions);
         return afterVersions;
       },
+      /** @param {number} i */
       setAfterIndex(i) { afterIndex = i; },
     };
 }

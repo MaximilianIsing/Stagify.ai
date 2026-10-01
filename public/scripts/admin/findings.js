@@ -274,11 +274,7 @@ export function sortFindings(findings) {
  * rules still produce their findings — one bad aggregation must not blank the
  * tab, which is the same posture renderers.js takes around each chart island.
  *
- * @param {{
- *   promptRows?: string[][], users?: any[], enterprise?: any[], metrics?: any,
- *   rejectionRows?: string[][],
- *   index?: any, effectivePlan?: (u: any) => string, now?: number,
- * }} input Header-stripped tables and the account list; `metrics` may be null
+ * @param {Partial<import('./types.js').RuleInput>} input Header-stripped tables and the account list; `metrics` may be null
  *   when GET /api/admin/metrics is unavailable, and rules must cope. So may
  *   `rejectionRows` be empty — a fresh install has refused nothing, so a rule
  *   reading it must distinguish "nothing recorded" from "nothing happened".

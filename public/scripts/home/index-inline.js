@@ -62,6 +62,7 @@
     assert();
 
     var evs = ['wheel', 'touchstart', 'keydown', 'pointerdown'];
+    /** @type {ResizeObserver | null} */
     var observer = null;
     var timer = 0;
     function stop() {
@@ -86,7 +87,7 @@
     // Watch the SECTIONS, not the scroller: `main` is the scroll container
     // (styles.css), so its own border box is viewport-sized and never changes — the
     // height that moves is the content laid out inside it.
-    Array.prototype.forEach.call(scroller.children, function (child) { observer.observe(child); });
+    Array.prototype.forEach.call(scroller.children, function (child) { /** @type {ResizeObserver} */ (observer).observe(child); });
   }
   // Guarded rather than a bare `load` listener: index-deferred.js injects this file
   // after `load`, so the event has already fired and the deep link would silently stop

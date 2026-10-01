@@ -58,7 +58,8 @@ export const NAR_YEARS = {
   2024: { daily: 9, weekly: 17, monthly: 30, none: 45, any: 55, stat1: 42, stat2: 28 },
 };
 
-/** The citation target per year. Both are NAR-official; 2024 has no press release. */
+/** The citation target per year. Both are NAR-official; 2024 has no press release.
+ *  @type {Record<string, string>} */
 export const NAR_SOURCE_URL = {
   2025:
     "https://www.nar.realtor/press-releases/" +
@@ -70,7 +71,12 @@ export const NAR_SOURCE_URL = {
 
 export const NAR_DEFAULT_YEAR = "2025";
 
-/** Pack keys per year. 2025 keeps the original flat keys so no pack string moved. */
+/**
+ * @typedef {{ stat1: string, stat2: string, aria: string }} NarYearText
+ */
+
+/** Pack keys per year. 2025 keeps the original flat keys so no pack string moved.
+ *  @type {Record<string, NarYearText>} */
 const TX_KEYS = {
   2025: { stat1: "home.nar.stat1", stat2: "home.nar.stat2", aria: "home.nar.usageAria" },
   2024: {
@@ -80,7 +86,8 @@ const TX_KEYS = {
   },
 };
 
-/** English fallbacks, used until the pack lands and on a pack that is missing the key. */
+/** English fallbacks, used until the pack lands and on a pack that is missing the key.
+ *  @type {Record<string, NarYearText>} */
 const TX_FALLBACK = {
   2025: {
     stat1: "of agents say clients responded positively to technology in the buying and selling process",
@@ -162,6 +169,7 @@ function cancelTween(card) {
  */
 function tweenNumerals(card, numerals) {
   cancelTween(card);
+  /** @type {Array<{ el: Element, from: number, to: number }>} */
   const pairs = [];
   for (const { el, to } of numerals) {
     if (!el) continue;
@@ -196,7 +204,7 @@ function tweenNumerals(card, numerals) {
   };
 
   const start = performance.now();
-  const step = (now) => {
+  const step = (/** @type {number} */ now) => {
     const t = Math.min(Math.max((now - start) / NAR_TWEEN_MS, 0), 1);
     if (t >= 1) {
       settle();
@@ -358,6 +366,7 @@ export function paintNarYear(card, year, tx, options = {}) {
   // Setting it is all the bar needs — `.nar-bar span` transitions `width`, so the
   // segments ease to the new year on their own. A transition fires on CHANGE, so this
   // is silent on load and silent when a repaint writes the same year back.
+  /** @type {Array<"daily" | "weekly" | "monthly" | "none">} */
   const order = ["daily", "weekly", "monthly", "none"];
   order.forEach((key) => {
     const seg = card.querySelector(`[data-nar-seg="${key}"]`);

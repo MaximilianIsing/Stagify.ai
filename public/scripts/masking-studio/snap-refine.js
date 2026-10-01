@@ -21,6 +21,7 @@ import { computeSpillFill } from './spill.js';
 /**
  * @typedef {import('./types.js').MsState} MsState
  * @typedef {import('./types.js').MsLayer} MsLayer
+ * @typedef {import('./types.js').MsBase} MsBase
  */
 /**
  * @param {{
@@ -37,24 +38,37 @@ export function createSnapRefine(deps) {
   const WORK_MAX = 640;
 
   function smallDims() {
-    const scale = Math.min(1, WORK_MAX / Math.max(state.base.w, state.base.h));
+    const base = /** @type {MsBase} */ (state.base); // snap only runs with a photo loaded
+    const scale = Math.min(1, WORK_MAX / Math.max(base.w, base.h));
     return {
-      pw: Math.max(1, Math.round(state.base.w * scale)),
-      ph: Math.max(1, Math.round(state.base.h * scale)),
+      pw: Math.max(1, Math.round(base.w * scale)),
+      ph: Math.max(1, Math.round(base.h * scale)),
     };
   }
 
   // RGBA of any drawImage-able source rendered into a pw×ph scratch.
+  /**
+   * @param {CanvasImageSource} src
+   * @param {number} pw
+   * @param {number} ph
+   * @returns {Uint8ClampedArray}
+   */
   function smallRGBA(src, pw, ph) {
     const c = document.createElement('canvas');
     c.width = pw;
     c.height = ph;
-    const ctx = c.getContext('2d', { willReadFrequently: true });
+    const ctx = /** @type {CanvasRenderingContext2D} */ (c.getContext('2d', { willReadFrequently: true }));
     ctx.drawImage(src, 0, 0, pw, ph);
     return ctx.getImageData(0, 0, pw, ph).data;
   }
 
   // Alpha-only downsample of a stroke canvas → one byte per pixel.
+  /**
+   * @param {CanvasImageSource} src
+   * @param {number} pw
+   * @param {number} ph
+   * @returns {Uint8Array}
+   */
   function smallAlpha(src, pw, ph) {
     const rgba = smallRGBA(src, pw, ph);
     const a = new Uint8Array(pw * ph);
@@ -66,6 +80,10 @@ export function createSnapRefine(deps) {
   // layer.spill = { pw, ph, fill, count } (or null) and returns how many areas
   // gained one. Remove-mode areas are skipped: they rebuild the room behind the
   // mask, so there is no object to snap to.
+  /**
+   * @param {MsLayer[] | null} [participating] - The run's areas; defaults to every layer.
+   * @returns {number}
+   */
   function computeSpillForDone(participating) {
     if (!state.base) return 0;
     const { pw, ph } = smallDims();
@@ -95,6 +113,7 @@ export function createSnapRefine(deps) {
   // Grow one area's mask to include its detected spill, exactly as if the user
   // had brushed it in. Consumes the suggestion (a later stroke or re-run
   // recomputes it).
+  /** @param {string} id */
   function snapLayer(id) {
     const layer = state.layers.find((l) => l.id === id);
     if (!layer || !layer.spill || state.phase !== 'draw' || !state.base) return;
@@ -103,7 +122,7 @@ export function createSnapRefine(deps) {
     const small = document.createElement('canvas');
     small.width = pw;
     small.height = ph;
-    const sctx = small.getContext('2d');
+    const sctx = /** @type {CanvasRenderingContext2D} */ (small.getContext('2d'));
     const img = sctx.createImageData(pw, ph);
     const d = img.data;
     for (let i = 0; i < fill.length; i++) {
@@ -116,7 +135,7 @@ export function createSnapRefine(deps) {
     const mask = document.createElement('canvas');
     mask.width = state.base.w;
     mask.height = state.base.h;
-    const mctx = mask.getContext('2d');
+    const mctx = /** @type {CanvasRenderingContext2D} */ (mask.getContext('2d'));
     mctx.imageSmoothingEnabled = false;
     mctx.drawImage(small, 0, 0, state.base.w, state.base.h);
     layer.spill = null; // consumed before repaint so the button retires

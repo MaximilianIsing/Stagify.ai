@@ -54,6 +54,7 @@ import { updateHeroFreeGensLine } from '../app/hero-stats.js';
       return this._configPromise;
     },
 
+    /** @param {string | null | undefined} t */
     setToken: function (t) {
       if (t) localStorage.setItem(TOKEN_KEY, t);
       else localStorage.removeItem(TOKEN_KEY);
@@ -239,7 +240,7 @@ import { updateHeroFreeGensLine } from '../app/hero-stats.js';
   // only when the server reports IS_STAGING (via /api/auth/config). Keeps testers
   // aware they're on the staging/test site, not production. Sticky so it stays
   // visible; the sticky site header is nudged down to stack below it.
-  window.StagifyAuth.fetchConfig().then(function (cfg) {
+  window.StagifyAuth.fetchConfig().then(function (/** @type {{ showStagingBanner?: boolean } | null} */ cfg) {
     if (cfg && cfg.showStagingBanner) showStagingBanner();
   });
 

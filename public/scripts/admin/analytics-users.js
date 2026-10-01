@@ -20,9 +20,10 @@ import { COL, toDate, stripHeader, monthKeyLocal } from './analytics.js';
 
 const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
+/** @param {unknown} v */
 function lc(v) { return String(v || '').trim().toLowerCase(); }
 
-/** True for the sentinels the log writers use when they have no identity. */
+/** True for the sentinels the log writers use when they have no identity. @param {unknown} v */
 function isRealId(v) {
   const s = lc(v);
   return Boolean(s) && s !== 'unknown';
@@ -50,6 +51,7 @@ export function buildActivityIndex(tables) {
   /** @type {Record<string, number>} */
   const firstRenderByEmail = {};
 
+  /** @param {Record<string, number>} map @param {string} key @param {unknown} value */
   const note = (map, key, value) => {
     const d = toDate(value);
     if (!d) return;
@@ -155,7 +157,7 @@ export function attributionCoverage(promptRows) {
  */
 export function activationFunnel(users, index) {
   const list = users || [];
-  const renders = (u) => index.rendersByEmail[lc(u.email)] || 0;
+  const renders = (/** @type {{email?: string}} */ u) => index.rendersByEmail[lc(u.email)] || 0;
   const steps = [
     { label: 'Accounts', value: list.length },
     { label: 'Activated (1+ render)', value: list.filter((u) => renders(u) >= 1).length },
@@ -339,13 +341,14 @@ export function trialEmailsSent(users) {
   return keys.map((k) => ({ label: k, value: counts[k] }));
 }
 
-/** Whole months between two `YYYY-MM` keys. @returns {number} */
+/** Whole months between two `YYYY-MM` keys. @param {string} fromKey @param {string} toKey @returns {number} */
 function monthDiff(fromKey, toKey) {
   const [fy, fm] = String(fromKey).split('-').map(Number);
   const [ty, tm] = String(toKey).split('-').map(Number);
   return (ty - fy) * 12 + (tm - fm);
 }
 
+/** @param {string} key */
 function labelMonthKey(key) {
   const parts = String(key).split('-');
   return MONTH_LABELS[Number(parts[1]) - 1] + " '" + String(parts[0]).slice(2);
@@ -478,8 +481,9 @@ export function expiringCompGrants(users, opts = {}) {
         daysLeft: Math.floor((exp.getTime() - now) / DAY),
       };
     })
-    .filter((row) => Boolean(row) && /** @type {any} */ (row).daysLeft <= withinDays)
-    .sort((a, b) => /** @type {any} */ (a).daysLeft - /** @type {any} */ (b).daysLeft);
+    .filter((row) => row !== null)
+    .filter((row) => row.daysLeft <= withinDays)
+    .sort((a, b) => a.daysLeft - b.daysLeft);
 }
 
 /**

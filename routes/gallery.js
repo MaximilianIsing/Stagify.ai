@@ -156,7 +156,9 @@ export function shapeEntry({ render, blobs, refs, share, presign, shareOrigin = 
 /**
  * Build the owner gallery router.
  *
- * @param {{ stagedRenders: any, renderRefs: any, shares: any,
+ * @param {{ stagedRenders: ReturnType<typeof import('../lib/data/staged-renders.js').createStagedRenders>,
+ *   renderRefs: ReturnType<typeof import('../lib/data/render-refs.js').createRenderRefs>,
+ *   shares: ReturnType<typeof import('../lib/data/gallery-shares.js').createGalleryShares>,
  *   objectStore: import('../lib/data/object-store.js').ObjectStore,
  *   getAuthUserFromRequest: (req: any) => any,
  *   galleryLimiter?: import('express').RequestHandler,
@@ -185,7 +187,7 @@ export default function createGalleryRouter(deps) {
     next();
   });
 
-  const presign = (key) => objectStore.presignGet(key, { ttlMs: GALLERY_URL_TTL_MS });
+  const presign = (/** @type {string} */ key) => objectStore.presignGet(key, { ttlMs: GALLERY_URL_TTL_MS });
 
   /**
    * The origin every share URL this router emits is built on. An injected appOrigin wins;

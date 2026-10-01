@@ -49,11 +49,11 @@ export function initWhyUs() {
   let pinned = '';
 
   /** @param {string} key the column to compare against, or "" for none */
-  function focus(key) {
+  const focus = (key) => {
     // `data-vs-col-focus` on the board is the hook the CSS dims the other columns off.
     if (key) board.setAttribute('data-vs-col-focus', key);
     else board.removeAttribute('data-vs-col-focus');
-  }
+  };
 
   for (const { key, btn } of columns) {
     btn.addEventListener('pointerenter', () => {

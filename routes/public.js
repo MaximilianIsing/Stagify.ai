@@ -12,6 +12,7 @@ import path from 'path';
 import fs from 'fs';
 import { logger } from '../lib/logger.js';
 import { statusPayload } from '../lib/health/service-health.js';
+import { errorMessage } from '../lib/errors.js';
 
 /**
  * Build the public router (static pages, robots/sitemap, hosted-image serving,
@@ -108,7 +109,7 @@ export default function createPublicRouter(deps) {
       // The store swallows its own write errors; this catches the ones it cannot
       // (an unopenable database at construction, a store injected half-built).
       // Belt and braces on purpose: the article is what the reader came for.
-      logger.error('[blog] could not count a view of', slug, '-', err && err.message ? err.message : err);
+      logger.error('[blog] could not count a view of', slug, '-', errorMessage(err));
     }
     sendPage(res, path.join(__dirname, 'public', 'blog', slug + '.html'));
   };
@@ -203,7 +204,7 @@ router.get('/i/:id', (req, res) => {
   if (!/^[a-f0-9]{16,64}$/.test(id)) {
     return res.status(404).type('text/plain').send('Not found');
   }
-  const entry = hostedImages.readHostedImagesManifest().find((e) => e && e.id === id);
+  const entry = /** @type {import('../lib/types/image.js').HostedImageEntry[]} */ (hostedImages.readHostedImagesManifest()).find((e) => e && e.id === id);
   if (!entry) {
     return res.status(404).type('text/plain').send('Not found');
   }

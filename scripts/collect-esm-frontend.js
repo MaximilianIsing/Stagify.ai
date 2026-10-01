@@ -25,6 +25,7 @@ export const ESM_MARKER = /^\s*(?:export\b|import\s+(?:[^(;]*\sfrom\s|['"]))/m;
  * @returns {string[]} Relative paths of the ES-module files found.
  */
 export function collectEsmFrontend(dir, rootDir = dir) {
+  /** @type {string[]} */
   const out = [];
   let entries;
   try {
